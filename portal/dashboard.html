@@ -16,13 +16,82 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .admin-badge {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .welcome-hero {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .welcome-hero h1 {
+            font-size: var(--font-size-3xl);
+            margin-bottom: var(--spacing-xs);
+        }
+        .welcome-hero p {
+            opacity: 0.9;
+            font-size: var(--font-size-lg);
+        }
+        .admin-section {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .admin-section h2 {
+            color: #92400e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+        .admin-card {
+            background: white;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .admin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        .admin-card .icon {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-xs);
+        }
+        .admin-card .label {
+            font-weight: 600;
+            color: var(--color-gray-700);
+        }
+        .admin-card .count {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
     <header class="header">
         <nav class="nav container">
             <a href="../index.html" class="logo">
-                <span class="logo-icon">📦</span>
                 <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
             </a>
             <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
@@ -53,12 +122,53 @@
                 <a href="inventory.html" class="portal-nav-item">
                     <span>📦</span> Inventory
                 </a>
+                <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
+                    <a href="#" class="portal-nav-item" id="nav-all-users">
+                        <span>👥</span> All Users
+                    </a>
+                    <a href="#" class="portal-nav-item" id="nav-all-shipments">
+                        <span>📋</span> All Shipments
+                    </a>
+                </div>
             </nav>
         </aside>
 
         <!-- Main Content -->
         <main class="portal-main">
-            <h1 style="margin-bottom: var(--spacing-lg); color: var(--color-gray-900);">Dashboard</h1>
+            <!-- Welcome Hero -->
+            <div class="welcome-hero">
+                <h1 id="welcome-title">Welcome back!</h1>
+                <p id="welcome-subtitle">Here's what's happening with your logistics today.</p>
+            </div>
+
+            <!-- Admin Section (hidden by default) -->
+            <div id="admin-section" class="admin-section" style="display: none;">
+                <h2>👑 Admin Dashboard</h2>
+                <p style="color: #92400e; margin-bottom: var(--spacing-sm);">You have full access to manage all customers and shipments.</p>
+                <div class="admin-grid">
+                    <div class="admin-card" onclick="location.href='#users'">
+                        <div class="icon">👥</div>
+                        <div class="count" id="total-users">0</div>
+                        <div class="label">Total Customers</div>
+                    </div>
+                    <div class="admin-card" onclick="location.href='#shipments'">
+                        <div class="icon">📦</div>
+                        <div class="count" id="total-shipments">0</div>
+                        <div class="label">Total Shipments</div>
+                    </div>
+                    <div class="admin-card" onclick="location.href='#inventory'">
+                        <div class="icon">🏭</div>
+                        <div class="count" id="total-inventory">0</div>
+                        <div class="label">Inventory Items</div>
+                    </div>
+                    <div class="admin-card" onclick="location.href='#pending'">
+                        <div class="icon">⏳</div>
+                        <div class="count" id="total-pending">0</div>
+                        <div class="label">Pending Actions</div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Stats Cards -->
             <div class="dashboard-stats">
@@ -122,19 +232,25 @@
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // Firebase configuration - Replace with your own config
+        // Firebase configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
         };
+
+        // Admin emails
+        const ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        let isAdmin = false;
 
         // Check authentication
         onAuthStateChanged(auth, async (user) => {
@@ -143,10 +259,35 @@
                 return;
             }
 
+            isAdmin = ADMIN_EMAILS.includes(user.email);
+
             // Get user data
             const userDoc = await getDoc(doc(db, 'users', user.uid));
+            let userName = user.displayName || user.email;
+
             if (userDoc.exists()) {
-                document.getElementById('user-name').textContent = 'Welcome, ' + userDoc.data().name;
+                userName = userDoc.data().name || userName;
+            }
+
+            // Update welcome message
+            const welcomeTitle = document.getElementById('welcome-title');
+            const welcomeSubtitle = document.getElementById('welcome-subtitle');
+            const userNameEl = document.getElementById('user-name');
+
+            if (isAdmin) {
+                welcomeTitle.innerHTML = `Welcome back, ${userName}! <span class="admin-badge">ADMIN</span>`;
+                welcomeSubtitle.textContent = "You have full admin access to manage all customers and operations.";
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
+
+                // Show admin sections
+                document.getElementById('admin-section').style.display = 'block';
+                document.getElementById('admin-nav').style.display = 'block';
+
+                // Load admin stats
+                loadAdminStats();
+            } else {
+                welcomeTitle.textContent = `Welcome back, ${userName}!`;
+                userNameEl.textContent = `Welcome, ${userName}`;
             }
 
             // Load dashboard data
@@ -160,53 +301,99 @@
             window.location.href = '../login.html';
         });
 
+        async function loadAdminStats() {
+            try {
+                // Total users
+                const usersSnap = await getDocs(collection(db, 'users'));
+                document.getElementById('total-users').textContent = usersSnap.size;
+
+                // Total shipments
+                const shipmentsSnap = await getDocs(collection(db, 'shipments'));
+                document.getElementById('total-shipments').textContent = shipmentsSnap.size;
+
+                // Total inventory
+                const inventorySnap = await getDocs(collection(db, 'inventory'));
+                document.getElementById('total-inventory').textContent = inventorySnap.size;
+
+                // Pending shipments (all)
+                const pendingQuery = query(collection(db, 'shipments'), where('status', '==', 'pending'));
+                const pendingSnap = await getDocs(pendingQuery);
+                document.getElementById('total-pending').textContent = pendingSnap.size;
+
+            } catch (error) {
+                console.error('Error loading admin stats:', error);
+            }
+        }
+
         async function loadDashboardData(userId) {
             try {
-                // Count shipments by status
                 const shipmentsRef = collection(db, 'shipments');
 
-                // Pending
-                const pendingQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'pending'));
-                const pendingSnap = await getDocs(pendingQuery);
-                document.getElementById('pending-count').textContent = pendingSnap.size;
+                if (isAdmin) {
+                    // Admins see all shipments
+                    const pendingQuery = query(shipmentsRef, where('status', '==', 'pending'));
+                    const pendingSnap = await getDocs(pendingQuery);
+                    document.getElementById('pending-count').textContent = pendingSnap.size;
 
-                // In Transit
-                const transitQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'in_transit'));
-                const transitSnap = await getDocs(transitQuery);
-                document.getElementById('transit-count').textContent = transitSnap.size;
+                    const transitQuery = query(shipmentsRef, where('status', '==', 'in_transit'));
+                    const transitSnap = await getDocs(transitQuery);
+                    document.getElementById('transit-count').textContent = transitSnap.size;
 
-                // Delivered
-                const deliveredQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'delivered'));
-                const deliveredSnap = await getDocs(deliveredQuery);
-                document.getElementById('delivered-count').textContent = deliveredSnap.size;
+                    const deliveredQuery = query(shipmentsRef, where('status', '==', 'delivered'));
+                    const deliveredSnap = await getDocs(deliveredQuery);
+                    document.getElementById('delivered-count').textContent = deliveredSnap.size;
 
-                // Inventory count
-                const inventoryRef = collection(db, 'inventory');
-                const inventoryQuery = query(inventoryRef, where('user_id', '==', userId));
-                const inventorySnap = await getDocs(inventoryQuery);
-                document.getElementById('inventory-count').textContent = inventorySnap.size;
+                    const inventorySnap = await getDocs(collection(db, 'inventory'));
+                    document.getElementById('inventory-count').textContent = inventorySnap.size;
 
-                // Recent shipments
-                const recentQuery = query(shipmentsRef, where('user_id', '==', userId), orderBy('created_at', 'desc'), limit(5));
-                const recentSnap = await getDocs(recentQuery);
+                    // Recent shipments (all)
+                    const recentQuery = query(shipmentsRef, orderBy('created_at', 'desc'), limit(5));
+                    const recentSnap = await getDocs(recentQuery);
+                    displayRecentShipments(recentSnap);
 
-                const tbody = document.getElementById('recent-shipments');
-                if (recentSnap.size > 0) {
-                    tbody.innerHTML = '';
-                    recentSnap.forEach((doc) => {
-                        const data = doc.data();
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent);">${data.tracking_number}</a></td>
-                            <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
-                            <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
-                            <td>${new Date(data.created_at).toLocaleDateString()}</td>
-                        `;
-                        tbody.appendChild(row);
-                    });
+                } else {
+                    // Regular users see only their shipments
+                    const pendingQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'pending'));
+                    const pendingSnap = await getDocs(pendingQuery);
+                    document.getElementById('pending-count').textContent = pendingSnap.size;
+
+                    const transitQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'in_transit'));
+                    const transitSnap = await getDocs(transitQuery);
+                    document.getElementById('transit-count').textContent = transitSnap.size;
+
+                    const deliveredQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'delivered'));
+                    const deliveredSnap = await getDocs(deliveredQuery);
+                    document.getElementById('delivered-count').textContent = deliveredSnap.size;
+
+                    const inventoryQuery = query(collection(db, 'inventory'), where('user_id', '==', userId));
+                    const inventorySnap = await getDocs(inventoryQuery);
+                    document.getElementById('inventory-count').textContent = inventorySnap.size;
+
+                    // Recent shipments (user's only)
+                    const recentQuery = query(shipmentsRef, where('user_id', '==', userId), orderBy('created_at', 'desc'), limit(5));
+                    const recentSnap = await getDocs(recentQuery);
+                    displayRecentShipments(recentSnap);
                 }
             } catch (error) {
                 console.error('Error loading dashboard:', error);
+            }
+        }
+
+        function displayRecentShipments(snapshot) {
+            const tbody = document.getElementById('recent-shipments');
+            if (snapshot.size > 0) {
+                tbody.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent);">${data.tracking_number || 'N/A'}</a></td>
+                        <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
+                        <td><span class="badge badge-${data.status}">${(data.status || 'unknown').replace('_', ' ')}</span></td>
+                        <td>${data.created_at ? new Date(data.created_at).toLocaleDateString() : 'N/A'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
             }
         }
     </script>
