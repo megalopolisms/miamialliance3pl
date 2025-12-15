@@ -298,14 +298,6 @@
             const welcomeSubtitle = document.getElementById('welcome-subtitle');
             const userNameEl = document.getElementById('user-name');
 
-            // DEBUG: VISIBLE ALERT (v5)
-            alert('DEBUG v5:\nEmail: ' + user.email + '\nFirestore isAdmin: ' + firestoreIsAdmin + '\nFinal isJorge: ' + isJorge);
-            console.log('🌟 STAR WARS CODE v5 LOADED');
-            console.log('User email:', user.email);
-            console.log('Firestore isAdmin:', firestoreIsAdmin);
-            console.log('Email in list:', emailIsAdmin);
-            console.log('Final isAdmin:', isAdmin);
-            console.log('Final isJorge:', isJorge);
 
             if (isJorge) {
                 welcomeTitle.innerHTML = `Welcome back, Jedi Master ${userName}! ⚔️ <span class="admin-badge">SITH LORD</span>`;
