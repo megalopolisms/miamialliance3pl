@@ -275,7 +275,7 @@
                 return;
             }
 
-            isAdmin = ADMIN_EMAILS.includes(user.email);
+            isAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
             // Get user data
             const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -291,7 +291,7 @@
             const userNameEl = document.getElementById('user-name');
 
             // Check if it's Jorge - The Chosen One
-            const isJorge = JORGE_EMAILS.includes(user.email);
+            const isJorge = JORGE_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
             if (isJorge) {
                 welcomeTitle.innerHTML = `Welcome back, Jedi Master ${userName}! ⚔️ <span class="admin-badge">SITH LORD</span>`;

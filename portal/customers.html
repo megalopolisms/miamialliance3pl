@@ -241,8 +241,8 @@
                 return;
             }
 
-            const isAdmin = ADMIN_EMAILS.includes(user.email);
-            const isJorge = JORGE_EMAILS.includes(user.email);
+            const isAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+            const isJorge = JORGE_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
             if (!isAdmin) {
                 // Not admin, redirect to dashboard
