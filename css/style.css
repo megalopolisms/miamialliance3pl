@@ -70,6 +70,8 @@ html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
 }
 
 body {
@@ -78,6 +80,8 @@ body {
     line-height: 1.6;
     color: var(--color-gray-700);
     background-color: var(--color-white);
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
 }
 
 img {
@@ -1001,6 +1005,203 @@ ul {
 
 .fade-in {
     animation: fadeIn 0.5s ease forwards;
+}
+
+/* ==========================================================================
+   Mobile Optimizations
+   ========================================================================== */
+
+/* Ensure minimum touch target size (44px) */
+.btn,
+.nav-link,
+.nav-toggle,
+.portal-nav-item,
+.footer-links a {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 767px) {
+    /* Larger text for readability */
+    body {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    /* Better hero on mobile */
+    .hero {
+        min-height: 60vh;
+        padding: calc(70px + var(--spacing-xl)) 0 var(--spacing-xl);
+    }
+
+    .hero-title {
+        font-size: 1.75rem;
+        line-height: 1.3;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
+    /* Stack CTA buttons on mobile */
+    .hero-cta {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .hero-cta .btn {
+        width: 100%;
+    }
+
+    /* Better section spacing */
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .section-subtitle {
+        font-size: 0.95rem;
+    }
+
+    /* Service cards - single column */
+    .services-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    .service-card {
+        padding: var(--spacing-md);
+    }
+
+    /* Benefits section */
+    .benefit-item {
+        padding: var(--spacing-sm);
+    }
+
+    .benefit-number {
+        font-size: 2rem;
+    }
+
+    /* Stats - 2 columns on mobile */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-md);
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    /* Footer - stack on mobile */
+    .footer-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .footer-brand {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .footer-brand p {
+        max-width: none;
+    }
+
+    /* Form inputs - larger for touch */
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px; /* Prevents zoom */
+        padding: 1rem;
+        min-height: 48px;
+    }
+
+    /* CTA section */
+    .cta-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .cta-section p {
+        font-size: 1rem;
+    }
+
+    /* Nav menu improvements */
+    .nav-menu {
+        padding: var(--spacing-lg);
+    }
+
+    .nav-link {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: 1.1rem;
+    }
+
+    /* Dashboard on mobile */
+    .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-card {
+        padding: var(--spacing-md);
+    }
+
+    .dashboard-card .value {
+        font-size: 1.5rem;
+    }
+}
+
+/* Small mobile (< 375px) */
+@media (max-width: 374px) {
+    .hero-title {
+        font-size: 1.5rem;
+    }
+
+    .logo-text {
+        font-size: 0.9rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Tablet tweaks */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .btn-primary {
+        border: 2px solid var(--color-white);
+    }
+
+    .service-card,
+    .dashboard-card {
+        border: 1px solid var(--color-gray-700);
+    }
 }
 
 /* ==========================================================================

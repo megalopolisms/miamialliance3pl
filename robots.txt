@@ -9,4 +9,4 @@ Disallow: /login.html
 Disallow: /admin/
 
 # Sitemap
-Sitemap: https://megalopolisms.github.io/miamialliance3pl/sitemap.xml
+Sitemap: https://miamialliance3pl.com/sitemap.xml
