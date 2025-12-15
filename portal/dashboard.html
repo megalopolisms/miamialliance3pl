@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v=2">
     <style>
         .admin-badge {
             background: linear-gradient(135deg, #f97316, #ea580c);
@@ -293,6 +293,13 @@
             // Check if it's Jorge - The Chosen One
             const isJorge = JORGE_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
+            // DEBUG: Log to verify code is running (v2)
+            console.log('🌟 STAR WARS CODE v2 LOADED');
+            console.log('User email:', user.email);
+            console.log('isAdmin:', isAdmin);
+            console.log('isJorge:', isJorge);
+            console.log('JORGE_EMAILS:', JORGE_EMAILS);
+
             if (isJorge) {
                 welcomeTitle.innerHTML = `Welcome back, Jedi Master ${userName}! ⚔️ <span class="admin-badge">SITH LORD</span>`;
                 welcomeSubtitle.textContent = "The Force is strong with you. Your galactic logistics empire awaits.";
@@ -442,6 +449,6 @@
             }
         }
     </script>
-    <script src="../js/main.js"></script>
+    <script src="../js/main.js?v=2"></script>
 </body>
 </html>
