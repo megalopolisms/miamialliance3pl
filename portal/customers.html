@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers | Miami Alliance 3PL Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .admin-badge {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .page-header-bar {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .page-header-bar h1 {
+            font-size: var(--font-size-2xl);
+            margin-bottom: var(--spacing-xs);
+        }
+        .search-bar {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+        .search-bar input {
+            flex: 1;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+        }
+        .customer-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            transition: box-shadow 0.2s;
+        }
+        .customer-card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+        .customer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-sm);
+        }
+        .customer-name {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--color-gray-900);
+        }
+        .customer-company {
+            color: var(--color-accent);
+            font-weight: 500;
+        }
+        .customer-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-sm);
+            color: var(--color-gray-600);
+            font-size: var(--font-size-sm);
+        }
+        .customer-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .customer-stats {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--color-gray-200);
+        }
+        .stat-item {
+            text-align: center;
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--color-gray-100);
+            border-radius: var(--radius-md);
+        }
+        .stat-item .value {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .stat-item .label {
+            font-size: var(--font-size-xs);
+            color: var(--color-gray-500);
+        }
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--color-gray-500);
+        }
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-md);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="portal-sidebar">
+            <nav>
+                <a href="dashboard.html" class="portal-nav-item">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="shipments.html" class="portal-nav-item">
+                    <span>🚚</span> Shipments
+                </a>
+                <a href="tracking.html" class="portal-nav-item">
+                    <span>🔍</span> Tracking
+                </a>
+                <a href="inventory.html" class="portal-nav-item">
+                    <span>📦</span> Inventory
+                </a>
+                <div id="admin-nav" style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
+                    <a href="customers.html" class="portal-nav-item active">
+                        <span>👥</span> All Customers
+                    </a>
+                    <a href="admin-shipments.html" class="portal-nav-item">
+                        <span>📋</span> All Shipments
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="portal-main">
+            <!-- Page Header -->
+            <div class="page-header-bar">
+                <h1 id="page-title">👥 All Customers</h1>
+                <p>Manage and view all registered customers</p>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search by name, email, or company...">
+                <button class="btn btn-primary" onclick="searchCustomers()">Search</button>
+            </div>
+
+            <!-- Stats Summary -->
+            <div class="dashboard-stats" style="margin-bottom: var(--spacing-xl);">
+                <div class="dashboard-card">
+                    <h3>Total Customers</h3>
+                    <div class="value" id="total-customers">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>New This Month</h3>
+                    <div class="value" id="new-customers">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Active Shippers</h3>
+                    <div class="value" id="active-customers">0</div>
+                </div>
+            </div>
+
+            <!-- Customers List -->
+            <div id="customers-list">
+                <div class="empty-state">
+                    <div class="icon">⏳</div>
+                    <p>Loading customers...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
+        };
+
+        // Admin emails
+        const ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+        const JORGE_EMAILS = ['ceo@usglatam.com'];
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let allCustomers = [];
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            const isAdmin = ADMIN_EMAILS.includes(user.email);
+            const isJorge = JORGE_EMAILS.includes(user.email);
+
+            if (!isAdmin) {
+                // Not admin, redirect to dashboard
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Get user data
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            let userName = user.displayName || user.email;
+            if (userDoc.exists()) {
+                userName = userDoc.data().name || userName;
+            }
+
+            const userNameEl = document.getElementById('user-name');
+            if (isJorge) {
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">🌟 JEDI</span>`;
+                document.getElementById('page-title').textContent = '👥 Rebel Alliance Members';
+            } else {
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
+            }
+
+            // Load customers
+            loadCustomers();
+        });
+
+        // Logout handler
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+
+        async function loadCustomers() {
+            try {
+                const customersRef = collection(db, 'users');
+                const customersSnap = await getDocs(customersRef);
+
+                allCustomers = [];
+                let newThisMonth = 0;
+                const now = new Date();
+                const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+                customersSnap.forEach((doc) => {
+                    const data = { id: doc.id, ...doc.data() };
+                    allCustomers.push(data);
+
+                    // Check if new this month
+                    if (data.created_at) {
+                        const createdDate = new Date(data.created_at);
+                        if (createdDate >= firstOfMonth) {
+                            newThisMonth++;
+                        }
+                    }
+                });
+
+                // Update stats
+                document.getElementById('total-customers').textContent = allCustomers.length;
+                document.getElementById('new-customers').textContent = newThisMonth;
+
+                // Count active shippers (have at least 1 shipment)
+                const shipmentsSnap = await getDocs(collection(db, 'shipments'));
+                const activeUserIds = new Set();
+                shipmentsSnap.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.user_id) activeUserIds.add(data.user_id);
+                });
+                document.getElementById('active-customers').textContent = activeUserIds.size;
+
+                // Display customers
+                displayCustomers(allCustomers);
+
+            } catch (error) {
+                console.error('Error loading customers:', error);
+                document.getElementById('customers-list').innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">❌</div>
+                        <p>Error loading customers: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function displayCustomers(customers) {
+            const container = document.getElementById('customers-list');
+
+            if (customers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">👥</div>
+                        <p>No customers found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Get shipment counts per user
+            const shipmentsSnap = await getDocs(collection(db, 'shipments'));
+            const shipmentCounts = {};
+            shipmentsSnap.forEach((doc) => {
+                const data = doc.data();
+                if (data.user_id) {
+                    shipmentCounts[data.user_id] = (shipmentCounts[data.user_id] || 0) + 1;
+                }
+            });
+
+            // Sort by created_at descending
+            customers.sort((a, b) => {
+                const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+                const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+                return dateB - dateA;
+            });
+
+            container.innerHTML = customers.map(customer => `
+                <div class="customer-card">
+                    <div class="customer-header">
+                        <div>
+                            <div class="customer-name">${customer.name || 'Unknown'}</div>
+                            <div class="customer-company">${customer.company_name || 'No company'}</div>
+                        </div>
+                        <span class="badge ${customer.isAdmin ? 'badge-pending' : 'badge-delivered'}">${customer.isAdmin ? 'Admin' : 'Customer'}</span>
+                    </div>
+                    <div class="customer-meta">
+                        <span>📧 ${customer.email || 'No email'}</span>
+                        <span>📞 ${customer.phone || 'No phone'}</span>
+                        <span>📅 Joined: ${customer.created_at ? new Date(customer.created_at).toLocaleDateString() : 'Unknown'}</span>
+                    </div>
+                    <div class="customer-stats">
+                        <div class="stat-item">
+                            <div class="value">${shipmentCounts[customer.id] || 0}</div>
+                            <div class="label">Shipments</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="value">${customer.id.substring(0, 8)}...</div>
+                            <div class="label">User ID</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Search functionality
+        window.searchCustomers = function() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const filtered = allCustomers.filter(c =>
+                (c.name && c.name.toLowerCase().includes(searchTerm)) ||
+                (c.email && c.email.toLowerCase().includes(searchTerm)) ||
+                (c.company_name && c.company_name.toLowerCase().includes(searchTerm))
+            );
+            displayCustomers(filtered);
+        };
+
+        // Search on Enter key
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchCustomers();
+        });
+    </script>
+    <script src="../js/main.js"></script>
+</body>
+</html>
