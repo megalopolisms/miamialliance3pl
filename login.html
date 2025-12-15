@@ -112,7 +112,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, browserLocalPersistence, setPersistence } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase configuration
@@ -147,8 +147,14 @@
         // Google Sign-In handler
         document.getElementById('google-signin').addEventListener('click', async () => {
             try {
+                // Set persistence FIRST to ensure auth state survives redirect
+                await setPersistence(auth, browserLocalPersistence);
+
                 const result = await signInWithPopup(auth, googleProvider);
                 const user = result.user;
+
+                console.log('Google login success:', user.email);
+
                 const isAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
                 // Check if user exists in Firestore, if not create profile
@@ -166,6 +172,9 @@
                     // Update existing user to admin if they're in the list
                     await setDoc(doc(db, 'users', user.uid), { isAdmin: true }, { merge: true });
                 }
+
+                // Small delay to ensure auth state is persisted
+                await new Promise(resolve => setTimeout(resolve, 500));
 
                 window.location.href = 'portal/dashboard.html';
             } catch (error) {
