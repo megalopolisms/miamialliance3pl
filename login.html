@@ -131,6 +131,9 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Admin emails
+        const ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+
         // Google Auth Provider
         const googleProvider = new GoogleAuthProvider();
 
@@ -146,6 +149,7 @@
             try {
                 const result = await signInWithPopup(auth, googleProvider);
                 const user = result.user;
+                const isAdmin = ADMIN_EMAILS.includes(user.email);
 
                 // Check if user exists in Firestore, if not create profile
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -155,8 +159,12 @@
                         email: user.email,
                         company_name: '',
                         phone: user.phoneNumber || '',
+                        isAdmin: isAdmin,
                         created_at: new Date().toISOString()
                     });
+                } else if (isAdmin) {
+                    // Update existing user to admin if they're in the list
+                    await setDoc(doc(db, 'users', user.uid), { isAdmin: true }, { merge: true });
                 }
 
                 window.location.href = 'portal/dashboard.html';
