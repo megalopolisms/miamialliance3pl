@@ -140,32 +140,33 @@
             <div class="welcome-hero">
                 <h1 id="welcome-title">Welcome back!</h1>
                 <p id="welcome-subtitle">Here's what's happening with your logistics today.</p>
+                <p id="jorge-quote" style="display: none; margin-top: var(--spacing-md); font-style: italic; opacity: 0.8; font-size: var(--font-size-lg);">"Do or do not ship. There is no try." - Master Yoda, Logistics Division</p>
             </div>
 
             <!-- Admin Section (hidden by default) -->
             <div id="admin-section" class="admin-section" style="display: none;">
-                <h2>👑 Admin Dashboard</h2>
-                <p style="color: #92400e; margin-bottom: var(--spacing-sm);">You have full access to manage all customers and shipments.</p>
+                <h2 id="admin-title">👑 Admin Dashboard</h2>
+                <p id="admin-subtitle" style="color: #92400e; margin-bottom: var(--spacing-sm);">You have full access to manage all customers and shipments.</p>
                 <div class="admin-grid">
                     <div class="admin-card" onclick="location.href='#users'">
                         <div class="icon">👥</div>
                         <div class="count" id="total-users">0</div>
-                        <div class="label">Total Customers</div>
+                        <div class="label" id="label-users">Total Customers</div>
                     </div>
                     <div class="admin-card" onclick="location.href='#shipments'">
-                        <div class="icon">📦</div>
+                        <div class="icon" id="icon-shipments">📦</div>
                         <div class="count" id="total-shipments">0</div>
-                        <div class="label">Total Shipments</div>
+                        <div class="label" id="label-shipments">Total Shipments</div>
                     </div>
                     <div class="admin-card" onclick="location.href='#inventory'">
-                        <div class="icon">🏭</div>
+                        <div class="icon" id="icon-inventory">🏭</div>
                         <div class="count" id="total-inventory">0</div>
-                        <div class="label">Inventory Items</div>
+                        <div class="label" id="label-inventory">Inventory Items</div>
                     </div>
                     <div class="admin-card" onclick="location.href='#pending'">
-                        <div class="icon">⏳</div>
+                        <div class="icon" id="icon-pending">⏳</div>
                         <div class="count" id="total-pending">0</div>
-                        <div class="label">Pending Actions</div>
+                        <div class="label" id="label-pending">Pending Actions</div>
                     </div>
                 </div>
             </div>
@@ -246,6 +247,21 @@
         // Admin emails
         const ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
+        // The Chosen One
+        const JORGE_EMAILS = ['ceo@usglatam.com'];
+        const JORGE_QUOTES = [
+            '"Do or do not ship. There is no try." - Master Yoda, Logistics Division',
+            '"I find your lack of tracking numbers disturbing." - Darth Vader',
+            '"May the freight be with you." - Obi-Wan Kenobi',
+            '"It\'s over Anakin! I have the high ground shipping rates!" - Obi-Wan',
+            '"This is the way... to your warehouse." - The Mandalorian',
+            '"I am your shipper." - Darth Vader',
+            '"These aren\'t the packages you\'re looking for." - Obi-Wan',
+            '"The Force is strong with this shipment." - Yoda',
+            '"Help me Miami Alliance 3PL, you\'re my only hope." - Princess Leia',
+            '"Punch it, Chewie! We got a delivery to make!" - Han Solo'
+        ];
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -274,7 +290,36 @@
             const welcomeSubtitle = document.getElementById('welcome-subtitle');
             const userNameEl = document.getElementById('user-name');
 
-            if (isAdmin) {
+            // Check if it's Jorge - The Chosen One
+            const isJorge = JORGE_EMAILS.includes(user.email);
+
+            if (isJorge) {
+                welcomeTitle.innerHTML = `Welcome back, Jedi Master ${userName}! ⚔️ <span class="admin-badge">SITH LORD</span>`;
+                welcomeSubtitle.textContent = "The Force is strong with you. Your galactic logistics empire awaits.";
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">🌟 JEDI</span>`;
+
+                // Show random Star Wars quote
+                const quoteEl = document.getElementById('jorge-quote');
+                quoteEl.textContent = JORGE_QUOTES[Math.floor(Math.random() * JORGE_QUOTES.length)];
+                quoteEl.style.display = 'block';
+
+                // Jorge gets admin powers too (he IS the Senate)
+                document.getElementById('admin-section').style.display = 'block';
+                document.getElementById('admin-nav').style.display = 'block';
+                document.getElementById('admin-title').innerHTML = '⚔️ Galactic Command Center';
+                document.getElementById('admin-subtitle').textContent = 'Execute Order 66... or just manage some shipments. Your call, my lord.';
+
+                // Star Wars themed labels for The Chosen One
+                document.getElementById('label-users').textContent = 'Rebel Allies';
+                document.getElementById('label-shipments').textContent = 'Cargo Runs';
+                document.getElementById('icon-shipments').textContent = '🚀';
+                document.getElementById('label-inventory').textContent = 'Kyber Crystals';
+                document.getElementById('icon-inventory').textContent = '💎';
+                document.getElementById('label-pending').textContent = 'Missions Pending';
+                document.getElementById('icon-pending').textContent = '🎯';
+
+                loadAdminStats();
+            } else if (isAdmin) {
                 welcomeTitle.innerHTML = `Welcome back, ${userName}! <span class="admin-badge">ADMIN</span>`;
                 welcomeSubtitle.textContent = "You have full admin access to manage all customers and operations.";
                 userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
