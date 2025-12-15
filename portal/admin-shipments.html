@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Shipments | Miami Alliance 3PL Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .admin-badge {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .page-header-bar {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .page-header-bar h1 {
+            font-size: var(--font-size-2xl);
+            margin-bottom: var(--spacing-xs);
+        }
+        .filters-bar {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+        .filters-bar input, .filters-bar select {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+        }
+        .filters-bar input {
+            flex: 1;
+            min-width: 200px;
+        }
+        .shipment-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            transition: box-shadow 0.2s;
+        }
+        .shipment-card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+        .shipment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+        .tracking-number {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--color-accent);
+            font-family: monospace;
+        }
+        .shipment-customer {
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-600);
+        }
+        .shipment-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+        .detail-group h4 {
+            font-size: var(--font-size-xs);
+            color: var(--color-gray-500);
+            text-transform: uppercase;
+            margin-bottom: var(--spacing-xs);
+        }
+        .detail-group p {
+            color: var(--color-gray-900);
+        }
+        .shipment-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--color-gray-200);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .status-select {
+            padding: 8px 12px;
+            border: 2px solid var(--color-accent);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            background: white;
+            cursor: pointer;
+        }
+        .status-select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+        .btn-update {
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-update:hover {
+            background: var(--color-accent-hover);
+        }
+        .btn-update:disabled {
+            background: var(--color-gray-300);
+            cursor: not-allowed;
+        }
+        .update-success {
+            color: #16a34a;
+            font-weight: 500;
+            display: none;
+        }
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--color-gray-500);
+        }
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-md);
+        }
+        .package-info {
+            background: var(--color-gray-100);
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal h2 {
+            margin-bottom: var(--spacing-md);
+        }
+        .modal .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+        .modal-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: flex-end;
+            margin-top: var(--spacing-lg);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="portal-sidebar">
+            <nav>
+                <a href="dashboard.html" class="portal-nav-item">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="shipments.html" class="portal-nav-item">
+                    <span>🚚</span> Shipments
+                </a>
+                <a href="tracking.html" class="portal-nav-item">
+                    <span>🔍</span> Tracking
+                </a>
+                <a href="inventory.html" class="portal-nav-item">
+                    <span>📦</span> Inventory
+                </a>
+                <div id="admin-nav" style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
+                    <a href="customers.html" class="portal-nav-item">
+                        <span>👥</span> All Customers
+                    </a>
+                    <a href="admin-shipments.html" class="portal-nav-item active">
+                        <span>📋</span> All Shipments
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="portal-main">
+            <!-- Page Header -->
+            <div class="page-header-bar">
+                <h1 id="page-title">📋 All Shipments</h1>
+                <p>View and manage shipments from all customers</p>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="filters-bar">
+                <input type="text" id="search-input" placeholder="Search tracking #, customer, destination...">
+                <select id="status-filter">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="picked_up">Picked Up</option>
+                    <option value="in_transit">In Transit</option>
+                    <option value="out_for_delivery">Out for Delivery</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+                <button class="btn btn-primary" onclick="applyFilters()">Filter</button>
+                <button class="btn btn-outline" onclick="clearFilters()">Clear</button>
+            </div>
+
+            <!-- Stats Summary -->
+            <div class="dashboard-stats" style="margin-bottom: var(--spacing-xl);">
+                <div class="dashboard-card">
+                    <h3>Total Shipments</h3>
+                    <div class="value" id="total-shipments">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Pending</h3>
+                    <div class="value" id="pending-shipments">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>In Transit</h3>
+                    <div class="value" id="transit-shipments">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Delivered</h3>
+                    <div class="value" id="delivered-shipments">0</div>
+                </div>
+            </div>
+
+            <!-- Shipments List -->
+            <div id="shipments-list">
+                <div class="empty-state">
+                    <div class="icon">⏳</div>
+                    <p>Loading shipments...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal">
+            <h2>📝 Edit Shipment</h2>
+            <form id="edit-form">
+                <input type="hidden" id="edit-shipment-id">
+                <div class="form-group">
+                    <label>Tracking Number</label>
+                    <input type="text" id="edit-tracking" readonly style="background: var(--color-gray-100);">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="edit-status">
+                        <option value="pending">Pending</option>
+                        <option value="picked_up">Picked Up</option>
+                        <option value="in_transit">In Transit</option>
+                        <option value="out_for_delivery">Out for Delivery</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Admin Notes</label>
+                    <textarea id="edit-notes" rows="3" placeholder="Internal notes about this shipment..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
+        };
+
+        // Admin emails
+        const ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+        const JORGE_EMAILS = ['ceo@usglatam.com'];
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let allShipments = [];
+        let usersMap = {};
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            const isAdmin = ADMIN_EMAILS.includes(user.email);
+            const isJorge = JORGE_EMAILS.includes(user.email);
+
+            if (!isAdmin) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Get user data
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            let userName = user.displayName || user.email;
+            if (userDoc.exists()) {
+                userName = userDoc.data().name || userName;
+            }
+
+            const userNameEl = document.getElementById('user-name');
+            if (isJorge) {
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">🌟 JEDI</span>`;
+                document.getElementById('page-title').textContent = '🚀 All Cargo Missions';
+            } else {
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
+            }
+
+            // Load users first for mapping
+            await loadUsers();
+            // Then load shipments
+            loadShipments();
+        });
+
+        // Logout handler
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+
+        async function loadUsers() {
+            const usersSnap = await getDocs(collection(db, 'users'));
+            usersSnap.forEach((doc) => {
+                usersMap[doc.id] = doc.data();
+            });
+        }
+
+        async function loadShipments() {
+            try {
+                const shipmentsRef = collection(db, 'shipments');
+                const shipmentsSnap = await getDocs(shipmentsRef);
+
+                allShipments = [];
+                let pending = 0, transit = 0, delivered = 0;
+
+                shipmentsSnap.forEach((doc) => {
+                    const data = { id: doc.id, ...doc.data() };
+                    allShipments.push(data);
+
+                    if (data.status === 'pending') pending++;
+                    if (data.status === 'in_transit' || data.status === 'picked_up' || data.status === 'out_for_delivery') transit++;
+                    if (data.status === 'delivered') delivered++;
+                });
+
+                // Update stats
+                document.getElementById('total-shipments').textContent = allShipments.length;
+                document.getElementById('pending-shipments').textContent = pending;
+                document.getElementById('transit-shipments').textContent = transit;
+                document.getElementById('delivered-shipments').textContent = delivered;
+
+                // Display shipments
+                displayShipments(allShipments);
+
+            } catch (error) {
+                console.error('Error loading shipments:', error);
+                document.getElementById('shipments-list').innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">❌</div>
+                        <p>Error loading shipments: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayShipments(shipments) {
+            const container = document.getElementById('shipments-list');
+
+            if (shipments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📦</div>
+                        <p>No shipments found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by created_at descending
+            shipments.sort((a, b) => {
+                const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+                const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+                return dateB - dateA;
+            });
+
+            container.innerHTML = shipments.map(shipment => {
+                const customer = usersMap[shipment.user_id] || {};
+                const origin = shipment.origin || {};
+                const destination = shipment.destination || {};
+
+                return `
+                <div class="shipment-card" data-id="${shipment.id}">
+                    <div class="shipment-header">
+                        <div>
+                            <div class="tracking-number">${shipment.tracking_number || 'No tracking #'}</div>
+                            <div class="shipment-customer">
+                                👤 ${customer.name || customer.email || 'Unknown Customer'}
+                                ${customer.company_name ? `• ${customer.company_name}` : ''}
+                            </div>
+                        </div>
+                        <span class="badge badge-${shipment.status}">${(shipment.status || 'unknown').replace('_', ' ')}</span>
+                    </div>
+
+                    <div class="shipment-details">
+                        <div class="detail-group">
+                            <h4>📍 Origin</h4>
+                            <p>${origin.address || 'N/A'}<br>${origin.city || ''}, ${origin.state || ''} ${origin.zip || ''}</p>
+                        </div>
+                        <div class="detail-group">
+                            <h4>🎯 Destination</h4>
+                            <p>${destination.address || 'N/A'}<br>${destination.city || ''}, ${destination.state || ''} ${destination.zip || ''}</p>
+                        </div>
+                    </div>
+
+                    <div class="package-info">
+                        📦 ${shipment.packages?.length || 0} package(s)
+                        • Created: ${shipment.created_at ? new Date(shipment.created_at).toLocaleDateString() : 'N/A'}
+                        ${shipment.admin_notes ? `• 📝 Notes: ${shipment.admin_notes}` : ''}
+                    </div>
+
+                    <div class="shipment-actions">
+                        <label style="font-weight: 500; margin-right: 8px;">Update Status:</label>
+                        <select class="status-select" id="status-${shipment.id}" onchange="quickUpdateStatus('${shipment.id}', this.value)">
+                            <option value="pending" ${shipment.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="picked_up" ${shipment.status === 'picked_up' ? 'selected' : ''}>Picked Up</option>
+                            <option value="in_transit" ${shipment.status === 'in_transit' ? 'selected' : ''}>In Transit</option>
+                            <option value="out_for_delivery" ${shipment.status === 'out_for_delivery' ? 'selected' : ''}>Out for Delivery</option>
+                            <option value="delivered" ${shipment.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="cancelled" ${shipment.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                        <span class="update-success" id="success-${shipment.id}">✓ Updated!</span>
+                        <button class="btn btn-outline" style="margin-left: auto;" onclick="openEditModal('${shipment.id}')">✏️ Edit Details</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // Quick status update
+        window.quickUpdateStatus = async function(shipmentId, newStatus) {
+            try {
+                const shipmentRef = doc(db, 'shipments', shipmentId);
+                await updateDoc(shipmentRef, {
+                    status: newStatus,
+                    updated_at: new Date().toISOString()
+                });
+
+                // Show success message
+                const successEl = document.getElementById(`success-${shipmentId}`);
+                successEl.style.display = 'inline';
+                setTimeout(() => {
+                    successEl.style.display = 'none';
+                }, 2000);
+
+                // Update local data
+                const shipment = allShipments.find(s => s.id === shipmentId);
+                if (shipment) shipment.status = newStatus;
+
+                // Update badge
+                const card = document.querySelector(`.shipment-card[data-id="${shipmentId}"]`);
+                const badge = card.querySelector('.badge');
+                badge.className = `badge badge-${newStatus}`;
+                badge.textContent = newStatus.replace('_', ' ');
+
+            } catch (error) {
+                alert('Error updating status: ' + error.message);
+            }
+        };
+
+        // Edit modal functions
+        window.openEditModal = function(shipmentId) {
+            const shipment = allShipments.find(s => s.id === shipmentId);
+            if (!shipment) return;
+
+            document.getElementById('edit-shipment-id').value = shipmentId;
+            document.getElementById('edit-tracking').value = shipment.tracking_number || '';
+            document.getElementById('edit-status').value = shipment.status || 'pending';
+            document.getElementById('edit-notes').value = shipment.admin_notes || '';
+
+            document.getElementById('edit-modal').classList.add('active');
+        };
+
+        window.closeModal = function() {
+            document.getElementById('edit-modal').classList.remove('active');
+        };
+
+        // Edit form submission
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const shipmentId = document.getElementById('edit-shipment-id').value;
+            const newStatus = document.getElementById('edit-status').value;
+            const adminNotes = document.getElementById('edit-notes').value;
+
+            try {
+                const shipmentRef = doc(db, 'shipments', shipmentId);
+                await updateDoc(shipmentRef, {
+                    status: newStatus,
+                    admin_notes: adminNotes,
+                    updated_at: new Date().toISOString()
+                });
+
+                // Update local data and UI
+                const shipment = allShipments.find(s => s.id === shipmentId);
+                if (shipment) {
+                    shipment.status = newStatus;
+                    shipment.admin_notes = adminNotes;
+                }
+
+                closeModal();
+                displayShipments(allShipments);
+
+                alert('Shipment updated successfully!');
+            } catch (error) {
+                alert('Error updating shipment: ' + error.message);
+            }
+        });
+
+        // Filter functions
+        window.applyFilters = function() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+
+            let filtered = allShipments;
+
+            if (searchTerm) {
+                filtered = filtered.filter(s => {
+                    const customer = usersMap[s.user_id] || {};
+                    return (s.tracking_number && s.tracking_number.toLowerCase().includes(searchTerm)) ||
+                           (customer.name && customer.name.toLowerCase().includes(searchTerm)) ||
+                           (customer.email && customer.email.toLowerCase().includes(searchTerm)) ||
+                           (s.destination?.city && s.destination.city.toLowerCase().includes(searchTerm));
+                });
+            }
+
+            if (statusFilter) {
+                filtered = filtered.filter(s => s.status === statusFilter);
+            }
+
+            displayShipments(filtered);
+        };
+
+        window.clearFilters = function() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = '';
+            displayShipments(allShipments);
+        };
+
+        // Search on Enter key
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') applyFilters();
+        });
+
+        // Close modal on overlay click
+        document.getElementById('edit-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'edit-modal') closeModal();
+        });
+    </script>
+    <script src="../js/main.js"></script>
+</body>
+</html>
