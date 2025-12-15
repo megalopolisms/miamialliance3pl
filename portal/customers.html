@@ -241,20 +241,25 @@
                 return;
             }
 
-            const isAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
-            const isJorge = JORGE_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+            // Get user data from Firestore FIRST
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            let userName = user.displayName || user.email;
+            let firestoreIsAdmin = false;
+
+            if (userDoc.exists()) {
+                userName = userDoc.data().name || userName;
+                firestoreIsAdmin = userDoc.data().isAdmin === true;
+            }
+
+            // Check admin: Firestore flag OR hardcoded email list
+            const emailIsAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+            const isAdmin = firestoreIsAdmin || emailIsAdmin;
+            const isJorge = firestoreIsAdmin || emailIsAdmin; // All admins get Star Wars theme
 
             if (!isAdmin) {
                 // Not admin, redirect to dashboard
                 window.location.href = 'dashboard.html';
                 return;
-            }
-
-            // Get user data
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            let userName = user.displayName || user.email;
-            if (userDoc.exists()) {
-                userName = userDoc.data().name || userName;
             }
 
             const userNameEl = document.getElementById('user-name');

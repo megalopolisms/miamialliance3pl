@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="../css/style.css?v=2">
+    <link rel="stylesheet" href="../css/style.css?v=3">
     <style>
         .admin-badge {
             background: linear-gradient(135deg, #f97316, #ea580c);
@@ -275,30 +275,36 @@
                 return;
             }
 
-            isAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
-
-            // Get user data
+            // Get user data from Firestore FIRST
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             let userName = user.displayName || user.email;
+            let firestoreIsAdmin = false;
 
             if (userDoc.exists()) {
                 userName = userDoc.data().name || userName;
+                firestoreIsAdmin = userDoc.data().isAdmin === true;
             }
+
+            // Check admin: Firestore flag OR hardcoded email list
+            const emailIsAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+            isAdmin = firestoreIsAdmin || emailIsAdmin;
+
+            // Check if it's a Jedi (Star Wars theme)
+            const emailIsJorge = JORGE_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+            const isJorge = firestoreIsAdmin || emailIsJorge;
 
             // Update welcome message
             const welcomeTitle = document.getElementById('welcome-title');
             const welcomeSubtitle = document.getElementById('welcome-subtitle');
             const userNameEl = document.getElementById('user-name');
 
-            // Check if it's Jorge - The Chosen One
-            const isJorge = JORGE_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
-
-            // DEBUG: Log to verify code is running (v2)
-            console.log('🌟 STAR WARS CODE v2 LOADED');
+            // DEBUG: Log to verify code is running (v3)
+            console.log('🌟 STAR WARS CODE v3 LOADED');
             console.log('User email:', user.email);
-            console.log('isAdmin:', isAdmin);
-            console.log('isJorge:', isJorge);
-            console.log('JORGE_EMAILS:', JORGE_EMAILS);
+            console.log('Firestore isAdmin:', firestoreIsAdmin);
+            console.log('Email in list:', emailIsAdmin);
+            console.log('Final isAdmin:', isAdmin);
+            console.log('Final isJorge:', isJorge);
 
             if (isJorge) {
                 welcomeTitle.innerHTML = `Welcome back, Jedi Master ${userName}! ⚔️ <span class="admin-badge">SITH LORD</span>`;
@@ -449,6 +455,6 @@
             }
         }
     </script>
-    <script src="../js/main.js?v=2"></script>
+    <script src="../js/main.js?v=3"></script>
 </body>
 </html>
