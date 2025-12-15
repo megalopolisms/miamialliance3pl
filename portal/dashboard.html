@@ -293,6 +293,9 @@
             const emailIsAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
             const emailIsJorge = JORGE_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
 
+            // DEBUG - show on page
+            alert('DEBUG v11\nEmail: ' + userEmail + '\nisAdmin: ' + emailIsAdmin + '\nisJorge: ' + emailIsJorge);
+
             // Set admin status based on email list
             isAdmin = emailIsAdmin;
             const isJorge = emailIsJorge;
