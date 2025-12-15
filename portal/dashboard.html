@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="../css/style.css?v=4">
+    <link rel="stylesheet" href="../css/style.css?v=5">
     <style>
         .admin-badge {
             background: linear-gradient(135deg, #f97316, #ea580c);
@@ -298,8 +298,9 @@
             const welcomeSubtitle = document.getElementById('welcome-subtitle');
             const userNameEl = document.getElementById('user-name');
 
-            // DEBUG: Log to verify code is running (v4)
-            console.log('🌟 STAR WARS CODE v4 LOADED');
+            // DEBUG: VISIBLE ALERT (v5)
+            alert('DEBUG v5:\nEmail: ' + user.email + '\nFirestore isAdmin: ' + firestoreIsAdmin + '\nFinal isJorge: ' + isJorge);
+            console.log('🌟 STAR WARS CODE v5 LOADED');
             console.log('User email:', user.email);
             console.log('Firestore isAdmin:', firestoreIsAdmin);
             console.log('Email in list:', emailIsAdmin);
