@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="../css/style.css?v=5">
+    <link rel="stylesheet" href="../css/style.css?v=7">
     <style>
         .admin-badge {
             background: linear-gradient(135deg, #f97316, #ea580c);
@@ -270,13 +270,24 @@
 
         // Check authentication
         onAuthStateChanged(auth, async (user) => {
+            alert('STEP 1: Auth state changed. User: ' + (user ? user.email : 'null'));
+
             if (!user) {
                 window.location.href = '../login.html';
                 return;
             }
 
+            alert('STEP 2: User logged in. UID: ' + user.uid);
+
             // Get user data from Firestore FIRST
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            let userDoc;
+            try {
+                userDoc = await getDoc(doc(db, 'users', user.uid));
+                alert('STEP 3: Firestore query done. Doc exists: ' + userDoc.exists());
+            } catch (e) {
+                alert('FIRESTORE ERROR: ' + e.message);
+                return;
+            }
             let userName = user.displayName || user.email;
             let firestoreIsAdmin = false;
 
