@@ -431,6 +431,12 @@ ul {
     }
 }
 
+@media (min-width: 1024px) {
+    .benefits-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 .benefit-item {
     padding: var(--spacing-md);
 }
