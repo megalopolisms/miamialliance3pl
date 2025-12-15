@@ -363,20 +363,12 @@
                 return;
             }
 
-            // Get user data from Firestore FIRST
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
             let userName = user.displayName || user.email;
-            let firestoreIsAdmin = false;
 
-            if (userDoc.exists()) {
-                userName = userDoc.data().name || userName;
-                firestoreIsAdmin = userDoc.data().isAdmin === true;
-            }
-
-            // Check admin: Firestore flag OR hardcoded email list
-            const emailIsAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
-            const isAdmin = firestoreIsAdmin || emailIsAdmin;
-            const isJorge = firestoreIsAdmin || emailIsAdmin; // All admins get Star Wars theme
+            // Check admin by EMAIL (not UID) - works for both Google and email/password login
+            const userEmail = user.email.toLowerCase();
+            const isAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
+            const isJorge = JORGE_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
 
             if (!isAdmin) {
                 window.location.href = 'dashboard.html';
@@ -391,9 +383,7 @@
                 userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
             }
 
-            // Load users first for mapping
             await loadUsers();
-            // Then load shipments
             loadShipments();
         });
 

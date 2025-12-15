@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="../css/style.css?v=7">
+    <link rel="stylesheet" href="../css/style.css?v=8">
     <style>
         .admin-badge {
             background: linear-gradient(135deg, #f97316, #ea580c);
@@ -270,47 +270,37 @@
 
         // Check authentication
         onAuthStateChanged(auth, async (user) => {
-            alert('STEP 1: Auth state changed. User: ' + (user ? user.email : 'null'));
-
             if (!user) {
                 window.location.href = '../login.html';
                 return;
             }
 
-            alert('STEP 2: User logged in. UID: ' + user.uid);
-
-            // Get user data from Firestore FIRST
-            let userDoc;
-            try {
-                userDoc = await getDoc(doc(db, 'users', user.uid));
-                alert('STEP 3: Firestore query done. Doc exists: ' + userDoc.exists());
-            } catch (e) {
-                alert('FIRESTORE ERROR: ' + e.message);
-                return;
-            }
             let userName = user.displayName || user.email;
-            let firestoreIsAdmin = false;
 
-            if (userDoc.exists()) {
-                userName = userDoc.data().name || userName;
-                firestoreIsAdmin = userDoc.data().isAdmin === true;
+            // Try to get user name from Firestore (optional)
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists() && userDoc.data().name) {
+                    userName = userDoc.data().name;
+                }
+            } catch (e) {
+                console.log('Could not fetch user doc:', e);
             }
 
-            // Check admin: Firestore flag OR hardcoded email list
-            const emailIsAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
-            isAdmin = firestoreIsAdmin || emailIsAdmin;
+            // Check admin by EMAIL (not UID) - works for both Google and email/password login
+            const userEmail = user.email.toLowerCase();
+            const emailIsAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
+            const emailIsJorge = JORGE_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
 
-            // Check if it's a Jedi (Star Wars theme)
-            const emailIsJorge = JORGE_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
-            const isJorge = firestoreIsAdmin || emailIsJorge;
+            // Set admin status based on email list
+            isAdmin = emailIsAdmin;
+            const isJorge = emailIsJorge;
 
             // Update welcome message
             const welcomeTitle = document.getElementById('welcome-title');
             const welcomeSubtitle = document.getElementById('welcome-subtitle');
             const userNameEl = document.getElementById('user-name');
 
-            // DEBUG v6 - show everything
-            alert('DEBUG v6:\nUID: ' + user.uid + '\nEmail: ' + user.email + '\nDoc exists: ' + userDoc.exists() + '\nFirestore isAdmin: ' + firestoreIsAdmin + '\nFinal isAdmin: ' + isAdmin + '\nFinal isJorge: ' + isJorge);
 
             if (isJorge) {
                 welcomeTitle.innerHTML = `Welcome back, Jedi Master ${userName}! ⚔️ <span class="admin-badge">SITH LORD</span>`;
