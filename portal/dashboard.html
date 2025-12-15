@@ -298,6 +298,10 @@
             const welcomeSubtitle = document.getElementById('welcome-subtitle');
             const userNameEl = document.getElementById('user-name');
 
+            // Show UID if not admin (for setup purposes)
+            if (!isAdmin) {
+                alert('NOT ADMIN - Your UID is:\n' + user.uid + '\n\nAdd this UID to Firestore with isAdmin: true');
+            }
 
             if (isJorge) {
                 welcomeTitle.innerHTML = `Welcome back, Jedi Master ${userName}! ⚔️ <span class="admin-badge">SITH LORD</span>`;
