@@ -1,0 +1,12 @@
+# Miami Alliance 3PL Robots.txt
+
+User-agent: *
+Allow: /
+
+# Disallow portal pages from indexing
+Disallow: /portal/
+Disallow: /login.html
+Disallow: /admin/
+
+# Sitemap
+Sitemap: https://megalopolisms.github.io/miamialliance3pl/sitemap.xml

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipments | Miami Alliance 3PL Portal</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">📦</span>
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="portal-sidebar">
+            <nav>
+                <a href="dashboard.html" class="portal-nav-item">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="shipments.html" class="portal-nav-item active">
+                    <span>🚚</span> Shipments
+                </a>
+                <a href="tracking.html" class="portal-nav-item">
+                    <span>🔍</span> Tracking
+                </a>
+                <a href="inventory.html" class="portal-nav-item">
+                    <span>📦</span> Inventory
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="portal-main">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-sm);">
+                <h1 style="color: var(--color-gray-900);">Shipments</h1>
+                <button id="new-shipment-btn" class="btn btn-primary">+ New Shipment</button>
+            </div>
+
+            <!-- New Shipment Form (hidden by default) -->
+            <div id="shipment-form-container" class="dashboard-card" style="display: none; margin-bottom: var(--spacing-xl);">
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Create New Shipment</h2>
+                <form id="shipment-form">
+                    <div style="display: grid; grid-template-columns: 1fr; gap: var(--spacing-md);">
+                        <div>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);">Origin Address</h3>
+                            <div class="form-group">
+                                <label for="origin-street">Street Address</label>
+                                <input type="text" id="origin-street" required value="8780 NW 100th ST">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
+                                <div class="form-group">
+                                    <label for="origin-city">City</label>
+                                    <input type="text" id="origin-city" required value="Medley">
+                                </div>
+                                <div class="form-group">
+                                    <label for="origin-state">State</label>
+                                    <input type="text" id="origin-state" required value="FL" maxlength="2">
+                                </div>
+                                <div class="form-group">
+                                    <label for="origin-zip">ZIP</label>
+                                    <input type="text" id="origin-zip" required value="33178">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);">Destination Address</h3>
+                            <div class="form-group">
+                                <label for="dest-name">Recipient Name</label>
+                                <input type="text" id="dest-name" required placeholder="John Smith">
+                            </div>
+                            <div class="form-group">
+                                <label for="dest-street">Street Address</label>
+                                <input type="text" id="dest-street" required placeholder="123 Main St">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
+                                <div class="form-group">
+                                    <label for="dest-city">City</label>
+                                    <input type="text" id="dest-city" required placeholder="City">
+                                </div>
+                                <div class="form-group">
+                                    <label for="dest-state">State</label>
+                                    <input type="text" id="dest-state" required placeholder="ST" maxlength="2">
+                                </div>
+                                <div class="form-group">
+                                    <label for="dest-zip">ZIP</label>
+                                    <input type="text" id="dest-zip" required placeholder="12345">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);">Package Details</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-sm);">
+                                <div class="form-group">
+                                    <label for="pkg-weight">Weight (lbs)</label>
+                                    <input type="number" id="pkg-weight" required placeholder="0" min="0" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-length">Length (in)</label>
+                                    <input type="number" id="pkg-length" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-width">Width (in)</label>
+                                    <input type="number" id="pkg-width" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-height">Height (in)</label>
+                                    <input type="number" id="pkg-height" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-qty">Quantity</label>
+                                    <input type="number" id="pkg-qty" required value="1" min="1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="form-group">
+                                <label for="service-type">Service Type</label>
+                                <select id="service-type" required>
+                                    <option value="standard">Standard (3-5 days)</option>
+                                    <option value="express">Express (1-2 days)</option>
+                                    <option value="overnight">Overnight</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="notes">Notes (optional)</label>
+                                <textarea id="notes" placeholder="Special instructions..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+                        <button type="submit" class="btn btn-primary">Create Shipment</button>
+                        <button type="button" id="cancel-shipment" class="btn btn-outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Filter -->
+            <div style="margin-bottom: var(--spacing-md);">
+                <select id="status-filter" style="padding: 0.5rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);">
+                    <option value="all">All Shipments</option>
+                    <option value="pending">Pending</option>
+                    <option value="picked_up">Picked Up</option>
+                    <option value="in_transit">In Transit</option>
+                    <option value="delivered">Delivered</option>
+                </select>
+            </div>
+
+            <!-- Shipments Table -->
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tracking #</th>
+                            <th>Recipient</th>
+                            <th>Destination</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shipments-list">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">
+                                Loading shipments...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+            currentUser = user;
+
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (userDoc.exists()) {
+                document.getElementById('user-name').textContent = 'Welcome, ' + userDoc.data().name;
+            }
+
+            loadShipments();
+        });
+
+        // Logout handler
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+
+        // Toggle new shipment form
+        document.getElementById('new-shipment-btn').addEventListener('click', () => {
+            document.getElementById('shipment-form-container').style.display = 'block';
+        });
+
+        document.getElementById('cancel-shipment').addEventListener('click', () => {
+            document.getElementById('shipment-form-container').style.display = 'none';
+            document.getElementById('shipment-form').reset();
+        });
+
+        // Status filter
+        document.getElementById('status-filter').addEventListener('change', () => {
+            loadShipments();
+        });
+
+        // Create shipment
+        document.getElementById('shipment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
+
+            const shipmentData = {
+                user_id: currentUser.uid,
+                tracking_number: trackingNumber,
+                origin: {
+                    street: document.getElementById('origin-street').value,
+                    city: document.getElementById('origin-city').value,
+                    state: document.getElementById('origin-state').value,
+                    zip: document.getElementById('origin-zip').value
+                },
+                destination: {
+                    name: document.getElementById('dest-name').value,
+                    street: document.getElementById('dest-street').value,
+                    city: document.getElementById('dest-city').value,
+                    state: document.getElementById('dest-state').value,
+                    zip: document.getElementById('dest-zip').value
+                },
+                package: {
+                    weight: parseFloat(document.getElementById('pkg-weight').value),
+                    length: parseFloat(document.getElementById('pkg-length').value) || 0,
+                    width: parseFloat(document.getElementById('pkg-width').value) || 0,
+                    height: parseFloat(document.getElementById('pkg-height').value) || 0,
+                    quantity: parseInt(document.getElementById('pkg-qty').value)
+                },
+                service_type: document.getElementById('service-type').value,
+                notes: document.getElementById('notes').value,
+                status: 'pending',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                await addDoc(collection(db, 'shipments'), shipmentData);
+                alert('Shipment created! Tracking #: ' + trackingNumber);
+                document.getElementById('shipment-form-container').style.display = 'none';
+                document.getElementById('shipment-form').reset();
+                loadShipments();
+            } catch (error) {
+                alert('Error creating shipment: ' + error.message);
+            }
+        });
+
+        async function loadShipments() {
+            const tbody = document.getElementById('shipments-list');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Loading...</td></tr>';
+
+            try {
+                const statusFilter = document.getElementById('status-filter').value;
+                let q;
+
+                if (statusFilter === 'all') {
+                    q = query(
+                        collection(db, 'shipments'),
+                        where('user_id', '==', currentUser.uid),
+                        orderBy('created_at', 'desc')
+                    );
+                } else {
+                    q = query(
+                        collection(db, 'shipments'),
+                        where('user_id', '==', currentUser.uid),
+                        where('status', '==', statusFilter),
+                        orderBy('created_at', 'desc')
+                    );
+                }
+
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">No shipments found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
+                        <td>${data.destination?.name || 'N/A'}</td>
+                        <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
+                        <td style="text-transform: capitalize;">${data.service_type}</td>
+                        <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
+                        <td>${new Date(data.created_at).toLocaleDateString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading shipments:', error);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Error loading shipments</td></tr>';
+            }
+        }
+    </script>
+    <script src="../js/main.js"></script>
+</body>
+</html>

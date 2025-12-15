@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Miami Alliance 3PL Portal</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">📦</span>
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="portal-sidebar">
+            <nav>
+                <a href="dashboard.html" class="portal-nav-item active">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="shipments.html" class="portal-nav-item">
+                    <span>🚚</span> Shipments
+                </a>
+                <a href="tracking.html" class="portal-nav-item">
+                    <span>🔍</span> Tracking
+                </a>
+                <a href="inventory.html" class="portal-nav-item">
+                    <span>📦</span> Inventory
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="portal-main">
+            <h1 style="margin-bottom: var(--spacing-lg); color: var(--color-gray-900);">Dashboard</h1>
+
+            <!-- Stats Cards -->
+            <div class="dashboard-stats">
+                <div class="dashboard-card">
+                    <h3>Pending Shipments</h3>
+                    <div class="value" id="pending-count">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>In Transit</h3>
+                    <div class="value" id="transit-count">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Delivered (30 days)</h3>
+                    <div class="value" id="delivered-count">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Inventory Items</h3>
+                    <div class="value" id="inventory-count">0</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div style="margin-bottom: var(--spacing-xl);">
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Quick Actions</h2>
+                <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                    <a href="shipments.html" class="btn btn-primary">+ Create Shipment</a>
+                    <a href="tracking.html" class="btn btn-outline">Track Package</a>
+                    <a href="inventory.html" class="btn btn-outline">View Inventory</a>
+                </div>
+            </div>
+
+            <!-- Recent Shipments -->
+            <div>
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Recent Shipments</h2>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tracking #</th>
+                                <th>Destination</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-shipments">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">
+                                    No shipments yet. <a href="shipments.html" style="color: var(--color-accent);">Create your first shipment</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration - Replace with your own config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            // Get user data
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (userDoc.exists()) {
+                document.getElementById('user-name').textContent = 'Welcome, ' + userDoc.data().name;
+            }
+
+            // Load dashboard data
+            loadDashboardData(user.uid);
+        });
+
+        // Logout handler
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+
+        async function loadDashboardData(userId) {
+            try {
+                // Count shipments by status
+                const shipmentsRef = collection(db, 'shipments');
+
+                // Pending
+                const pendingQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'pending'));
+                const pendingSnap = await getDocs(pendingQuery);
+                document.getElementById('pending-count').textContent = pendingSnap.size;
+
+                // In Transit
+                const transitQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'in_transit'));
+                const transitSnap = await getDocs(transitQuery);
+                document.getElementById('transit-count').textContent = transitSnap.size;
+
+                // Delivered
+                const deliveredQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'delivered'));
+                const deliveredSnap = await getDocs(deliveredQuery);
+                document.getElementById('delivered-count').textContent = deliveredSnap.size;
+
+                // Inventory count
+                const inventoryRef = collection(db, 'inventory');
+                const inventoryQuery = query(inventoryRef, where('user_id', '==', userId));
+                const inventorySnap = await getDocs(inventoryQuery);
+                document.getElementById('inventory-count').textContent = inventorySnap.size;
+
+                // Recent shipments
+                const recentQuery = query(shipmentsRef, where('user_id', '==', userId), orderBy('created_at', 'desc'), limit(5));
+                const recentSnap = await getDocs(recentQuery);
+
+                const tbody = document.getElementById('recent-shipments');
+                if (recentSnap.size > 0) {
+                    tbody.innerHTML = '';
+                    recentSnap.forEach((doc) => {
+                        const data = doc.data();
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent);">${data.tracking_number}</a></td>
+                            <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
+                            <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
+                            <td>${new Date(data.created_at).toLocaleDateString()}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+    </script>
+    <script src="../js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking | Miami Alliance 3PL Portal</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">📦</span>
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="portal-sidebar">
+            <nav>
+                <a href="dashboard.html" class="portal-nav-item">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="shipments.html" class="portal-nav-item">
+                    <span>🚚</span> Shipments
+                </a>
+                <a href="tracking.html" class="portal-nav-item active">
+                    <span>🔍</span> Tracking
+                </a>
+                <a href="inventory.html" class="portal-nav-item">
+                    <span>📦</span> Inventory
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="portal-main">
+            <h1 style="margin-bottom: var(--spacing-lg); color: var(--color-gray-900);">Track Shipment</h1>
+
+            <!-- Search Form -->
+            <div class="dashboard-card" style="margin-bottom: var(--spacing-xl);">
+                <form id="tracking-form" style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                    <input type="text" id="tracking-input" placeholder="Enter tracking number (e.g., MA3PL12345678)" style="flex: 1; min-width: 250px; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: var(--font-size-base);">
+                    <button type="submit" class="btn btn-primary">Track</button>
+                </form>
+            </div>
+
+            <!-- Tracking Result -->
+            <div id="tracking-result" style="display: none;">
+                <div class="dashboard-card" style="margin-bottom: var(--spacing-lg);">
+                    <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: var(--spacing-md);">
+                        <div>
+                            <h2 style="font-size: var(--font-size-xl); color: var(--color-gray-900); margin-bottom: var(--spacing-xs);">Tracking # <span id="result-tracking"></span></h2>
+                            <p style="color: var(--color-gray-500);">Created: <span id="result-date"></span></p>
+                        </div>
+                        <span id="result-status" class="badge"></span>
+                    </div>
+                </div>
+
+                <!-- Shipment Details -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                    <div class="dashboard-card">
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">Origin</h3>
+                        <p id="result-origin" style="color: var(--color-gray-900);"></p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">Destination</h3>
+                        <p id="result-destination" style="color: var(--color-gray-900);"></p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">Package Details</h3>
+                        <p id="result-package" style="color: var(--color-gray-900);"></p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">Service</h3>
+                        <p id="result-service" style="color: var(--color-gray-900); text-transform: capitalize;"></p>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="dashboard-card">
+                    <h3 style="font-size: var(--font-size-lg); color: var(--color-gray-900); margin-bottom: var(--spacing-md);">Tracking History</h3>
+                    <div id="tracking-timeline" style="border-left: 2px solid var(--color-gray-200); padding-left: var(--spacing-md); margin-left: var(--spacing-xs);">
+                        <!-- Timeline items will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Result -->
+            <div id="no-result" style="display: none;" class="dashboard-card">
+                <div style="text-align: center; padding: var(--spacing-xl);">
+                    <div style="font-size: 3rem; margin-bottom: var(--spacing-sm);">🔍</div>
+                    <h3 style="color: var(--color-gray-900); margin-bottom: var(--spacing-xs);">Shipment Not Found</h3>
+                    <p style="color: var(--color-gray-500);">Please check the tracking number and try again.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (userDoc.exists()) {
+                document.getElementById('user-name').textContent = 'Welcome, ' + userDoc.data().name;
+            }
+
+            // Check for URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const trackingId = urlParams.get('id');
+            if (trackingId) {
+                document.getElementById('tracking-input').value = trackingId;
+                trackShipment(trackingId);
+            }
+        });
+
+        // Logout handler
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+
+        // Track form submission
+        document.getElementById('tracking-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const trackingNumber = document.getElementById('tracking-input').value.trim();
+            if (trackingNumber) {
+                trackShipment(trackingNumber);
+            }
+        });
+
+        async function trackShipment(trackingNumber) {
+            document.getElementById('tracking-result').style.display = 'none';
+            document.getElementById('no-result').style.display = 'none';
+
+            try {
+                const q = query(
+                    collection(db, 'shipments'),
+                    where('tracking_number', '==', trackingNumber)
+                );
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    document.getElementById('no-result').style.display = 'block';
+                    return;
+                }
+
+                const data = snapshot.docs[0].data();
+                displayShipment(data);
+            } catch (error) {
+                console.error('Error tracking shipment:', error);
+                document.getElementById('no-result').style.display = 'block';
+            }
+        }
+
+        function displayShipment(data) {
+            document.getElementById('tracking-result').style.display = 'block';
+
+            document.getElementById('result-tracking').textContent = data.tracking_number;
+            document.getElementById('result-date').textContent = new Date(data.created_at).toLocaleString();
+
+            const statusEl = document.getElementById('result-status');
+            statusEl.className = 'badge badge-' + data.status;
+            statusEl.textContent = data.status.replace('_', ' ');
+
+            document.getElementById('result-origin').innerHTML = `
+                ${data.origin.street}<br>
+                ${data.origin.city}, ${data.origin.state} ${data.origin.zip}
+            `;
+
+            document.getElementById('result-destination').innerHTML = `
+                ${data.destination.name}<br>
+                ${data.destination.street}<br>
+                ${data.destination.city}, ${data.destination.state} ${data.destination.zip}
+            `;
+
+            document.getElementById('result-package').innerHTML = `
+                Weight: ${data.package.weight} lbs<br>
+                Dimensions: ${data.package.length || '-'}×${data.package.width || '-'}×${data.package.height || '-'} in<br>
+                Quantity: ${data.package.quantity}
+            `;
+
+            document.getElementById('result-service').textContent = data.service_type;
+
+            // Generate timeline
+            const timeline = document.getElementById('tracking-timeline');
+            timeline.innerHTML = '';
+
+            const statuses = [
+                { status: 'pending', label: 'Order Created', icon: '📝' },
+                { status: 'picked_up', label: 'Picked Up', icon: '📦' },
+                { status: 'in_transit', label: 'In Transit', icon: '🚚' },
+                { status: 'delivered', label: 'Delivered', icon: '✅' }
+            ];
+
+            const currentIndex = statuses.findIndex(s => s.status === data.status);
+
+            statuses.forEach((s, index) => {
+                const isCompleted = index <= currentIndex;
+                const isCurrent = index === currentIndex;
+
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    position: relative;
+                    padding-bottom: var(--spacing-md);
+                    margin-left: -24px;
+                `;
+
+                item.innerHTML = `
+                    <div style="
+                        position: absolute;
+                        left: 0;
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 50%;
+                        background: ${isCompleted ? 'var(--color-accent)' : 'var(--color-gray-300)'};
+                        transform: translateX(-5px);
+                    "></div>
+                    <div style="margin-left: 24px;">
+                        <div style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                            <span>${s.icon}</span>
+                            <strong style="color: ${isCompleted ? 'var(--color-gray-900)' : 'var(--color-gray-400)'};">${s.label}</strong>
+                        </div>
+                        ${isCurrent ? `<p style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-top: 2px;">${new Date(data.updated_at).toLocaleString()}</p>` : ''}
+                    </div>
+                `;
+
+                timeline.appendChild(item);
+            });
+        }
+    </script>
+    <script src="../js/main.js"></script>
+</body>
+</html>

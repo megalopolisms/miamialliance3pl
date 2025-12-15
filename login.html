@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Portal Login | Miami Alliance 3PL</title>
+    <meta name="description" content="Log in to the Miami Alliance 3PL customer portal to manage shipments, track orders, and view inventory.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://megalopolisms.github.io/miamialliance3pl/login.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-page">
+    <div class="login-card">
+        <a href="index.html" class="logo">
+            <span class="logo-icon">📦</span>
+            <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+        </a>
+
+        <h1>Customer Portal</h1>
+
+        <!-- Login Form -->
+        <form id="login-form" style="display: block;">
+            <div class="form-group">
+                <label for="login-email">Email Address</label>
+                <input type="email" id="login-email" name="email" required placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" name="password" required placeholder="Your password">
+            </div>
+            <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+
+        <!-- Signup Form (hidden by default) -->
+        <form id="signup-form" style="display: none;">
+            <div class="form-group">
+                <label for="signup-name">Full Name</label>
+                <input type="text" id="signup-name" name="name" required placeholder="John Smith">
+            </div>
+            <div class="form-group">
+                <label for="signup-company">Company Name</label>
+                <input type="text" id="signup-company" name="company" required placeholder="Your Company">
+            </div>
+            <div class="form-group">
+                <label for="signup-email">Email Address</label>
+                <input type="email" id="signup-email" name="email" required placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label for="signup-phone">Phone Number</label>
+                <input type="tel" id="signup-phone" name="phone" placeholder="(305) 555-0123">
+            </div>
+            <div class="form-group">
+                <label for="signup-password">Password</label>
+                <input type="password" id="signup-password" name="password" required placeholder="Create a password" minlength="8">
+            </div>
+            <div class="form-group">
+                <label for="signup-confirm">Confirm Password</label>
+                <input type="password" id="signup-confirm" name="confirm" required placeholder="Confirm your password">
+            </div>
+            <button type="submit" class="btn btn-primary">Create Account</button>
+        </form>
+
+        <!-- Reset Password Form (hidden by default) -->
+        <form id="reset-form" style="display: none;">
+            <p style="margin-bottom: var(--spacing-md); color: var(--color-gray-600); font-size: var(--font-size-sm);">Enter your email address and we'll send you a link to reset your password.</p>
+            <div class="form-group">
+                <label for="reset-email">Email Address</label>
+                <input type="email" id="reset-email" name="email" required placeholder="your@email.com">
+            </div>
+            <button type="submit" class="btn btn-primary">Send Reset Link</button>
+        </form>
+
+        <!-- Toggle Links -->
+        <div class="login-footer" id="login-footer">
+            <p>Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
+            <p><a href="#" id="show-reset">Forgot password?</a></p>
+        </div>
+        <div class="login-footer" id="signup-footer" style="display: none;">
+            <p>Already have an account? <a href="#" id="show-login-from-signup">Sign in</a></p>
+        </div>
+        <div class="login-footer" id="reset-footer" style="display: none;">
+            <p><a href="#" id="show-login-from-reset">Back to Sign In</a></p>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+            <a href="index.html" style="font-size: var(--font-size-sm); color: var(--color-gray-500);">← Back to Website</a>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration - Replace with your own config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Check if already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.location.href = 'portal/dashboard.html';
+            }
+        });
+
+        // Form elements
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const resetForm = document.getElementById('reset-form');
+        const loginFooter = document.getElementById('login-footer');
+        const signupFooter = document.getElementById('signup-footer');
+        const resetFooter = document.getElementById('reset-footer');
+
+        // Toggle forms
+        document.getElementById('show-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+            resetForm.style.display = 'none';
+            loginFooter.style.display = 'none';
+            signupFooter.style.display = 'block';
+            resetFooter.style.display = 'none';
+        });
+
+        document.getElementById('show-reset').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'none';
+            resetForm.style.display = 'block';
+            loginFooter.style.display = 'none';
+            signupFooter.style.display = 'none';
+            resetFooter.style.display = 'block';
+        });
+
+        document.getElementById('show-login-from-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            resetForm.style.display = 'none';
+            loginFooter.style.display = 'block';
+            signupFooter.style.display = 'none';
+            resetFooter.style.display = 'none';
+        });
+
+        document.getElementById('show-login-from-reset').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            resetForm.style.display = 'none';
+            loginFooter.style.display = 'block';
+            signupFooter.style.display = 'none';
+            resetFooter.style.display = 'none';
+        });
+
+        // Login handler
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = 'portal/dashboard.html';
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
+        });
+
+        // Signup handler
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const company = document.getElementById('signup-company').value;
+            const email = document.getElementById('signup-email').value;
+            const phone = document.getElementById('signup-phone').value;
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+
+            if (password !== confirm) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+                // Save user data to Firestore
+                await setDoc(doc(db, 'users', userCredential.user.uid), {
+                    name: name,
+                    company_name: company,
+                    email: email,
+                    phone: phone,
+                    created_at: new Date().toISOString()
+                });
+
+                window.location.href = 'portal/dashboard.html';
+            } catch (error) {
+                alert('Signup failed: ' + error.message);
+            }
+        });
+
+        // Reset password handler
+        resetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('reset-email').value;
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert('Password reset email sent! Check your inbox.');
+                // Show login form
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                resetForm.style.display = 'none';
+                loginFooter.style.display = 'block';
+                signupFooter.style.display = 'none';
+                resetFooter.style.display = 'none';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
