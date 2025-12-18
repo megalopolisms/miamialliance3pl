@@ -1354,3 +1354,384 @@ ul {
         background: none;
     }
 }
+
+/* ==========================================================================
+   Chat Wizard (Shipment Creation)
+   ========================================================================== */
+
+/* Modal Overlay */
+.chat-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md);
+}
+
+.chat-modal.active {
+    display: flex;
+}
+
+/* Modal Container */
+.chat-container {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Chat Header */
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background: var(--color-primary);
+    color: var(--color-white);
+}
+
+.chat-header h2 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.chat-close {
+    background: none;
+    border: none;
+    color: var(--color-white);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    opacity: 0.8;
+    transition: opacity var(--transition-fast);
+}
+
+.chat-close:hover {
+    opacity: 1;
+}
+
+/* Progress Dots */
+.chat-progress {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    background: var(--color-gray-50);
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.chat-progress-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-gray-300);
+    transition: all var(--transition-fast);
+}
+
+.chat-progress-dot.active {
+    background: var(--color-accent);
+    transform: scale(1.2);
+}
+
+.chat-progress-dot.completed {
+    background: var(--color-accent);
+}
+
+/* Chat Messages Area */
+.chat-messages {
+    flex: 1;
+    padding: var(--spacing-md);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* Chat Bubble */
+.chat-bubble {
+    max-width: 85%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-lg);
+    animation: fadeInBubble 0.3s ease;
+}
+
+@keyframes fadeInBubble {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-bubble-bot {
+    background: var(--color-gray-100);
+    color: var(--color-gray-900);
+    align-self: flex-start;
+    border-bottom-left-radius: var(--radius-sm);
+}
+
+.chat-bubble-user {
+    background: var(--color-primary);
+    color: var(--color-white);
+    align-self: flex-end;
+    border-bottom-right-radius: var(--radius-sm);
+}
+
+.chat-bubble-bot .chat-icon {
+    font-size: 1.25rem;
+    margin-right: var(--spacing-xs);
+}
+
+/* Option Buttons */
+.chat-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-sm);
+}
+
+.chat-option-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--color-white);
+    border: 2px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-gray-700);
+    min-width: 80px;
+}
+
+.chat-option-btn:hover {
+    border-color: var(--color-accent);
+    background: var(--color-gray-50);
+    transform: translateY(-2px);
+}
+
+.chat-option-btn.selected {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-white);
+}
+
+.chat-option-btn .option-icon {
+    font-size: 1.5rem;
+}
+
+.chat-option-btn .option-label {
+    font-weight: 600;
+}
+
+/* Large Option Cards (for shipment type) */
+.chat-options-large {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
+.chat-option-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    background: var(--color-white);
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: center;
+}
+
+.chat-option-card:hover {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+}
+
+.chat-option-card.selected {
+    border-color: var(--color-accent);
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    color: var(--color-white);
+}
+
+.chat-option-card .card-icon {
+    font-size: 2.5rem;
+}
+
+.chat-option-card .card-label {
+    font-weight: 600;
+    font-size: var(--font-size-base);
+}
+
+/* Input Fields in Chat */
+.chat-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-sm);
+    width: 100%;
+}
+
+.chat-input-group input {
+    padding: var(--spacing-sm);
+    border: 2px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    font-family: inherit;
+    transition: border-color var(--transition-fast);
+}
+
+.chat-input-group input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.chat-input-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: var(--spacing-xs);
+}
+
+.chat-input-group .btn-next {
+    margin-top: var(--spacing-xs);
+    align-self: flex-end;
+}
+
+/* Summary Card */
+.chat-summary {
+    background: var(--color-gray-50);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+}
+
+.chat-summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px solid var(--color-gray-200);
+}
+
+.chat-summary-row:last-child {
+    border-bottom: none;
+}
+
+.chat-summary-label {
+    color: var(--color-gray-500);
+    font-size: var(--font-size-sm);
+}
+
+.chat-summary-value {
+    font-weight: 600;
+    color: var(--color-gray-900);
+}
+
+/* Action Buttons */
+.chat-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--color-gray-200);
+    background: var(--color-gray-50);
+}
+
+.chat-actions .btn {
+    flex: 1;
+}
+
+/* Button variants for chat */
+.btn-confirm {
+    background: #10b981;
+    color: white;
+    border: none;
+}
+
+.btn-confirm:hover {
+    background: #059669;
+}
+
+.btn-edit {
+    background: var(--color-secondary);
+    color: white;
+    border: none;
+}
+
+.btn-edit:hover {
+    background: var(--color-secondary-hover);
+}
+
+.btn-cancel {
+    background: var(--color-gray-200);
+    color: var(--color-gray-700);
+    border: none;
+}
+
+.btn-cancel:hover {
+    background: var(--color-gray-300);
+}
+
+/* Mobile Responsive */
+@media (max-width: 500px) {
+    .chat-container {
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .chat-options-large {
+        grid-template-columns: 1fr;
+    }
+
+    .chat-option-card {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: var(--spacing-sm);
+    }
+
+    .chat-option-card .card-icon {
+        font-size: 2rem;
+    }
+
+    .chat-input-row {
+        grid-template-columns: 1fr;
+    }
+}
