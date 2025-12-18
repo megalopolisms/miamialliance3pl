@@ -452,12 +452,31 @@
             });
         }
 
+        function showTyping() {
+            const typing = document.createElement('div');
+            typing.className = 'chat-typing';
+            typing.id = 'typing-indicator';
+            typing.innerHTML = '<div class="chat-typing-dot"></div><div class="chat-typing-dot"></div><div class="chat-typing-dot"></div>';
+            chatMessages.appendChild(typing);
+            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            return typing;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) typing.remove();
+        }
+
         function addBotMessage(html) {
+            hideTyping();
             const bubble = document.createElement('div');
             bubble.className = 'chat-bubble chat-bubble-bot';
             bubble.innerHTML = html;
             chatMessages.appendChild(bubble);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Smooth scroll to bottom
+            setTimeout(() => {
+                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            }, 50);
             return bubble;
         }
 
@@ -466,7 +485,17 @@
             bubble.className = 'chat-bubble chat-bubble-user';
             bubble.textContent = text;
             chatMessages.appendChild(bubble);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Smooth scroll to bottom
+            setTimeout(() => {
+                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            }, 50);
+        }
+
+        function showStepWithTyping(step) {
+            showTyping();
+            setTimeout(() => {
+                showStep(step);
+            }, 600); // Show typing for 600ms
         }
 
         function showStep(step) {
@@ -497,7 +526,7 @@
                         shipmentData.type = card.dataset.type;
                         shipmentData.typeLabel = card.dataset.label;
                         addUserMessage(card.dataset.label);
-                        setTimeout(() => showStep(1), 300);
+                        setTimeout(() => showStepWithTyping(1), 300);
                     });
                 });
 
@@ -517,7 +546,7 @@
                     btn.addEventListener('click', () => {
                         shipmentData.quantity = btn.dataset.qty;
                         addUserMessage(btn.dataset.qty);
-                        setTimeout(() => showStep(2), 300);
+                        setTimeout(() => showStepWithTyping(2), 300);
                     });
                 });
 
@@ -550,7 +579,7 @@
 
                     shipmentData.destination = { name, street, city, state, zip };
                     addUserMessage(`${name}, ${city}, ${state}`);
-                    setTimeout(() => showStep(3), 300);
+                    setTimeout(() => showStepWithTyping(3), 300);
                 });
 
             } else if (step === 3) {
@@ -577,7 +606,7 @@
                         shipmentData.service = btn.dataset.service;
                         shipmentData.serviceLabel = btn.dataset.label;
                         addUserMessage(btn.dataset.label);
-                        setTimeout(() => showStep(4), 300);
+                        setTimeout(() => showStepWithTyping(4), 300);
                     });
                 });
 
