@@ -1482,18 +1482,6 @@ ul {
     max-width: 85%;
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius-lg);
-    animation: fadeInBubble 0.3s ease;
-}
-
-@keyframes fadeInBubble {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .chat-bubble-bot {
@@ -1501,6 +1489,7 @@ ul {
     color: var(--color-gray-900);
     align-self: flex-start;
     border-bottom-left-radius: var(--radius-sm);
+    animation: slideInLeft 0.4s ease;
 }
 
 .chat-bubble-user {
@@ -1508,6 +1497,29 @@ ul {
     color: var(--color-white);
     align-self: flex-end;
     border-bottom-right-radius: var(--radius-sm);
+    animation: slideInRight 0.4s ease;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .chat-bubble-bot .chat-icon {
@@ -1526,6 +1538,7 @@ ul {
     border-bottom-left-radius: var(--radius-sm);
     align-self: flex-start;
     max-width: 80px;
+    animation: slideInLeft 0.3s ease;
 }
 
 .chat-typing-dot {
