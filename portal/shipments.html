@@ -350,7 +350,27 @@
             };
 
             try {
-                await addDoc(collection(db, 'shipments'), shipmentData);
+                const shipmentRef = await addDoc(collection(db, 'shipments'), shipmentData);
+
+                // Log billable event for receiving/outbound
+                const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
+                const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
+                const pickpackRate = pricing?.handling?.pickpack || 5.00;
+                const quantity = parseInt(document.getElementById('package-quantity').value) || 1;
+
+                await addDoc(collection(db, 'billable_events'), {
+                    customer_id: currentUser.uid,
+                    event_type: 'shipping',
+                    description: 'Outbound Shipment - ' + trackingNumber,
+                    quantity: quantity,
+                    unit: 'packages',
+                    rate: pickpackRate,
+                    shipment_id: shipmentRef.id,
+                    invoiced: false,
+                    created_at: new Date().toISOString(),
+                    created_by: currentUser.uid
+                });
+
                 alert('Shipment created! Tracking #: ' + trackingNumber);
                 document.getElementById('shipment-form-container').style.display = 'none';
                 document.getElementById('shipment-form').reset();
@@ -728,7 +748,26 @@
             };
 
             try {
-                await addDoc(collection(db, 'shipments'), newShipment);
+                const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
+
+                // Log billable event
+                const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
+                const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
+                const pickpackRate = pricing?.handling?.pickpack || 5.00;
+
+                await addDoc(collection(db, 'billable_events'), {
+                    customer_id: currentUser.uid,
+                    event_type: 'shipping',
+                    description: 'Outbound Shipment - ' + trackingNumber,
+                    quantity: chatData.package?.quantity || 1,
+                    unit: 'packages',
+                    rate: pickpackRate,
+                    shipment_id: shipmentRef.id,
+                    invoiced: false,
+                    created_at: new Date().toISOString(),
+                    created_by: currentUser.uid
+                });
+
                 closeChat();
                 alert('Shipment created! Tracking #: ' + trackingNumber);
                 loadShipments();
