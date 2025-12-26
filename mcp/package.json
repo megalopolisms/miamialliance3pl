@@ -1,0 +1,19 @@
+{
+  "name": "miamialliance3pl-mcp",
+  "version": "1.0.0",
+  "description": "MCP Server for Miami Alliance 3PL - Self-diagnostics, context management, and maintenance tools",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "diagnose": "curl -s -X POST http://localhost:3847/run -d '{\"tool\":\"diagnose.full\"}' | jq",
+    "health": "curl -s http://localhost:3847/health | jq",
+    "snapshot": "curl -s -X POST http://localhost:3847/run -d '{\"tool\":\"integrity.snapshot\"}' | jq"
+  },
+  "keywords": ["mcp", "diagnostics", "3pl", "logistics"],
+  "author": "Miami Alliance 3PL",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
