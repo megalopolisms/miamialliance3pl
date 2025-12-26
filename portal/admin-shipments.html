@@ -345,9 +345,8 @@
             measurementId: "G-QSRV99D8BX"
         };
 
-        // Admin emails
-        const ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
-        const JORGE_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+        // Fallback admin emails (used when no Firestore role exists)
+        const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -356,7 +355,7 @@
         let allShipments = [];
         let usersMap = {};
 
-        // Check authentication
+        // Check authentication and role
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = '../login.html';
@@ -364,22 +363,44 @@
             }
 
             let userName = user.displayName || user.email;
-
-            // Check admin by EMAIL (not UID) - works for both Google and email/password login
             const userEmail = user.email.toLowerCase();
-            const isAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
-            const isJorge = JORGE_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
 
-            if (!isAdmin) {
+            // Check user role from Firestore
+            let userRole = null;
+            let isStaff = false;
+
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    userRole = userData.role;
+                }
+            } catch (error) {
+                console.error('Error fetching user role:', error);
+            }
+
+            // Determine if user is staff (admin or employee)
+            if (userRole === 'admin' || userRole === 'employee') {
+                isStaff = true;
+            } else if (!userRole) {
+                // Fallback: check against fallback admin emails if no Firestore role exists
+                isStaff = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
+            }
+
+            // Redirect non-staff users to dashboard
+            if (!isStaff) {
                 window.location.href = 'dashboard.html';
                 return;
             }
 
+            // Display appropriate badge based on role
             const userNameEl = document.getElementById('user-name');
-            if (isJorge) {
-                userNameEl.innerHTML = `${userName} <span class="admin-badge">🌟 JEDI</span>`;
-                document.getElementById('page-title').textContent = '🚀 All Cargo Missions';
+            if (userRole === 'admin') {
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
+            } else if (userRole === 'employee') {
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">STAFF</span>`;
             } else {
+                // Fallback admin (no Firestore role but in fallback list)
                 userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
             }
 

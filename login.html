@@ -131,8 +131,8 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Admin emails
-        const ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+        // Fallback admin emails (for initial setup)
+        const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         // Google Auth Provider
         const googleProvider = new GoogleAuthProvider();
@@ -155,22 +155,23 @@
 
                 console.log('Google login success:', user.email);
 
-                const isAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+                const isFallbackAdmin = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
                 // Check if user exists in Firestore, if not create profile
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
                 if (!userDoc.exists()) {
+                    // New user - assign role (admin for fallback emails, customer for others)
                     await setDoc(doc(db, 'users', user.uid), {
                         name: user.displayName || '',
                         email: user.email,
                         company_name: '',
                         phone: user.phoneNumber || '',
-                        isAdmin: isAdmin,
+                        role: isFallbackAdmin ? 'admin' : 'customer',
                         created_at: new Date().toISOString()
                     });
-                } else if (isAdmin) {
-                    // Update existing user to admin if they're in the list
-                    await setDoc(doc(db, 'users', user.uid), { isAdmin: true }, { merge: true });
+                } else if (isFallbackAdmin && !userDoc.data().role) {
+                    // Existing user with no role but in fallback admin list - set as admin
+                    await setDoc(doc(db, 'users', user.uid), { role: 'admin' }, { merge: true });
                 }
 
                 // Small delay to ensure auth state is persisted
@@ -264,12 +265,13 @@
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-                // Save user data to Firestore
+                // Save user data to Firestore with default customer role
                 await setDoc(doc(db, 'users', userCredential.user.uid), {
                     name: name,
                     company_name: company,
                     email: email,
                     phone: phone,
+                    role: 'customer',
                     created_at: new Date().toISOString()
                 });
 

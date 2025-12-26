@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | Miami Alliance 3PL Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css?v=8">
+    <style>
+        .admin-badge {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .page-header {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .page-header h1 { font-size: var(--font-size-2xl); margin-bottom: var(--spacing-xs); }
+        .settings-section {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+        }
+        .settings-section h2 {
+            font-size: var(--font-size-lg);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--color-gray-200);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--color-gray-100);
+        }
+        .setting-row:last-child { border-bottom: none; }
+        .setting-info h3 { font-size: var(--font-size-base); margin-bottom: 4px; }
+        .setting-info p { color: var(--color-gray-500); font-size: var(--font-size-sm); }
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--color-gray-300);
+            transition: .3s;
+            border-radius: 26px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        .toggle input:checked + .toggle-slider { background-color: var(--color-primary); }
+        .toggle input:checked + .toggle-slider:before { transform: translateX(24px); }
+        .input-group {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        .input-group input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+        }
+        .btn-sm {
+            padding: 8px 16px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-sm:hover { background: var(--color-primary-dark); }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+        .company-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-md);
+        }
+        .form-group { margin-bottom: var(--spacing-md); }
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--color-gray-700);
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            color: white;
+            font-weight: 500;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+        }
+        .toast-success { background: #22c55e; }
+        .toast-error { background: #ef4444; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+        .action-card {
+            background: var(--color-gray-50);
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .action-card:hover {
+            background: white;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .action-card .icon { font-size: 2rem; margin-bottom: var(--spacing-sm); }
+        .action-card h3 { font-size: var(--font-size-base); margin-bottom: 4px; }
+        .action-card p { color: var(--color-gray-500); font-size: var(--font-size-sm); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar">
+            <nav>
+                <a href="dashboard.html" class="portal-nav-item"><span>📊</span> Dashboard</a>
+                <a href="shipments.html" class="portal-nav-item"><span>🚚</span> Shipments</a>
+                <a href="tracking.html" class="portal-nav-item"><span>🔍</span> Tracking</a>
+                <a href="inventory.html" class="portal-nav-item"><span>📦</span> Inventory</a>
+                <div style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Staff</div>
+                    <a href="customers.html" class="portal-nav-item"><span>👥</span> All Customers</a>
+                    <a href="admin-shipments.html" class="portal-nav-item"><span>📋</span> All Shipments</a>
+                </div>
+                <div style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
+                    <a href="settings.html" class="portal-nav-item active"><span>⚙️</span> Settings</a>
+                    <a href="team.html" class="portal-nav-item"><span>👔</span> Manage Team</a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="portal-main">
+            <div class="page-header">
+                <h1>⚙️ Settings</h1>
+                <p>Configure your Miami Alliance 3PL portal settings.</p>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="settings-section">
+                <h2>🚀 Quick Actions</h2>
+                <div class="quick-actions">
+                    <a href="team.html" class="action-card">
+                        <div class="icon">👔</div>
+                        <h3>Manage Team</h3>
+                        <p>Add admins & employees</p>
+                    </a>
+                    <a href="customers.html" class="action-card">
+                        <div class="icon">👥</div>
+                        <h3>View Customers</h3>
+                        <p>Manage customer accounts</p>
+                    </a>
+                    <a href="admin-shipments.html" class="action-card">
+                        <div class="icon">📦</div>
+                        <h3>All Shipments</h3>
+                        <p>View & manage shipments</p>
+                    </a>
+                    <div class="action-card" id="export-data">
+                        <div class="icon">📊</div>
+                        <h3>Export Data</h3>
+                        <p>Download reports</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company Information -->
+            <div class="settings-section">
+                <h2>🏢 Company Information</h2>
+                <div class="company-info-grid">
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text" id="company-name" value="Miami Alliance 3PL">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="company-phone" value="">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="company-email" value="">
+                    </div>
+                    <div class="form-group">
+                        <label>Website</label>
+                        <input type="url" id="company-website" value="https://miamialliance3pl.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea id="company-address" rows="2">8780 NW 100th ST, Medley, FL 33178</textarea>
+                </div>
+                <button class="btn-sm" id="save-company">Save Company Info</button>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="settings-section">
+                <h2>🔔 Notifications</h2>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Email Notifications</h3>
+                        <p>Receive email alerts for new shipments and status updates</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="email-notifications" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>New Customer Alerts</h3>
+                        <p>Get notified when new customers sign up</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="new-customer-alerts" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Daily Summary</h3>
+                        <p>Receive a daily summary of shipments and activity</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="daily-summary">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- System Stats -->
+            <div class="settings-section">
+                <h2>📈 System Statistics</h2>
+                <div class="company-info-grid">
+                    <div style="padding: var(--spacing-md); background: var(--color-gray-50); border-radius: var(--radius-md);">
+                        <div style="font-size: var(--font-size-2xl); font-weight: 700; color: var(--color-primary);" id="stat-users">0</div>
+                        <div style="color: var(--color-gray-600);">Total Users</div>
+                    </div>
+                    <div style="padding: var(--spacing-md); background: var(--color-gray-50); border-radius: var(--radius-md);">
+                        <div style="font-size: var(--font-size-2xl); font-weight: 700; color: var(--color-primary);" id="stat-shipments">0</div>
+                        <div style="color: var(--color-gray-600);">Total Shipments</div>
+                    </div>
+                    <div style="padding: var(--spacing-md); background: var(--color-gray-50); border-radius: var(--radius-md);">
+                        <div style="font-size: var(--font-size-2xl); font-weight: 700; color: var(--color-primary);" id="stat-inventory">0</div>
+                        <div style="color: var(--color-gray-600);">Inventory Items</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="settings-section" style="border-color: #fecaca;">
+                <h2 style="color: #dc2626;">⚠️ Danger Zone</h2>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Clear All Test Data</h3>
+                        <p>Remove all test shipments and inventory items (cannot be undone)</p>
+                    </div>
+                    <button class="btn-sm btn-danger" id="clear-test-data">Clear Test Data</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, deleteDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
+        };
+
+        const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            const userEmail = user.email.toLowerCase();
+            let isAdmin = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
+
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists() && userDoc.data().role === 'admin') {
+                    isAdmin = true;
+                }
+            } catch (e) {}
+
+            if (!isAdmin) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            document.getElementById('user-name').innerHTML = `${user.displayName || user.email} <span class="admin-badge">ADMIN</span>`;
+            loadStats();
+            loadSettings();
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+
+        async function loadStats() {
+            try {
+                const [usersSnap, shipmentsSnap, inventorySnap] = await Promise.all([
+                    getDocs(collection(db, 'users')),
+                    getDocs(collection(db, 'shipments')),
+                    getDocs(collection(db, 'inventory'))
+                ]);
+                document.getElementById('stat-users').textContent = usersSnap.size;
+                document.getElementById('stat-shipments').textContent = shipmentsSnap.size;
+                document.getElementById('stat-inventory').textContent = inventorySnap.size;
+            } catch (e) {
+                console.error('Error loading stats:', e);
+            }
+        }
+
+        async function loadSettings() {
+            try {
+                const settingsDoc = await getDoc(doc(db, 'settings', 'company'));
+                if (settingsDoc.exists()) {
+                    const data = settingsDoc.data();
+                    if (data.name) document.getElementById('company-name').value = data.name;
+                    if (data.phone) document.getElementById('company-phone').value = data.phone;
+                    if (data.email) document.getElementById('company-email').value = data.email;
+                    if (data.website) document.getElementById('company-website').value = data.website;
+                    if (data.address) document.getElementById('company-address').value = data.address;
+                }
+
+                const notifDoc = await getDoc(doc(db, 'settings', 'notifications'));
+                if (notifDoc.exists()) {
+                    const data = notifDoc.data();
+                    document.getElementById('email-notifications').checked = data.emailNotifications !== false;
+                    document.getElementById('new-customer-alerts').checked = data.newCustomerAlerts !== false;
+                    document.getElementById('daily-summary').checked = data.dailySummary === true;
+                }
+            } catch (e) {
+                console.error('Error loading settings:', e);
+            }
+        }
+
+        document.getElementById('save-company').addEventListener('click', async () => {
+            try {
+                await setDoc(doc(db, 'settings', 'company'), {
+                    name: document.getElementById('company-name').value,
+                    phone: document.getElementById('company-phone').value,
+                    email: document.getElementById('company-email').value,
+                    website: document.getElementById('company-website').value,
+                    address: document.getElementById('company-address').value,
+                    updatedAt: new Date().toISOString()
+                });
+                showToast('Company info saved!', 'success');
+            } catch (e) {
+                showToast('Error saving company info', 'error');
+            }
+        });
+
+        // Save notification settings on toggle
+        document.querySelectorAll('.toggle input').forEach(toggle => {
+            toggle.addEventListener('change', async () => {
+                try {
+                    await setDoc(doc(db, 'settings', 'notifications'), {
+                        emailNotifications: document.getElementById('email-notifications').checked,
+                        newCustomerAlerts: document.getElementById('new-customer-alerts').checked,
+                        dailySummary: document.getElementById('daily-summary').checked,
+                        updatedAt: new Date().toISOString()
+                    });
+                    showToast('Notification settings saved!', 'success');
+                } catch (e) {
+                    showToast('Error saving settings', 'error');
+                }
+            });
+        });
+
+        document.getElementById('export-data').addEventListener('click', async () => {
+            showToast('Generating export... (coming soon)', 'success');
+        });
+
+        document.getElementById('clear-test-data').addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to clear all test data? This cannot be undone.')) return;
+            showToast('This feature is disabled for safety', 'error');
+        });
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+    <script src="../js/main.js?v=3"></script>
+</body>
+</html>

@@ -139,16 +139,55 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Check authentication
+        // Fallback admin emails (used only if Firestore role check fails)
+        const FALLBACK_ADMIN_EMAILS = [
+            'admin@miamialliance3pl.com',
+            'operations@miamialliance3pl.com'
+        ];
+
+        // Current user data
+        let currentUser = null;
+        let currentUserRole = null;
+        let currentUserEmail = null;
+
+        // Check if user is staff (admin or employee)
+        function isStaff() {
+            return currentUserRole === 'admin' || currentUserRole === 'employee';
+        }
+
+        // Check authentication and get user role from Firestore
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = '../login.html';
                 return;
             }
 
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            if (userDoc.exists()) {
-                document.getElementById('user-name').textContent = 'Welcome, ' + userDoc.data().name;
+            currentUser = user;
+            currentUserEmail = user.email;
+
+            // Get user role from Firestore users collection
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    document.getElementById('user-name').textContent = 'Welcome, ' + userData.name;
+                    currentUserRole = userData.role || 'customer';
+                } else {
+                    // Fallback: check if email is in fallback admin list
+                    if (FALLBACK_ADMIN_EMAILS.includes(user.email)) {
+                        currentUserRole = 'admin';
+                    } else {
+                        currentUserRole = 'customer';
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching user role:', error);
+                // Fallback: check if email is in fallback admin list
+                if (FALLBACK_ADMIN_EMAILS.includes(user.email)) {
+                    currentUserRole = 'admin';
+                } else {
+                    currentUserRole = 'customer';
+                }
             }
 
             // Check for URL parameter
@@ -192,8 +231,24 @@
                     return;
                 }
 
-                const data = snapshot.docs[0].data();
-                displayShipment(data);
+                const shipmentData = snapshot.docs[0].data();
+
+                // Role-based access control:
+                // Staff (admin/employee) can track any shipment
+                // Customers can only track their own shipments
+                if (!isStaff()) {
+                    // Customer: verify they own this shipment
+                    const isOwner = shipmentData.user_id === currentUser.uid ||
+                                    shipmentData.customer_email === currentUserEmail ||
+                                    shipmentData.created_by === currentUser.uid;
+
+                    if (!isOwner) {
+                        document.getElementById('no-result').style.display = 'block';
+                        return;
+                    }
+                }
+
+                displayShipment(shipmentData);
             } catch (error) {
                 console.error('Error tracking shipment:', error);
                 document.getElementById('no-result').style.display = 'block';

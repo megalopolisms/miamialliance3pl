@@ -249,7 +249,15 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Fallback admin emails (used if Firestore role not set)
+        const FALLBACK_ADMIN_EMAILS = [
+            'yuri.petrini.m5@gmail.com',
+            'admin@miamialliance3pl.com'
+        ];
+
         let currentUser = null;
+        let currentUserRole = 'customer'; // Default role
+        let isStaff = false; // true for admin or employee
 
         // Check authentication
         onAuthStateChanged(auth, async (user) => {
@@ -259,9 +267,25 @@
             }
             currentUser = user;
 
+            // Get user role from Firestore
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             if (userDoc.exists()) {
-                document.getElementById('user-name').textContent = 'Welcome, ' + userDoc.data().name;
+                const userData = userDoc.data();
+                document.getElementById('user-name').textContent = 'Welcome, ' + userData.name;
+
+                // Check role from Firestore first
+                if (userData.role) {
+                    currentUserRole = userData.role;
+                    isStaff = (currentUserRole === 'admin' || currentUserRole === 'employee');
+                } else {
+                    // Fallback to email check if no role in Firestore
+                    isStaff = FALLBACK_ADMIN_EMAILS.includes(user.email);
+                    currentUserRole = isStaff ? 'admin' : 'customer';
+                }
+            } else {
+                // No user doc - check fallback emails
+                isStaff = FALLBACK_ADMIN_EMAILS.includes(user.email);
+                currentUserRole = isStaff ? 'admin' : 'customer';
             }
 
             loadShipments();
@@ -344,19 +368,37 @@
                 const statusFilter = document.getElementById('status-filter').value;
                 let q;
 
-                if (statusFilter === 'all') {
-                    q = query(
-                        collection(db, 'shipments'),
-                        where('user_id', '==', currentUser.uid),
-                        orderBy('created_at', 'desc')
-                    );
+                // Staff (admin/employee) see all shipments, customers see only their own
+                if (isStaff) {
+                    // Staff: show all shipments
+                    if (statusFilter === 'all') {
+                        q = query(
+                            collection(db, 'shipments'),
+                            orderBy('created_at', 'desc')
+                        );
+                    } else {
+                        q = query(
+                            collection(db, 'shipments'),
+                            where('status', '==', statusFilter),
+                            orderBy('created_at', 'desc')
+                        );
+                    }
                 } else {
-                    q = query(
-                        collection(db, 'shipments'),
-                        where('user_id', '==', currentUser.uid),
-                        where('status', '==', statusFilter),
-                        orderBy('created_at', 'desc')
-                    );
+                    // Customer: show only their shipments
+                    if (statusFilter === 'all') {
+                        q = query(
+                            collection(db, 'shipments'),
+                            where('user_id', '==', currentUser.uid),
+                            orderBy('created_at', 'desc')
+                        );
+                    } else {
+                        q = query(
+                            collection(db, 'shipments'),
+                            where('user_id', '==', currentUser.uid),
+                            where('status', '==', statusFilter),
+                            orderBy('created_at', 'desc')
+                        );
+                    }
                 }
 
                 const snapshot = await getDocs(q);

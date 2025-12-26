@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Management | Miami Alliance 3PL Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css?v=8">
+    <style>
+        .admin-badge {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .page-header {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .page-header h1 {
+            font-size: var(--font-size-2xl);
+            margin-bottom: var(--spacing-xs);
+        }
+        .user-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: var(--font-size-lg);
+        }
+        .user-details h3 {
+            font-size: var(--font-size-lg);
+            margin-bottom: 2px;
+        }
+        .user-details p {
+            color: var(--color-gray-500);
+            font-size: var(--font-size-sm);
+        }
+        .role-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+        }
+        .role-admin {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+        }
+        .role-employee {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+        .role-customer {
+            background: var(--color-gray-200);
+            color: var(--color-gray-700);
+        }
+        .user-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        .role-select {
+            padding: 8px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            background: white;
+        }
+        .btn-save {
+            padding: 8px 16px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-save:hover {
+            background: var(--color-primary-dark);
+        }
+        .btn-save:disabled {
+            background: var(--color-gray-300);
+            cursor: not-allowed;
+        }
+        .search-bar {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+        .search-bar input {
+            flex: 1;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+        }
+        .filter-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+        .filter-tab {
+            padding: 8px 16px;
+            border: 1px solid var(--color-gray-300);
+            background: white;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .filter-tab.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            color: white;
+            font-weight: 500;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+        }
+        .toast-success { background: #22c55e; }
+        .toast-error { background: #ef4444; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .stats-row {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        .stat-card {
+            flex: 1;
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            text-align: center;
+        }
+        .stat-card .count {
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .stat-card .label {
+            color: var(--color-gray-600);
+            font-size: var(--font-size-sm);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar">
+            <nav>
+                <a href="dashboard.html" class="portal-nav-item">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="shipments.html" class="portal-nav-item">
+                    <span>🚚</span> Shipments
+                </a>
+                <a href="tracking.html" class="portal-nav-item">
+                    <span>🔍</span> Tracking
+                </a>
+                <a href="inventory.html" class="portal-nav-item">
+                    <span>📦</span> Inventory
+                </a>
+                <div id="employee-nav" style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Staff</div>
+                    <a href="customers.html" class="portal-nav-item">
+                        <span>👥</span> All Customers
+                    </a>
+                    <a href="admin-shipments.html" class="portal-nav-item">
+                        <span>📋</span> All Shipments
+                    </a>
+                </div>
+                <div id="admin-nav" style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
+                    <a href="settings.html" class="portal-nav-item">
+                        <span>⚙️</span> Settings
+                    </a>
+                    <a href="team.html" class="portal-nav-item active">
+                        <span>👔</span> Manage Team
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="portal-main">
+            <div class="page-header">
+                <h1>👔 Team Management</h1>
+                <p>Manage user roles and permissions. Admins have full access, Employees can view all data.</p>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="count" id="admin-count">0</div>
+                    <div class="label">Admins</div>
+                </div>
+                <div class="stat-card">
+                    <div class="count" id="employee-count">0</div>
+                    <div class="label">Employees</div>
+                </div>
+                <div class="stat-card">
+                    <div class="count" id="customer-count">0</div>
+                    <div class="label">Customers</div>
+                </div>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search by name or email...">
+            </div>
+
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All Users</button>
+                <button class="filter-tab" data-filter="admin">Admins</button>
+                <button class="filter-tab" data-filter="employee">Employees</button>
+                <button class="filter-tab" data-filter="customer">Customers</button>
+            </div>
+
+            <div id="users-list">
+                <p style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">
+                    Loading users...
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
+        };
+
+        const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let allUsers = [];
+        let currentFilter = 'all';
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            const userEmail = user.email.toLowerCase();
+            let isAdmin = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
+
+            // Check Firestore role
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists() && userDoc.data().role === 'admin') {
+                    isAdmin = true;
+                }
+            } catch (e) {}
+
+            if (!isAdmin) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            document.getElementById('user-name').innerHTML = `${user.displayName || user.email} <span class="admin-badge">ADMIN</span>`;
+            loadUsers();
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+
+        async function loadUsers() {
+            try {
+                const usersSnap = await getDocs(collection(db, 'users'));
+                allUsers = [];
+                let adminCount = 0, employeeCount = 0, customerCount = 0;
+
+                usersSnap.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const role = data.role || 'customer';
+                    allUsers.push({
+                        id: docSnap.id,
+                        ...data,
+                        role: role
+                    });
+
+                    if (role === 'admin') adminCount++;
+                    else if (role === 'employee') employeeCount++;
+                    else customerCount++;
+                });
+
+                document.getElementById('admin-count').textContent = adminCount;
+                document.getElementById('employee-count').textContent = employeeCount;
+                document.getElementById('customer-count').textContent = customerCount;
+
+                renderUsers();
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('users-list').innerHTML = '<p style="color: red;">Error loading users. Check console for details.</p>';
+            }
+        }
+
+        function renderUsers() {
+            const container = document.getElementById('users-list');
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+            let filtered = allUsers.filter(user => {
+                const matchesFilter = currentFilter === 'all' || user.role === currentFilter;
+                const matchesSearch = !searchTerm ||
+                    (user.name && user.name.toLowerCase().includes(searchTerm)) ||
+                    (user.email && user.email.toLowerCase().includes(searchTerm));
+                return matchesFilter && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">No users found.</p>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(user => `
+                <div class="user-card" data-user-id="${user.id}">
+                    <div class="user-info">
+                        <div class="user-avatar">${(user.name || user.email || '?')[0].toUpperCase()}</div>
+                        <div class="user-details">
+                            <h3>${user.name || 'No Name'}</h3>
+                            <p>${user.email || 'No Email'}</p>
+                        </div>
+                        <span class="role-badge role-${user.role}">${user.role.toUpperCase()}</span>
+                    </div>
+                    <div class="user-actions">
+                        <select class="role-select" data-user-id="${user.id}" data-original="${user.role}">
+                            <option value="customer" ${user.role === 'customer' ? 'selected' : ''}>Customer</option>
+                            <option value="employee" ${user.role === 'employee' ? 'selected' : ''}>Employee</option>
+                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                        </select>
+                        <button class="btn-save" data-user-id="${user.id}" disabled>Save</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add event listeners
+            document.querySelectorAll('.role-select').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const userId = e.target.dataset.userId;
+                    const original = e.target.dataset.original;
+                    const saveBtn = document.querySelector(`.btn-save[data-user-id="${userId}"]`);
+                    saveBtn.disabled = e.target.value === original;
+                });
+            });
+
+            document.querySelectorAll('.btn-save').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const userId = e.target.dataset.userId;
+                    const select = document.querySelector(`.role-select[data-user-id="${userId}"]`);
+                    const newRole = select.value;
+
+                    btn.disabled = true;
+                    btn.textContent = 'Saving...';
+
+                    try {
+                        await updateDoc(doc(db, 'users', userId), { role: newRole });
+                        showToast(`Role updated to ${newRole.toUpperCase()}`, 'success');
+                        select.dataset.original = newRole;
+                        btn.textContent = 'Save';
+
+                        // Update local data and re-render
+                        const user = allUsers.find(u => u.id === userId);
+                        if (user) user.role = newRole;
+                        loadUsers(); // Reload to update counts
+                    } catch (error) {
+                        console.error('Error updating role:', error);
+                        showToast('Error updating role', 'error');
+                        btn.disabled = false;
+                        btn.textContent = 'Save';
+                    }
+                });
+            });
+        }
+
+        // Search
+        document.getElementById('search-input').addEventListener('input', renderUsers);
+
+        // Filter tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFilter = e.target.dataset.filter;
+                renderUsers();
+            });
+        });
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+    <script src="../js/main.js?v=3"></script>
+</body>
+</html>
