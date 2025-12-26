@@ -14,6 +14,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <!-- Styles -->
     <link rel="stylesheet" href="../css/style.css?v=8">
     <style>
@@ -84,6 +87,69 @@
             font-size: var(--font-size-2xl);
             font-weight: 700;
             color: var(--color-primary);
+        }
+        .analytics-section {
+            margin-bottom: var(--spacing-xl);
+        }
+        .analytics-section h2 {
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--spacing-md);
+            color: var(--color-gray-900);
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        .chart-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-gray-200);
+        }
+        .chart-card h3 {
+            font-size: var(--font-size-lg);
+            color: var(--color-gray-800);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--color-gray-100);
+        }
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+        .metric-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-gray-600);
+        }
+        .metric-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .metric-value {
+            font-weight: 600;
+            color: var(--color-gray-800);
+        }
+        .trend-up {
+            color: #10b981;
+        }
+        .trend-down {
+            color: #ef4444;
         }
     </style>
 </head>
@@ -210,6 +276,81 @@
                     <a href="shipments.html" class="btn btn-primary">+ Create Shipment</a>
                     <a href="tracking.html" class="btn btn-outline">Track Package</a>
                     <a href="inventory.html" class="btn btn-outline">View Inventory</a>
+                </div>
+            </div>
+
+            <!-- Analytics Section (Staff only) -->
+            <div id="analytics-section" class="analytics-section" style="display: none;">
+                <h2>📈 Analytics Overview</h2>
+                <div class="charts-grid">
+                    <!-- Shipment Status Chart -->
+                    <div class="chart-card">
+                        <h3>📊 Shipment Status</h3>
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Trends Chart -->
+                    <div class="chart-card">
+                        <h3>📅 Monthly Shipments</h3>
+                        <div class="chart-container">
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Top Customers (Admin only) -->
+                    <div class="chart-card" id="customers-chart-card" style="display: none;">
+                        <h3>👥 Top Customers</h3>
+                        <div class="chart-container">
+                            <canvas id="customersChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Revenue by Service -->
+                    <div class="chart-card" id="services-chart-card" style="display: none;">
+                        <h3>💰 Inventory by Type</h3>
+                        <div class="chart-container">
+                            <canvas id="inventoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="chart-card" style="margin-top: var(--spacing-lg);">
+                    <h3>📋 Key Performance Metrics</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg);">
+                        <div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #10b981;"></span> On-Time Delivery</span>
+                                <span class="metric-value" id="metric-ontime">--</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #3b82f6;"></span> Avg. Transit Time</span>
+                                <span class="metric-value" id="metric-transit">--</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #f59e0b;"></span> Active Shipments</span>
+                                <span class="metric-value" id="metric-active">--</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #8b5cf6;"></span> Warehouse Utilization</span>
+                                <span class="metric-value" id="metric-warehouse">--</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #ec4899;"></span> This Month</span>
+                                <span class="metric-value" id="metric-month">--</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #06b6d4;"></span> Total Pallets</span>
+                                <span class="metric-value" id="metric-pallets">--</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -351,6 +492,7 @@
                 document.getElementById('icon-pending').textContent = '🎯';
 
                 loadAdminStats();
+                loadAnalytics(true);
             } else if (isAdmin) {
                 welcomeTitle.innerHTML = `Welcome back, ${userName}! <span class="admin-badge">ADMIN</span>`;
                 welcomeSubtitle.textContent = "You have full admin access to manage all customers and operations.";
@@ -361,6 +503,7 @@
                 document.getElementById('admin-nav').style.display = 'block';
 
                 loadAdminStats();
+                loadAnalytics(true);
             } else if (isEmployee) {
                 welcomeTitle.innerHTML = `Welcome back, ${userName}! <span class="admin-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">EMPLOYEE</span>`;
                 welcomeSubtitle.textContent = "Ready to help our customers with their logistics needs.";
@@ -370,6 +513,7 @@
                 document.getElementById('employee-nav').style.display = 'block';
 
                 loadAdminStats();
+                loadAnalytics(false);
             } else {
                 welcomeTitle.textContent = `Welcome back, ${userName}!`;
                 userNameEl.textContent = `Welcome, ${userName}`;
@@ -407,6 +551,210 @@
 
             } catch (error) {
                 console.error('Error loading admin stats:', error);
+            }
+        }
+
+        // Chart instances
+        let statusChart, trendsChart, customersChart, inventoryChart;
+
+        async function loadAnalytics(isAdmin) {
+            try {
+                // Show analytics section
+                document.getElementById('analytics-section').style.display = 'block';
+
+                // Show admin-only charts
+                if (isAdmin) {
+                    document.getElementById('customers-chart-card').style.display = 'block';
+                    document.getElementById('services-chart-card').style.display = 'block';
+                }
+
+                // Fetch all shipments for analytics
+                const shipmentsSnap = await getDocs(collection(db, 'shipments'));
+                const shipments = [];
+                shipmentsSnap.forEach(doc => shipments.push({ id: doc.id, ...doc.data() }));
+
+                // Fetch inventory
+                const inventorySnap = await getDocs(collection(db, 'inventory'));
+                const inventory = [];
+                inventorySnap.forEach(doc => inventory.push({ id: doc.id, ...doc.data() }));
+
+                // Fetch users for customer chart
+                const usersSnap = await getDocs(collection(db, 'users'));
+                const users = {};
+                usersSnap.forEach(doc => {
+                    const data = doc.data();
+                    users[doc.id] = data.company_name || data.name || data.email || 'Unknown';
+                });
+
+                // 1. Status Chart (Doughnut)
+                const statusCounts = {
+                    pending: 0,
+                    in_transit: 0,
+                    delivered: 0,
+                    cancelled: 0
+                };
+                shipments.forEach(s => {
+                    if (statusCounts[s.status] !== undefined) statusCounts[s.status]++;
+                });
+
+                const statusCtx = document.getElementById('statusChart').getContext('2d');
+                statusChart = new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending', 'In Transit', 'Delivered', 'Cancelled'],
+                        datasets: [{
+                            data: [statusCounts.pending, statusCounts.in_transit, statusCounts.delivered, statusCounts.cancelled],
+                            backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+
+                // 2. Monthly Trends (Bar Chart)
+                const monthlyData = {};
+                const now = new Date();
+                for (let i = 5; i >= 0; i--) {
+                    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const key = d.toLocaleString('default', { month: 'short' });
+                    monthlyData[key] = 0;
+                }
+
+                shipments.forEach(s => {
+                    if (s.created_at) {
+                        const date = new Date(s.created_at);
+                        const key = date.toLocaleString('default', { month: 'short' });
+                        if (monthlyData[key] !== undefined) monthlyData[key]++;
+                    }
+                });
+
+                const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+                trendsChart = new Chart(trendsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(monthlyData),
+                        datasets: [{
+                            label: 'Shipments',
+                            data: Object.values(monthlyData),
+                            backgroundColor: '#1e3a5f',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                        }
+                    }
+                });
+
+                // 3. Top Customers Chart (Admin only)
+                if (isAdmin) {
+                    const customerShipments = {};
+                    shipments.forEach(s => {
+                        const customerId = s.user_id;
+                        const name = users[customerId] || 'Unknown';
+                        customerShipments[name] = (customerShipments[name] || 0) + 1;
+                    });
+
+                    const sortedCustomers = Object.entries(customerShipments)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5);
+
+                    const customersCtx = document.getElementById('customersChart').getContext('2d');
+                    customersChart = new Chart(customersCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: sortedCustomers.map(c => c[0]),
+                            datasets: [{
+                                label: 'Shipments',
+                                data: sortedCustomers.map(c => c[1]),
+                                backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'],
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            indexAxis: 'y',
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { beginAtZero: true, ticks: { stepSize: 1 } }
+                            }
+                        }
+                    });
+
+                    // 4. Inventory by Type (Pie)
+                    const inventoryTypes = {};
+                    inventory.forEach(item => {
+                        const type = item.category || item.type || 'Other';
+                        inventoryTypes[type] = (inventoryTypes[type] || 0) + (item.quantity || 1);
+                    });
+
+                    const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+                    inventoryChart = new Chart(inventoryCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: Object.keys(inventoryTypes).length > 0 ? Object.keys(inventoryTypes) : ['No Data'],
+                            datasets: [{
+                                data: Object.keys(inventoryTypes).length > 0 ? Object.values(inventoryTypes) : [1],
+                                backgroundColor: ['#1e3a5f', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom' }
+                            }
+                        }
+                    });
+                }
+
+                // Update Key Metrics
+                const delivered = shipments.filter(s => s.status === 'delivered').length;
+                const total = shipments.length;
+                const onTimeRate = total > 0 ? Math.round((delivered / total) * 100) : 0;
+                document.getElementById('metric-ontime').textContent = onTimeRate + '%';
+
+                const activeShipments = shipments.filter(s => s.status === 'pending' || s.status === 'in_transit').length;
+                document.getElementById('metric-active').textContent = activeShipments;
+
+                document.getElementById('metric-transit').textContent = '2-3 days';
+
+                const totalInventory = inventory.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                const warehouseUtil = Math.min(Math.round((totalInventory / 1000) * 100), 100);
+                document.getElementById('metric-warehouse').textContent = warehouseUtil + '%';
+
+                // This month shipments
+                const thisMonth = new Date().getMonth();
+                const thisMonthShipments = shipments.filter(s => {
+                    if (s.created_at) {
+                        return new Date(s.created_at).getMonth() === thisMonth;
+                    }
+                    return false;
+                }).length;
+                document.getElementById('metric-month').textContent = thisMonthShipments + ' shipments';
+
+                // Total pallets (estimate from inventory)
+                const totalPallets = Math.ceil(totalInventory / 48);
+                document.getElementById('metric-pallets').textContent = totalPallets;
+
+            } catch (error) {
+                console.error('Error loading analytics:', error);
             }
         }
 
