@@ -179,11 +179,18 @@
 
                     <!-- Right Panel: 3D Visualization -->
                     <div class="quote-canvas-wrapper">
-                        <div id="quote-canvas"></div>
+                        <div id="quote-canvas">
+                            <div id="loading-indicator" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#1e3a5f;">
+                                <div style="width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#14b8a6;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px;"></div>
+                                <span>Loading 3D View...</span>
+                            </div>
+                        </div>
                         <div class="canvas-controls">
+                            <button id="reset-view-btn" style="background:#1e3a5f;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;margin-right:10px;">Reset View</button>
                             <span class="canvas-hint">Drag to rotate • Scroll to zoom</span>
                         </div>
                     </div>
+                    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
                 </div>
             </div>
         </section>
@@ -276,6 +283,7 @@
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
         class Quote3DViewer {
             constructor(containerId) {
@@ -288,6 +296,9 @@
                 this.packageType = 'box';
                 this.dimensions = { width: 12, height: 12, depth: 12 };
                 this.mesh = null;
+                this.autoRotate = true;
+                this.idleTimer = null;
+                this.initialCameraPos = new THREE.Vector3(40, 30, 40);
 
                 this.init();
                 this.animate();
@@ -297,87 +308,205 @@
                 const width = this.container.clientWidth || 600;
                 const height = this.container.clientHeight || 500;
 
-                // Scene
+                // Scene with gradient background
                 this.scene = new THREE.Scene();
-                this.scene.background = new THREE.Color(0xf8fafc);
+                this.scene.background = new THREE.Color(0xf1f5f9);
 
                 // Camera
                 this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-                this.camera.position.set(40, 30, 40);
-                this.camera.lookAt(0, 0, 0);
+                this.camera.position.copy(this.initialCameraPos);
+                this.camera.lookAt(0, 5, 0);
 
-                // Renderer
-                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                // Renderer with better settings
+                this.renderer = new THREE.WebGLRenderer({
+                    antialias: true,
+                    alpha: true,
+                    powerPreference: 'high-performance'
+                });
                 this.renderer.setSize(width, height);
                 this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
                 this.renderer.shadowMap.enabled = true;
                 this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                this.renderer.toneMappingExposure = 1.2;
                 this.container.appendChild(this.renderer.domElement);
 
-                // OrbitControls
+                // Hide loading indicator
+                const loader = document.getElementById('loading-indicator');
+                if (loader) loader.style.display = 'none';
+
+                // OrbitControls with auto-rotate
                 this.controls = new OrbitControls(this.camera, this.renderer.domElement);
                 this.controls.enableDamping = true;
-                this.controls.dampingFactor = 0.05;
-                this.controls.minDistance = 20;
-                this.controls.maxDistance = 150;
-                this.controls.maxPolarAngle = Math.PI / 2;
+                this.controls.dampingFactor = 0.08;
+                this.controls.minDistance = 15;
+                this.controls.maxDistance = 120;
+                this.controls.maxPolarAngle = Math.PI / 2.1;
+                this.controls.autoRotate = true;
+                this.controls.autoRotateSpeed = 0.5;
+                this.controls.target.set(0, 5, 0);
 
-                // Lighting
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                // Stop auto-rotate on interaction, resume after idle
+                this.controls.addEventListener('start', () => {
+                    this.controls.autoRotate = false;
+                    clearTimeout(this.idleTimer);
+                });
+                this.controls.addEventListener('end', () => {
+                    this.idleTimer = setTimeout(() => {
+                        this.controls.autoRotate = true;
+                    }, 3000);
+                });
+
+                // Enhanced lighting
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
                 this.scene.add(ambientLight);
 
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-                directionalLight.position.set(50, 80, 50);
-                directionalLight.castShadow = true;
-                directionalLight.shadow.mapSize.width = 1024;
-                directionalLight.shadow.mapSize.height = 1024;
-                this.scene.add(directionalLight);
+                const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+                mainLight.position.set(30, 50, 30);
+                mainLight.castShadow = true;
+                mainLight.shadow.mapSize.width = 2048;
+                mainLight.shadow.mapSize.height = 2048;
+                mainLight.shadow.camera.near = 0.5;
+                mainLight.shadow.camera.far = 200;
+                mainLight.shadow.camera.left = -50;
+                mainLight.shadow.camera.right = 50;
+                mainLight.shadow.camera.top = 50;
+                mainLight.shadow.camera.bottom = -50;
+                mainLight.shadow.bias = -0.0001;
+                this.scene.add(mainLight);
 
-                // Grid floor
+                const fillLight = new THREE.DirectionalLight(0x88ccff, 0.3);
+                fillLight.position.set(-20, 30, -20);
+                this.scene.add(fillLight);
+
+                const rimLight = new THREE.DirectionalLight(0xffffee, 0.4);
+                rimLight.position.set(0, 10, -40);
+                this.scene.add(rimLight);
+
+                // Create floor and reference
                 this.createFloor();
+                this.createScaleReference();
 
                 // Initial package
                 this.createBox();
+
+                // Reset view button
+                document.getElementById('reset-view-btn')?.addEventListener('click', () => this.resetView());
 
                 // Handle resize
                 window.addEventListener('resize', () => this.onResize());
             }
 
+            resetView() {
+                // Smooth camera reset
+                const start = this.camera.position.clone();
+                const end = this.initialCameraPos.clone();
+                const duration = 500;
+                const startTime = Date.now();
+
+                const animateReset = () => {
+                    const elapsed = Date.now() - startTime;
+                    const t = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - t, 3); // ease out cubic
+
+                    this.camera.position.lerpVectors(start, end, eased);
+                    this.controls.target.set(0, 5, 0);
+
+                    if (t < 1) requestAnimationFrame(animateReset);
+                };
+                animateReset();
+                this.controls.autoRotate = true;
+            }
+
             createFloor() {
-                const gridHelper = new THREE.GridHelper(120, 10, 0xcccccc, 0xe0e0e0);
+                // Modern grid
+                const gridHelper = new THREE.GridHelper(80, 8, 0x14b8a6, 0xe2e8f0);
                 gridHelper.position.y = 0;
+                gridHelper.material.opacity = 0.5;
+                gridHelper.material.transparent = true;
                 this.scene.add(gridHelper);
 
-                const floorGeometry = new THREE.PlaneGeometry(120, 120);
-                const floorMaterial = new THREE.ShadowMaterial({ opacity: 0.1 });
+                // Shadow-receiving floor
+                const floorGeometry = new THREE.PlaneGeometry(100, 100);
+                const floorMaterial = new THREE.ShadowMaterial({ opacity: 0.15 });
                 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
                 floor.rotation.x = -Math.PI / 2;
                 floor.receiveShadow = true;
                 this.scene.add(floor);
+
+                // Subtle floor disc
+                const discGeom = new THREE.CircleGeometry(45, 64);
+                const discMat = new THREE.MeshBasicMaterial({
+                    color: 0xe2e8f0,
+                    transparent: true,
+                    opacity: 0.3
+                });
+                const disc = new THREE.Mesh(discGeom, discMat);
+                disc.rotation.x = -Math.PI / 2;
+                disc.position.y = 0.01;
+                this.scene.add(disc);
+            }
+
+            createScaleReference() {
+                // Human silhouette for scale (5'8" = 68" = 17 units at 1/4 scale)
+                const humanHeight = 17;
+                const humanGroup = new THREE.Group();
+                humanGroup.userData.isReference = true;
+
+                // Body (simple capsule shape)
+                const bodyMat = new THREE.MeshStandardMaterial({
+                    color: 0x64748b,
+                    transparent: true,
+                    opacity: 0.6,
+                    roughness: 0.8
+                });
+
+                // Torso
+                const torsoGeom = new THREE.CylinderGeometry(1.2, 1, 7, 16);
+                const torso = new THREE.Mesh(torsoGeom, bodyMat);
+                torso.position.y = 8;
+                humanGroup.add(torso);
+
+                // Head
+                const headGeom = new THREE.SphereGeometry(1.3, 16, 16);
+                const head = new THREE.Mesh(headGeom, bodyMat);
+                head.position.y = 13.5;
+                humanGroup.add(head);
+
+                // Legs
+                const legGeom = new THREE.CylinderGeometry(0.5, 0.4, 6, 12);
+                const leftLeg = new THREE.Mesh(legGeom, bodyMat);
+                leftLeg.position.set(-0.6, 3, 0);
+                humanGroup.add(leftLeg);
+
+                const rightLeg = new THREE.Mesh(legGeom, bodyMat);
+                rightLeg.position.set(0.6, 3, 0);
+                humanGroup.add(rightLeg);
+
+                humanGroup.position.set(-20, 0, 0);
+                humanGroup.castShadow = true;
+                this.scene.add(humanGroup);
+
+                // Label for human
+                this.createLabel("5'8\"", { x: -20, y: humanHeight + 2, z: 0 }, true);
             }
 
             createBox() {
-                if (this.mesh) {
-                    this.scene.remove(this.mesh);
-                    this.mesh.geometry.dispose();
-                    this.mesh.material.dispose();
-                }
-
-                // Remove old tape
-                this.scene.children
-                    .filter(c => c.userData.isTape)
-                    .forEach(c => this.scene.remove(c));
+                this.clearPackage();
 
                 const { width, height, depth } = this.dimensions;
                 const w = width / 4;
                 const h = height / 4;
                 const d = depth / 4;
 
-                const geometry = new THREE.BoxGeometry(w, h, d);
+                // Rounded box for more realistic look
+                const radius = Math.min(w, h, d) * 0.05;
+                const geometry = new RoundedBoxGeometry(w, h, d, 4, radius);
+
                 const material = new THREE.MeshStandardMaterial({
-                    color: 0xc9a66b,
-                    roughness: 0.8,
-                    metalness: 0
+                    color: 0xd4a574,
+                    roughness: 0.85,
+                    metalness: 0.05
                 });
 
                 this.mesh = new THREE.Mesh(geometry, material);
@@ -388,34 +517,19 @@
 
                 // Add tape stripes
                 this.addBoxTape(w, h, d);
+
+                // Add edge lines for definition
+                const edges = new THREE.EdgesGeometry(geometry);
+                const lineMat = new THREE.LineBasicMaterial({ color: 0xb8956e, linewidth: 1 });
+                const wireframe = new THREE.LineSegments(edges, lineMat);
+                wireframe.position.copy(this.mesh.position);
+                wireframe.userData.isTape = true;
+                this.scene.add(wireframe);
+
                 this.updateLabels();
             }
 
-            addBoxTape(w, h, d) {
-                const tapeColor = 0x8b7355;
-                const tapeMaterial = new THREE.MeshBasicMaterial({ color: tapeColor });
-
-                const tapeWidth = Math.min(w * 0.15, 2);
-                const tapeGeom = new THREE.BoxGeometry(tapeWidth, 0.1, d);
-                const topTape = new THREE.Mesh(tapeGeom, tapeMaterial);
-                topTape.position.set(0, h + 0.05, 0);
-                topTape.userData.isTape = true;
-                this.scene.add(topTape);
-
-                const sideGeom = new THREE.BoxGeometry(tapeWidth, h * 0.3, 0.1);
-
-                const frontTape = new THREE.Mesh(sideGeom, tapeMaterial);
-                frontTape.position.set(0, h * 0.85, d / 2 + 0.05);
-                frontTape.userData.isTape = true;
-                this.scene.add(frontTape);
-
-                const backTape = new THREE.Mesh(sideGeom, tapeMaterial);
-                backTape.position.set(0, h * 0.85, -d / 2 - 0.05);
-                backTape.userData.isTape = true;
-                this.scene.add(backTape);
-            }
-
-            createPallet() {
+            clearPackage() {
                 if (this.mesh) {
                     this.scene.remove(this.mesh);
                     if (this.mesh.geometry) this.mesh.geometry.dispose();
@@ -424,7 +538,38 @@
 
                 this.scene.children
                     .filter(c => c.userData.isTape || c.userData.isPallet)
-                    .forEach(c => this.scene.remove(c));
+                    .forEach(c => {
+                        this.scene.remove(c);
+                        if (c.geometry) c.geometry.dispose();
+                        if (c.material) c.material.dispose();
+                    });
+            }
+
+            addBoxTape(w, h, d) {
+                const tapeMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x8b7355,
+                    roughness: 0.6
+                });
+
+                const tapeWidth = Math.min(w * 0.12, 1.5);
+
+                // Center tape on top
+                const tapeGeom = new THREE.BoxGeometry(tapeWidth, 0.08, d + 0.1);
+                const topTape = new THREE.Mesh(tapeGeom, tapeMaterial);
+                topTape.position.set(0, h + 0.04, 0);
+                topTape.userData.isTape = true;
+                this.scene.add(topTape);
+
+                // Perpendicular tape
+                const crossTapeGeom = new THREE.BoxGeometry(w + 0.1, 0.08, tapeWidth);
+                const crossTape = new THREE.Mesh(crossTapeGeom, tapeMaterial);
+                crossTape.position.set(0, h + 0.05, 0);
+                crossTape.userData.isTape = true;
+                this.scene.add(crossTape);
+            }
+
+            createPallet() {
+                this.clearPackage();
 
                 const { width, height, depth } = this.dimensions;
                 const w = width / 4;
@@ -432,8 +577,8 @@
                 const d = depth / 4;
 
                 const woodMaterial = new THREE.MeshStandardMaterial({
-                    color: 0xa0826d,
-                    roughness: 0.9,
+                    color: 0x9a7b5b,
+                    roughness: 0.95,
                     metalness: 0
                 });
 
@@ -443,57 +588,59 @@
                 const palletW = 12;
                 const palletD = 10;
 
-                for (let i = 0; i < 5; i++) {
-                    const topSlat = new THREE.Mesh(
-                        new THREE.BoxGeometry(palletW, 0.3, 1.5),
-                        woodMaterial
-                    );
-                    topSlat.position.set(0, 0.65, -palletD / 2 + 1 + i * 2.5);
-                    topSlat.castShadow = true;
-                    palletGroup.add(topSlat);
+                // Top boards
+                for (let i = 0; i < 7; i++) {
+                    const boardGeom = new THREE.BoxGeometry(palletW, 0.25, 1.2);
+                    const board = new THREE.Mesh(boardGeom, woodMaterial);
+                    board.position.set(0, 0.75, -palletD / 2 + 0.7 + i * 1.5);
+                    board.castShadow = true;
+                    board.receiveShadow = true;
+                    palletGroup.add(board);
                 }
 
-                for (let i = -1; i <= 1; i++) {
-                    const stringer = new THREE.Mesh(
-                        new THREE.BoxGeometry(1, 0.5, palletD),
-                        woodMaterial
-                    );
-                    stringer.position.set(i * 5, 0.25, 0);
-                    stringer.castShadow = true;
-                    palletGroup.add(stringer);
+                // Support blocks
+                for (let x = -1; x <= 1; x++) {
+                    for (let z = -1; z <= 1; z++) {
+                        const blockGeom = new THREE.BoxGeometry(1.2, 0.5, 1.2);
+                        const block = new THREE.Mesh(blockGeom, woodMaterial);
+                        block.position.set(x * 4.5, 0.25, z * 3.5);
+                        block.castShadow = true;
+                        palletGroup.add(block);
+                    }
                 }
 
                 this.scene.add(palletGroup);
 
+                // Box on pallet
                 const boxMaterial = new THREE.MeshStandardMaterial({
-                    color: 0xc9a66b,
-                    roughness: 0.8,
-                    metalness: 0
+                    color: 0xd4a574,
+                    roughness: 0.85,
+                    metalness: 0.05
                 });
 
-                const boxGeom = new THREE.BoxGeometry(
-                    Math.min(w, palletW - 0.5),
-                    h - 1,
-                    Math.min(d, palletD - 0.5)
-                );
+                const boxW = Math.min(w, palletW - 1);
+                const boxH = Math.max(h - 1, 2);
+                const boxD = Math.min(d, palletD - 1);
+
+                const boxGeom = new RoundedBoxGeometry(boxW, boxH, boxD, 3, 0.15);
                 this.mesh = new THREE.Mesh(boxGeom, boxMaterial);
-                this.mesh.position.y = 0.8 + (h - 1) / 2;
+                this.mesh.position.y = 0.9 + boxH / 2;
                 this.mesh.castShadow = true;
+                this.mesh.receiveShadow = true;
                 this.scene.add(this.mesh);
 
-                const wrapMaterial = new THREE.MeshBasicMaterial({
+                // Stretch wrap effect
+                const wrapMaterial = new THREE.MeshPhysicalMaterial({
                     color: 0xffffff,
                     transparent: true,
-                    opacity: 0.3,
+                    opacity: 0.25,
+                    roughness: 0.1,
+                    metalness: 0,
                     side: THREE.DoubleSide
                 });
-                const wrapGeom = new THREE.BoxGeometry(
-                    Math.min(w, palletW - 0.4) + 0.1,
-                    h - 0.8,
-                    Math.min(d, palletD - 0.4) + 0.1
-                );
+                const wrapGeom = new THREE.BoxGeometry(boxW + 0.2, boxH - 0.5, boxD + 0.2);
                 const wrap = new THREE.Mesh(wrapGeom, wrapMaterial);
-                wrap.position.y = 0.8 + (h - 1) / 2;
+                wrap.position.y = 0.9 + boxH / 2;
                 wrap.userData.isPallet = true;
                 this.scene.add(wrap);
 
@@ -508,10 +655,6 @@
                 } else {
                     this.createPallet();
                 }
-
-                const maxDim = Math.max(length, width, height) / 4;
-                const distance = maxDim * 4 + 20;
-                this.camera.position.set(distance, distance * 0.75, distance);
             }
 
             setPackageType(type) {
@@ -524,38 +667,51 @@
             }
 
             updateLabels() {
+                // Remove old dimension labels (keep reference labels)
                 this.scene.children
-                    .filter(c => c.userData.isLabel)
+                    .filter(c => c.userData.isLabel && !c.userData.isReference)
                     .forEach(c => {
                         this.scene.remove(c);
                         if (c.material && c.material.map) c.material.map.dispose();
                     });
 
                 const { width, height, depth } = this.dimensions;
+                const w = width / 4;
+                const h = height / 4;
+                const d = depth / 4;
 
-                this.createLabel(`${width}"`, { x: 0, y: -2, z: depth / 8 + 3 });
-                this.createLabel(`${depth}"`, { x: width / 8 + 3, y: -2, z: 0 });
-                this.createLabel(`${height}"`, { x: width / 8 + 3, y: height / 8, z: depth / 8 + 1 });
+                this.createLabel(`${width}"`, { x: 0, y: -1.5, z: d / 2 + 4 });
+                this.createLabel(`${depth}"`, { x: w / 2 + 4, y: -1.5, z: 0 });
+                this.createLabel(`${height}"`, { x: w / 2 + 4, y: h / 2, z: d / 2 + 2 });
             }
 
-            createLabel(text, position) {
+            createLabel(text, position, isReference = false) {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                canvas.width = 128;
-                canvas.height = 64;
+                canvas.width = 160;
+                canvas.height = 80;
 
-                ctx.fillStyle = '#1e3a5f';
-                ctx.font = 'bold 32px Inter, sans-serif';
+                // Background pill
+                ctx.fillStyle = 'rgba(30, 58, 95, 0.9)';
+                ctx.beginPath();
+                ctx.roundRect(10, 15, 140, 50, 25);
+                ctx.fill();
+
+                // Text
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 28px Inter, system-ui, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(text, 64, 32);
+                ctx.fillText(text, 80, 40);
 
                 const texture = new THREE.CanvasTexture(canvas);
+                texture.minFilter = THREE.LinearFilter;
                 const material = new THREE.SpriteMaterial({ map: texture });
                 const sprite = new THREE.Sprite(material);
                 sprite.position.set(position.x, position.y, position.z);
-                sprite.scale.set(6, 3, 1);
+                sprite.scale.set(5, 2.5, 1);
                 sprite.userData.isLabel = true;
+                sprite.userData.isReference = isReference;
                 this.scene.add(sprite);
             }
 
