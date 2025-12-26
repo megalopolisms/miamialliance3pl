@@ -2,8 +2,8 @@
 /**
  * Miami Alliance 3PL - MCP Server
  * @module mcp-server
- * @version 1.0.0
- * @description Model Context Protocol server for maintaining system state, diagnostics, and tools
+ * @version 1.1.0
+ * @description Model Context Protocol server for maintaining system state, diagnostics, Firebase admin, and tools
  *
  * SECTION IDs:
  * - MCP-001: Server Configuration
@@ -13,12 +13,29 @@
  * - MCP-005: Code Integrity Tools
  * - MCP-006: Context Management
  * - MCP-007: Health Monitoring
+ * - MCP-008: Knowledge Management
+ * - MCP-009: Firebase Admin Tools
  */
 
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+
+// Firebase Admin Controller (lazy loaded to avoid initialization errors)
+let firebaseController = null;
+function getFirebaseController() {
+    if (!firebaseController) {
+        try {
+            const { FullFirebaseController } = require('./firebase-admin');
+            firebaseController = new FullFirebaseController({ projectId: 'miamialliance3pl' });
+        } catch (error) {
+            console.error('Firebase Admin not available:', error.message);
+            return null;
+        }
+    }
+    return firebaseController;
+}
 
 // ============================================================
 // MCP-001: SERVER CONFIGURATION
@@ -28,6 +45,7 @@ const CONFIG = {
     port: process.env.MCP_PORT || 3847,
     projectRoot: path.resolve(__dirname, '..'),
     logFile: path.resolve(__dirname, 'mcp.log'),
+    auditFile: path.resolve(__dirname, 'audit.log'),
     stateFile: path.resolve(__dirname, 'state.json'),
     checksumFile: path.resolve(__dirname, 'checksums.json')
 };
@@ -154,6 +172,220 @@ const TOOLS = {
         id: 'MCP-008-003',
         description: 'Export knowledge base',
         handler: exportKnowledge
+    },
+
+    // ============================================================
+    // MCP-009: FIREBASE ADMIN TOOLS
+    // ============================================================
+
+    // Firebase Initialization
+    'firebase.init': {
+        id: 'MCP-009-001',
+        description: 'Initialize Firebase Admin SDK',
+        handler: firebaseInit
+    },
+    'firebase.status': {
+        id: 'MCP-009-002',
+        description: 'Get Firebase initialization status',
+        handler: firebaseStatus
+    },
+
+    // Firestore Operations
+    'firestore.collections': {
+        id: 'MCP-009-003',
+        description: 'List all Firestore collections',
+        handler: firestoreListCollections
+    },
+    'firestore.stats': {
+        id: 'MCP-009-004',
+        description: 'Get collection statistics',
+        handler: firestoreGetStats
+    },
+    'firestore.query': {
+        id: 'MCP-009-005',
+        description: 'Query documents in a collection',
+        handler: firestoreQuery
+    },
+    'firestore.get': {
+        id: 'MCP-009-006',
+        description: 'Get a single document',
+        handler: firestoreGetDocument
+    },
+    'firestore.create': {
+        id: 'MCP-009-007',
+        description: 'Create a new document',
+        handler: firestoreCreateDocument
+    },
+    'firestore.update': {
+        id: 'MCP-009-008',
+        description: 'Update a document',
+        handler: firestoreUpdateDocument
+    },
+    'firestore.delete': {
+        id: 'MCP-009-009',
+        description: 'Delete a document',
+        handler: firestoreDeleteDocument
+    },
+
+    // User Management
+    'users.list': {
+        id: 'MCP-009-010',
+        description: 'List all users',
+        handler: usersListAll
+    },
+    'users.get': {
+        id: 'MCP-009-011',
+        description: 'Get user by UID or email',
+        handler: usersGet
+    },
+    'users.create': {
+        id: 'MCP-009-012',
+        description: 'Create a new user',
+        handler: usersCreate
+    },
+    'users.update': {
+        id: 'MCP-009-013',
+        description: 'Update user properties',
+        handler: usersUpdate
+    },
+    'users.delete': {
+        id: 'MCP-009-014',
+        description: 'Delete a user',
+        handler: usersDelete
+    },
+    'users.setRole': {
+        id: 'MCP-009-015',
+        description: 'Set user role (admin/employee/customer)',
+        handler: usersSetRole
+    },
+    'users.disable': {
+        id: 'MCP-009-016',
+        description: 'Disable/enable a user',
+        handler: usersToggleDisable
+    },
+    'users.resetPassword': {
+        id: 'MCP-009-017',
+        description: 'Generate password reset link',
+        handler: usersResetPassword
+    },
+
+    // Backup & Restore
+    'backup.collection': {
+        id: 'MCP-009-018',
+        description: 'Backup a collection to JSON',
+        handler: backupCollection
+    },
+    'backup.all': {
+        id: 'MCP-009-019',
+        description: 'Backup all collections',
+        handler: backupAll
+    },
+    'backup.restore': {
+        id: 'MCP-009-020',
+        description: 'Restore collection from backup',
+        handler: backupRestore
+    },
+    'backup.list': {
+        id: 'MCP-009-021',
+        description: 'List available backups',
+        handler: backupList
+    },
+    'backup.export': {
+        id: 'MCP-009-022',
+        description: 'Export full database snapshot',
+        handler: backupExport
+    },
+
+    // Configuration
+    'config.get': {
+        id: 'MCP-009-023',
+        description: 'Get all configuration',
+        handler: configGet
+    },
+    'config.pricing': {
+        id: 'MCP-009-024',
+        description: 'Get/set pricing configuration',
+        handler: configPricing
+    },
+    'config.stripe': {
+        id: 'MCP-009-025',
+        description: 'Get/set Stripe configuration',
+        handler: configStripe
+    },
+
+    // Security Rules
+    'security.rules.get': {
+        id: 'MCP-009-026',
+        description: 'Get current security rules',
+        handler: securityRulesGet
+    },
+    'security.rules.save': {
+        id: 'MCP-009-027',
+        description: 'Save security rules to file',
+        handler: securityRulesSave
+    },
+    'security.rules.generate': {
+        id: 'MCP-009-028',
+        description: 'Generate default security rules',
+        handler: securityRulesGenerate
+    },
+
+    // Monitoring
+    'monitor.stats': {
+        id: 'MCP-009-029',
+        description: 'Get database statistics',
+        handler: monitorStats
+    },
+    'monitor.users': {
+        id: 'MCP-009-030',
+        description: 'Get user statistics',
+        handler: monitorUserStats
+    },
+    'monitor.activity': {
+        id: 'MCP-009-031',
+        description: 'Get recent activity',
+        handler: monitorActivity
+    },
+
+    // Batch Operations
+    'batch.update': {
+        id: 'MCP-009-032',
+        description: 'Batch update documents',
+        handler: batchUpdate
+    },
+    'batch.delete': {
+        id: 'MCP-009-033',
+        description: 'Batch delete documents',
+        handler: batchDelete
+    },
+    'batch.create': {
+        id: 'MCP-009-034',
+        description: 'Batch create documents',
+        handler: batchCreate
+    },
+
+    // System Tools
+    'system.stats': {
+        id: 'MCP-012-001',
+        description: 'Get system statistics (cache, rate limits)',
+        handler: systemStats
+    },
+    'system.cache.clear': {
+        id: 'MCP-012-002',
+        description: 'Clear all cached data',
+        handler: systemCacheClear
+    },
+
+    // Audit Tools
+    'audit.query': {
+        id: 'MCP-013-001',
+        description: 'Query audit log entries',
+        handler: auditQuery
+    },
+    'audit.recent': {
+        id: 'MCP-013-002',
+        description: 'Get recent audit entries',
+        handler: auditRecent
     }
 };
 
@@ -815,6 +1047,697 @@ async function exportKnowledge(params = {}) {
 }
 
 // ============================================================
+// MCP-009: FIREBASE ADMIN HANDLERS
+// ============================================================
+
+// Error codes for better debugging
+const ERROR_CODES = {
+    FIREBASE_NOT_AVAILABLE: 'FA-001',
+    FIREBASE_NOT_INITIALIZED: 'FA-002',
+    MISSING_PARAMETER: 'FA-003',
+    INVALID_PARAMETER: 'FA-004',
+    OPERATION_FAILED: 'FA-005',
+    NOT_FOUND: 'FA-006',
+    PERMISSION_DENIED: 'FA-007',
+    RATE_LIMITED: 'FA-008'
+};
+
+// Custom error class for MCP errors
+class MCPError extends Error {
+    constructor(code, message, details = {}) {
+        super(message);
+        this.code = code;
+        this.details = details;
+        this.timestamp = new Date().toISOString();
+    }
+
+    toJSON() {
+        return {
+            code: this.code,
+            message: this.message,
+            details: this.details,
+            timestamp: this.timestamp
+        };
+    }
+}
+
+// Helper to ensure Firebase is available
+function requireFirebase() {
+    const fc = getFirebaseController();
+    if (!fc) {
+        throw new MCPError(
+            ERROR_CODES.FIREBASE_NOT_AVAILABLE,
+            'Firebase Admin not available. Run "npm install" in the mcp directory.',
+            { hint: 'cd mcp && npm install' }
+        );
+    }
+    return fc;
+}
+
+// Helper to check initialization
+function requireFirebaseInit() {
+    const fc = requireFirebase();
+    if (!fc.firestore.initialized) {
+        throw new MCPError(
+            ERROR_CODES.FIREBASE_NOT_INITIALIZED,
+            'Firebase not initialized. Call firebase.init first.',
+            { hint: 'Run tool: firebase.init with serviceAccountPath parameter' }
+        );
+    }
+    return fc;
+}
+
+// Parameter validation helper
+function validateParams(params, required, optional = []) {
+    const missing = required.filter(p => params[p] === undefined || params[p] === null);
+    if (missing.length > 0) {
+        throw new MCPError(
+            ERROR_CODES.MISSING_PARAMETER,
+            `Missing required parameters: ${missing.join(', ')}`,
+            { required, optional, received: Object.keys(params) }
+        );
+    }
+}
+
+// Retry wrapper for transient failures
+async function withRetry(fn, maxRetries = 3, delayMs = 1000) {
+    let lastError;
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await fn();
+        } catch (error) {
+            lastError = error;
+            if (error.code === 'UNAVAILABLE' || error.code === 'DEADLINE_EXCEEDED') {
+                await new Promise(r => setTimeout(r, delayMs * (i + 1)));
+                continue;
+            }
+            throw error;
+        }
+    }
+    throw new MCPError(
+        ERROR_CODES.OPERATION_FAILED,
+        `Operation failed after ${maxRetries} retries: ${lastError.message}`,
+        { originalError: lastError.message }
+    );
+}
+
+// ============================================================
+// INPUT VALIDATION & SANITIZATION (MCP-010)
+// ============================================================
+
+// Email validation
+function validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        throw new MCPError(
+            ERROR_CODES.INVALID_PARAMETER,
+            'Invalid email format',
+            { received: email }
+        );
+    }
+    return email.toLowerCase().trim();
+}
+
+// UID validation (Firebase UIDs are 28 chars, alphanumeric)
+function validateUID(uid) {
+    if (typeof uid !== 'string' || uid.length < 1 || uid.length > 128) {
+        throw new MCPError(
+            ERROR_CODES.INVALID_PARAMETER,
+            'Invalid UID format',
+            { received: uid, hint: 'UID must be 1-128 characters' }
+        );
+    }
+    return uid.trim();
+}
+
+// Collection name validation (alphanumeric, underscores, hyphens)
+function validateCollectionName(name) {
+    if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+        throw new MCPError(
+            ERROR_CODES.INVALID_PARAMETER,
+            'Invalid collection name',
+            { received: name, hint: 'Only alphanumeric, underscore, and hyphen allowed' }
+        );
+    }
+    return name;
+}
+
+// Sanitize document data (remove potentially dangerous fields)
+function sanitizeDocumentData(data) {
+    if (typeof data !== 'object' || data === null) {
+        throw new MCPError(
+            ERROR_CODES.INVALID_PARAMETER,
+            'Document data must be an object',
+            { received: typeof data }
+        );
+    }
+
+    // Remove fields that could be problematic
+    const sanitized = { ...data };
+    delete sanitized.__proto__;
+    delete sanitized.constructor;
+    delete sanitized.prototype;
+
+    // Recursively sanitize nested objects
+    for (const [key, value] of Object.entries(sanitized)) {
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            sanitized[key] = sanitizeDocumentData(value);
+        }
+    }
+
+    return sanitized;
+}
+
+// ============================================================
+// CACHING LAYER (MCP-011)
+// ============================================================
+
+const cache = {
+    data: new Map(),
+    ttl: 60000, // 1 minute default TTL
+    maxSize: 1000,
+
+    // Generate cache key
+    key(prefix, ...parts) {
+        return `${prefix}:${parts.join(':')}`;
+    },
+
+    // Get from cache
+    get(key) {
+        const entry = this.data.get(key);
+        if (!entry) return null;
+        if (Date.now() > entry.expires) {
+            this.data.delete(key);
+            return null;
+        }
+        return entry.value;
+    },
+
+    // Set in cache
+    set(key, value, ttl = this.ttl) {
+        // Evict oldest if at capacity
+        if (this.data.size >= this.maxSize) {
+            const oldest = this.data.keys().next().value;
+            this.data.delete(oldest);
+        }
+        this.data.set(key, {
+            value,
+            expires: Date.now() + ttl,
+            created: Date.now()
+        });
+    },
+
+    // Invalidate cache entries
+    invalidate(pattern) {
+        for (const key of this.data.keys()) {
+            if (key.startsWith(pattern)) {
+                this.data.delete(key);
+            }
+        }
+    },
+
+    // Clear all cache
+    clear() {
+        this.data.clear();
+    },
+
+    // Get cache stats
+    stats() {
+        return {
+            size: this.data.size,
+            maxSize: this.maxSize,
+            ttl: this.ttl
+        };
+    }
+};
+
+// Cache-wrapped function helper
+async function withCache(key, fn, ttl) {
+    const cached = cache.get(key);
+    if (cached !== null) {
+        return { ...cached, _cached: true };
+    }
+    const result = await fn();
+    cache.set(key, result, ttl);
+    return result;
+}
+
+// Rate limiting
+const rateLimiter = {
+    requests: new Map(),
+    windowMs: 60000, // 1 minute window
+    maxRequests: 100, // 100 requests per minute
+
+    check(clientId) {
+        const now = Date.now();
+        const clientData = this.requests.get(clientId) || { count: 0, windowStart: now };
+
+        // Reset window if expired
+        if (now - clientData.windowStart > this.windowMs) {
+            clientData.count = 0;
+            clientData.windowStart = now;
+        }
+
+        clientData.count++;
+        this.requests.set(clientId, clientData);
+
+        if (clientData.count > this.maxRequests) {
+            throw new MCPError(
+                ERROR_CODES.RATE_LIMITED,
+                'Rate limit exceeded',
+                { limit: this.maxRequests, windowMs: this.windowMs, retryAfter: this.windowMs - (now - clientData.windowStart) }
+            );
+        }
+
+        return true;
+    },
+
+    stats() {
+        return {
+            activeClients: this.requests.size,
+            windowMs: this.windowMs,
+            maxRequests: this.maxRequests
+        };
+    }
+}
+
+// System Tools
+async function systemStats(params = {}) {
+    return {
+        cache: cache.stats(),
+        rateLimiter: rateLimiter.stats(),
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        firebase: {
+            available: !!getFirebaseController(),
+            initialized: getFirebaseController()?.firestore?.initialized || false
+        }
+    };
+}
+
+async function systemCacheClear(params = {}) {
+    const before = cache.stats().size;
+    cache.clear();
+    log('INFO', 'MCP-012-002', `Cache cleared: ${before} entries removed`);
+    return { success: true, entriesCleared: before };
+}
+
+// Audit handlers
+async function auditQuery(params = {}) {
+    return {
+        entries: auditTrail.query({
+            operation: params.operation,
+            since: params.since,
+            success: params.success,
+            limit: params.limit || 50
+        }),
+        totalInMemory: (systemState.auditLog || []).length
+    };
+}
+
+async function auditRecent(params = {}) {
+    return {
+        entries: auditTrail.query({ limit: params.limit || 20 }),
+        totalInMemory: (systemState.auditLog || []).length
+    };
+}
+
+// Firebase Initialization
+async function firebaseInit(params = {}) {
+    const fc = requireFirebase();
+    log('INFO', 'MCP-009-001', 'Initializing Firebase Admin...');
+    cache.clear(); // Clear cache on reinit
+    return await fc.initialize(params.serviceAccountPath);
+}
+
+async function firebaseStatus(params = {}) {
+    const fc = getFirebaseController();
+    return {
+        available: !!fc,
+        initialized: fc?.firestore?.initialized || false,
+        projectId: fc?.firestore?.projectId || null
+    };
+}
+
+// Firestore Operations
+async function firestoreListCollections(params = {}) {
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-003', 'Listing Firestore collections...');
+    // Cache for 5 minutes (collections don't change often)
+    return await withCache(
+        cache.key('collections', 'list'),
+        () => fc.firestore.listCollections(),
+        300000
+    );
+}
+
+async function firestoreGetStats(params = {}) {
+    validateParams(params, ['collection']);
+    const collection = validateCollectionName(params.collection);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-004', `Getting stats for: ${collection}`);
+    // Cache stats for 2 minutes
+    return await withCache(
+        cache.key('stats', collection),
+        () => withRetry(() => fc.firestore.getCollectionStats(collection)),
+        120000
+    );
+}
+
+async function firestoreQuery(params = {}) {
+    validateParams(params, ['collection'], ['where', 'orderBy', 'limit']);
+    const collection = validateCollectionName(params.collection);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-005', `Querying: ${collection}`);
+    return await withRetry(() => fc.firestore.queryDocuments(collection, {
+        where: params.where,
+        orderBy: params.orderBy,
+        limit: params.limit || 50
+    }));
+}
+
+async function firestoreGetDocument(params = {}) {
+    validateParams(params, ['collection', 'id']);
+    const collection = validateCollectionName(params.collection);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-006', `Getting document: ${collection}/${params.id}`);
+    // Cache single documents for 30 seconds
+    return await withCache(
+        cache.key('doc', collection, params.id),
+        () => withRetry(() => fc.firestore.getDocument(collection, params.id)),
+        30000
+    );
+}
+
+async function firestoreCreateDocument(params = {}) {
+    validateParams(params, ['collection', 'data'], ['id']);
+    const collection = validateCollectionName(params.collection);
+    const data = sanitizeDocumentData(params.data);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-007', `Creating document in: ${collection}`);
+    // Invalidate related caches
+    cache.invalidate(`stats:${collection}`);
+    cache.invalidate(`collections`);
+    return await withRetry(() => fc.firestore.createDocument(collection, data, params.id));
+}
+
+async function firestoreUpdateDocument(params = {}) {
+    validateParams(params, ['collection', 'id', 'data'], ['merge']);
+    const collection = validateCollectionName(params.collection);
+    const data = sanitizeDocumentData(params.data);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-008', `Updating document: ${collection}/${params.id}`);
+    // Invalidate related caches
+    cache.invalidate(`doc:${collection}:${params.id}`);
+    cache.invalidate(`stats:${collection}`);
+    return await withRetry(() => fc.firestore.updateDocument(collection, params.id, data, params.merge));
+}
+
+async function firestoreDeleteDocument(params = {}) {
+    validateParams(params, ['collection', 'id']);
+    const collection = validateCollectionName(params.collection);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-009', `Deleting document: ${collection}/${params.id}`);
+    // Invalidate related caches
+    cache.invalidate(`doc:${collection}:${params.id}`);
+    cache.invalidate(`stats:${collection}`);
+    return await withRetry(() => fc.firestore.deleteDocument(collection, params.id));
+}
+
+// User Management
+async function usersListAll(params = {}) {
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-010', 'Listing users...');
+    return await withRetry(() => fc.users.listUsers(params.limit || 100, params.pageToken));
+}
+
+async function usersGet(params = {}) {
+    if (!params.uid && !params.email) {
+        throw new MCPError(
+            ERROR_CODES.MISSING_PARAMETER,
+            'Either uid or email parameter required',
+            { required: ['uid OR email'] }
+        );
+    }
+    const fc = requireFirebaseInit();
+    if (params.email) {
+        const email = validateEmail(params.email);
+        log('INFO', 'MCP-009-011', `Getting user by email: ${email}`);
+        return await withRetry(() => fc.users.getUserByEmail(email));
+    }
+    const uid = validateUID(params.uid);
+    log('INFO', 'MCP-009-011', `Getting user by UID: ${uid}`);
+    return await withRetry(() => fc.users.getUser(uid));
+}
+
+async function usersCreate(params = {}) {
+    validateParams(params, ['email', 'password'], ['displayName', 'phoneNumber', 'role']);
+    const email = validateEmail(params.email);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-012', `Creating user: ${email}`);
+    try {
+        const result = await withRetry(() => fc.users.createUser({ ...params, email }));
+        auditTrail.log('users.create', { email, role: params.role }, result);
+        return result;
+    } catch (error) {
+        auditTrail.log('users.create', { email, role: params.role }, null, error);
+        throw error;
+    }
+}
+
+async function usersUpdate(params = {}) {
+    validateParams(params, ['uid'], ['email', 'displayName', 'phoneNumber', 'password', 'disabled', 'role']);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-013', `Updating user: ${params.uid}`);
+    return await withRetry(() => fc.users.updateUser(params.uid, params));
+}
+
+async function usersDelete(params = {}) {
+    validateParams(params, ['uid']);
+    const uid = validateUID(params.uid);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-014', `Deleting user: ${uid}`);
+    try {
+        const result = await withRetry(() => fc.users.deleteUser(uid));
+        auditTrail.log('users.delete', { uid }, result);
+        return result;
+    } catch (error) {
+        auditTrail.log('users.delete', { uid }, null, error);
+        throw error;
+    }
+}
+
+async function usersSetRole(params = {}) {
+    validateParams(params, ['uid', 'role']);
+    const uid = validateUID(params.uid);
+    const validRoles = ['admin', 'employee', 'customer'];
+    if (!validRoles.includes(params.role)) {
+        throw new MCPError(
+            ERROR_CODES.INVALID_PARAMETER,
+            `Invalid role: ${params.role}`,
+            { validRoles, received: params.role }
+        );
+    }
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-015', `Setting role for ${uid}: ${params.role}`);
+    try {
+        const result = await withRetry(() => fc.users.setUserRole(uid, params.role));
+        auditTrail.log('users.setRole', { uid, role: params.role }, result);
+        return result;
+    } catch (error) {
+        auditTrail.log('users.setRole', { uid, role: params.role }, null, error);
+        throw error;
+    }
+}
+
+async function usersToggleDisable(params = {}) {
+    validateParams(params, ['uid'], ['disable']);
+    const fc = requireFirebaseInit();
+    const action = params.disable ? 'disable' : 'enable';
+    log('INFO', 'MCP-009-016', `${action} user: ${params.uid}`);
+    if (params.disable) {
+        return await withRetry(() => fc.users.disableUser(params.uid));
+    }
+    return await withRetry(() => fc.users.enableUser(params.uid));
+}
+
+async function usersResetPassword(params = {}) {
+    validateParams(params, ['email']);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-017', `Generating reset link for: ${params.email}`);
+    return await withRetry(() => fc.users.generatePasswordResetLink(params.email));
+}
+
+// Backup & Restore
+async function backupCollection(params = {}) {
+    validateParams(params, ['collection']);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-018', `Backing up collection: ${params.collection}`);
+    return await withRetry(() => fc.backup.backupCollection(params.collection));
+}
+
+async function backupAll(params = {}) {
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-019', 'Backing up all collections...');
+    return await withRetry(() => fc.backup.backupAll());
+}
+
+async function backupRestore(params = {}) {
+    validateParams(params, ['collection', 'file']);
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-020', `Restoring collection: ${params.collection} from ${params.file}`);
+    return await withRetry(() => fc.backup.restoreCollection(params.collection, params.file));
+}
+
+async function backupList(params = {}) {
+    const fc = requireFirebase();
+    return fc.backup.listBackups();
+}
+
+async function backupExport(params = {}) {
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-022', 'Exporting full database...');
+    return await fc.backup.exportDatabase();
+}
+
+// Configuration
+async function configGet(params = {}) {
+    const fc = requireFirebase();
+    if (fc.config.initialized) {
+        return await fc.config.getConfig();
+    }
+    return {
+        initialized: false,
+        message: 'Firebase not initialized'
+    };
+}
+
+async function configPricing(params = {}) {
+    const fc = requireFirebaseInit();
+    if (params.set) {
+        log('INFO', 'MCP-009-024', 'Updating pricing config...');
+        return await fc.config.updatePricing(params.set);
+    }
+    return await fc.config.getPricing();
+}
+
+async function configStripe(params = {}) {
+    const fc = requireFirebaseInit();
+    if (params.set) {
+        log('INFO', 'MCP-009-025', 'Updating Stripe config...');
+        return await fc.config.updateStripeConfig(params.set);
+    }
+    return await fc.config.getStripeConfig();
+}
+
+// Security Rules
+async function securityRulesGet(params = {}) {
+    const fc = requireFirebase();
+    return await fc.security.getSecurityRules();
+}
+
+async function securityRulesSave(params = {}) {
+    validateParams(params, ['rules']);
+    const fc = requireFirebase();
+    log('INFO', 'MCP-009-027', 'Saving security rules...');
+    return await fc.security.saveSecurityRules(params.rules);
+}
+
+async function securityRulesGenerate(params = {}) {
+    const fc = requireFirebase();
+    log('INFO', 'MCP-009-028', 'Generating default security rules...');
+    const rules = fc.security.generateDefaultRules();
+    if (params.save) {
+        await fc.security.saveSecurityRules(rules);
+        return { rules, saved: true };
+    }
+    return { rules, saved: false };
+}
+
+// Monitoring
+async function monitorStats(params = {}) {
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-029', 'Getting database stats...');
+    return await fc.monitoring.getDatabaseStats();
+}
+
+async function monitorUserStats(params = {}) {
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-030', 'Getting user stats...');
+    return await fc.monitoring.getUserStats();
+}
+
+async function monitorActivity(params = {}) {
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-031', 'Getting recent activity...');
+    return await fc.monitoring.getRecentActivity(params.limit || 50);
+}
+
+// Batch Operations
+async function batchUpdate(params = {}) {
+    validateParams(params, ['collection', 'updates']);
+    if (!Array.isArray(params.updates) || params.updates.length === 0) {
+        throw new MCPError(
+            ERROR_CODES.INVALID_PARAMETER,
+            'updates must be a non-empty array',
+            { received: typeof params.updates }
+        );
+    }
+    if (params.updates.length > 500) {
+        throw new MCPError(
+            ERROR_CODES.INVALID_PARAMETER,
+            'Firestore batch limit is 500 documents',
+            { received: params.updates.length, max: 500 }
+        );
+    }
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-032', `Batch updating ${params.updates.length} docs in ${params.collection}`);
+    return await withRetry(() => fc.batch.batchUpdate(params.collection, params.updates));
+}
+
+async function batchDelete(params = {}) {
+    validateParams(params, ['collection', 'ids']);
+    if (!Array.isArray(params.ids) || params.ids.length === 0) {
+        throw new MCPError(
+            ERROR_CODES.INVALID_PARAMETER,
+            'ids must be a non-empty array',
+            { received: typeof params.ids }
+        );
+    }
+    if (params.ids.length > 500) {
+        throw new MCPError(
+            ERROR_CODES.INVALID_PARAMETER,
+            'Firestore batch limit is 500 documents',
+            { received: params.ids.length, max: 500 }
+        );
+    }
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-033', `Batch deleting ${params.ids.length} docs from ${params.collection}`);
+    return await withRetry(() => fc.batch.batchDelete(params.collection, params.ids));
+}
+
+async function batchCreate(params = {}) {
+    validateParams(params, ['collection', 'documents']);
+    if (!Array.isArray(params.documents) || params.documents.length === 0) {
+        throw new MCPError(
+            ERROR_CODES.INVALID_PARAMETER,
+            'documents must be a non-empty array',
+            { received: typeof params.documents }
+        );
+    }
+    if (params.documents.length > 500) {
+        throw new MCPError(
+            ERROR_CODES.INVALID_PARAMETER,
+            'Firestore batch limit is 500 documents',
+            { received: params.documents.length, max: 500 }
+        );
+    }
+    const fc = requireFirebaseInit();
+    log('INFO', 'MCP-009-034', `Batch creating ${params.documents.length} docs in ${params.collection}`);
+    return await withRetry(() => fc.batch.batchCreate(params.collection, params.documents));
+}
+
+// ============================================================
 // UTILITY FUNCTIONS
 // ============================================================
 
@@ -840,12 +1763,127 @@ function findFiles(dir, extensions, files = []) {
     return files;
 }
 
+// Enhanced logging system
+const logger = {
+    levels: { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3, AUDIT: 4 },
+    currentLevel: 1, // INFO by default
+
+    format(level, sectionId, message, metadata = {}) {
+        const timestamp = new Date().toISOString();
+        const entry = {
+            timestamp,
+            level,
+            sectionId,
+            message,
+            ...metadata
+        };
+        return JSON.stringify(entry);
+    },
+
+    write(level, sectionId, message, metadata = {}) {
+        if (this.levels[level] < this.currentLevel) return;
+
+        const timestamp = new Date().toISOString();
+        const logLine = `[${timestamp}] [${level}] [${sectionId}] ${message}\n`;
+
+        // Write human-readable to console
+        console.log(logLine.trim());
+
+        // Write structured JSON to file
+        fs.appendFileSync(CONFIG.logFile, logLine);
+
+        // For AUDIT level, also write to audit log
+        if (level === 'AUDIT') {
+            const auditEntry = this.format(level, sectionId, message, metadata);
+            fs.appendFileSync(CONFIG.auditFile, auditEntry + '\n');
+        }
+    },
+
+    debug(sectionId, message, meta) { this.write('DEBUG', sectionId, message, meta); },
+    info(sectionId, message, meta) { this.write('INFO', sectionId, message, meta); },
+    warn(sectionId, message, meta) { this.write('WARN', sectionId, message, meta); },
+    error(sectionId, message, meta) { this.write('ERROR', sectionId, message, meta); },
+    audit(sectionId, action, details) {
+        this.write('AUDIT', sectionId, action, {
+            action,
+            details,
+            auditTimestamp: Date.now()
+        });
+    }
+};
+
+// Legacy log function for compatibility
 function log(level, sectionId, message) {
-    const timestamp = new Date().toISOString();
-    const logLine = `[${timestamp}] [${level}] [${sectionId}] ${message}\n`;
-    fs.appendFileSync(CONFIG.logFile, logLine);
-    console.log(logLine.trim());
+    logger.write(level, sectionId, message);
 }
+
+// Audit trail for sensitive operations
+const auditTrail = {
+    log(operation, params, result, error = null) {
+        const entry = {
+            id: `audit-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            operation,
+            params: this.sanitizeParams(params),
+            success: !error,
+            error: error?.message || null,
+            resultSummary: this.summarizeResult(result)
+        };
+
+        // Store in state for queryability
+        if (!systemState.auditLog) {
+            systemState.auditLog = [];
+        }
+        systemState.auditLog.unshift(entry);
+        if (systemState.auditLog.length > 500) {
+            systemState.auditLog = systemState.auditLog.slice(0, 500);
+        }
+
+        logger.audit('AUDIT-001', operation, entry);
+        return entry;
+    },
+
+    // Remove sensitive data from params before logging
+    sanitizeParams(params) {
+        if (!params) return null;
+        const sanitized = { ...params };
+        const sensitiveKeys = ['password', 'token', 'secret', 'key', 'apiKey'];
+        for (const key of sensitiveKeys) {
+            if (sanitized[key]) {
+                sanitized[key] = '[REDACTED]';
+            }
+        }
+        return sanitized;
+    },
+
+    // Create summary of result for logging
+    summarizeResult(result) {
+        if (!result) return null;
+        if (typeof result !== 'object') return result;
+        if (result.success !== undefined) return { success: result.success };
+        if (result.uid) return { uid: result.uid };
+        if (result.id) return { id: result.id };
+        if (Array.isArray(result)) return { count: result.length };
+        return { keys: Object.keys(result).slice(0, 5) };
+    },
+
+    // Query audit log
+    query(filter = {}) {
+        let results = systemState.auditLog || [];
+
+        if (filter.operation) {
+            results = results.filter(e => e.operation.includes(filter.operation));
+        }
+        if (filter.since) {
+            results = results.filter(e => new Date(e.timestamp) >= new Date(filter.since));
+        }
+        if (filter.success !== undefined) {
+            results = results.filter(e => e.success === filter.success);
+        }
+
+        return results.slice(0, filter.limit || 100);
+    }
+};
 
 function loadState() {
     try {
@@ -940,8 +1978,17 @@ function handleRequest(req, res) {
 
         } catch (error) {
             log('ERROR', 'MCP-001', `Request error: ${error.message}`);
-            res.writeHead(500);
-            res.end(JSON.stringify({ error: error.message }));
+            const statusCode = error instanceof MCPError ? 400 : 500;
+            res.writeHead(statusCode);
+            if (error instanceof MCPError) {
+                res.end(JSON.stringify(error.toJSON()));
+            } else {
+                res.end(JSON.stringify({
+                    code: 'INTERNAL_ERROR',
+                    message: error.message,
+                    timestamp: new Date().toISOString()
+                }));
+            }
         }
     });
 }
