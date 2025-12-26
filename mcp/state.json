@@ -1,0 +1,228 @@
+{
+  "lastHealthCheck": "2025-12-26T14:46:06.877Z",
+  "diagnosticResults": [
+    {
+      "id": "diag-1766760366874",
+      "timestamp": "2025-12-26T14:46:06.874Z",
+      "duration": 3,
+      "passed": 5,
+      "failed": 0,
+      "warnings": 0,
+      "tests": [
+        {
+          "name": "File Structure",
+          "id": "MCP-003-003",
+          "status": "pass",
+          "details": [
+            "All 19 required files present"
+          ],
+          "missingFiles": [],
+          "recommendations": []
+        },
+        {
+          "name": "Code Quality",
+          "id": "MCP-003-004",
+          "status": "pass",
+          "details": [
+            "No major code quality issues found"
+          ],
+          "issues": [],
+          "recommendations": []
+        },
+        {
+          "name": "Firebase Configuration",
+          "id": "MCP-003-002",
+          "status": "pass",
+          "details": [
+            "Firebase configuration looks correct"
+          ],
+          "recommendations": []
+        },
+        {
+          "name": "Code Integrity",
+          "id": "MCP-005-001",
+          "status": "pass",
+          "details": [
+            "All files match integrity snapshot"
+          ],
+          "changes": [],
+          "recommendations": []
+        },
+        {
+          "name": "Dependencies",
+          "id": "MCP-003-005",
+          "status": "pass",
+          "details": [
+            "All dependencies configured correctly"
+          ],
+          "recommendations": []
+        }
+      ],
+      "overallStatus": "HEALTHY"
+    },
+    {
+      "id": "diag-1766760357036",
+      "timestamp": "2025-12-26T14:45:57.036Z",
+      "duration": 4,
+      "passed": 5,
+      "failed": 0,
+      "warnings": 0,
+      "tests": [
+        {
+          "name": "File Structure",
+          "id": "MCP-003-003",
+          "status": "pass",
+          "details": [
+            "All 19 required files present"
+          ],
+          "missingFiles": [],
+          "recommendations": []
+        },
+        {
+          "name": "Code Quality",
+          "id": "MCP-003-004",
+          "status": "pass",
+          "details": [
+            "No major code quality issues found"
+          ],
+          "issues": [],
+          "recommendations": []
+        },
+        {
+          "name": "Firebase Configuration",
+          "id": "MCP-003-002",
+          "status": "pass",
+          "details": [
+            "Firebase configuration looks correct"
+          ],
+          "recommendations": []
+        },
+        {
+          "name": "Code Integrity",
+          "id": "MCP-005-001",
+          "status": "pass",
+          "details": [
+            "All files match integrity snapshot"
+          ],
+          "changes": [],
+          "recommendations": []
+        },
+        {
+          "name": "Dependencies",
+          "id": "MCP-003-005",
+          "status": "pass",
+          "details": [
+            "All dependencies configured correctly"
+          ],
+          "recommendations": []
+        }
+      ],
+      "overallStatus": "HEALTHY"
+    },
+    {
+      "id": "diag-1766760336970",
+      "timestamp": "2025-12-26T14:45:36.970Z",
+      "duration": 8,
+      "passed": 4,
+      "failed": 1,
+      "warnings": 0,
+      "tests": [
+        {
+          "name": "File Structure",
+          "id": "MCP-003-003",
+          "status": "pass",
+          "details": [
+            "All 19 required files present"
+          ],
+          "missingFiles": [],
+          "recommendations": []
+        },
+        {
+          "name": "Code Quality",
+          "id": "MCP-003-004",
+          "status": "pass",
+          "details": [
+            "No major code quality issues found"
+          ],
+          "issues": [],
+          "recommendations": []
+        },
+        {
+          "name": "Firebase Configuration",
+          "id": "MCP-003-002",
+          "status": "pass",
+          "details": [
+            "Firebase configuration looks correct"
+          ],
+          "recommendations": []
+        },
+        {
+          "name": "Code Integrity",
+          "id": "MCP-005-001",
+          "status": "info",
+          "details": [
+            "No integrity snapshot found. Run integrity.snapshot first."
+          ],
+          "changes": [],
+          "recommendations": [
+            "Create baseline snapshot with integrity.snapshot"
+          ]
+        },
+        {
+          "name": "Dependencies",
+          "id": "MCP-003-005",
+          "status": "pass",
+          "details": [
+            "All dependencies configured correctly"
+          ],
+          "recommendations": []
+        }
+      ],
+      "overallStatus": "ISSUES_FOUND"
+    }
+  ],
+  "codeIntegrity": {},
+  "contextHistory": [
+    {
+      "id": "ctx-1766760357160",
+      "timestamp": "2025-12-26T14:45:57.160Z",
+      "name": "Full System Test",
+      "focusAreas": [
+        {
+          "id": "focus-1766760346539",
+          "area": "system-testing",
+          "priority": "high",
+          "description": "Running full system tests",
+          "created": "2025-12-26T14:45:46.539Z"
+        }
+      ],
+      "pendingTasks": [],
+      "notes": "Testing all MCP tools and diagnostics",
+      "metadata": {}
+    }
+  ],
+  "focusAreas": [
+    {
+      "id": "focus-1766760346539",
+      "area": "system-testing",
+      "priority": "high",
+      "description": "Running full system tests",
+      "created": "2025-12-26T14:45:46.539Z"
+    }
+  ],
+  "pendingTasks": [],
+  "knowledgeBase": {
+    "tests": {
+      "full-system-test": {
+        "id": "kb-1766760357286",
+        "category": "tests",
+        "key": "full-system-test",
+        "value": "All MCP tools verified working on 2025-12-26",
+        "tags": [],
+        "created": "2025-12-26T14:45:57.286Z",
+        "updated": "2025-12-26T14:45:57.286Z"
+      }
+    }
+  },
+  "sessionCount": 0
+}

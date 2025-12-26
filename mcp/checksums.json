@@ -1,0 +1,30 @@
+{
+  "files": {
+    "about.html": "ace0562ab7319be750c9f932655a6d6eaa081d1d8a587a6bddf1352fb15ace9d",
+    "contact.html": "98a3285b35c925025284afbfd8557c0735487c946af8de219f891148d64bf2e4",
+    "css/style.css": "dd3386df81417f0b23ff4de93b8c554a0812a62a41edd5baeab761bab71aa6c4",
+    "functions/index.js": "4787e3b10225f86da665c8ac08d331ec8549e15468a7318709fa725aea227d02",
+    "functions/package.json": "868bd37df71aed8f335d952fc24fbbc5e3b20c575f7aacced5489fc76e0562d4",
+    "index.html": "7081f2379cd58a115c4d24363e0a49047d44d83b0b94c83b09cb34e6df755bcc",
+    "js/diagnostics.js": "a185f592bcb3f1a89ba00bb29ad50fd551f162b24f39f0c7dd939a44a5a9352a",
+    "js/firebase.js": "4c16a6cbc18e26ab7a904d4cc23a1fa6fa075e65777bcee248257e8a3f7ddc0c",
+    "js/main.js": "22e3284abf4f4bc8a86d05e6b8f1ed7126ddf430654112327f966a8fba6499a3",
+    "js/portal.js": "6e045e5743b664e7e00d390e31ac7f6f313f44d88b1f9a64c5b9abbd04aac093",
+    "login.html": "85f66e7de27e23e878dccc7a065b163b4b3dc47386dd3f01d4d0bbb9318c8eaf",
+    "portal/admin-shipments.html": "bfcfd7da23415fea7743b04eb7ef165fcd1d926ad52d3538b9192bda3cf2a462",
+    "portal/billing.html": "8ac1724c7259627faf704dc8ca045c80f98fa6e9a3c317302a508c2f3a390528",
+    "portal/customers.html": "dc97ac80cc3e6dcff74eb7c73f52513973d033d8b647b4422e0868573bb0d037",
+    "portal/dashboard.html": "6ed5f46981ab3594d6b16e22d7ceaeedfda7d52e17a15e6ad1954cff75428b3a",
+    "portal/inventory.html": "e607542e7c35ea1f6488c5eab1cf64e13639d9688f6dd56ccaa29d8ef98ad4c6",
+    "portal/invoices.html": "537ce6b3161f8547c2f09a6a8d6d3453914d83f17fdd7932abe64326e13b06cf",
+    "portal/pricing.html": "92cea4c8c9f85067e1451fc0df704135cb8c9c15ce8f33ce24bd68fe881ac4a6",
+    "portal/settings.html": "8bc6a96c1b02341a741e5e70e1ff4a8a5a72ae84b1c4eaa9a603721c8075598a",
+    "portal/shipments.html": "2b8c95434f84daaa0acb2e8de4894b1d6f004978a7762c1ca86f87f338e56df9",
+    "portal/storage-log.html": "af8e32a54e9eff991997cf1d0e2310ea4fc41d6a57dfc6a173edd76d6036670a",
+    "portal/team.html": "0a39a23f42995aeebc72b093a76be96b96be1c6da8e6bd41ed077e60689fa05b",
+    "portal/tracking.html": "f517109e98d0afac15d0c51cfa270bc45dfe06492ca85fed9da14ca29ffb72e5",
+    "services.html": "04b062656e39281fe0a88e27b6e21546ee5680ce617cbb266da9dc6d84a9969d"
+  },
+  "created": "2025-12-26T14:45:46.289Z",
+  "version": "1.0.0"
+}
