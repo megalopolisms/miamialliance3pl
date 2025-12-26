@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instant Quote | Miami Alliance 3PL - Get Your 3D Storage Quote</title>
+    <meta name="description" content="Get an instant 3PL quote with our interactive 3D calculator. See your box or pallet in real-time and get pricing for storage, handling, and shipping.">
+    <meta name="keywords" content="3PL quote, warehouse quote, storage pricing, fulfillment costs, logistics calculator">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://megalopolisms.github.io/miamialliance3pl/quote.html">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Instant Quote | Miami Alliance 3PL">
+    <meta property="og:description" content="Get an instant 3PL quote with our interactive 3D calculator.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://megalopolisms.github.io/miamialliance3pl/quote.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="index.html" class="logo">
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="services.html" class="nav-link">Services</a></li>
+                <li><a href="quote.html" class="nav-link active">Instant Quote</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="login.html" class="nav-link btn btn-outline">Customer Portal</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Page Header -->
+        <section class="page-header page-header-compact">
+            <div class="container">
+                <h1>Instant Quote Calculator</h1>
+                <p>See your package in 3D and get instant pricing</p>
+            </div>
+        </section>
+
+        <!-- Quote Tool -->
+        <section class="quote-section">
+            <div class="container">
+                <div class="quote-tool">
+                    <!-- Left Panel: Controls -->
+                    <div class="quote-controls">
+                        <!-- Package Type -->
+                        <div class="quote-control-group">
+                            <label class="quote-label">Package Type</label>
+                            <div class="package-toggle">
+                                <button class="package-option active" data-type="box">
+                                    <span class="package-icon">📦</span>
+                                    <span class="package-name">Box</span>
+                                </button>
+                                <button class="package-option" data-type="pallet">
+                                    <span class="package-icon">🏗️</span>
+                                    <span class="package-name">Pallet</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Dimensions -->
+                        <div class="quote-control-group">
+                            <label class="quote-label">Dimensions (inches)</label>
+                            <div class="dimension-row">
+                                <div class="dimension-input-group">
+                                    <input type="number" id="dim-length" class="dimension-input" value="12" min="1" max="120">
+                                    <span class="dimension-label">Length</span>
+                                </div>
+                                <div class="dimension-input-group">
+                                    <input type="number" id="dim-width" class="dimension-input" value="12" min="1" max="120">
+                                    <span class="dimension-label">Width</span>
+                                </div>
+                                <div class="dimension-input-group">
+                                    <input type="number" id="dim-height" class="dimension-input" value="12" min="1" max="120">
+                                    <span class="dimension-label">Height</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weight -->
+                        <div class="quote-control-group">
+                            <label class="quote-label">Weight (lbs)</label>
+                            <div class="weight-input-wrapper">
+                                <input type="range" id="weight-slider" min="1" max="500" value="25" class="weight-slider">
+                                <div class="weight-display">
+                                    <input type="number" id="weight-input" value="25" min="1" max="2000" class="weight-number">
+                                    <span class="weight-unit">lbs</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="quote-control-group">
+                            <label class="quote-label">Quantity</label>
+                            <div class="quantity-controls">
+                                <button class="qty-btn" data-action="decrease">-</button>
+                                <input type="number" id="quantity-input" value="1" min="1" max="1000" class="quantity-input">
+                                <button class="qty-btn" data-action="increase">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Zone -->
+                        <div class="quote-control-group">
+                            <label class="quote-label">Shipping Zone</label>
+                            <select id="shipping-zone" class="zone-select">
+                                <option value="local">Local (FL)</option>
+                                <option value="regional" selected>Regional (Southeast)</option>
+                                <option value="national">National</option>
+                            </select>
+                        </div>
+
+                        <!-- Quote Results -->
+                        <div class="quote-results">
+                            <h3 class="quote-results-title">Estimated Quote</h3>
+
+                            <div class="quote-line">
+                                <span>Dimensional Weight</span>
+                                <span id="result-dim-weight">12.4 lbs</span>
+                            </div>
+                            <div class="quote-line">
+                                <span>Cubic Feet</span>
+                                <span id="result-cubic-ft">1.0 ft³</span>
+                            </div>
+
+                            <div class="quote-divider"></div>
+
+                            <div class="quote-line">
+                                <span>Storage (30 days)</span>
+                                <span id="result-storage">$22.50</span>
+                            </div>
+                            <div class="quote-line">
+                                <span>Handling Fee</span>
+                                <span id="result-handling">$3.50</span>
+                            </div>
+                            <div class="quote-line">
+                                <span>Pick & Pack</span>
+                                <span id="result-pickpack">$1.25</span>
+                            </div>
+                            <div class="quote-line">
+                                <span>Est. Shipping</span>
+                                <span id="result-shipping">$16.25</span>
+                            </div>
+
+                            <div class="quote-divider"></div>
+
+                            <div class="quote-line quote-total">
+                                <span>TOTAL ESTIMATE</span>
+                                <span id="result-total">$43.50</span>
+                            </div>
+
+                            <p class="quote-disclaimer">* Estimates based on standard rates. Final pricing may vary.</p>
+                        </div>
+
+                        <a href="contact.html" class="btn btn-primary btn-large quote-cta">
+                            Get Detailed Quote
+                        </a>
+                    </div>
+
+                    <!-- Right Panel: 3D Visualization -->
+                    <div class="quote-canvas-wrapper">
+                        <div id="quote-canvas"></div>
+                        <div class="canvas-controls">
+                            <span class="canvas-hint">Drag to rotate • Scroll to zoom</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Choose Us -->
+        <section class="content-section bg-gray">
+            <div class="container">
+                <h2 class="section-title">Why Miami Alliance 3PL?</h2>
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">📍</div>
+                        <h3>Prime Location</h3>
+                        <p>Strategic Medley, FL location near Miami port and major highways</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">⚡</div>
+                        <h3>Fast Processing</h3>
+                        <p>Same-day receiving and next-day shipping available</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">📊</div>
+                        <h3>Real-Time Tracking</h3>
+                        <p>Full visibility with our customer portal</p>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-icon">💰</div>
+                        <h3>No Hidden Fees</h3>
+                        <p>Transparent pricing with no surprises</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <h2>Ready to Get Started?</h2>
+                <p>Contact us for a custom quote tailored to your business needs</p>
+                <div class="cta-buttons">
+                    <a href="contact.html" class="btn btn-primary btn-large">Contact Us</a>
+                    <a href="tel:+13055551234" class="btn btn-outline btn-large">Call Now</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h4>Miami Alliance 3PL</h4>
+                    <p>Your trusted partner for warehousing, fulfillment, and logistics solutions in South Florida.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="quote.html">Instant Quote</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>8780 NW 100th ST<br>Medley, FL 33178</p>
+                    <p><a href="mailto:info@miamialliance3pl.com">info@miamialliance3pl.com</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Miami Alliance 3PL. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Three.js -->
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Quote Scripts -->
+    <script src="js/quote-calculator.js"></script>
+    <script src="js/quote-3d.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

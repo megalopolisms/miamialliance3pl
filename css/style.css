@@ -1787,3 +1787,447 @@ ul {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==========================================================================
+   Quote Calculator Page
+   ========================================================================== */
+
+/* Compact Page Header */
+.page-header-compact {
+    padding: calc(70px + var(--spacing-lg)) 0 var(--spacing-lg);
+}
+
+.page-header-compact h1 {
+    font-size: var(--font-size-3xl);
+    margin-bottom: var(--spacing-xs);
+}
+
+.page-header-compact p {
+    font-size: var(--font-size-base);
+}
+
+/* Quote Section */
+.quote-section {
+    padding: var(--spacing-xl) 0;
+}
+
+/* Quote Tool Layout */
+.quote-tool {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: var(--spacing-lg);
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+@media (max-width: 1023px) {
+    .quote-tool {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Quote Controls Panel */
+.quote-controls {
+    padding: var(--spacing-lg);
+    background: var(--color-white);
+    border-right: 1px solid var(--color-gray-200);
+}
+
+@media (max-width: 1023px) {
+    .quote-controls {
+        border-right: none;
+        border-bottom: 1px solid var(--color-gray-200);
+    }
+}
+
+.quote-control-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.quote-label {
+    display: block;
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-700);
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Package Type Toggle */
+.package-toggle {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.package-option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: var(--spacing-md);
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+}
+
+.package-option:hover {
+    border-color: var(--color-accent);
+    background: var(--color-gray-50);
+}
+
+.package-option.active {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-white);
+}
+
+.package-icon {
+    font-size: 2rem;
+}
+
+.package-name {
+    font-weight: 600;
+    font-size: var(--font-size-base);
+}
+
+/* Dimension Inputs */
+.dimension-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.dimension-input-group {
+    text-align: center;
+}
+
+.dimension-input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    text-align: center;
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition-fast);
+    font-family: inherit;
+}
+
+.dimension-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.dimension-label {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-500);
+}
+
+/* Weight Input */
+.weight-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.weight-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--color-gray-200);
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+}
+
+.weight-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-fast);
+}
+
+.weight-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.weight-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    border: none;
+}
+
+.weight-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.weight-number {
+    width: 80px;
+    padding: var(--spacing-xs);
+    text-align: center;
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+}
+
+.weight-number:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.weight-unit {
+    font-size: var(--font-size-base);
+    color: var(--color-gray-500);
+}
+
+/* Quantity Controls */
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+.qty-btn {
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+}
+
+.qty-btn:hover {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-white);
+}
+
+.quantity-input {
+    width: 80px;
+    padding: var(--spacing-sm);
+    text-align: center;
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+}
+
+.quantity-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+/* Shipping Zone Select */
+.zone-select {
+    width: 100%;
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-base);
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    cursor: pointer;
+    transition: border-color var(--transition-fast);
+    font-family: inherit;
+}
+
+.zone-select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+/* Quote Results */
+.quote-results {
+    background: var(--color-gray-50);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.quote-results-title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-sm);
+    text-align: center;
+}
+
+.quote-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-600);
+}
+
+.quote-divider {
+    height: 1px;
+    background: var(--color-gray-300);
+    margin: var(--spacing-xs) 0;
+}
+
+.quote-total {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-gray-900);
+    border-top: 2px solid var(--color-gray-300);
+    padding-top: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+}
+
+.quote-disclaimer {
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-400);
+    text-align: center;
+    margin-top: var(--spacing-sm);
+    font-style: italic;
+}
+
+.quote-cta {
+    width: 100%;
+}
+
+/* 3D Canvas Wrapper */
+.quote-canvas-wrapper {
+    position: relative;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 500px;
+}
+
+@media (max-width: 1023px) {
+    .quote-canvas-wrapper {
+        min-height: 350px;
+    }
+}
+
+#quote-canvas {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+}
+
+@media (max-width: 1023px) {
+    #quote-canvas {
+        min-height: 350px;
+    }
+}
+
+.canvas-controls {
+    position: absolute;
+    bottom: var(--spacing-md);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-md);
+}
+
+.canvas-hint {
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-500);
+}
+
+/* Benefits Grid for Quote Page */
+.bg-gray {
+    background-color: var(--color-gray-50);
+}
+
+.benefit-card {
+    background: var(--color-white);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal);
+}
+
+.benefit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+}
+
+.benefit-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.benefit-card h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-xs);
+}
+
+.benefit-card p {
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-500);
+}
+
+/* CTA Buttons for Quote Page */
+.cta-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    justify-content: center;
+}
+
+/* Footer Section for Quote Page */
+.footer-section h4 {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-accent);
+}
+
+.footer-section ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.footer-section ul a {
+    font-size: var(--font-size-sm);
+    opacity: 0.8;
+    transition: opacity var(--transition-fast);
+}
+
+.footer-section ul a:hover {
+    opacity: 1;
+    color: var(--color-accent);
+}
+
+.footer-section p {
+    font-size: var(--font-size-sm);
+    opacity: 0.8;
+}
+
+.footer-section p a {
+    color: var(--color-accent);
+}
