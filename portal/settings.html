@@ -301,6 +301,46 @@
                 </div>
             </div>
 
+            <!-- Stripe Payment Settings -->
+            <div class="settings-section">
+                <h2>💳 Payment Settings (Stripe)</h2>
+                <p style="color: var(--color-gray-600); margin-bottom: var(--spacing-md);">Configure Stripe for accepting online payments. Get your keys from <a href="https://dashboard.stripe.com/apikeys" target="_blank">Stripe Dashboard</a>.</p>
+                <div class="company-info-grid">
+                    <div class="form-group">
+                        <label>Stripe Publishable Key</label>
+                        <input type="text" id="stripe-pk" placeholder="pk_live_...">
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Terms (Days)</label>
+                        <input type="number" id="payment-terms" value="30" min="1" max="90">
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Enable Online Payments</h3>
+                        <p>Allow customers to pay invoices online via Stripe</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="stripe-enabled">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>Auto-send Payment Reminders</h3>
+                        <p>Send email reminders for overdue invoices</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="payment-reminders">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <button class="btn-sm" id="save-stripe">Save Payment Settings</button>
+                <p style="margin-top: var(--spacing-md); font-size: var(--font-size-sm); color: var(--color-gray-500);">
+                    Note: For full Stripe integration, deploy Firebase Functions. See <code>/functions/README.md</code> for setup instructions.
+                </p>
+            </div>
+
             <!-- System Stats -->
             <div class="settings-section">
                 <h2>📈 System Statistics</h2>
@@ -421,6 +461,16 @@
                     document.getElementById('new-customer-alerts').checked = data.newCustomerAlerts !== false;
                     document.getElementById('daily-summary').checked = data.dailySummary === true;
                 }
+
+                // Load Stripe settings
+                const stripeDoc = await getDoc(doc(db, 'settings', 'stripe'));
+                if (stripeDoc.exists()) {
+                    const data = stripeDoc.data();
+                    if (data.publishableKey) document.getElementById('stripe-pk').value = data.publishableKey;
+                    if (data.paymentTerms) document.getElementById('payment-terms').value = data.paymentTerms;
+                    document.getElementById('stripe-enabled').checked = data.enabled === true;
+                    document.getElementById('payment-reminders').checked = data.paymentReminders === true;
+                }
             } catch (e) {
                 console.error('Error loading settings:', e);
             }
@@ -461,6 +511,21 @@
 
         document.getElementById('export-data').addEventListener('click', async () => {
             showToast('Generating export... (coming soon)', 'success');
+        });
+
+        document.getElementById('save-stripe').addEventListener('click', async () => {
+            try {
+                await setDoc(doc(db, 'settings', 'stripe'), {
+                    publishableKey: document.getElementById('stripe-pk').value,
+                    paymentTerms: parseInt(document.getElementById('payment-terms').value) || 30,
+                    enabled: document.getElementById('stripe-enabled').checked,
+                    paymentReminders: document.getElementById('payment-reminders').checked,
+                    updatedAt: new Date().toISOString()
+                });
+                showToast('Payment settings saved!', 'success');
+            } catch (e) {
+                showToast('Error saving payment settings', 'error');
+            }
         });
 
         document.getElementById('clear-test-data').addEventListener('click', async () => {

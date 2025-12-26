@@ -307,6 +307,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, doc, getDoc, getDocs, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
@@ -320,12 +321,15 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const functions = getFunctions(app);
 
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         let currentUserId = null;
         let currentInvoice = null;
         let selectedPaymentMethod = null;
+        let stripeSettings = null;
+        let stripe = null;
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
@@ -348,7 +352,30 @@
                 document.getElementById('admin-nav').style.display = 'block';
             }
 
+            // Load Stripe settings
+            try {
+                const stripeDoc = await getDoc(doc(db, 'settings', 'stripe'));
+                if (stripeDoc.exists()) {
+                    stripeSettings = stripeDoc.data();
+                    if (stripeSettings.enabled && stripeSettings.publishableKey) {
+                        stripe = Stripe(stripeSettings.publishableKey);
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading Stripe settings:', e);
+            }
+
             await loadInvoices();
+
+            // Check for payment success/cancel in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('payment') === 'success') {
+                showToast('Payment successful! Thank you.', 'success');
+                window.history.replaceState({}, '', 'billing.html');
+            } else if (urlParams.get('payment') === 'cancelled') {
+                showToast('Payment was cancelled.', 'info');
+                window.history.replaceState({}, '', 'billing.html');
+            }
         });
 
         async function loadInvoices() {
@@ -516,8 +543,37 @@
             }
 
             if (selectedPaymentMethod === 'stripe') {
-                // Stripe payment - would integrate with Stripe Checkout
-                alert('Stripe payment integration coming soon! For now, please contact us to complete your payment.');
+                if (!stripeSettings?.enabled) {
+                    alert('Online payments are not enabled. Please contact us to complete your payment.');
+                    return;
+                }
+
+                const btn = document.getElementById('btn-pay-invoice');
+                const originalText = btn.textContent;
+                btn.textContent = 'Processing...';
+                btn.disabled = true;
+
+                try {
+                    // Call Firebase Function to create Stripe Checkout session
+                    const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
+                    const result = await createCheckoutSession({
+                        invoiceId: currentInvoice.id,
+                        successUrl: window.location.origin + window.location.pathname + '?payment=success&invoice=' + currentInvoice.id,
+                        cancelUrl: window.location.origin + window.location.pathname + '?payment=cancelled'
+                    });
+
+                    // Redirect to Stripe Checkout
+                    if (result.data.url) {
+                        window.location.href = result.data.url;
+                    } else {
+                        throw new Error('No checkout URL returned');
+                    }
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    alert('Error processing payment: ' + (error.message || 'Please try again.'));
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
             } else if (selectedPaymentMethod === 'ach') {
                 alert('Please use the following bank details for wire transfer:\n\nBank: [Your Bank]\nRouting: [Routing Number]\nAccount: [Account Number]\nReference: ' + currentInvoice.invoice_number);
             }
@@ -556,6 +612,27 @@
             await signOut(auth);
             window.location.href = '../login.html';
         });
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+            `;
+            if (type === 'success') toast.style.background = '#22c55e';
+            else if (type === 'error') toast.style.background = '#ef4444';
+            else toast.style.background = '#3b82f6';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
     </script>
 </body>
 </html>
