@@ -113,7 +113,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, browserLocalPersistence, setPersistence } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, doc, setDoc, getDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -136,6 +136,22 @@
 
         // Google Auth Provider
         const googleProvider = new GoogleAuthProvider();
+
+        // Check for pending invite and return role
+        async function checkPendingInvite(email) {
+            try {
+                const inviteDoc = await getDoc(doc(db, 'pending_invites', email.toLowerCase()));
+                if (inviteDoc.exists()) {
+                    const inviteData = inviteDoc.data();
+                    // Delete the invite after use
+                    await deleteDoc(doc(db, 'pending_invites', email.toLowerCase()));
+                    return { role: inviteData.role, name: inviteData.name };
+                }
+            } catch (e) {
+                console.log('Error checking invite:', e);
+            }
+            return null;
+        }
 
         // Check if already logged in
         onAuthStateChanged(auth, (user) => {
@@ -160,17 +176,19 @@
                 // Check if user exists in Firestore, if not create profile
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
                 if (!userDoc.exists()) {
-                    // New user - assign role (admin for fallback emails, customer for others)
+                    // Check for pending invite
+                    const invite = await checkPendingInvite(user.email);
+                    const role = invite?.role || (isFallbackAdmin ? 'admin' : 'customer');
+
                     await setDoc(doc(db, 'users', user.uid), {
-                        name: user.displayName || '',
+                        name: invite?.name || user.displayName || '',
                         email: user.email,
                         company_name: '',
                         phone: user.phoneNumber || '',
-                        role: isFallbackAdmin ? 'admin' : 'customer',
+                        role: role,
                         created_at: new Date().toISOString()
                     });
                 } else if (isFallbackAdmin && !userDoc.data().role) {
-                    // Existing user with no role but in fallback admin list - set as admin
                     await setDoc(doc(db, 'users', user.uid), { role: 'admin' }, { merge: true });
                 }
 

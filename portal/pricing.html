@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing Management | Miami Alliance 3PL Portal</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/style.css?v=8">
+    <style>
+        .pricing-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        .pricing-section h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-gray-800);
+            border-bottom: 2px solid var(--color-gray-200);
+            padding-bottom: var(--spacing-sm);
+        }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-md);
+        }
+        .price-card {
+            background: var(--color-gray-50);
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+        }
+        .price-card h4 {
+            font-size: var(--font-size-md);
+            color: var(--color-gray-700);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .price-card .price-inputs {
+            display: grid;
+            gap: var(--spacing-xs);
+        }
+        .price-row {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        .price-row label {
+            flex: 1;
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-600);
+        }
+        .price-row input {
+            width: 120px;
+            padding: 8px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            text-align: right;
+        }
+        .price-row input:focus {
+            border-color: var(--color-primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+        }
+        .price-row .unit {
+            font-size: var(--font-size-xs);
+            color: var(--color-gray-500);
+            width: 60px;
+        }
+        .services-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .services-table th,
+        .services-table td {
+            padding: var(--spacing-sm);
+            text-align: left;
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+        .services-table th {
+            background: var(--color-gray-50);
+            font-weight: 600;
+            color: var(--color-gray-700);
+        }
+        .services-table input {
+            width: 100px;
+            padding: 6px 10px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-sm);
+            text-align: right;
+        }
+        .services-table .service-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .services-table .service-desc {
+            font-size: var(--font-size-xs);
+            color: var(--color-gray-500);
+        }
+        .add-service-btn {
+            margin-top: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-primary);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .add-service-btn:hover {
+            text-decoration: underline;
+        }
+        .btn-save-section {
+            background: var(--color-primary);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: var(--spacing-md);
+        }
+        .btn-save-section:hover {
+            background: var(--color-primary-dark);
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            display: none;
+        }
+        .toast.error {
+            background: #ef4444;
+        }
+        .toast.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        .page-header h1 {
+            font-size: var(--font-size-2xl);
+            color: var(--color-gray-800);
+        }
+        .btn-save-all {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--font-size-md);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-save-all:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+        .customer-rates-section {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+        }
+        .customer-rates-section h2 {
+            color: #92400e;
+            border-bottom-color: #fbbf24;
+        }
+        .custom-rate-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 120px 100px 50px;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--color-gray-200);
+            align-items: center;
+        }
+        .custom-rate-row select,
+        .custom-rate-row input {
+            padding: 8px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-sm);
+        }
+        .delete-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background: #fecaca;
+        }
+        .info-banner {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+        .info-banner .icon {
+            font-size: 1.5rem;
+        }
+        .info-banner p {
+            color: #1e40af;
+            font-size: var(--font-size-sm);
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="portal-sidebar">
+            <nav>
+                <a href="dashboard.html" class="portal-nav-item">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="shipments.html" class="portal-nav-item">
+                    <span>🚚</span> Shipments
+                </a>
+                <a href="tracking.html" class="portal-nav-item">
+                    <span>🔍</span> Tracking
+                </a>
+                <a href="inventory.html" class="portal-nav-item">
+                    <span>📦</span> Inventory
+                </a>
+                <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Staff</div>
+                    <a href="customers.html" class="portal-nav-item">
+                        <span>👥</span> All Customers
+                    </a>
+                    <a href="admin-shipments.html" class="portal-nav-item">
+                        <span>📋</span> All Shipments
+                    </a>
+                </div>
+                <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
+                    <a href="pricing.html" class="portal-nav-item active">
+                        <span>💰</span> Pricing
+                    </a>
+                    <a href="settings.html" class="portal-nav-item">
+                        <span>⚙️</span> Settings
+                    </a>
+                    <a href="team.html" class="portal-nav-item">
+                        <span>👔</span> Manage Team
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="portal-main">
+            <div class="page-header">
+                <h1>💰 Pricing Management</h1>
+                <button class="btn-save-all" onclick="saveAllPricing()">
+                    💾 Save All Changes
+                </button>
+            </div>
+
+            <div class="info-banner">
+                <span class="icon">ℹ️</span>
+                <div>
+                    <p><strong>Default Pricing:</strong> Set your standard rates below. These apply to all customers unless a custom rate is defined.</p>
+                    <p style="margin-top: 4px;">Prices are in USD. Leave empty or set to 0 to disable a service.</p>
+                </div>
+            </div>
+
+            <!-- Storage Rates -->
+            <div class="pricing-section">
+                <h2>📦 Storage Rates</h2>
+                <div class="pricing-grid">
+                    <div class="price-card">
+                        <h4>🎯 Pallet Storage</h4>
+                        <div class="price-inputs">
+                            <div class="price-row">
+                                <label>Daily Rate</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="pallet-daily" placeholder="0.00">
+                                <span class="unit">/day</span>
+                            </div>
+                            <div class="price-row">
+                                <label>Weekly Rate</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="pallet-weekly" placeholder="0.00">
+                                <span class="unit">/week</span>
+                            </div>
+                            <div class="price-row">
+                                <label>Monthly Rate</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="pallet-monthly" placeholder="0.00">
+                                <span class="unit">/month</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="price-card">
+                        <h4>📦 Container Storage</h4>
+                        <div class="price-inputs">
+                            <div class="price-row">
+                                <label>20ft Container</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="container-20ft" placeholder="0.00">
+                                <span class="unit">/day</span>
+                            </div>
+                            <div class="price-row">
+                                <label>40ft Container</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="container-40ft" placeholder="0.00">
+                                <span class="unit">/day</span>
+                            </div>
+                            <div class="price-row">
+                                <label>40ft HC</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="container-40hc" placeholder="0.00">
+                                <span class="unit">/day</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="price-card">
+                        <h4>📋 Box/Carton Storage</h4>
+                        <div class="price-inputs">
+                            <div class="price-row">
+                                <label>Small Box</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="box-small" placeholder="0.00">
+                                <span class="unit">/month</span>
+                            </div>
+                            <div class="price-row">
+                                <label>Medium Box</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="box-medium" placeholder="0.00">
+                                <span class="unit">/month</span>
+                            </div>
+                            <div class="price-row">
+                                <label>Large Box</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="box-large" placeholder="0.00">
+                                <span class="unit">/month</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="price-card">
+                        <h4>🏢 Cubic Storage</h4>
+                        <div class="price-inputs">
+                            <div class="price-row">
+                                <label>Per Cubic Foot</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="cubic-foot" placeholder="0.00">
+                                <span class="unit">/month</span>
+                            </div>
+                            <div class="price-row">
+                                <label>Per Sq Foot</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="sqft" placeholder="0.00">
+                                <span class="unit">/month</span>
+                            </div>
+                            <div class="price-row">
+                                <label>Min. Monthly</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="storage-min" placeholder="0.00">
+                                <span class="unit">min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Handling Services -->
+            <div class="pricing-section">
+                <h2>🏗️ Handling Services</h2>
+                <table class="services-table">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Description</th>
+                            <th>Rate</th>
+                            <th>Unit</th>
+                        </tr>
+                    </thead>
+                    <tbody id="handling-services">
+                        <tr>
+                            <td><div class="service-name">📥 Receiving</div></td>
+                            <td class="service-desc">Unloading & checking inbound shipments</td>
+                            <td>$ <input type="number" step="0.01" id="svc-receiving" placeholder="0.00"></td>
+                            <td>per pallet</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">🏗️ Unloading</div></td>
+                            <td class="service-desc">Container/truck unloading labor</td>
+                            <td>$ <input type="number" step="0.01" id="svc-unloading" placeholder="0.00"></td>
+                            <td>per hour</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">📤 Pick & Pack</div></td>
+                            <td class="service-desc">Order picking and packing</td>
+                            <td>$ <input type="number" step="0.01" id="svc-pickpack" placeholder="0.00"></td>
+                            <td>per order</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">🏷️ Labeling</div></td>
+                            <td class="service-desc">Product labeling service</td>
+                            <td>$ <input type="number" step="0.01" id="svc-labeling" placeholder="0.00"></td>
+                            <td>per item</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">📦 Palletizing</div></td>
+                            <td class="service-desc">Building pallets from loose cargo</td>
+                            <td>$ <input type="number" step="0.01" id="svc-palletizing" placeholder="0.00"></td>
+                            <td>per pallet</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">🎁 Wrapping</div></td>
+                            <td class="service-desc">Shrink wrap / stretch wrap</td>
+                            <td>$ <input type="number" step="0.01" id="svc-wrapping" placeholder="0.00"></td>
+                            <td>per pallet</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">🚚 Loading</div></td>
+                            <td class="service-desc">Loading outbound trucks/containers</td>
+                            <td>$ <input type="number" step="0.01" id="svc-loading" placeholder="0.00"></td>
+                            <td>per hour</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">📊 Inventory Count</div></td>
+                            <td class="service-desc">Physical inventory counting</td>
+                            <td>$ <input type="number" step="0.01" id="svc-inventory" placeholder="0.00"></td>
+                            <td>per SKU</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Additional Services -->
+            <div class="pricing-section">
+                <h2>✨ Additional Services</h2>
+                <table class="services-table">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Description</th>
+                            <th>Rate</th>
+                            <th>Unit</th>
+                        </tr>
+                    </thead>
+                    <tbody id="additional-services">
+                        <tr>
+                            <td><div class="service-name">🔧 Kitting</div></td>
+                            <td class="service-desc">Assembling product kits/bundles</td>
+                            <td>$ <input type="number" step="0.01" id="svc-kitting" placeholder="0.00"></td>
+                            <td>per kit</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">↩️ Returns Processing</div></td>
+                            <td class="service-desc">Inspect, repack, restock returns</td>
+                            <td>$ <input type="number" step="0.01" id="svc-returns" placeholder="0.00"></td>
+                            <td>per item</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">📸 Photography</div></td>
+                            <td class="service-desc">Product photography services</td>
+                            <td>$ <input type="number" step="0.01" id="svc-photo" placeholder="0.00"></td>
+                            <td>per SKU</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">🎯 Quality Check</div></td>
+                            <td class="service-desc">Quality control inspection</td>
+                            <td>$ <input type="number" step="0.01" id="svc-qc" placeholder="0.00"></td>
+                            <td>per item</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">📝 Custom Packaging</div></td>
+                            <td class="service-desc">Custom box/packaging setup</td>
+                            <td>$ <input type="number" step="0.01" id="svc-custom-pkg" placeholder="0.00"></td>
+                            <td>per order</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">🚨 Rush Handling</div></td>
+                            <td class="service-desc">Same-day priority processing</td>
+                            <td>$ <input type="number" step="0.01" id="svc-rush" placeholder="0.00"></td>
+                            <td>per order</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">📄 Documentation</div></td>
+                            <td class="service-desc">Customs/shipping paperwork</td>
+                            <td>$ <input type="number" step="0.01" id="svc-docs" placeholder="0.00"></td>
+                            <td>per shipment</td>
+                        </tr>
+                        <tr>
+                            <td><div class="service-name">☎️ Dedicated Support</div></td>
+                            <td class="service-desc">Account management hours</td>
+                            <td>$ <input type="number" step="0.01" id="svc-support" placeholder="0.00"></td>
+                            <td>per hour</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Freight/Shipping Surcharges -->
+            <div class="pricing-section">
+                <h2>🚛 Freight & Surcharges</h2>
+                <div class="pricing-grid">
+                    <div class="price-card">
+                        <h4>⛽ Fuel Surcharge</h4>
+                        <div class="price-inputs">
+                            <div class="price-row">
+                                <label>Percentage</label>
+                                <input type="number" step="0.1" id="fuel-surcharge" placeholder="0.0">
+                                <span class="unit">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="price-card">
+                        <h4>🏢 Residential Delivery</h4>
+                        <div class="price-inputs">
+                            <div class="price-row">
+                                <label>Surcharge</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="residential-surcharge" placeholder="0.00">
+                                <span class="unit">flat</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="price-card">
+                        <h4>🏗️ Liftgate Fee</h4>
+                        <div class="price-inputs">
+                            <div class="price-row">
+                                <label>Delivery</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="liftgate-del" placeholder="0.00">
+                                <span class="unit">flat</span>
+                            </div>
+                            <div class="price-row">
+                                <label>Pickup</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="liftgate-pu" placeholder="0.00">
+                                <span class="unit">flat</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="price-card">
+                        <h4>⏰ Detention</h4>
+                        <div class="price-inputs">
+                            <div class="price-row">
+                                <label>Free Time</label>
+                                <input type="number" step="1" id="detention-free" placeholder="0">
+                                <span class="unit">hours</span>
+                            </div>
+                            <div class="price-row">
+                                <label>Rate After</label>
+                                <span>$</span>
+                                <input type="number" step="0.01" id="detention-rate" placeholder="0.00">
+                                <span class="unit">/hour</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer-Specific Rates -->
+            <div class="pricing-section customer-rates-section">
+                <h2>🎯 Customer-Specific Rates</h2>
+                <p style="color: #92400e; margin-bottom: var(--spacing-md);">Override default pricing for specific customers. These rates take priority over standard rates.</p>
+
+                <div id="customer-rates-container">
+                    <div class="custom-rate-row" style="font-weight: 600; border-bottom: 2px solid #fbbf24;">
+                        <div>Customer</div>
+                        <div>Service/Item</div>
+                        <div>Custom Rate</div>
+                        <div>Unit</div>
+                        <div></div>
+                    </div>
+                    <!-- Customer rates will be loaded here -->
+                </div>
+
+                <div class="add-service-btn" onclick="addCustomerRate()">
+                    <span>➕</span> Add Customer-Specific Rate
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Fallback admin emails
+        const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+
+        let currentUser = null;
+        let userRole = 'customer';
+        let customersData = [];
+
+        // Show toast notification
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (isError ? ' error' : '');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        window.showToast = showToast;
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            currentUser = user;
+
+            // Get user data
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            let userData = userDoc.exists() ? userDoc.data() : null;
+
+            // Determine role
+            if (userData?.role) {
+                userRole = userData.role;
+            } else if (FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase())) {
+                userRole = 'admin';
+            }
+
+            // Only admins can access this page
+            if (userRole !== 'admin') {
+                showToast('Access denied. Admin only.', true);
+                setTimeout(() => window.location.href = 'dashboard.html', 1500);
+                return;
+            }
+
+            // Update UI
+            document.getElementById('user-name').textContent = userData?.name || user.email;
+            document.getElementById('employee-nav').style.display = 'block';
+            document.getElementById('admin-nav').style.display = 'block';
+
+            // Load data
+            await loadCustomers();
+            await loadPricing();
+        });
+
+        // Load customers for dropdown
+        async function loadCustomers() {
+            try {
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                customersData = [];
+                usersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.role === 'customer' || !data.role) {
+                        customersData.push({
+                            id: doc.id,
+                            name: data.name || data.email,
+                            email: data.email,
+                            company: data.company_name || ''
+                        });
+                    }
+                });
+            } catch (e) {
+                console.error('Error loading customers:', e);
+            }
+        }
+
+        // Load pricing from Firestore
+        async function loadPricing() {
+            try {
+                const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
+                if (pricingDoc.exists()) {
+                    const data = pricingDoc.data();
+
+                    // Storage rates
+                    if (data.storage) {
+                        document.getElementById('pallet-daily').value = data.storage.palletDaily || '';
+                        document.getElementById('pallet-weekly').value = data.storage.palletWeekly || '';
+                        document.getElementById('pallet-monthly').value = data.storage.palletMonthly || '';
+                        document.getElementById('container-20ft').value = data.storage.container20ft || '';
+                        document.getElementById('container-40ft').value = data.storage.container40ft || '';
+                        document.getElementById('container-40hc').value = data.storage.container40hc || '';
+                        document.getElementById('box-small').value = data.storage.boxSmall || '';
+                        document.getElementById('box-medium').value = data.storage.boxMedium || '';
+                        document.getElementById('box-large').value = data.storage.boxLarge || '';
+                        document.getElementById('cubic-foot').value = data.storage.cubicFoot || '';
+                        document.getElementById('sqft').value = data.storage.sqft || '';
+                        document.getElementById('storage-min').value = data.storage.minMonthly || '';
+                    }
+
+                    // Handling services
+                    if (data.handling) {
+                        document.getElementById('svc-receiving').value = data.handling.receiving || '';
+                        document.getElementById('svc-unloading').value = data.handling.unloading || '';
+                        document.getElementById('svc-pickpack').value = data.handling.pickpack || '';
+                        document.getElementById('svc-labeling').value = data.handling.labeling || '';
+                        document.getElementById('svc-palletizing').value = data.handling.palletizing || '';
+                        document.getElementById('svc-wrapping').value = data.handling.wrapping || '';
+                        document.getElementById('svc-loading').value = data.handling.loading || '';
+                        document.getElementById('svc-inventory').value = data.handling.inventory || '';
+                    }
+
+                    // Additional services
+                    if (data.additional) {
+                        document.getElementById('svc-kitting').value = data.additional.kitting || '';
+                        document.getElementById('svc-returns').value = data.additional.returns || '';
+                        document.getElementById('svc-photo').value = data.additional.photo || '';
+                        document.getElementById('svc-qc').value = data.additional.qc || '';
+                        document.getElementById('svc-custom-pkg').value = data.additional.customPkg || '';
+                        document.getElementById('svc-rush').value = data.additional.rush || '';
+                        document.getElementById('svc-docs').value = data.additional.docs || '';
+                        document.getElementById('svc-support').value = data.additional.support || '';
+                    }
+
+                    // Freight surcharges
+                    if (data.freight) {
+                        document.getElementById('fuel-surcharge').value = data.freight.fuelSurcharge || '';
+                        document.getElementById('residential-surcharge').value = data.freight.residentialSurcharge || '';
+                        document.getElementById('liftgate-del').value = data.freight.liftgateDelivery || '';
+                        document.getElementById('liftgate-pu').value = data.freight.liftgatePickup || '';
+                        document.getElementById('detention-free').value = data.freight.detentionFree || '';
+                        document.getElementById('detention-rate').value = data.freight.detentionRate || '';
+                    }
+
+                    // Customer-specific rates
+                    if (data.customerRates && data.customerRates.length > 0) {
+                        data.customerRates.forEach(rate => {
+                            addCustomerRateRow(rate);
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading pricing:', e);
+                showToast('Error loading pricing data', true);
+            }
+        }
+
+        // Save all pricing
+        window.saveAllPricing = async function() {
+            try {
+                const pricingData = {
+                    storage: {
+                        palletDaily: parseFloat(document.getElementById('pallet-daily').value) || 0,
+                        palletWeekly: parseFloat(document.getElementById('pallet-weekly').value) || 0,
+                        palletMonthly: parseFloat(document.getElementById('pallet-monthly').value) || 0,
+                        container20ft: parseFloat(document.getElementById('container-20ft').value) || 0,
+                        container40ft: parseFloat(document.getElementById('container-40ft').value) || 0,
+                        container40hc: parseFloat(document.getElementById('container-40hc').value) || 0,
+                        boxSmall: parseFloat(document.getElementById('box-small').value) || 0,
+                        boxMedium: parseFloat(document.getElementById('box-medium').value) || 0,
+                        boxLarge: parseFloat(document.getElementById('box-large').value) || 0,
+                        cubicFoot: parseFloat(document.getElementById('cubic-foot').value) || 0,
+                        sqft: parseFloat(document.getElementById('sqft').value) || 0,
+                        minMonthly: parseFloat(document.getElementById('storage-min').value) || 0
+                    },
+                    handling: {
+                        receiving: parseFloat(document.getElementById('svc-receiving').value) || 0,
+                        unloading: parseFloat(document.getElementById('svc-unloading').value) || 0,
+                        pickpack: parseFloat(document.getElementById('svc-pickpack').value) || 0,
+                        labeling: parseFloat(document.getElementById('svc-labeling').value) || 0,
+                        palletizing: parseFloat(document.getElementById('svc-palletizing').value) || 0,
+                        wrapping: parseFloat(document.getElementById('svc-wrapping').value) || 0,
+                        loading: parseFloat(document.getElementById('svc-loading').value) || 0,
+                        inventory: parseFloat(document.getElementById('svc-inventory').value) || 0
+                    },
+                    additional: {
+                        kitting: parseFloat(document.getElementById('svc-kitting').value) || 0,
+                        returns: parseFloat(document.getElementById('svc-returns').value) || 0,
+                        photo: parseFloat(document.getElementById('svc-photo').value) || 0,
+                        qc: parseFloat(document.getElementById('svc-qc').value) || 0,
+                        customPkg: parseFloat(document.getElementById('svc-custom-pkg').value) || 0,
+                        rush: parseFloat(document.getElementById('svc-rush').value) || 0,
+                        docs: parseFloat(document.getElementById('svc-docs').value) || 0,
+                        support: parseFloat(document.getElementById('svc-support').value) || 0
+                    },
+                    freight: {
+                        fuelSurcharge: parseFloat(document.getElementById('fuel-surcharge').value) || 0,
+                        residentialSurcharge: parseFloat(document.getElementById('residential-surcharge').value) || 0,
+                        liftgateDelivery: parseFloat(document.getElementById('liftgate-del').value) || 0,
+                        liftgatePickup: parseFloat(document.getElementById('liftgate-pu').value) || 0,
+                        detentionFree: parseInt(document.getElementById('detention-free').value) || 0,
+                        detentionRate: parseFloat(document.getElementById('detention-rate').value) || 0
+                    },
+                    customerRates: getCustomerRates(),
+                    updated_at: new Date().toISOString(),
+                    updated_by: currentUser.email
+                };
+
+                await setDoc(doc(db, 'settings', 'pricing'), pricingData);
+                showToast('Pricing saved successfully!');
+            } catch (e) {
+                console.error('Error saving pricing:', e);
+                showToast('Error saving pricing: ' + e.message, true);
+            }
+        };
+
+        // Get customer rates from UI
+        function getCustomerRates() {
+            const rates = [];
+            const rows = document.querySelectorAll('.customer-rate-data');
+            rows.forEach(row => {
+                const customerId = row.querySelector('.customer-select')?.value;
+                const service = row.querySelector('.service-select')?.value;
+                const rate = row.querySelector('.rate-input')?.value;
+                const unit = row.querySelector('.unit-input')?.value;
+
+                if (customerId && service && rate) {
+                    rates.push({
+                        customerId,
+                        service,
+                        rate: parseFloat(rate) || 0,
+                        unit: unit || ''
+                    });
+                }
+            });
+            return rates;
+        }
+
+        // Add customer rate row
+        function addCustomerRateRow(data = {}) {
+            const container = document.getElementById('customer-rates-container');
+            const row = document.createElement('div');
+            row.className = 'custom-rate-row customer-rate-data';
+
+            // Build customer options
+            let customerOptions = '<option value="">Select Customer</option>';
+            customersData.forEach(c => {
+                const selected = data.customerId === c.id ? 'selected' : '';
+                customerOptions += `<option value="${c.id}" ${selected}>${c.company || c.name} (${c.email})</option>`;
+            });
+
+            // Service options
+            const services = [
+                'Pallet Storage (Daily)', 'Pallet Storage (Monthly)',
+                'Container 20ft', 'Container 40ft', 'Container 40HC',
+                'Receiving', 'Unloading', 'Pick & Pack', 'Labeling',
+                'Palletizing', 'Wrapping', 'Loading', 'Kitting',
+                'Returns Processing', 'Rush Handling', 'Documentation'
+            ];
+            let serviceOptions = '<option value="">Select Service</option>';
+            services.forEach(s => {
+                const selected = data.service === s ? 'selected' : '';
+                serviceOptions += `<option value="${s}" ${selected}>${s}</option>`;
+            });
+
+            row.innerHTML = `
+                <select class="customer-select">${customerOptions}</select>
+                <select class="service-select">${serviceOptions}</select>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    $ <input type="number" step="0.01" class="rate-input" value="${data.rate || ''}" placeholder="0.00">
+                </div>
+                <input type="text" class="unit-input" value="${data.unit || ''}" placeholder="per unit">
+                <button class="delete-btn" onclick="this.parentElement.remove()">✕</button>
+            `;
+
+            container.appendChild(row);
+        }
+        window.addCustomerRate = () => addCustomerRateRow();
+
+        // Logout handler
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+
+        // Sidebar toggle for mobile
+        document.querySelector('.sidebar-toggle')?.addEventListener('click', () => {
+            document.querySelector('.portal-sidebar').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

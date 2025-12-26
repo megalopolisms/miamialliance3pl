@@ -118,6 +118,184 @@
             font-size: 4rem;
             margin-bottom: var(--spacing-md);
         }
+        /* Edit button styles */
+        .btn-edit {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn-edit:hover {
+            background: var(--color-primary-dark);
+        }
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+        .modal-header h2 {
+            font-size: var(--font-size-xl);
+            color: var(--color-gray-900);
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-gray-500);
+            padding: 0;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: var(--color-gray-900);
+        }
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: var(--color-gray-700);
+            margin-bottom: var(--spacing-xs);
+        }
+        .form-group input {
+            width: 100%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+            box-sizing: border-box;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+        }
+        .form-group .readonly-value {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--color-gray-100);
+            border-radius: var(--radius-md);
+            color: var(--color-gray-600);
+            font-size: var(--font-size-base);
+        }
+        .modal-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: flex-end;
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--color-gray-200);
+        }
+        .btn-cancel {
+            background: var(--color-gray-200);
+            color: var(--color-gray-700);
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-cancel:hover {
+            background: var(--color-gray-300);
+        }
+        .btn-save {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-save:hover {
+            background: var(--color-primary-dark);
+        }
+        .btn-save:disabled {
+            background: var(--color-gray-400);
+            cursor: not-allowed;
+        }
+        /* Toast styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            color: white;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toast.success {
+            background: #10b981;
+        }
+        .toast.error {
+            background: #ef4444;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -155,13 +333,16 @@
                 <a href="inventory.html" class="portal-nav-item">
                     <span>📦</span> Inventory
                 </a>
-                <div id="admin-nav" style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
-                    <a href="customers.html" class="portal-nav-item active">
-                        <span>👥</span> All Customers
+                    <a href="pricing.html" class="portal-nav-item">
+                        <span>💰</span> Pricing
                     </a>
-                    <a href="admin-shipments.html" class="portal-nav-item">
-                        <span>📋</span> All Shipments
+                    <a href="settings.html" class="portal-nav-item">
+                        <span>⚙️</span> Settings
+                    </a>
+                    <a href="team.html" class="portal-nav-item">
+                        <span>👔</span> Manage Team
                     </a>
                 </div>
             </nav>
@@ -207,11 +388,51 @@
         </main>
     </div>
 
+    <!-- Edit Customer Modal -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Edit Customer</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="edit-customer-form">
+                <input type="hidden" id="edit-customer-id">
+                <div class="form-group">
+                    <label for="edit-name">Name</label>
+                    <input type="text" id="edit-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-company">Company Name</label>
+                    <input type="text" id="edit-company">
+                </div>
+                <div class="form-group">
+                    <label for="edit-email">Email</label>
+                    <input type="email" id="edit-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-phone">Phone</label>
+                    <input type="tel" id="edit-phone">
+                </div>
+                <div class="form-group">
+                    <label>Total Shipments</label>
+                    <div class="readonly-value" id="edit-shipments-count">0</div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-save" id="save-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -370,6 +591,9 @@
                 return dateB - dateA;
             });
 
+            // Store shipment counts globally for modal access
+            window.customerShipmentCounts = shipmentCounts;
+
             container.innerHTML = customers.map(customer => `
                 <div class="customer-card">
                     <div class="customer-header">
@@ -377,7 +601,10 @@
                             <div class="customer-name">${customer.name || 'Unknown'}</div>
                             <div class="customer-company">${customer.company_name || 'No company'}</div>
                         </div>
-                        <span class="badge ${customer.isAdmin ? 'badge-pending' : 'badge-delivered'}">${customer.isAdmin ? 'Admin' : 'Customer'}</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button class="btn-edit" onclick="openEditModal('${customer.id}')">Edit</button>
+                            <span class="badge ${customer.isAdmin ? 'badge-pending' : 'badge-delivered'}">${customer.isAdmin ? 'Admin' : 'Customer'}</span>
+                        </div>
                     </div>
                     <div class="customer-meta">
                         <span>📧 ${customer.email || 'No email'}</span>
@@ -412,6 +639,102 @@
         // Search on Enter key
         document.getElementById('search-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') searchCustomers();
+        });
+
+        // Toast notification function
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span> ${message}`;
+            container.appendChild(toast);
+
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        // Open edit modal
+        window.openEditModal = function(customerId) {
+            const customer = allCustomers.find(c => c.id === customerId);
+            if (!customer) {
+                showToast('Customer not found', 'error');
+                return;
+            }
+
+            // Populate form fields
+            document.getElementById('edit-customer-id').value = customer.id;
+            document.getElementById('edit-name').value = customer.name || '';
+            document.getElementById('edit-company').value = customer.company_name || '';
+            document.getElementById('edit-email').value = customer.email || '';
+            document.getElementById('edit-phone').value = customer.phone || '';
+            document.getElementById('edit-shipments-count').textContent = window.customerShipmentCounts[customer.id] || 0;
+
+            // Show modal
+            document.getElementById('edit-modal').classList.add('active');
+        };
+
+        // Close edit modal
+        window.closeEditModal = function() {
+            document.getElementById('edit-modal').classList.remove('active');
+            document.getElementById('edit-customer-form').reset();
+        };
+
+        // Close modal on overlay click
+        document.getElementById('edit-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'edit-modal') {
+                closeEditModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeEditModal();
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('edit-customer-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const saveBtn = document.getElementById('save-btn');
+            const customerId = document.getElementById('edit-customer-id').value;
+
+            if (!customerId) {
+                showToast('No customer selected', 'error');
+                return;
+            }
+
+            // Disable save button
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                const customerRef = doc(db, 'users', customerId);
+                await updateDoc(customerRef, {
+                    name: document.getElementById('edit-name').value.trim(),
+                    company_name: document.getElementById('edit-company').value.trim(),
+                    email: document.getElementById('edit-email').value.trim(),
+                    phone: document.getElementById('edit-phone').value.trim(),
+                    updated_at: new Date().toISOString()
+                });
+
+                showToast('Customer updated successfully!', 'success');
+                closeEditModal();
+
+                // Reload customers to reflect changes
+                loadCustomers();
+
+            } catch (error) {
+                console.error('Error updating customer:', error);
+                showToast('Failed to update customer: ' + error.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+            }
         });
     </script>
     <script src="../js/main.js"></script>

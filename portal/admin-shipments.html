@@ -155,6 +155,145 @@
             font-size: var(--font-size-sm);
         }
 
+        /* Toast notification styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: #1e3a5f;
+            color: white;
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+            min-width: 280px;
+        }
+        .toast.success {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+        }
+        .toast.error {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+        .toast.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        .toast-icon {
+            font-size: 1.25rem;
+        }
+        .toast-message {
+            flex: 1;
+            font-weight: 500;
+        }
+        .toast-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.25rem;
+            opacity: 0.7;
+        }
+        .toast-close:hover {
+            opacity: 1;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* Status badge colors */
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .badge-processing {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .badge-picked_up {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+        .badge-in_transit {
+            background: #cffafe;
+            color: #0e7490;
+        }
+        .badge-out_for_delivery {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-delivered {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .badge-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Update button styling */
+        .btn-update-status {
+            background: linear-gradient(135deg, var(--color-accent), #ea580c);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-update-status:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+        .btn-update-status:disabled {
+            background: var(--color-gray-300);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn-update-status.loading {
+            pointer-events: none;
+        }
+        .btn-update-status .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* Modal styles */
         .modal-overlay {
             display: none;
@@ -195,6 +334,9 @@
     </style>
 </head>
 <body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
     <!-- Navigation -->
     <header class="header">
         <nav class="nav container">
@@ -229,13 +371,16 @@
                 <a href="inventory.html" class="portal-nav-item">
                     <span>📦</span> Inventory
                 </a>
-                <div id="admin-nav" style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
-                    <a href="customers.html" class="portal-nav-item">
-                        <span>👥</span> All Customers
+                    <a href="pricing.html" class="portal-nav-item">
+                        <span>💰</span> Pricing
                     </a>
-                    <a href="admin-shipments.html" class="portal-nav-item active">
-                        <span>📋</span> All Shipments
+                    <a href="settings.html" class="portal-nav-item">
+                        <span>⚙️</span> Settings
+                    </a>
+                    <a href="team.html" class="portal-nav-item">
+                        <span>👔</span> Manage Team
                     </a>
                 </div>
             </nav>
@@ -255,6 +400,7 @@
                 <select id="status-filter">
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
                     <option value="picked_up">Picked Up</option>
                     <option value="in_transit">In Transit</option>
                     <option value="out_for_delivery">Out for Delivery</option>
@@ -309,6 +455,7 @@
                     <label>Status</label>
                     <select id="edit-status">
                         <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
                         <option value="picked_up">Picked Up</option>
                         <option value="in_transit">In Transit</option>
                         <option value="out_for_delivery">Out for Delivery</option>
@@ -494,7 +641,7 @@
                                 ${customer.company_name ? `• ${customer.company_name}` : ''}
                             </div>
                         </div>
-                        <span class="badge badge-${shipment.status}">${(shipment.status || 'unknown').replace('_', ' ')}</span>
+                        <span class="badge badge-${shipment.status}" id="badge-${shipment.id}">${formatStatus(shipment.status || 'unknown')}</span>
                     </div>
 
                     <div class="shipment-details">
@@ -515,24 +662,84 @@
                     </div>
 
                     <div class="shipment-actions">
-                        <label style="font-weight: 500; margin-right: 8px;">Update Status:</label>
-                        <select class="status-select" id="status-${shipment.id}" onchange="quickUpdateStatus('${shipment.id}', this.value)">
+                        <label style="font-weight: 500; margin-right: 8px;">Status:</label>
+                        <select class="status-select" id="status-${shipment.id}" data-original="${shipment.status}">
                             <option value="pending" ${shipment.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="processing" ${shipment.status === 'processing' ? 'selected' : ''}>Processing</option>
                             <option value="picked_up" ${shipment.status === 'picked_up' ? 'selected' : ''}>Picked Up</option>
                             <option value="in_transit" ${shipment.status === 'in_transit' ? 'selected' : ''}>In Transit</option>
                             <option value="out_for_delivery" ${shipment.status === 'out_for_delivery' ? 'selected' : ''}>Out for Delivery</option>
                             <option value="delivered" ${shipment.status === 'delivered' ? 'selected' : ''}>Delivered</option>
                             <option value="cancelled" ${shipment.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                         </select>
-                        <span class="update-success" id="success-${shipment.id}">✓ Updated!</span>
+                        <button class="btn-update-status" id="btn-update-${shipment.id}" onclick="updateShipmentStatus('${shipment.id}')">
+                            <span class="btn-text">Update Status</span>
+                        </button>
                         <button class="btn btn-outline" style="margin-left: auto;" onclick="openEditModal('${shipment.id}')">✏️ Edit Details</button>
                     </div>
                 </div>
             `}).join('');
         }
 
-        // Quick status update
-        window.quickUpdateStatus = async function(shipmentId, newStatus) {
+        // Format status for display
+        function formatStatus(status) {
+            const statusMap = {
+                'pending': 'Pending',
+                'processing': 'Processing',
+                'picked_up': 'Picked Up',
+                'in_transit': 'In Transit',
+                'out_for_delivery': 'Out for Delivery',
+                'delivered': 'Delivered',
+                'cancelled': 'Cancelled'
+            };
+            return statusMap[status] || status.replace('_', ' ');
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠'
+            };
+
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type] || icons.success}</span>
+                <span class="toast-message">${message}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Update shipment status with button click
+        window.updateShipmentStatus = async function(shipmentId) {
+            const selectEl = document.getElementById(`status-${shipmentId}`);
+            const btnEl = document.getElementById(`btn-update-${shipmentId}`);
+            const newStatus = selectEl.value;
+            const originalStatus = selectEl.dataset.original;
+
+            // Check if status actually changed
+            if (newStatus === originalStatus) {
+                showToast('Status unchanged. Select a different status to update.', 'warning');
+                return;
+            }
+
+            // Show loading state
+            btnEl.classList.add('loading');
+            btnEl.innerHTML = '<span class="spinner"></span> Updating...';
+            btnEl.disabled = true;
+
             try {
                 const shipmentRef = doc(db, 'shipments', shipmentId);
                 await updateDoc(shipmentRef, {
@@ -540,27 +747,50 @@
                     updated_at: new Date().toISOString()
                 });
 
-                // Show success message
-                const successEl = document.getElementById(`success-${shipmentId}`);
-                successEl.style.display = 'inline';
-                setTimeout(() => {
-                    successEl.style.display = 'none';
-                }, 2000);
-
                 // Update local data
                 const shipment = allShipments.find(s => s.id === shipmentId);
                 if (shipment) shipment.status = newStatus;
 
                 // Update badge
-                const card = document.querySelector(`.shipment-card[data-id="${shipmentId}"]`);
-                const badge = card.querySelector('.badge');
+                const badge = document.getElementById(`badge-${shipmentId}`);
                 badge.className = `badge badge-${newStatus}`;
-                badge.textContent = newStatus.replace('_', ' ');
+                badge.textContent = formatStatus(newStatus);
+
+                // Update the original status data attribute
+                selectEl.dataset.original = newStatus;
+
+                // Show success toast
+                showToast(`Status updated to "${formatStatus(newStatus)}" successfully!`, 'success');
+
+                // Update stats
+                updateStats();
 
             } catch (error) {
-                alert('Error updating status: ' + error.message);
+                console.error('Error updating status:', error);
+                showToast('Error updating status: ' + error.message, 'error');
+                // Revert select to original value
+                selectEl.value = originalStatus;
+            } finally {
+                // Reset button state
+                btnEl.classList.remove('loading');
+                btnEl.innerHTML = '<span class="btn-text">Update Status</span>';
+                btnEl.disabled = false;
             }
         };
+
+        // Update stats after status change
+        function updateStats() {
+            let pending = 0, transit = 0, delivered = 0;
+            allShipments.forEach(data => {
+                if (data.status === 'pending') pending++;
+                if (data.status === 'in_transit' || data.status === 'picked_up' || data.status === 'out_for_delivery' || data.status === 'processing') transit++;
+                if (data.status === 'delivered') delivered++;
+            });
+            document.getElementById('total-shipments').textContent = allShipments.length;
+            document.getElementById('pending-shipments').textContent = pending;
+            document.getElementById('transit-shipments').textContent = transit;
+            document.getElementById('delivered-shipments').textContent = delivered;
+        }
 
         // Edit modal functions
         window.openEditModal = function(shipmentId) {
@@ -586,6 +816,11 @@
             const shipmentId = document.getElementById('edit-shipment-id').value;
             const newStatus = document.getElementById('edit-status').value;
             const adminNotes = document.getElementById('edit-notes').value;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
 
             try {
                 const shipmentRef = doc(db, 'shipments', shipmentId);
@@ -604,10 +839,15 @@
 
                 closeModal();
                 displayShipments(allShipments);
+                updateStats();
 
-                alert('Shipment updated successfully!');
+                showToast('Shipment updated successfully!', 'success');
             } catch (error) {
-                alert('Error updating shipment: ' + error.message);
+                console.error('Error updating shipment:', error);
+                showToast('Error updating shipment: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Changes';
             }
         });
 

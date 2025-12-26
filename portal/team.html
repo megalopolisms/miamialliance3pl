@@ -182,6 +182,115 @@
             color: var(--color-gray-600);
             font-size: var(--font-size-sm);
         }
+        .btn-invite {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-invite:hover {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .modal-overlay.hidden { display: none; }
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal h2 {
+            margin-bottom: var(--spacing-lg);
+            font-size: var(--font-size-xl);
+        }
+        .modal .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+        .modal .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .modal .form-group input, .modal .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+        }
+        .modal-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: flex-end;
+            margin-top: var(--spacing-lg);
+        }
+        .btn-cancel {
+            padding: 10px 20px;
+            background: var(--color-gray-200);
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-submit {
+            padding: 10px 20px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-submit:hover { background: var(--color-primary-dark); }
+        .pending-invites {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .pending-invites h3 {
+            color: #92400e;
+            margin-bottom: var(--spacing-sm);
+        }
+        .invite-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm);
+            background: white;
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-sm);
+        }
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+        }
     </style>
 </head>
 <body>
@@ -226,6 +335,9 @@
                 </div>
                 <div id="admin-nav" style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
+                    <a href="pricing.html" class="portal-nav-item">
+                        <span>💰</span> Pricing
+                    </a>
                     <a href="settings.html" class="portal-nav-item">
                         <span>⚙️</span> Settings
                     </a>
@@ -237,9 +349,21 @@
         </aside>
 
         <main class="portal-main">
-            <div class="page-header">
-                <h1>👔 Team Management</h1>
-                <p>Manage user roles and permissions. Admins have full access, Employees can view all data.</p>
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md);">
+                <div>
+                    <h1>👔 Team Management</h1>
+                    <p>Manage user roles and permissions. Admins have full access, Employees can view all data.</p>
+                </div>
+                <button class="btn-invite" id="btn-invite">
+                    <span>+</span> Invite Team Member
+                </button>
+            </div>
+
+            <!-- Pending Invites Section -->
+            <div class="pending-invites" id="pending-invites" style="display: none;">
+                <h3>📧 Pending Invites</h3>
+                <p style="font-size: var(--font-size-sm); color: #92400e;">These emails will automatically receive their assigned role when they sign up.</p>
+                <div id="invites-list"></div>
             </div>
 
             <div class="stats-row">
@@ -276,10 +400,39 @@
         </main>
     </div>
 
+    <!-- Invite Modal -->
+    <div class="modal-overlay hidden" id="invite-modal">
+        <div class="modal">
+            <h2>Invite Team Member</h2>
+            <p style="color: var(--color-gray-600); margin-bottom: var(--spacing-lg);">
+                Enter the email address of the person you want to invite. They'll receive the assigned role automatically when they sign up.
+            </p>
+            <div class="form-group">
+                <label for="invite-email">Email Address</label>
+                <input type="email" id="invite-email" placeholder="employee@company.com" required>
+            </div>
+            <div class="form-group">
+                <label for="invite-role">Role</label>
+                <select id="invite-role">
+                    <option value="employee">Employee (can view all data)</option>
+                    <option value="admin">Admin (full access)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="invite-name">Name (optional)</label>
+                <input type="text" id="invite-name" placeholder="John Smith">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancel-invite">Cancel</button>
+                <button class="btn-submit" id="send-invite">Send Invite</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
@@ -324,6 +477,7 @@
 
             document.getElementById('user-name').innerHTML = `${user.displayName || user.email} <span class="admin-badge">ADMIN</span>`;
             loadUsers();
+            loadPendingInvites();
         });
 
         document.getElementById('logout-btn').addEventListener('click', async (e) => {
@@ -459,6 +613,108 @@
             toast.textContent = message;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
+        }
+
+        // === INVITE SYSTEM ===
+        const inviteModal = document.getElementById('invite-modal');
+
+        document.getElementById('btn-invite').addEventListener('click', () => {
+            inviteModal.classList.remove('hidden');
+        });
+
+        document.getElementById('cancel-invite').addEventListener('click', () => {
+            inviteModal.classList.add('hidden');
+            document.getElementById('invite-email').value = '';
+            document.getElementById('invite-name').value = '';
+        });
+
+        inviteModal.addEventListener('click', (e) => {
+            if (e.target === inviteModal) {
+                inviteModal.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('send-invite').addEventListener('click', async () => {
+            const email = document.getElementById('invite-email').value.trim().toLowerCase();
+            const role = document.getElementById('invite-role').value;
+            const name = document.getElementById('invite-name').value.trim();
+
+            if (!email) {
+                showToast('Please enter an email address', 'error');
+                return;
+            }
+
+            try {
+                // Check if email is already registered
+                const existingUser = allUsers.find(u => u.email && u.email.toLowerCase() === email);
+                if (existingUser) {
+                    showToast('This email is already registered', 'error');
+                    return;
+                }
+
+                // Save pending invite to Firestore
+                await setDoc(doc(db, 'pending_invites', email), {
+                    email: email,
+                    role: role,
+                    name: name,
+                    invited_at: new Date().toISOString(),
+                    invited_by: auth.currentUser.email
+                });
+
+                showToast(`Invite sent! ${email} will be ${role} when they sign up.`, 'success');
+                inviteModal.classList.add('hidden');
+                document.getElementById('invite-email').value = '';
+                document.getElementById('invite-name').value = '';
+                loadPendingInvites();
+            } catch (error) {
+                console.error('Error sending invite:', error);
+                showToast('Error sending invite', 'error');
+            }
+        });
+
+        async function loadPendingInvites() {
+            try {
+                const invitesSnap = await getDocs(collection(db, 'pending_invites'));
+                const container = document.getElementById('invites-list');
+                const section = document.getElementById('pending-invites');
+
+                if (invitesSnap.empty) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                section.style.display = 'block';
+                container.innerHTML = '';
+
+                invitesSnap.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const div = document.createElement('div');
+                    div.className = 'invite-item';
+                    div.innerHTML = `
+                        <div>
+                            <strong>${data.email}</strong>
+                            <span class="role-badge role-${data.role}" style="margin-left: 8px;">${data.role.toUpperCase()}</span>
+                            ${data.name ? `<span style="color: var(--color-gray-500); margin-left: 8px;">(${data.name})</span>` : ''}
+                        </div>
+                        <button class="btn-delete" data-email="${data.email}">Remove</button>
+                    `;
+                    container.appendChild(div);
+                });
+
+                // Delete invite handlers
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const email = e.target.dataset.email;
+                        if (confirm(`Remove invite for ${email}?`)) {
+                            await deleteDoc(doc(db, 'pending_invites', email));
+                            showToast('Invite removed', 'success');
+                            loadPendingInvites();
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading invites:', error);
+            }
         }
     </script>
     <script src="../js/main.js?v=3"></script>
