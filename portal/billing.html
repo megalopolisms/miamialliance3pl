@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing | Miami Alliance 3PL</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css?v=8">
+    <style>
+        .page-header-bar {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .balance-card {
+            background: white;
+            border: 2px solid var(--color-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        .balance-amount {
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .balance-label {
+            color: var(--color-gray-500);
+        }
+        .invoice-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+            transition: box-shadow 0.2s;
+        }
+        .invoice-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .invoice-info h3 {
+            font-size: var(--font-size-lg);
+            margin-bottom: 4px;
+        }
+        .invoice-info p {
+            color: var(--color-gray-500);
+            font-size: var(--font-size-sm);
+        }
+        .invoice-amount {
+            text-align: right;
+        }
+        .invoice-amount .amount {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--color-gray-800);
+        }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+        }
+        .badge-sent { background: #dbeafe; color: #1d4ed8; }
+        .badge-paid { background: #d1fae5; color: #059669; }
+        .badge-overdue { background: #fee2e2; color: #dc2626; }
+        .btn-pay {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-pay:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .btn-view {
+            background: var(--color-gray-100);
+            color: var(--color-gray-700);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+        }
+        .section-title {
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--spacing-md);
+            color: var(--color-gray-800);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .invoice-preview {
+            border: 1px solid var(--color-gray-200);
+            padding: var(--spacing-xl);
+        }
+        .line-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-lg) 0;
+        }
+        .line-items-table th, .line-items-table td {
+            padding: var(--spacing-sm);
+            border: 1px solid var(--color-gray-200);
+            text-align: left;
+        }
+        .line-items-table th { background: var(--color-gray-50); }
+        .totals-section {
+            text-align: right;
+        }
+        .totals-section .row {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-xl);
+            padding: var(--spacing-xs) 0;
+        }
+        .totals-section .total {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+        }
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--color-gray-500);
+        }
+        .payment-methods {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--color-gray-200);
+        }
+        .payment-method {
+            flex: 1;
+            padding: var(--spacing-lg);
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .payment-method:hover {
+            border-color: var(--color-primary);
+            background: var(--color-gray-50);
+        }
+        .payment-method.selected {
+            border-color: var(--color-primary);
+            background: #eff6ff;
+        }
+        .payment-method .icon {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-sm);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <aside class="portal-sidebar">
+            <nav>
+                <a href="dashboard.html" class="portal-nav-item"><span>📊</span> Dashboard</a>
+                <a href="shipments.html" class="portal-nav-item"><span>🚚</span> Shipments</a>
+                <a href="tracking.html" class="portal-nav-item"><span>🔍</span> Tracking</a>
+                <a href="inventory.html" class="portal-nav-item"><span>📦</span> Inventory</a>
+                <a href="billing.html" class="portal-nav-item active"><span>💵</span> Billing</a>
+                <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Staff</div>
+                    <a href="customers.html" class="portal-nav-item"><span>👥</span> All Customers</a>
+                    <a href="admin-shipments.html" class="portal-nav-item"><span>📋</span> All Shipments</a>
+                </div>
+                <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
+                    <a href="invoices.html" class="portal-nav-item"><span>💵</span> All Invoices</a>
+                    <a href="storage-log.html" class="portal-nav-item"><span>📊</span> Storage Log</a>
+                    <a href="pricing.html" class="portal-nav-item"><span>💰</span> Pricing</a>
+                    <a href="settings.html" class="portal-nav-item"><span>⚙️</span> Settings</a>
+                    <a href="team.html" class="portal-nav-item"><span>👔</span> Manage Team</a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="portal-main">
+            <div class="page-header-bar">
+                <h1>💵 Billing & Invoices</h1>
+                <p>View your invoices and make payments</p>
+            </div>
+
+            <!-- Balance Card -->
+            <div class="balance-card">
+                <div>
+                    <div class="balance-label">Current Balance</div>
+                    <div class="balance-amount" id="current-balance">$0.00</div>
+                </div>
+                <div id="pay-now-section" style="display: none;">
+                    <button class="btn-pay" onclick="openPaymentModal()">Pay Now</button>
+                </div>
+            </div>
+
+            <!-- Outstanding Invoices -->
+            <div id="outstanding-section">
+                <h2 class="section-title">Outstanding Invoices</h2>
+                <div id="outstanding-invoices">
+                    <div class="empty-state">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Payment History -->
+            <div style="margin-top: var(--spacing-xl);">
+                <h2 class="section-title">Payment History</h2>
+                <div id="paid-invoices">
+                    <div class="empty-state">Loading...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Invoice View Modal -->
+    <div id="invoice-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Invoice Details</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="invoice-preview" class="invoice-preview"></div>
+            <div class="payment-methods" id="payment-section" style="display: none;">
+                <div class="payment-method" onclick="selectPayment('stripe')">
+                    <div class="icon">💳</div>
+                    <div><strong>Credit Card</strong></div>
+                    <div style="font-size: 0.8rem; color: var(--color-gray-500);">Pay securely with Stripe</div>
+                </div>
+                <div class="payment-method" onclick="selectPayment('ach')">
+                    <div class="icon">🏦</div>
+                    <div><strong>Bank Transfer</strong></div>
+                    <div style="font-size: 0.8rem; color: var(--color-gray-500);">ACH / Wire Transfer</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-lg);">
+                <button class="btn btn-primary" onclick="printInvoice()">Print / Download PDF</button>
+                <button class="btn-pay" id="btn-pay-invoice" style="display: none;" onclick="processPayment()">Pay $<span id="pay-amount">0</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, doc, getDoc, getDocs, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+
+        let currentUserId = null;
+        let currentInvoice = null;
+        let selectedPaymentMethod = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            currentUserId = user.uid;
+
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            const userData = userDoc.exists() ? userDoc.data() : {};
+            const userRole = userData.role || (FALLBACK_ADMIN_EMAILS.includes(user.email.toLowerCase()) ? 'admin' : 'customer');
+
+            document.getElementById('user-name').textContent = userData.name || user.email;
+
+            if (userRole === 'admin' || userRole === 'employee') {
+                document.getElementById('employee-nav').style.display = 'block';
+            }
+            if (userRole === 'admin') {
+                document.getElementById('admin-nav').style.display = 'block';
+            }
+
+            await loadInvoices();
+        });
+
+        async function loadInvoices() {
+            const q = query(
+                collection(db, 'invoices'),
+                where('customer_id', '==', currentUserId),
+                orderBy('created_at', 'desc')
+            );
+
+            const snap = await getDocs(q);
+
+            const outstanding = [];
+            const paid = [];
+            let totalBalance = 0;
+
+            snap.forEach(doc => {
+                const inv = { id: doc.id, ...doc.data() };
+                if (inv.status === 'paid') {
+                    paid.push(inv);
+                } else if (inv.status === 'sent' || inv.status === 'overdue') {
+                    outstanding.push(inv);
+                    totalBalance += (inv.total - (inv.amount_paid || 0));
+                }
+            });
+
+            // Update balance
+            document.getElementById('current-balance').textContent = '$' + totalBalance.toFixed(2);
+            if (totalBalance > 0) {
+                document.getElementById('pay-now-section').style.display = 'block';
+            }
+
+            // Render outstanding
+            const outstandingContainer = document.getElementById('outstanding-invoices');
+            if (outstanding.length === 0) {
+                outstandingContainer.innerHTML = '<div class="empty-state">No outstanding invoices. You\'re all caught up!</div>';
+            } else {
+                outstandingContainer.innerHTML = outstanding.map(inv => `
+                    <div class="invoice-card">
+                        <div class="invoice-info">
+                            <h3>${inv.invoice_number}</h3>
+                            <p>${inv.billing_period_start} to ${inv.billing_period_end}</p>
+                            <span class="badge badge-${inv.status}">${inv.status.toUpperCase()}</span>
+                        </div>
+                        <div class="invoice-amount">
+                            <div class="amount">$${inv.total?.toFixed(2)}</div>
+                            <p>Due: ${inv.due_date}</p>
+                        </div>
+                        <div>
+                            <button class="btn-view" onclick="viewInvoice('${inv.id}')">View</button>
+                            <button class="btn-pay" onclick="viewInvoice('${inv.id}', true)">Pay</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Render paid
+            const paidContainer = document.getElementById('paid-invoices');
+            if (paid.length === 0) {
+                paidContainer.innerHTML = '<div class="empty-state">No payment history yet.</div>';
+            } else {
+                paidContainer.innerHTML = paid.map(inv => `
+                    <div class="invoice-card">
+                        <div class="invoice-info">
+                            <h3>${inv.invoice_number}</h3>
+                            <p>Paid on ${inv.paid_at?.split('T')[0] || 'N/A'}</p>
+                            <span class="badge badge-paid">PAID</span>
+                        </div>
+                        <div class="invoice-amount">
+                            <div class="amount">$${inv.total?.toFixed(2)}</div>
+                        </div>
+                        <div>
+                            <button class="btn-view" onclick="viewInvoice('${inv.id}')">View</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        window.viewInvoice = async function(invoiceId, showPayment = false) {
+            const docSnap = await getDoc(doc(db, 'invoices', invoiceId));
+            if (!docSnap.exists()) return;
+
+            currentInvoice = { id: invoiceId, ...docSnap.data() };
+            renderInvoicePreview(currentInvoice);
+
+            // Show payment options if not paid
+            const isPaid = currentInvoice.status === 'paid';
+            document.getElementById('payment-section').style.display = (!isPaid && showPayment) ? 'flex' : 'none';
+            document.getElementById('btn-pay-invoice').style.display = (!isPaid && showPayment) ? 'inline-block' : 'none';
+
+            if (!isPaid) {
+                const balance = currentInvoice.total - (currentInvoice.amount_paid || 0);
+                document.getElementById('pay-amount').textContent = balance.toFixed(2);
+            }
+
+            document.getElementById('invoice-modal').classList.add('show');
+        };
+
+        function renderInvoicePreview(inv) {
+            const preview = document.getElementById('invoice-preview');
+            preview.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-xl);">
+                    <div>
+                        <h2 style="color: var(--color-primary); margin-bottom: 4px;">MIAMI ALLIANCE 3PL</h2>
+                        <p style="color: var(--color-gray-500);">8780 NW 100th ST, Medley, FL 33178</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <h1 style="font-size: 2rem; color: var(--color-gray-800);">INVOICE</h1>
+                        <p><strong>${inv.invoice_number}</strong></p>
+                        <p>Date: ${inv.created_at?.split('T')[0]}</p>
+                        <p>Due: ${inv.due_date}</p>
+                    </div>
+                </div>
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <strong>Billing Period:</strong> ${inv.billing_period_start} to ${inv.billing_period_end}
+                </div>
+                <table class="line-items-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Rate</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${inv.line_items?.map(item => `
+                            <tr>
+                                <td>${item.description}</td>
+                                <td>${item.quantity}</td>
+                                <td>${item.unit}</td>
+                                <td>$${item.rate?.toFixed(2)}</td>
+                                <td>$${item.amount?.toFixed(2)}</td>
+                            </tr>
+                        `).join('') || '<tr><td colspan="5">No line items</td></tr>'}
+                    </tbody>
+                </table>
+                <div class="totals-section">
+                    <div class="row"><span>Subtotal:</span> <span>$${inv.subtotal?.toFixed(2)}</span></div>
+                    <div class="row"><span>Tax:</span> <span>$${inv.tax_amount?.toFixed(2)}</span></div>
+                    <div class="row total"><span>Total:</span> <span>$${inv.total?.toFixed(2)}</span></div>
+                    ${inv.amount_paid > 0 ? `<div class="row" style="color: #10b981;"><span>Paid:</span> <span>-$${inv.amount_paid?.toFixed(2)}</span></div>` : ''}
+                    ${inv.status !== 'paid' ? `<div class="row total"><span>Balance Due:</span> <span>$${(inv.total - (inv.amount_paid || 0)).toFixed(2)}</span></div>` : ''}
+                </div>
+            `;
+        }
+
+        window.closeModal = function() {
+            document.getElementById('invoice-modal').classList.remove('show');
+            currentInvoice = null;
+            selectedPaymentMethod = null;
+        };
+
+        window.selectPayment = function(method) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+        };
+
+        window.processPayment = async function() {
+            if (!selectedPaymentMethod) {
+                alert('Please select a payment method');
+                return;
+            }
+
+            if (selectedPaymentMethod === 'stripe') {
+                // Stripe payment - would integrate with Stripe Checkout
+                alert('Stripe payment integration coming soon! For now, please contact us to complete your payment.');
+            } else if (selectedPaymentMethod === 'ach') {
+                alert('Please use the following bank details for wire transfer:\n\nBank: [Your Bank]\nRouting: [Routing Number]\nAccount: [Account Number]\nReference: ' + currentInvoice.invoice_number);
+            }
+        };
+
+        window.printInvoice = function() {
+            const content = document.getElementById('invoice-preview').innerHTML;
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html><head><title>Invoice ${currentInvoice.invoice_number}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 40px; }
+                    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+                    th { background: #f5f5f5; }
+                    .totals-section { text-align: right; }
+                    .totals-section .row { display: flex; justify-content: flex-end; gap: 40px; padding: 5px 0; }
+                    .totals-section .total { font-weight: bold; }
+                </style>
+                </head><body>${content}</body></html>
+            `);
+            win.document.close();
+            win.print();
+        };
+
+        window.openPaymentModal = function() {
+            // Open first outstanding invoice for payment
+            const firstCard = document.querySelector('#outstanding-invoices .invoice-card');
+            if (firstCard) {
+                const btn = firstCard.querySelector('.btn-pay');
+                if (btn) btn.click();
+            }
+        };
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+    </script>
+</body>
+</html>
