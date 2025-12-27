@@ -17,10 +17,11 @@ admin.initializeApp();
 
 const stripe = require('stripe')(functions.config().stripe?.secret || process.env.STRIPE_SECRET_KEY);
 
-// Twilio SMS Configuration
+// Twilio SMS & WhatsApp Configuration
 const twilioAccountSid = functions.config().twilio?.account_sid || process.env.TWILIO_ACCOUNT_SID;
 const twilioAuthToken = functions.config().twilio?.auth_token || process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = functions.config().twilio?.phone_number || process.env.TWILIO_PHONE_NUMBER;
+const twilioWhatsAppNumber = functions.config().twilio?.whatsapp_number || process.env.TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886'; // Sandbox default
 
 let twilioClient = null;
 if (twilioAccountSid && twilioAuthToken) {
@@ -206,14 +207,14 @@ const SMS_TEMPLATES = {
 async function sendSMS(to, message) {
     if (!twilioClient) {
         console.log('Twilio not configured. SMS not sent:', message);
-        return { success: false, error: 'Twilio not configured' };
+        return { success: false, error: 'Twilio not configured', channel: 'sms' };
     }
 
     // Validate phone number format
     const phoneRegex = /^\+1[2-9]\d{9}$/;
     if (!phoneRegex.test(to)) {
         console.log('Invalid phone number format:', to);
-        return { success: false, error: 'Invalid phone format' };
+        return { success: false, error: 'Invalid phone format', channel: 'sms' };
     }
 
     try {
@@ -223,15 +224,69 @@ async function sendSMS(to, message) {
             to: to
         });
         console.log('SMS sent:', result.sid);
-        return { success: true, sid: result.sid };
+        return { success: true, sid: result.sid, channel: 'sms' };
     } catch (error) {
         console.error('SMS failed:', error.message);
-        return { success: false, error: error.message };
+        return { success: false, error: error.message, channel: 'sms' };
     }
 }
 
 /**
- * Firestore Trigger: Send SMS when shipment status changes
+ * Send WhatsApp message via Twilio
+ */
+async function sendWhatsApp(to, message) {
+    if (!twilioClient) {
+        console.log('Twilio not configured. WhatsApp not sent:', message);
+        return { success: false, error: 'Twilio not configured', channel: 'whatsapp' };
+    }
+
+    // Format phone number for WhatsApp
+    let formattedTo = to.replace(/\D/g, ''); // Remove non-digits
+    if (!formattedTo.startsWith('1') && formattedTo.length === 10) {
+        formattedTo = '1' + formattedTo; // Add US country code
+    }
+    formattedTo = 'whatsapp:+' + formattedTo;
+
+    try {
+        const result = await twilioClient.messages.create({
+            body: message,
+            from: twilioWhatsAppNumber,
+            to: formattedTo
+        });
+        console.log('WhatsApp sent:', result.sid);
+        return { success: true, sid: result.sid, channel: 'whatsapp' };
+    } catch (error) {
+        console.error('WhatsApp failed:', error.message);
+        return { success: false, error: error.message, channel: 'whatsapp' };
+    }
+}
+
+/**
+ * Send notification via customer's preferred channel (SMS, WhatsApp, or both)
+ */
+async function sendNotification(phone, message, preferredChannel = 'sms') {
+    const results = [];
+
+    if (preferredChannel === 'whatsapp' || preferredChannel === 'both') {
+        results.push(await sendWhatsApp(phone, message));
+    }
+
+    if (preferredChannel === 'sms' || preferredChannel === 'both') {
+        results.push(await sendSMS(phone, message));
+    }
+
+    // Return combined result
+    const successCount = results.filter(r => r.success).length;
+    return {
+        success: successCount > 0,
+        results: results,
+        channels: results.map(r => r.channel)
+    };
+}
+
+/**
+ * Firestore Trigger: Send notification when shipment status changes
+ * Supports SMS, WhatsApp, or both based on customer preference
  */
 exports.onShipmentStatusChange = functions.firestore
     .document('shipments/{shipmentId}')
@@ -247,16 +302,19 @@ exports.onShipmentStatusChange = functions.firestore
         const newStatus = after.status?.toLowerCase().replace(/\s+/g, '_');
         const tracking = after.tracking_number || context.params.shipmentId;
 
-        // Check if customer wants SMS notifications
-        if (!after.customer_phone || after.sms_notifications === false) {
-            console.log('SMS notifications disabled or no phone number');
+        // Check if customer wants notifications
+        if (!after.customer_phone || after.notifications_enabled === false) {
+            console.log('Notifications disabled or no phone number');
             return null;
         }
+
+        // Get customer's preferred channel: 'sms', 'whatsapp', or 'both'
+        const preferredChannel = after.notification_channel || 'sms';
 
         // Get message template
         const templateFn = SMS_TEMPLATES[newStatus];
         if (!templateFn) {
-            console.log('No SMS template for status:', newStatus);
+            console.log('No template for status:', newStatus);
             return null;
         }
 
@@ -264,18 +322,19 @@ exports.onShipmentStatusChange = functions.firestore
             ? templateFn(tracking, after.carrier)
             : templateFn;
 
-        // Send SMS
-        const result = await sendSMS(after.customer_phone, message);
+        // Send notification via preferred channel
+        const result = await sendNotification(after.customer_phone, message, preferredChannel);
 
         // Log notification
         await admin.firestore().collection('notifications').add({
-            type: 'sms',
+            type: preferredChannel,
+            channels: result.channels,
             shipment_id: context.params.shipmentId,
             customer_id: after.customer_id,
             phone: after.customer_phone,
             message: message,
             status: result.success ? 'sent' : 'failed',
-            error: result.error || null,
+            results: result.results,
             sent_at: admin.firestore.FieldValue.serverTimestamp()
         });
 
@@ -283,9 +342,9 @@ exports.onShipmentStatusChange = functions.firestore
     });
 
 /**
- * HTTP Endpoint: Manually send SMS notification
+ * HTTP Endpoint: Manually send notification (SMS, WhatsApp, or both)
  */
-exports.sendShipmentSMS = functions.https.onCall(async (data, context) => {
+exports.sendShipmentNotification = functions.https.onCall(async (data, context) => {
     // Verify admin
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
@@ -296,7 +355,7 @@ exports.sendShipmentSMS = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('permission-denied', 'Admin only');
     }
 
-    const { shipmentId, customMessage } = data;
+    const { shipmentId, customMessage, channel = 'sms' } = data;
 
     // Get shipment
     const shipmentDoc = await admin.firestore().collection('shipments').doc(shipmentId).get();
@@ -312,13 +371,41 @@ exports.sendShipmentSMS = functions.https.onCall(async (data, context) => {
     const message = customMessage ||
         `📦 Miami Alliance 3PL: Update on shipment ${shipment.tracking_number || shipmentId}. Status: ${shipment.status}`;
 
-    const result = await sendSMS(shipment.customer_phone, message);
+    const result = await sendNotification(shipment.customer_phone, message, channel);
 
     if (!result.success) {
-        throw new functions.https.HttpsError('internal', result.error);
+        throw new functions.https.HttpsError('internal', 'Failed to send notification');
     }
 
-    return { success: true, message: 'SMS sent successfully' };
+    return { success: true, message: `Notification sent via ${result.channels.join(', ')}`, results: result.results };
+});
+
+/**
+ * HTTP Endpoint: Test WhatsApp Sandbox
+ * Customer must first send "join <sandbox-code>" to +14155238886
+ */
+exports.testWhatsApp = functions.https.onCall(async (data, context) => {
+    // Verify authenticated
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+    }
+
+    const { phoneNumber, testMessage } = data;
+
+    if (!phoneNumber) {
+        throw new functions.https.HttpsError('invalid-argument', 'Phone number required');
+    }
+
+    const message = testMessage || '🎉 Miami Alliance 3PL: WhatsApp notifications are working! You will now receive shipment updates here.';
+
+    const result = await sendWhatsApp(phoneNumber, message);
+
+    if (!result.success) {
+        throw new functions.https.HttpsError('failed-precondition',
+            `WhatsApp failed: ${result.error}. Make sure you've joined the sandbox first by texting "join <code>" to +14155238886`);
+    }
+
+    return { success: true, message: 'WhatsApp test sent!', sid: result.sid };
 });
 
 /**
