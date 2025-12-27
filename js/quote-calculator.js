@@ -288,28 +288,29 @@ class QuoteCalculator {
         doc.setFillColor(...accentColor);
         doc.rect(0, 55, 210, 3, 'F');
 
-        // Add company logo (embedded base64)
+        // Add company logo (embedded base64) - maintains portrait aspect ratio (784x1168 = ~2:3)
+        // Logo dimensions: 28mm wide x 42mm tall to match original proportions
         try {
-            doc.addImage(COMPANY_LOGO_BASE64, 'JPEG', 12, 8, 40, 40);
+            doc.addImage(COMPANY_LOGO_BASE64, 'JPEG', 10, 6, 28, 42);
         } catch (e) {
             console.log('Logo could not be added:', e);
         }
 
-        // Company name - large and bold
+        // Company name - large and bold (positioned after logo)
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(28);
         doc.setTextColor(255, 255, 255);
-        doc.text('MIAMI ALLIANCE', 58, 25);
+        doc.text('MIAMI ALLIANCE', 44, 25);
 
         // 3PL in accent color
         doc.setTextColor(...accentColor);
-        doc.text('3PL', 58, 40);
+        doc.text('3PL', 44, 40);
 
         // Tagline
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(11);
         doc.setTextColor(148, 163, 184);
-        doc.text('WAREHOUSING  |  FULFILLMENT  |  LOGISTICS', 58, 50);
+        doc.text('WAREHOUSING  |  FULFILLMENT  |  LOGISTICS', 44, 50);
 
         // Quote badge on right
         doc.setFillColor(...accentColor);
