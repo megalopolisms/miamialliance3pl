@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice | Miami Alliance 3PL</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #1e3a5f;
+            --color-accent: #14b8a6;
+            --color-gray-50: #f8fafc;
+            --color-gray-100: #f1f5f9;
+            --color-gray-200: #e2e8f0;
+            --color-gray-300: #cbd5e1;
+            --color-gray-500: #64748b;
+            --color-gray-600: #475569;
+            --color-gray-700: #334155;
+            --color-gray-800: #1e293b;
+            --color-gray-900: #0f172a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--color-gray-800);
+            background: #f1f5f9;
+        }
+
+        /* Screen-only controls */
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .controls button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-print {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #152a45;
+        }
+
+        .btn-back {
+            background: white;
+            color: var(--color-gray-700);
+            border: 1px solid var(--color-gray-300);
+        }
+
+        .btn-back:hover {
+            background: var(--color-gray-50);
+        }
+
+        /* Invoice Container */
+        .invoice-container {
+            max-width: 850px;
+            margin: 40px auto;
+            background: white;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .invoice {
+            padding: 60px;
+        }
+
+        /* Header */
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid var(--color-accent);
+        }
+
+        .company-info {
+            flex: 1;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text .accent {
+            color: var(--color-accent);
+        }
+
+        .company-details {
+            color: var(--color-gray-600);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .invoice-title-section {
+            text-align: right;
+        }
+
+        .invoice-title {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--color-primary);
+            letter-spacing: -1px;
+            margin-bottom: 15px;
+        }
+
+        .invoice-meta {
+            font-size: 13px;
+            color: var(--color-gray-600);
+        }
+
+        .invoice-meta strong {
+            color: var(--color-gray-800);
+            font-weight: 600;
+        }
+
+        .invoice-number {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 10px;
+        }
+
+        /* Billing Section */
+        .billing-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .billing-box h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-gray-500);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .billing-box .name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-gray-900);
+            margin-bottom: 8px;
+        }
+
+        .billing-box .details {
+            color: var(--color-gray-600);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* Invoice Details Bar */
+        .invoice-details-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: var(--color-gray-50);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 40px;
+            gap: 20px;
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-item .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-gray-500);
+            margin-bottom: 5px;
+        }
+
+        .detail-item .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-gray-900);
+        }
+
+        .detail-item .value.due {
+            color: #dc2626;
+        }
+
+        .detail-item .value.paid {
+            color: #059669;
+        }
+
+        /* Line Items Table */
+        .line-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .line-items-table thead th {
+            background: var(--color-primary);
+            color: white;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .line-items-table thead th:first-child {
+            border-radius: 8px 0 0 0;
+        }
+
+        .line-items-table thead th:last-child {
+            border-radius: 0 8px 0 0;
+            text-align: right;
+        }
+
+        .line-items-table thead th:nth-child(3),
+        .line-items-table thead th:nth-child(4) {
+            text-align: right;
+        }
+
+        .line-items-table tbody td {
+            padding: 16px;
+            border-bottom: 1px solid var(--color-gray-200);
+            vertical-align: top;
+        }
+
+        .line-items-table tbody tr:last-child td {
+            border-bottom: 2px solid var(--color-gray-300);
+        }
+
+        .line-items-table tbody td:nth-child(3),
+        .line-items-table tbody td:nth-child(4),
+        .line-items-table tbody td:last-child {
+            text-align: right;
+        }
+
+        .item-description {
+            font-weight: 500;
+            color: var(--color-gray-900);
+        }
+
+        .item-details {
+            font-size: 12px;
+            color: var(--color-gray-500);
+            margin-top: 4px;
+        }
+
+        /* Totals Section */
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 40px;
+        }
+
+        .totals-box {
+            width: 300px;
+        }
+
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .totals-row:last-child {
+            border-bottom: none;
+        }
+
+        .totals-row.subtotal {
+            color: var(--color-gray-600);
+        }
+
+        .totals-row.total {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--color-primary);
+            border-top: 2px solid var(--color-primary);
+            padding-top: 15px;
+            margin-top: 10px;
+        }
+
+        .totals-row.balance-due {
+            font-size: 18px;
+            font-weight: 700;
+            color: #dc2626;
+            background: #fef2f2;
+            margin: 10px -15px -10px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .totals-row.paid-full {
+            font-size: 18px;
+            font-weight: 700;
+            color: #059669;
+            background: #ecfdf5;
+            margin: 10px -15px -10px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        /* Notes Section */
+        .notes-section {
+            background: var(--color-gray-50);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+
+        .notes-section h4 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-gray-500);
+            margin-bottom: 10px;
+        }
+
+        .notes-section p {
+            color: var(--color-gray-700);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* Footer */
+        .invoice-footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid var(--color-gray-200);
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .footer-logo .logo-icon {
+            width: 30px;
+            height: 30px;
+        }
+
+        .footer-logo .text {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .footer-logo .text .accent {
+            color: var(--color-accent);
+        }
+
+        .footer-tagline {
+            font-size: 13px;
+            color: var(--color-gray-500);
+            margin-bottom: 10px;
+        }
+
+        .footer-contact {
+            font-size: 12px;
+            color: var(--color-gray-600);
+        }
+
+        .footer-contact a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        /* Payment Terms */
+        .payment-terms {
+            background: linear-gradient(135deg, var(--color-primary) 0%, #152a45 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .payment-terms h4 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .payment-terms p {
+            font-size: 13px;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-paid {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-overdue {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-draft {
+            background: var(--color-gray-200);
+            color: var(--color-gray-700);
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .controls {
+                display: none !important;
+            }
+
+            .invoice-container {
+                box-shadow: none;
+                margin: 0;
+                max-width: 100%;
+            }
+
+            .invoice {
+                padding: 40px;
+            }
+
+            .line-items-table thead th {
+                background: var(--color-primary) !important;
+                -webkit-print-color-adjust: exact !important;
+            }
+
+            .payment-terms {
+                background: var(--color-primary) !important;
+                -webkit-print-color-adjust: exact !important;
+            }
+        }
+
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+    </style>
+</head>
+<body>
+    <!-- Screen Controls -->
+    <div class="controls">
+        <button class="btn-back" onclick="window.history.back()">← Back</button>
+        <button class="btn-print" onclick="window.print()">Print / Save PDF</button>
+    </div>
+
+    <div class="invoice-container">
+        <div class="invoice">
+            <!-- Header -->
+            <div class="invoice-header">
+                <div class="company-info">
+                    <div class="logo">
+                        <svg class="logo-icon" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="50" height="50" rx="8" fill="#1e3a5f"/>
+                            <path d="M15 35V20L25 13L35 20V35H28V26H22V35H15Z" fill="#14b8a6"/>
+                            <rect x="23" y="17" width="4" height="4" rx="1" fill="white"/>
+                        </svg>
+                        <span class="logo-text">MIAMI ALLIANCE <span class="accent">3PL</span></span>
+                    </div>
+                    <div class="company-details">
+                        8780 NW 100th ST<br>
+                        Medley, FL 33178<br>
+                        info@miamialliance3pl.com<br>
+                        (305) 555-0123
+                    </div>
+                </div>
+                <div class="invoice-title-section">
+                    <div class="invoice-title">INVOICE</div>
+                    <div class="invoice-number" id="invoice-number">INV-2025-01-0001</div>
+                    <div class="invoice-meta">
+                        <strong>Issue Date:</strong> <span id="issue-date">December 26, 2025</span><br>
+                        <strong>Due Date:</strong> <span id="due-date">January 25, 2026</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Section -->
+            <div class="billing-section">
+                <div class="billing-box">
+                    <h3>Bill To</h3>
+                    <div class="name" id="customer-name">Pablo Nicotine Pouches</div>
+                    <div class="details" id="customer-details">
+                        1234 Commerce Drive<br>
+                        Miami, FL 33101<br>
+                        contact@pablopouches.com
+                    </div>
+                </div>
+                <div class="billing-box" style="text-align: right;">
+                    <h3>Status</h3>
+                    <span class="status-badge status-pending" id="status-badge">PENDING</span>
+                    <div class="details" style="margin-top: 15px;">
+                        <strong>Billing Period:</strong><br>
+                        <span id="billing-period">Dec 1, 2025 - Dec 31, 2025</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Details Bar -->
+            <div class="invoice-details-bar">
+                <div class="detail-item">
+                    <div class="label">Invoice Total</div>
+                    <div class="value" id="detail-total">$1,847.50</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Amount Paid</div>
+                    <div class="value paid" id="detail-paid">$0.00</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Balance Due</div>
+                    <div class="value due" id="detail-balance">$1,847.50</div>
+                </div>
+                <div class="detail-item">
+                    <div class="label">Due Date</div>
+                    <div class="value" id="detail-due">Jan 25, 2026</div>
+                </div>
+            </div>
+
+            <!-- Line Items -->
+            <table class="line-items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 45%;">Description</th>
+                        <th style="width: 15%;">Quantity</th>
+                        <th style="width: 15%;">Rate</th>
+                        <th style="width: 25%;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="line-items-body">
+                    <tr>
+                        <td>
+                            <div class="item-description">Pallet Storage</div>
+                            <div class="item-details">31 days @ $0.75/pallet/day</div>
+                        </td>
+                        <td>12 pallets</td>
+                        <td>$0.75/day</td>
+                        <td>$279.00</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="item-description">Inbound Receiving</div>
+                            <div class="item-details">Container unload + inspection</div>
+                        </td>
+                        <td>1 container</td>
+                        <td>$350.00</td>
+                        <td>$350.00</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="item-description">Order Fulfillment - Pick & Pack</div>
+                            <div class="item-details">E-commerce orders</div>
+                        </td>
+                        <td>487 orders</td>
+                        <td>$2.25/order</td>
+                        <td>$1,095.75</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="item-description">Shipping Labels</div>
+                            <div class="item-details">USPS Priority Mail</div>
+                        </td>
+                        <td>487 labels</td>
+                        <td>$0.25/label</td>
+                        <td>$121.75</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Totals -->
+            <div class="totals-section">
+                <div class="totals-box">
+                    <div class="totals-row subtotal">
+                        <span>Subtotal</span>
+                        <span id="subtotal">$1,846.50</span>
+                    </div>
+                    <div class="totals-row subtotal">
+                        <span>Tax (0%)</span>
+                        <span id="tax">$0.00</span>
+                    </div>
+                    <div class="totals-row total">
+                        <span>Total</span>
+                        <span id="total">$1,846.50</span>
+                    </div>
+                    <div class="totals-row balance-due" id="balance-row">
+                        <span>Balance Due</span>
+                        <span id="balance">$1,846.50</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="notes-section" id="notes-section">
+                <h4>Notes</h4>
+                <p id="notes-content">Thank you for your business! Payment is due within 30 days of invoice date. Please reference invoice number when making payment.</p>
+            </div>
+
+            <!-- Payment Terms -->
+            <div class="payment-terms">
+                <h4>Payment Information</h4>
+                <p>
+                    <strong>Bank:</strong> Chase Bank | <strong>Account:</strong> Miami Alliance 3PL LLC<br>
+                    <strong>Routing:</strong> 267084131 | <strong>Account #:</strong> ****4589<br>
+                    Or pay securely online via the customer portal
+                </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="invoice-footer">
+                <div class="footer-logo">
+                    <svg class="logo-icon" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="50" height="50" rx="8" fill="#1e3a5f"/>
+                        <path d="M15 35V20L25 13L35 20V35H28V26H22V35H15Z" fill="#14b8a6"/>
+                        <rect x="23" y="17" width="4" height="4" rx="1" fill="white"/>
+                    </svg>
+                    <span class="text">MIAMI ALLIANCE <span class="accent">3PL</span></span>
+                </div>
+                <div class="footer-tagline">Your Trusted Logistics Partner in Miami</div>
+                <div class="footer-contact">
+                    <a href="https://miamialliance3pl.com">miamialliance3pl.com</a> |
+                    info@miamialliance3pl.com | (305) 555-0123
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Get invoice ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const invoiceId = urlParams.get('id');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            if (invoiceId) {
+                await loadInvoice(invoiceId);
+            }
+        });
+
+        async function loadInvoice(id) {
+            try {
+                const docSnap = await getDoc(doc(db, 'invoices', id));
+                if (!docSnap.exists()) {
+                    alert('Invoice not found');
+                    return;
+                }
+
+                const inv = docSnap.data();
+
+                // Populate header
+                document.getElementById('invoice-number').textContent = inv.invoice_number;
+                document.getElementById('issue-date').textContent = formatDate(inv.created_at);
+                document.getElementById('due-date').textContent = formatDate(inv.due_date);
+
+                // Customer info
+                document.getElementById('customer-name').textContent = inv.customer_name || 'Customer';
+                document.getElementById('customer-details').innerHTML = inv.customer_email || '';
+                document.getElementById('billing-period').textContent =
+                    `${formatDate(inv.billing_period_start)} - ${formatDate(inv.billing_period_end)}`;
+
+                // Status
+                const badge = document.getElementById('status-badge');
+                badge.textContent = inv.status.toUpperCase();
+                badge.className = 'status-badge status-' + inv.status;
+
+                // Details bar
+                document.getElementById('detail-total').textContent = formatCurrency(inv.total);
+                document.getElementById('detail-paid').textContent = formatCurrency(inv.amount_paid || 0);
+                document.getElementById('detail-balance').textContent = formatCurrency(inv.total - (inv.amount_paid || 0));
+                document.getElementById('detail-due').textContent = formatDate(inv.due_date);
+
+                // Line items
+                const tbody = document.getElementById('line-items-body');
+                tbody.innerHTML = '';
+
+                if (inv.line_items && inv.line_items.length > 0) {
+                    inv.line_items.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>
+                                <div class="item-description">${item.description}</div>
+                                <div class="item-details">${item.category || ''}</div>
+                            </td>
+                            <td>${item.quantity} ${item.unit}</td>
+                            <td>${formatCurrency(item.rate)}</td>
+                            <td>${formatCurrency(item.amount)}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+
+                // Totals
+                document.getElementById('subtotal').textContent = formatCurrency(inv.subtotal);
+                document.getElementById('tax').textContent = formatCurrency(inv.tax_amount || 0);
+                document.getElementById('total').textContent = formatCurrency(inv.total);
+
+                const balance = inv.total - (inv.amount_paid || 0);
+                const balanceRow = document.getElementById('balance-row');
+
+                if (inv.status === 'paid' || balance <= 0) {
+                    balanceRow.className = 'totals-row paid-full';
+                    balanceRow.innerHTML = '<span>PAID IN FULL</span><span>✓</span>';
+                } else {
+                    document.getElementById('balance').textContent = formatCurrency(balance);
+                }
+
+                // Notes
+                if (inv.notes) {
+                    document.getElementById('notes-content').textContent = inv.notes;
+                }
+
+                // Update page title
+                document.title = `${inv.invoice_number} | Miami Alliance 3PL`;
+
+            } catch (err) {
+                console.error('Error loading invoice:', err);
+                alert('Error loading invoice: ' + err.message);
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function formatCurrency(amount) {
+            return '$' + (amount || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+    </script>
+</body>
+</html>

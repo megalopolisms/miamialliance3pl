@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Development Changelog | Miami Alliance 3PL Portal</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/style.css?v=8">
+    <style>
+        .changelog-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .changelog-hero h1 {
+            font-size: var(--font-size-3xl);
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .changelog-hero p {
+            opacity: 0.8;
+            font-size: var(--font-size-lg);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        .stat-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-gray-200);
+            text-align: center;
+        }
+        .stat-card .value {
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            color: var(--color-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .stat-card .label {
+            color: var(--color-gray-600);
+            font-size: var(--font-size-sm);
+            margin-top: 4px;
+        }
+
+        .version-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-gray-200);
+        }
+        .version-header {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-md) var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .version-title {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .version-date {
+            opacity: 0.8;
+            font-size: var(--font-size-sm);
+        }
+        .version-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+        }
+        .version-body {
+            padding: var(--spacing-lg);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .feature-item {
+            display: flex;
+            gap: 12px;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--color-gray-100);
+        }
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+        .feature-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .feature-icon.feat { background: #dcfce7; }
+        .feature-icon.fix { background: #fef3c7; }
+        .feature-icon.perf { background: #dbeafe; }
+        .feature-icon.security { background: #fce7f3; }
+        .feature-icon.docs { background: #f3e8ff; }
+
+        .feature-content {
+            flex: 1;
+        }
+        .feature-title {
+            font-weight: 600;
+            color: var(--color-gray-900);
+            margin-bottom: 2px;
+        }
+        .feature-desc {
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-600);
+        }
+        .feature-meta {
+            display: flex;
+            gap: 16px;
+            margin-top: 4px;
+            font-size: var(--font-size-xs);
+            color: var(--color-gray-500);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .lines-added {
+            color: #10b981;
+        }
+        .lines-removed {
+            color: #ef4444;
+        }
+        .commit-hash {
+            color: var(--color-gray-500);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .tag-new { background: #dcfce7; color: #166534; }
+        .tag-improved { background: #dbeafe; color: #1e40af; }
+        .tag-fixed { background: #fef3c7; color: #92400e; }
+
+        .timeline {
+            position: relative;
+            padding-left: 24px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--color-gray-200);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: var(--spacing-lg);
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--color-accent);
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px var(--color-gray-200);
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: var(--spacing-md);
+        }
+        .tech-badge {
+            background: var(--color-gray-100);
+            color: var(--color-gray-700);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            background: var(--color-gray-200);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #10b981, #14b8a6);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .version-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .feature-item {
+                flex-direction: column;
+            }
+            .feature-meta {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="portal-sidebar">
+            <nav>
+                <a href="dashboard.html" class="portal-nav-item">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="shipments.html" class="portal-nav-item">
+                    <span>🚚</span> Shipments
+                </a>
+                <a href="tracking.html" class="portal-nav-item">
+                    <span>🔍</span> Tracking
+                </a>
+                <a href="inventory.html" class="portal-nav-item">
+                    <span>📦</span> Inventory
+                </a>
+                <a href="billing.html" class="portal-nav-item">
+                    <span>💵</span> Billing
+                </a>
+                <div id="admin-nav" style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
+                    <a href="invoices.html" class="portal-nav-item">
+                        <span>💵</span> Invoices
+                    </a>
+                    <a href="storage-log.html" class="portal-nav-item">
+                        <span>📊</span> Storage Log
+                    </a>
+                    <a href="pricing.html" class="portal-nav-item">
+                        <span>💰</span> Pricing
+                    </a>
+                    <a href="settings.html" class="portal-nav-item">
+                        <span>⚙️</span> Settings
+                    </a>
+                    <a href="team.html" class="portal-nav-item">
+                        <span>👔</span> Manage Team
+                    </a>
+                    <a href="changelog.html" class="portal-nav-item active">
+                        <span>📝</span> Changelog
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="portal-main">
+            <!-- Hero -->
+            <div class="changelog-hero">
+                <h1>📝 Development Changelog</h1>
+                <p>Track every feature, fix, and improvement made to Miami Alliance 3PL</p>
+                <div class="tech-stack">
+                    <span class="tech-badge">HTML5</span>
+                    <span class="tech-badge">CSS3</span>
+                    <span class="tech-badge">JavaScript</span>
+                    <span class="tech-badge">Firebase</span>
+                    <span class="tech-badge">Three.js</span>
+                    <span class="tech-badge">Chart.js</span>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="value">16,500+</div>
+                    <div class="label">Lines of Code</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value">50+</div>
+                    <div class="label">Commits</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value">20+</div>
+                    <div class="label">Portal Pages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value">57</div>
+                    <div class="label">MCP Tools</div>
+                </div>
+            </div>
+
+            <!-- Version Timeline -->
+            <div class="timeline">
+
+                <!-- v2.0 - December 26 -->
+                <div class="timeline-item">
+                    <div class="version-section">
+                        <div class="version-header">
+                            <div class="version-title">
+                                🚀 Version 2.0 - Full Portal Launch
+                            </div>
+                            <div>
+                                <span class="version-date">December 26, 2025</span>
+                                <span class="version-badge">CURRENT</span>
+                            </div>
+                        </div>
+                        <div class="version-body">
+                            <ul class="feature-list">
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">🎨</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">3D Quote Calculator <span class="tag tag-new">NEW</span></div>
+                                        <div class="feature-desc">Interactive Three.js visualization with real-time pricing. Rotate, zoom, and see your package in 3D before getting an instant quote.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+650 lines</span>
+                                            <span>quote.html, quote-3d.js, quote-calculator.js</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">🔍</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Comprehensive SEO Package <span class="tag tag-new">NEW</span></div>
+                                        <div class="feature-desc">Meta tags, Open Graph, Twitter Cards, JSON-LD structured data, robots.txt, sitemap.xml, geo meta tags for local SEO.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+400 lines</span>
+                                            <span>All pages, robots.txt, sitemap.xml</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">🧾</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Professional Invoice Template <span class="tag tag-new">NEW</span></div>
+                                        <div class="feature-desc">Print-optimized invoice with company branding, SVG logo, line items, and payment terms. Ready for PDF export.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+500 lines</span>
+                                            <span>invoice-template.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">🤖</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">MCP Server Integration <span class="tag tag-new">NEW</span></div>
+                                        <div class="feature-desc">57 Firebase Admin SDK tools for Claude Code integration. Manage shipments, customers, and inventory via AI commands.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+2,500 lines</span>
+                                            <span>mcp/server.py, tools/*.py</span>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- v1.5 - December 25-26 -->
+                <div class="timeline-item">
+                    <div class="version-section">
+                        <div class="version-header" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                            <div class="version-title">
+                                💳 Version 1.5 - Billing & Payments
+                            </div>
+                            <span class="version-date">December 25-26, 2025</span>
+                        </div>
+                        <div class="version-body">
+                            <ul class="feature-list">
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">💰</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Stripe Payment Integration</div>
+                                        <div class="feature-desc">Full Stripe setup with Firebase Functions for secure payment processing.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+800 lines</span>
+                                            <span>functions/index.js, billing.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">📊</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Invoicing System</div>
+                                        <div class="feature-desc">Auto-generate invoices with storage tracking, billable events, and line items.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+600 lines</span>
+                                            <span>invoices.html, storage-log.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">📈</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Dashboard Analytics</div>
+                                        <div class="feature-desc">Chart.js integration with shipment status, monthly trends, top customers, and KPIs.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+400 lines</span>
+                                            <span>dashboard.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">💵</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">3PL Pricing Management</div>
+                                        <div class="feature-desc">Configure storage, handling, pick & pack, and shipping rates per customer.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+450 lines</span>
+                                            <span>pricing.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- v1.0 - December 14-17 -->
+                <div class="timeline-item">
+                    <div class="version-section">
+                        <div class="version-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            <div class="version-title">
+                                🏢 Version 1.0 - Core Portal
+                            </div>
+                            <span class="version-date">December 14-17, 2025</span>
+                        </div>
+                        <div class="version-body">
+                            <ul class="feature-list">
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">🔐</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Firebase Authentication</div>
+                                        <div class="feature-desc">Google Sign-In with email/password fallback. Secure auth persistence across sessions.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+350 lines</span>
+                                            <span>login.html, auth flows</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">👥</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Role-Based Access Control</div>
+                                        <div class="feature-desc">Customer, Employee, and Admin roles with different access levels and UI elements.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+500 lines</span>
+                                            <span>All portal pages</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">🚚</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Shipment Management</div>
+                                        <div class="feature-desc">Create, track, and manage shipments with status updates, dimensions, and weight.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+700 lines</span>
+                                            <span>shipments.html, tracking.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">📦</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Inventory Management</div>
+                                        <div class="feature-desc">Track pallets, boxes, and items with SKU, quantity, and warehouse location.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+550 lines</span>
+                                            <span>inventory.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">💬</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Chat Wizard for Shipments</div>
+                                        <div class="feature-desc">Amazon-style conversational UI for creating shipments step-by-step with animations.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+400 lines</span>
+                                            <span>shipments.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">⭐</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Star Wars Easter Egg</div>
+                                        <div class="feature-desc">Special Jedi-themed UI for admin users with random Star Wars quotes.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+100 lines</span>
+                                            <span>dashboard.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- v0.5 - Initial -->
+                <div class="timeline-item">
+                    <div class="version-section">
+                        <div class="version-header" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+                            <div class="version-title">
+                                🌱 Version 0.5 - Foundation
+                            </div>
+                            <span class="version-date">December 14, 2025</span>
+                        </div>
+                        <div class="version-body">
+                            <ul class="feature-list">
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">🏠</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Landing Page</div>
+                                        <div class="feature-desc">Hero section, services overview, Pablo Nicotine case study, contact form.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+800 lines</span>
+                                            <span>index.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">📋</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Services Page</div>
+                                        <div class="feature-desc">Detailed breakdown of warehousing, fulfillment, import/export services.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+500 lines</span>
+                                            <span>services.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">📍</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Contact with Google Maps</div>
+                                        <div class="feature-desc">Dark-themed Google Maps embed with overlay card showing warehouse location.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+400 lines</span>
+                                            <span>contact.html</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="feature-item">
+                                    <div class="feature-icon feat">🎨</div>
+                                    <div class="feature-content">
+                                        <div class="feature-title">Design System</div>
+                                        <div class="feature-desc">CSS variables, responsive grid, typography scale, component library.</div>
+                                        <div class="feature-meta">
+                                            <span class="lines-added">+1,200 lines</span>
+                                            <span>css/style.css</span>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Progress -->
+            <div class="stat-card" style="margin-top: var(--spacing-xl);">
+                <h3 style="margin-bottom: var(--spacing-md); color: var(--color-gray-800);">Development Progress</h3>
+                <div style="display: grid; gap: var(--spacing-md);">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>Core Portal Features</span>
+                            <span style="font-weight: 600; color: #10b981;">100%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>Billing & Invoicing</span>
+                            <span style="font-weight: 600; color: #10b981;">95%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 95%;"></div></div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>3D Quote Calculator</span>
+                            <span style="font-weight: 600; color: #10b981;">100%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>SEO & Marketing</span>
+                            <span style="font-weight: 600; color: #10b981;">100%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>MCP Integration</span>
+                            <span style="font-weight: 600; color: #f59e0b;">85%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 85%;"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commit History -->
+            <div class="version-section" style="margin-top: var(--spacing-xl);">
+                <div class="version-header" style="background: var(--color-gray-800);">
+                    <div class="version-title">
+                        <span>📜</span> Recent Commits
+                    </div>
+                </div>
+                <div class="version-body" style="font-family: 'JetBrains Mono', monospace; font-size: var(--font-size-sm);">
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">4b6c64a</span>
+                            <span style="margin-left: 12px;">feat: comprehensive SEO package for all pages</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 26</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">59c29eb</span>
+                            <span style="margin-left: 12px;">feat: enhance 3D quote visualizer with polish</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 26</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">9991df8</span>
+                            <span style="margin-left: 12px;">fix: use ES6 modules for Three.js</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 26</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">b93d591</span>
+                            <span style="margin-left: 12px;">feat: add interactive 3D quote calculator page</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 26</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">d2af3ae</span>
+                            <span style="margin-left: 12px;">feat(mcp): integrate Firebase Admin SDK with 57 tools</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 26</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">838e5d3</span>
+                            <span style="margin-left: 12px;">Add Stripe payment integration with Firebase Functions</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 26</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">adc8ed6</span>
+                            <span style="margin-left: 12px;">Add billable events auto-logging on shipment creation</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 26</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">4acc693</span>
+                            <span style="margin-left: 12px;">Add invoicing system with storage tracking</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 26</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">ae7ee5d</span>
+                            <span style="margin-left: 12px;">Add dashboard analytics with Chart.js</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 25</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">3770724</span>
+                            <span style="margin-left: 12px;">Add 3PL pricing management system</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 25</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">30446d4</span>
+                            <span style="margin-left: 12px;">Add role-based admin system with team management</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 25</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">780da70</span>
+                            <span style="margin-left: 12px;">Add chat wizard for shipment creation</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 17</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">bfda78a</span>
+                            <span style="margin-left: 12px;">Add Star Wars theme for Jorge - The Chosen One</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 14</span>
+                        </div>
+                        <div class="feature-item" style="padding: 8px 0;">
+                            <span class="commit-hash" style="color: var(--color-accent);">9bf22f8</span>
+                            <span style="margin-left: 12px;">Add Firebase config and Google Sign-In</span>
+                            <span style="margin-left: auto; color: var(--color-gray-500);">Dec 14</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99"
+        };
+
+        const ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            const userEmail = user.email.toLowerCase();
+            let userRole = 'customer';
+            let userName = user.displayName || user.email;
+
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    if (data.name) userName = data.name;
+                    if (data.role) userRole = data.role;
+                }
+            } catch (e) {
+                console.log('Could not fetch user doc:', e);
+            }
+
+            // Fallback admin check
+            if (ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail)) {
+                userRole = 'admin';
+            }
+
+            // Only admins can access changelog
+            if (userRole !== 'admin') {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            document.getElementById('user-name').textContent = `Welcome, ${userName}`;
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+    </script>
+    <script src="../js/main.js?v=3"></script>
+</body>
+</html>
