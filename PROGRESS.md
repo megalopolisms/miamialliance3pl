@@ -2,6 +2,10 @@
 
 ## Latest Update: December 27, 2024
 
+### Claude AI WhatsApp Chatbot - IMPLEMENTED ✅ 🤖
+
+Full AI-powered customer service chatbot with 16 MCP tools, real-time database access, sentiment detection, multi-language support, and proactive engagement features.
+
 ### SMS & WhatsApp Notification System - IMPLEMENTED ✅
 
 Full automated notification system for shipment status updates, inventory alerts, and customer communications.
@@ -13,6 +17,7 @@ Full automated notification system for shipment status updates, inventory alerts
 | Component | Technology | Status |
 |-----------|------------|--------|
 | Backend | Firebase Cloud Functions (Node.js 20) | ✅ Deployed |
+| AI Engine | Claude API (Anthropic) | ⏳ Requires API key |
 | SMS | Twilio API | ⚠️ Requires account upgrade |
 | WhatsApp | Twilio WhatsApp API | ✅ Working (Sandbox) |
 | Payments | Stripe Checkout | ✅ Configured |
@@ -20,17 +25,136 @@ Full automated notification system for shipment status updates, inventory alerts
 
 ---
 
-## Cloud Functions Deployed (7 Total)
+## Claude AI Chatbot Features 🤖
 
+### 16 MCP Tools (Agentic Loop)
+| Tool | Description |
+|------|-------------|
+| `lookup_shipment` | Real-time shipment tracking by number or phone |
+| `check_inventory` | Stock levels by SKU or customer |
+| `calculate_quote` | Dynamic pricing calculator |
+| `lookup_invoice` | Invoice status and payment links |
+| `schedule_pickup` | Book inbound/outbound pickups |
+| `escalate_to_human` | Seamless handoff to support team |
+| `create_shipment` | Create new orders via WhatsApp |
+| `get_shipping_rates` | Multi-carrier rate shopping |
+| `send_document` | Send invoices, BOLs, labels |
+| `update_preferences` | Notification settings |
+| `get_business_hours` | Hours and next open time |
+| `file_claim` | Damage/loss claims |
+| `reorder_inventory` | Restock requests |
+| `modify_order` | Update address, cancel, expedite |
+| `search_faq` | Knowledge base lookup |
+
+### Smart Features
+- **Sentiment Detection** - Auto-escalates frustrated customers
+- **Language Detection** - Spanish/English auto-detection and response
+- **Customer Context** - VIP status, active shipments, open issues
+- **Conversation Memory** - Maintains context across messages
+- **Response Caching** - Fast responses for common queries
+- **A/B Testing** - Test greeting/closing variations
+
+### Proactive Engagement
+- **Follow-Up Messages** - Check on resolved issues
+- **Delivery Predictions** - "Your package arrives tomorrow!"
+- **Abandoned Quote Follow-Up** - Re-engage interested prospects
+- **Weekly Summaries** - Activity reports for customers
+- **Feedback Collection** - Post-conversation ratings
+
+### Admin Features
+- **Real-time Metrics Dashboard** - Today's stats, escalations, tool usage
+- **Conversation Summaries** - Quick handoff context
+- **Bulk Messaging** - Campaigns for VIP/all/active customers
+- **Performance Analysis** - Daily AI reports
+- **Admin Notifications** - Pending escalations, claims, pickups
+
+---
+
+## Cloud Functions Deployed (20+ Total)
+
+### Payment Functions
 | Function | Type | Description |
 |----------|------|-------------|
-| `createCheckoutSession` | HTTPS Callable | Creates Stripe checkout session for invoice payment |
-| `stripeWebhook` | HTTPS Request | Handles Stripe payment webhooks |
-| `createPaymentLink` | HTTPS Callable | Creates reusable Stripe payment links (admin only) |
-| `onShipmentStatusChange` | Firestore Trigger | Auto-sends SMS/WhatsApp when shipment status changes |
-| `sendShipmentNotification` | HTTPS Callable | Manual notification trigger (admin only) |
+| `createCheckoutSession` | HTTPS Callable | Creates Stripe checkout session |
+| `stripeWebhook` | HTTPS Request | Handles Stripe webhooks |
+| `createPaymentLink` | HTTPS Callable | Creates payment links (admin) |
+
+### Notification Functions
+| Function | Type | Description |
+|----------|------|-------------|
+| `onShipmentStatusChange` | Firestore Trigger | Auto-notifies on status change |
+| `sendShipmentNotification` | HTTPS Callable | Manual notification (admin) |
 | `testWhatsApp` | HTTPS Callable | WhatsApp sandbox testing |
-| `lowInventoryAlert` | Scheduled (9am ET) | Daily low inventory alerts |
+| `lowInventoryAlert` | Scheduled (9am ET) | Daily low stock alerts |
+
+### AI Chatbot Functions
+| Function | Type | Description |
+|----------|------|-------------|
+| `whatsappWebhook` | HTTPS Request | Receives incoming WhatsApp messages |
+| `whatsappWebhookAsync` | HTTPS Request | Async version with Twilio API response |
+| `whatsappWebhookEnhanced` | HTTPS Request | Full-featured with FAQ + feedback |
+| `testChatbot` | HTTPS Callable | Run AI test suite |
+
+### Proactive Functions
+| Function | Type | Description |
+|----------|------|-------------|
+| `proactiveFollowUp` | Scheduled (10am ET) | Follow up on resolved issues |
+| `deliveryPredictionAlert` | Scheduled (every 2h) | Tomorrow's delivery notifications |
+| `abandonedQuoteFollowUp` | Scheduled (2pm ET) | Re-engage quote prospects |
+| `requestFeedback` | Scheduled (every 30m) | Ask for ratings |
+| `weeklyCustomerSummary` | Scheduled (Mon 9am) | Weekly activity digest |
+
+### Analytics Functions
+| Function | Type | Description |
+|----------|------|-------------|
+| `analyzeAIPerformance` | Scheduled (6am ET) | Daily AI metrics report |
+| `getChatbotMetrics` | HTTPS Callable | Real-time dashboard data |
+| `getConversationSummary` | HTTPS Callable | Handoff context |
+| `getAdminNotifications` | HTTPS Callable | Pending items count |
+
+### Maintenance Functions
+| Function | Type | Description |
+|----------|------|-------------|
+| `autoDetectVIPs` | Scheduled (Sun 11pm) | Auto-upgrade loyal customers |
+| `pruneConversations` | Scheduled (4am ET) | Memory management |
+| `sendBulkMessage` | HTTPS Callable | Campaign messaging (admin)
+
+---
+
+## Claude AI Configuration
+
+### Set Anthropic API Key
+```bash
+firebase functions:config:set anthropic.api_key="sk-ant-api03-YOUR_KEY_HERE"
+firebase functions:config:set admin.phone="+13055041323"
+```
+
+### Configure Twilio Webhook
+In Twilio Console > Messaging > WhatsApp Sandbox:
+```
+When a message comes in:
+https://us-central1-miamialliance3pl.cloudfunctions.net/whatsappWebhookEnhanced
+```
+
+### Firestore Collections Created
+| Collection | Purpose |
+|------------|---------|
+| `conversations` | Conversation history per phone |
+| `chat_logs` | All message logs with AI responses |
+| `tool_usage` | Tool call analytics |
+| `ai_interactions` | Smart feature usage |
+| `ai_errors` | Error tracking for auto-fix |
+| `ai_reports` | Daily performance reports |
+| `ai_tests` | Test suite results |
+| `feedback` | Customer satisfaction ratings |
+| `escalations` | Human handoff tickets |
+| `claims` | Damage/loss claims |
+| `pickup_requests` | Scheduled pickups |
+| `proactive_messages` | Outbound message log |
+| `order_modifications` | Order change history |
+| `customer_preferences` | VIP status, language, prefs |
+| `campaigns` | Bulk message campaigns |
+| `ab_tests` | A/B test impressions |
 
 ---
 
@@ -132,10 +256,11 @@ curl -X POST "https://api.twilio.com/.../IncomingPhoneNumbers.json" -d "PhoneNum
 
 | File | Change |
 |------|--------|
-| `functions/package.json` | Added `twilio` dependency, Node.js 20 |
-| `functions/index.js` | Added SMS/WhatsApp functions |
+| `functions/package.json` | Added `twilio`, `@anthropic-ai/sdk` dependencies |
+| `functions/index.js` | 3000+ lines: AI chatbot + 20+ functions |
 | `firebase.json` | Removed lint predeploy step |
 | `.firebaserc` | Project configuration |
+| `PROGRESS.md` | Full documentation |
 
 ---
 
@@ -143,11 +268,13 @@ curl -X POST "https://api.twilio.com/.../IncomingPhoneNumbers.json" -d "PhoneNum
 
 | Service | Cost |
 |---------|------|
+| Claude API (Sonnet) | $0.003/1K input, $0.015/1K output tokens |
 | Twilio Phone Number | $1.15/month |
 | SMS (outbound) | $0.0079/message |
 | WhatsApp (outbound) | $0.005/message |
 | Firebase Functions | Free tier (2M invocations) |
 
+**Monthly estimate (1000 AI conversations):** ~$15-25
 **Monthly estimate (1000 notifications):** ~$6-8
 
 ---
@@ -208,4 +335,38 @@ firebase functions:log
 
 ---
 
-*Last updated: December 27, 2024*
+*Last updated: December 27, 2025*
+
+---
+
+## Deployment Checklist
+
+### To Go Live with AI Chatbot:
+1. **Set Anthropic API Key**
+   ```bash
+   firebase functions:config:set anthropic.api_key="YOUR_KEY"
+   ```
+
+2. **Deploy Functions**
+   ```bash
+   cd functions && npm install && firebase deploy --only functions
+   ```
+
+3. **Configure Twilio Webhook**
+   - Go to Twilio Console > Messaging > WhatsApp Sandbox
+   - Set webhook URL: `https://us-central1-miamialliance3pl.cloudfunctions.net/whatsappWebhookEnhanced`
+
+4. **Test the Bot**
+   - Join sandbox: Text "join shade-slave" to +14155238886
+   - Send a message like "What are your hours?"
+   - Verify AI responds
+
+5. **Monitor**
+   ```bash
+   firebase functions:log --only whatsappWebhookEnhanced
+   ```
+
+### For Production WhatsApp:
+- Apply at: https://www.twilio.com/whatsapp/request-access
+- Complete Facebook Business verification
+- Get dedicated WhatsApp number
