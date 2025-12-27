@@ -3019,3 +3019,491 @@ exports.sendBulkMessage = functions.https.onCall(async (data, context) => {
         test_mode: testMode
     };
 });
+
+// =============================================================================
+// PHOTO & MEDIA HANDLING
+// =============================================================================
+
+/**
+ * Handle incoming WhatsApp media (photos, documents)
+ */
+async function handleIncomingMedia(req, customerPhone) {
+    const db = admin.firestore();
+    const numMedia = parseInt(req.body.NumMedia) || 0;
+
+    if (numMedia === 0) return null;
+
+    const mediaItems = [];
+    for (let i = 0; i < numMedia; i++) {
+        const url = req.body[`MediaUrl${i}`];
+        const type = req.body[`MediaContentType${i}`];
+
+        if (url) {
+            const mediaDoc = await db.collection('media_uploads').add({
+                customer_phone: customerPhone,
+                url: url,
+                content_type: type,
+                processed: false,
+                timestamp: admin.firestore.FieldValue.serverTimestamp()
+            });
+
+            mediaItems.push({
+                id: mediaDoc.id,
+                url: url,
+                type: type.startsWith('image/') ? 'photo' : 'document'
+            });
+        }
+    }
+
+    return mediaItems;
+}
+
+// =============================================================================
+// SHOPIFY INTEGRATION
+// =============================================================================
+
+exports.shopifyOrderCreated = functions.https.onRequest(async (req, res) => {
+    const order = req.body;
+    const db = admin.firestore();
+
+    try {
+        const trackingNumber = `MA3PL-${Date.now().toString(36).toUpperCase()}`;
+
+        const shipment = {
+            tracking_number: trackingNumber,
+            source: 'shopify',
+            shopify_order_id: order.id,
+            shopify_order_number: order.order_number,
+            customer_email: order.email,
+            customer_phone: order.phone || order.billing_address?.phone,
+            destination: order.shipping_address ?
+                `${order.shipping_address.address1}, ${order.shipping_address.city}, ${order.shipping_address.province_code} ${order.shipping_address.zip}` : 'Unknown',
+            items: (order.line_items || []).map(item => ({
+                sku: item.sku,
+                name: item.name,
+                quantity: item.quantity
+            })),
+            status: 'pending',
+            created_at: admin.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection('shipments').add(shipment);
+
+        if (shipment.customer_phone && twilioClient) {
+            await sendWhatsApp(shipment.customer_phone,
+                `🛍️ Order received! Your Shopify order #${order.order_number} is being processed.\nTracking: ${trackingNumber}`);
+        }
+
+        res.status(200).json({ success: true, tracking_number: trackingNumber });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// =============================================================================
+// SLACK INTEGRATION
+// =============================================================================
+
+async function sendSlackNotification(message, channel = 'operations') {
+    const slackWebhook = functions.config().slack?.[channel];
+    if (!slackWebhook) return { success: false };
+
+    try {
+        const https = require('https');
+        const url = new URL(slackWebhook);
+        const payload = JSON.stringify({ text: message, username: 'Miami 3PL Bot', icon_emoji: ':package:' });
+
+        return new Promise((resolve) => {
+            const req = https.request({
+                hostname: url.hostname,
+                path: url.pathname,
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            }, (res) => resolve({ success: res.statusCode === 200 }));
+            req.write(payload);
+            req.end();
+        });
+    } catch (error) {
+        return { success: false };
+    }
+}
+
+exports.slackCommand = functions.https.onRequest(async (req, res) => {
+    const command = req.body.text || '';
+    const parts = command.split(' ');
+    const action = parts[0];
+    const param = parts[1];
+    let response = '';
+
+    if (action === 'track' && param) {
+        const db = admin.firestore();
+        const snapshot = await db.collection('shipments').where('tracking_number', '==', param).limit(1).get();
+        if (snapshot.empty) {
+            response = `Shipment ${param} not found`;
+        } else {
+            const s = snapshot.docs[0].data();
+            response = `📦 *${param}*\nStatus: ${s.status}\nDestination: ${s.destination || 'N/A'}`;
+        }
+    } else {
+        response = '*Commands:*\n• `/ma3pl track MA3PL-XXXX`\n• `/ma3pl stats`';
+    }
+
+    res.json({ response_type: 'in_channel', text: response });
+});
+
+exports.onEscalationCreated = functions.firestore
+    .document('escalations/{escalationId}')
+    .onCreate(async (snap) => {
+        const e = snap.data();
+        await sendSlackNotification(`🚨 *New Escalation*\nCustomer: ${e.customer_phone}\nReason: ${e.reason}\nUrgency: ${e.urgency || 'medium'}`, 'escalations');
+    });
+
+// =============================================================================
+// WOOCOMMERCE INTEGRATION
+// =============================================================================
+
+exports.woocommerceOrderCreated = functions.https.onRequest(async (req, res) => {
+    const order = req.body;
+    const db = admin.firestore();
+
+    try {
+        const trackingNumber = `MA3PL-${Date.now().toString(36).toUpperCase()}`;
+
+        const shipment = {
+            tracking_number: trackingNumber,
+            source: 'woocommerce',
+            woo_order_id: order.id,
+            customer_email: order.billing?.email,
+            customer_phone: order.billing?.phone,
+            destination: order.shipping ?
+                `${order.shipping.address_1}, ${order.shipping.city}, ${order.shipping.state} ${order.shipping.postcode}` : 'Unknown',
+            items: (order.line_items || []).map(item => ({ sku: item.sku, name: item.name, quantity: item.quantity })),
+            status: 'pending',
+            created_at: admin.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection('shipments').add(shipment);
+
+        if (shipment.customer_phone && twilioClient) {
+            await sendWhatsApp(shipment.customer_phone, `🛒 Order received! Tracking: ${trackingNumber}`);
+        }
+
+        res.status(200).json({ success: true, tracking_number: trackingNumber });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// =============================================================================
+// CARRIER TRACKING SYNC
+// =============================================================================
+
+exports.syncCarrierTracking = functions.pubsub
+    .schedule('every 1 hours')
+    .onRun(async () => {
+        const db = admin.firestore();
+        const shipments = await db.collection('shipments')
+            .where('status', 'in', ['shipped', 'in_transit', 'out_for_delivery'])
+            .limit(100)
+            .get();
+
+        // In production, call FedEx/UPS/USPS APIs here
+        return { synced: shipments.size };
+    });
+
+// =============================================================================
+// INVENTORY FORECASTING
+// =============================================================================
+
+exports.inventoryForecast = functions.pubsub
+    .schedule('every monday 07:00')
+    .timeZone('America/New_York')
+    .onRun(async () => {
+        const db = admin.firestore();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const inventory = await db.collection('inventory').get();
+        const forecasts = [];
+
+        for (const doc of inventory.docs) {
+            const item = doc.data();
+            const dailyConsumption = (item.monthly_orders || 0) / 30;
+            const daysOfStock = dailyConsumption > 0 ? Math.floor(item.quantity / dailyConsumption) : 999;
+
+            if (daysOfStock < 14 && item.quantity > 0) {
+                forecasts.push({
+                    sku: item.sku,
+                    name: item.name,
+                    current_qty: item.quantity,
+                    days_remaining: daysOfStock,
+                    reorder_qty: Math.ceil(dailyConsumption * 30)
+                });
+            }
+        }
+
+        await db.collection('inventory_forecasts').add({
+            forecasts: forecasts,
+            generated_at: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        return { forecasts_generated: forecasts.length };
+    });
+
+// =============================================================================
+// CUSTOMER HEALTH SCORING
+// =============================================================================
+
+exports.getCustomerHealth = functions.https.onCall(async (data, context) => {
+    if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'Login required');
+
+    const db = admin.firestore();
+    const { customerId } = data;
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const [shipmentsSnap, feedbackSnap, escalationsSnap] = await Promise.all([
+        db.collection('shipments').where('customer_id', '==', customerId).where('created_at', '>=', thirtyDaysAgo).get(),
+        db.collection('feedback').where('customer_id', '==', customerId).limit(5).get(),
+        db.collection('escalations').where('customer_id', '==', customerId).where('status', '==', 'open').get()
+    ]);
+
+    let score = 50;
+    score += Math.min(shipmentsSnap.size * 2, 20);
+    if (feedbackSnap.size > 0) {
+        const avg = feedbackSnap.docs.reduce((sum, d) => sum + (d.data().score || 3), 0) / feedbackSnap.size;
+        score += (avg - 3) * 5;
+    }
+    score -= escalationsSnap.size * 5;
+    score = Math.max(0, Math.min(100, score));
+
+    return {
+        score: score,
+        label: score >= 80 ? 'excellent' : score >= 60 ? 'good' : score >= 40 ? 'fair' : 'at_risk',
+        shipments_30d: shipmentsSnap.size,
+        open_escalations: escalationsSnap.size
+    };
+});
+
+// =============================================================================
+// ANALYTICS EXPORT
+// =============================================================================
+
+exports.exportAnalytics = functions.https.onCall(async (data, context) => {
+    if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'Login required');
+
+    const db = admin.firestore();
+    const { startDate, endDate, type } = data;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (type === 'conversations') {
+        const chats = await db.collection('chat_logs')
+            .where('timestamp', '>=', start)
+            .where('timestamp', '<=', end)
+            .get();
+
+        return {
+            total_messages: chats.size,
+            unique_customers: new Set(chats.docs.map(d => d.data().phone)).size,
+            generated_at: new Date().toISOString()
+        };
+    }
+
+    if (type === 'feedback') {
+        const feedback = await db.collection('feedback')
+            .where('timestamp', '>=', start)
+            .where('timestamp', '<=', end)
+            .get();
+
+        const scores = feedback.docs.map(d => d.data().score);
+        return {
+            total_responses: feedback.size,
+            average_score: scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2) : 0,
+            generated_at: new Date().toISOString()
+        };
+    }
+
+    return { error: 'Invalid report type' };
+});
+
+// =============================================================================
+// PORTAL CHAT WIDGET WEBHOOK
+// =============================================================================
+
+exports.portalChatWebhook = functions.https.onRequest(async (req, res) => {
+    // Enable CORS
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).send('');
+    }
+
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const { message, sessionId, userId, history } = req.body;
+
+    if (!message) {
+        return res.status(400).json({ error: 'Message required' });
+    }
+
+    const db = admin.firestore();
+
+    // Get user context if logged in
+    let userContext = '';
+    if (userId) {
+        try {
+            const userDoc = await db.collection('users').doc(userId).get();
+            if (userDoc.exists) {
+                const user = userDoc.data();
+                userContext = `\n\nLOGGED IN USER: ${user.company || user.email}`;
+
+                // Get their recent shipments
+                const shipments = await db.collection('shipments')
+                    .where('customer_id', '==', userId)
+                    .orderBy('created_at', 'desc')
+                    .limit(3)
+                    .get();
+
+                if (!shipments.empty) {
+                    userContext += `\nRecent shipments: ${shipments.docs.map(d => `${d.data().tracking_number} (${d.data().status})`).join(', ')}`;
+                }
+            }
+        } catch (e) {
+            console.error('Error getting user context:', e);
+        }
+    }
+
+    // Generate AI response
+    if (!anthropicClient) {
+        return res.json({ response: 'AI assistant is offline. Please contact us at (305) 555-3PL1.' });
+    }
+
+    try {
+        const messages = (history || []).map(m => ({
+            role: m.role,
+            content: m.content
+        }));
+        messages.push({ role: 'user', content: message });
+
+        const response = await anthropicClient.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 500,
+            system: SYSTEM_PROMPT + userContext,
+            tools: TOOLS,
+            messages: messages
+        });
+
+        // Handle tool use
+        let finalResponse = '';
+        if (response.stop_reason === 'tool_use') {
+            const toolUse = response.content.find(b => b.type === 'tool_use');
+            if (toolUse) {
+                const result = await executeTool(toolUse.name, toolUse.input, userId);
+
+                // Continue conversation with tool result
+                const followUp = await anthropicClient.messages.create({
+                    model: 'claude-sonnet-4-20250514',
+                    max_tokens: 500,
+                    system: SYSTEM_PROMPT + userContext,
+                    messages: [
+                        ...messages,
+                        { role: 'assistant', content: response.content },
+                        { role: 'user', content: [{ type: 'tool_result', tool_use_id: toolUse.id, content: JSON.stringify(result) }] }
+                    ]
+                });
+
+                finalResponse = followUp.content.find(b => b.type === 'text')?.text || '';
+            }
+        } else {
+            finalResponse = response.content.find(b => b.type === 'text')?.text || '';
+        }
+
+        // Log chat
+        await db.collection('portal_chats').add({
+            session_id: sessionId,
+            user_id: userId,
+            user_message: message,
+            ai_response: finalResponse,
+            timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        res.json({ response: finalResponse });
+
+    } catch (error) {
+        console.error('Portal chat error:', error);
+        res.json({ response: 'Sorry, I\'m having trouble. Please try again or contact support.' });
+    }
+});
+
+// =============================================================================
+// ADMIN: RESOLVE ESCALATION
+// =============================================================================
+
+exports.resolveEscalation = functions.https.onCall(async (data, context) => {
+    if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'Login required');
+
+    const userDoc = await admin.firestore().collection('users').doc(context.auth.uid).get();
+    if (userDoc.data()?.role !== 'admin') {
+        throw new functions.https.HttpsError('permission-denied', 'Admin only');
+    }
+
+    const { escalationId, resolution, notifyCustomer } = data;
+    const db = admin.firestore();
+
+    // Update escalation
+    const escRef = db.collection('escalations').doc(escalationId);
+    await escRef.update({
+        status: 'resolved',
+        resolution: resolution,
+        resolved_by: context.auth.uid,
+        resolved_at: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Notify customer if requested
+    if (notifyCustomer) {
+        const esc = await escRef.get();
+        const phone = esc.data().customer_phone;
+        if (phone && twilioClient) {
+            await sendWhatsApp(phone, `✅ Your support request has been resolved: ${resolution}\n\nThank you for your patience!`);
+        }
+    }
+
+    return { success: true };
+});
+
+// =============================================================================
+// ADMIN: DASHBOARD STATS REALTIME
+// =============================================================================
+
+exports.getDashboardStats = functions.https.onCall(async (data, context) => {
+    if (!context.auth) throw new functions.https.HttpsError('unauthenticated', 'Login required');
+
+    const db = admin.firestore();
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const [chats, escalations, shipments, feedback] = await Promise.all([
+        db.collection('chat_logs').where('timestamp', '>=', today).get(),
+        db.collection('escalations').where('status', '==', 'open').get(),
+        db.collection('shipments').where('created_at', '>=', today).get(),
+        db.collection('feedback').where('timestamp', '>=', today).get()
+    ]);
+
+    const avgScore = feedback.size > 0
+        ? (feedback.docs.reduce((sum, d) => sum + (d.data().score || 0), 0) / feedback.size).toFixed(1)
+        : 'N/A';
+
+    return {
+        conversations_today: chats.size,
+        unique_customers: new Set(chats.docs.map(d => d.data().phone)).size,
+        open_escalations: escalations.size,
+        shipments_today: shipments.size,
+        avg_satisfaction: avgScore,
+        generated_at: now.toISOString()
+    };
+});
