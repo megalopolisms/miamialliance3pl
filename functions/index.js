@@ -1,36 +1,408 @@
 /**
- * Miami Alliance 3PL - Firebase Functions for Stripe Payments
+ * @fileoverview Miami Alliance 3PL - Firebase Cloud Functions
  *
- * Setup:
- * 1. Install Firebase CLI: npm install -g firebase-tools
- * 2. Login: firebase login
- * 3. Init functions: firebase init functions (select existing project)
- * 4. cd functions && npm install stripe
- * 5. Set Stripe secret key: firebase functions:config:set stripe.secret="sk_live_xxx"
- * 6. Deploy: firebase deploy --only functions
+ * Complete backend for the Miami Alliance 3PL logistics platform including:
+ * - Stripe payment processing (checkout, webhooks, payment links)
+ * - Twilio SMS/WhatsApp notifications
+ * - Claude AI chatbot with 16+ MCP tools
+ * - Platform integrations (Shopify, WooCommerce, Slack)
+ * - Customer analytics and health scoring
+ * - Inventory forecasting and alerts
+ *
+ * @version 2.0.0
+ * @author Miami Alliance 3PL
+ * @license MIT
+ *
+ * @requires firebase-functions
+ * @requires firebase-admin
+ * @requires stripe
+ * @requires twilio
+ * @requires @anthropic-ai/sdk
+ *
+ * @example
+ * // Deploy all functions
+ * firebase deploy --only functions
+ *
+ * @example
+ * // Deploy specific function
+ * firebase deploy --only functions:whatsappWebhookEnhanced
+ *
+ * @example
+ * // View logs
+ * firebase functions:log --only whatsappWebhookEnhanced
+ *
+ * @see {@link https://github.com/megalopolisms/miamialliance3pl} GitHub Repository
+ *
+ * ============================================================================
+ * CONFIGURATION REQUIRED
+ * ============================================================================
+ *
+ * Set these Firebase config values before deploying:
+ *
+ * # Stripe (Payments)
+ * firebase functions:config:set stripe.secret="sk_live_xxx"
+ * firebase functions:config:set stripe.webhook_secret="whsec_xxx"
+ *
+ * # Twilio (SMS/WhatsApp)
+ * firebase functions:config:set twilio.account_sid="ACxxx"
+ * firebase functions:config:set twilio.auth_token="xxx"
+ * firebase functions:config:set twilio.phone_number="+13056970028"
+ * firebase functions:config:set twilio.whatsapp_number="whatsapp:+14155238886"
+ *
+ * # Anthropic (AI Chatbot)
+ * firebase functions:config:set anthropic.api_key="sk-ant-api03-xxx"
+ *
+ * # Admin
+ * firebase functions:config:set admin.phone="+13055041323"
+ *
+ * # Slack (Integrations)
+ * firebase functions:config:set slack.operations="https://hooks.slack.com/xxx"
+ * firebase functions:config:set slack.alerts="https://hooks.slack.com/xxx"
+ *
+ * ============================================================================
+ * FUNCTION CATEGORIES
+ * ============================================================================
+ *
+ * 1. PAYMENT FUNCTIONS (Stripe)
+ *    - createCheckoutSession: Create Stripe checkout for invoice
+ *    - stripeWebhook: Handle Stripe payment webhooks
+ *    - createPaymentLink: Generate shareable payment links
+ *
+ * 2. NOTIFICATION FUNCTIONS (Twilio)
+ *    - onShipmentStatusChange: Auto-notify on status updates
+ *    - sendShipmentNotification: Manual notification trigger
+ *    - testWhatsApp: Sandbox testing utility
+ *    - lowInventoryAlert: Daily stock level alerts
+ *
+ * 3. AI CHATBOT FUNCTIONS (Claude)
+ *    - whatsappWebhook: Basic WhatsApp message handler
+ *    - whatsappWebhookAsync: Async version with queuing
+ *    - whatsappWebhookEnhanced: Full-featured with all tools
+ *    - portalChatWebhook: Web portal AI chat
+ *    - testChatbot: AI test suite runner
+ *
+ * 4. PROACTIVE ENGAGEMENT FUNCTIONS
+ *    - proactiveFollowUp: Check on resolved issues
+ *    - deliveryPredictionAlert: Tomorrow's delivery notices
+ *    - abandonedQuoteFollowUp: Re-engage prospects
+ *    - requestFeedback: Collect satisfaction ratings
+ *    - weeklyCustomerSummary: Activity digests
+ *
+ * 5. ANALYTICS FUNCTIONS
+ *    - analyzeAIPerformance: Daily AI metrics
+ *    - getChatbotMetrics: Real-time dashboard data
+ *    - getConversationSummary: Handoff context
+ *    - getAdminNotifications: Pending items count
+ *    - getDashboardStats: Admin dashboard metrics
+ *    - getCustomerHealth: Customer health scoring
+ *    - exportAnalytics: Export logs to CSV/JSON
+ *
+ * 6. PLATFORM INTEGRATION FUNCTIONS
+ *    - shopifyOrderCreated: Shopify order webhook
+ *    - woocommerceOrderCreated: WooCommerce order webhook
+ *    - slackCommand: Slack slash command handler
+ *    - onEscalationCreated: Auto-post to Slack
+ *    - syncCarrierTracking: Carrier API sync
+ *
+ * 7. MAINTENANCE FUNCTIONS
+ *    - autoDetectVIPs: Upgrade loyal customers
+ *    - pruneConversations: Memory cleanup
+ *    - sendBulkMessage: Campaign messaging
+ *    - inventoryForecast: Predictive alerts
+ *    - resolveEscalation: Close escalation tickets
+ *
+ * ============================================================================
  */
+
+'use strict';
+
+// =============================================================================
+// DEPENDENCIES
+// =============================================================================
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
+// Initialize Firebase Admin SDK
 admin.initializeApp();
 
+/** @type {import('stripe').Stripe} Stripe API client */
 const stripe = require('stripe')(functions.config().stripe?.secret || process.env.STRIPE_SECRET_KEY);
 
-// Twilio SMS & WhatsApp Configuration
-const twilioAccountSid = functions.config().twilio?.account_sid || process.env.TWILIO_ACCOUNT_SID;
-const twilioAuthToken = functions.config().twilio?.auth_token || process.env.TWILIO_AUTH_TOKEN;
-const twilioPhoneNumber = functions.config().twilio?.phone_number || process.env.TWILIO_PHONE_NUMBER;
-const twilioWhatsAppNumber = functions.config().twilio?.whatsapp_number || process.env.TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886'; // Sandbox default
+// =============================================================================
+// TWILIO CONFIGURATION
+// =============================================================================
 
+/**
+ * Twilio Account SID for SMS/WhatsApp
+ * @type {string}
+ */
+const twilioAccountSid = functions.config().twilio?.account_sid || process.env.TWILIO_ACCOUNT_SID;
+
+/**
+ * Twilio Auth Token
+ * @type {string}
+ */
+const twilioAuthToken = functions.config().twilio?.auth_token || process.env.TWILIO_AUTH_TOKEN;
+
+/**
+ * Twilio phone number for SMS
+ * @type {string}
+ */
+const twilioPhoneNumber = functions.config().twilio?.phone_number || process.env.TWILIO_PHONE_NUMBER;
+
+/**
+ * Twilio WhatsApp number (sandbox default: +14155238886)
+ * @type {string}
+ */
+const twilioWhatsAppNumber = functions.config().twilio?.whatsapp_number || process.env.TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886';
+
+/**
+ * Twilio client instance (null if not configured)
+ * @type {import('twilio').Twilio|null}
+ */
 let twilioClient = null;
 if (twilioAccountSid && twilioAuthToken) {
     const twilio = require('twilio');
     twilioClient = twilio(twilioAccountSid, twilioAuthToken);
 }
 
+// =============================================================================
+// ERROR HANDLING UTILITIES
+// =============================================================================
+
+/**
+ * Error codes for consistent error handling across all functions
+ * @constant {Object.<string, {code: string, message: string, httpStatus: number}>}
+ */
+const ERROR_CODES = {
+    UNAUTHENTICATED: { code: 'unauthenticated', message: 'Authentication required', httpStatus: 401 },
+    PERMISSION_DENIED: { code: 'permission-denied', message: 'Insufficient permissions', httpStatus: 403 },
+    NOT_FOUND: { code: 'not-found', message: 'Resource not found', httpStatus: 404 },
+    INVALID_ARGUMENT: { code: 'invalid-argument', message: 'Invalid or missing argument', httpStatus: 400 },
+    FAILED_PRECONDITION: { code: 'failed-precondition', message: 'Operation not allowed in current state', httpStatus: 400 },
+    INTERNAL: { code: 'internal', message: 'Internal server error', httpStatus: 500 },
+    UNAVAILABLE: { code: 'unavailable', message: 'Service temporarily unavailable', httpStatus: 503 },
+    RESOURCE_EXHAUSTED: { code: 'resource-exhausted', message: 'Rate limit exceeded', httpStatus: 429 }
+};
+
+/**
+ * Log error to Firestore for monitoring and debugging
+ *
+ * @async
+ * @function logError
+ * @param {string} functionName - Name of the function where error occurred
+ * @param {Error} error - The error object
+ * @param {Object} [context={}] - Additional context (userId, requestData, etc.)
+ * @returns {Promise<void>}
+ *
+ * @example
+ * try {
+ *   // ... code that might fail
+ * } catch (error) {
+ *   await logError('myFunction', error, { userId: context.auth?.uid });
+ *   throw error;
+ * }
+ */
+async function logError(functionName, error, context = {}) {
+    try {
+        await admin.firestore().collection('error_logs').add({
+            function: functionName,
+            message: error.message,
+            stack: error.stack,
+            code: error.code || 'unknown',
+            context: context,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            resolved: false
+        });
+        console.error(`[${functionName}] Error logged:`, error.message);
+    } catch (logError) {
+        // Don't let logging errors break the app
+        console.error(`Failed to log error for ${functionName}:`, logError.message);
+    }
+}
+
+/**
+ * Wrap an async function with error handling and logging
+ *
+ * @function withErrorHandling
+ * @param {string} functionName - Name for logging
+ * @param {Function} fn - The async function to wrap
+ * @returns {Function} Wrapped function with error handling
+ *
+ * @example
+ * exports.myFunction = functions.https.onCall(
+ *   withErrorHandling('myFunction', async (data, context) => {
+ *     // ... function logic
+ *   })
+ * );
+ */
+function withErrorHandling(functionName, fn) {
+    return async (...args) => {
+        try {
+            return await fn(...args);
+        } catch (error) {
+            // Log to Firestore
+            const context = args[1]?.auth ? { userId: args[1].auth.uid } : {};
+            await logError(functionName, error, context);
+
+            // Re-throw with proper Firebase error format
+            if (error instanceof functions.https.HttpsError) {
+                throw error;
+            }
+
+            throw new functions.https.HttpsError(
+                ERROR_CODES.INTERNAL.code,
+                error.message || ERROR_CODES.INTERNAL.message
+            );
+        }
+    };
+}
+
+/**
+ * Validate required fields in request data
+ *
+ * @function validateRequired
+ * @param {Object} data - Request data object
+ * @param {string[]} fields - Array of required field names
+ * @throws {functions.https.HttpsError} If any required field is missing
+ *
+ * @example
+ * validateRequired(data, ['invoiceId', 'amount']);
+ */
+function validateRequired(data, fields) {
+    const missing = fields.filter(field => !data || data[field] === undefined || data[field] === null);
+    if (missing.length > 0) {
+        throw new functions.https.HttpsError(
+            ERROR_CODES.INVALID_ARGUMENT.code,
+            `Missing required fields: ${missing.join(', ')}`
+        );
+    }
+}
+
+/**
+ * Check if user is authenticated
+ *
+ * @function requireAuth
+ * @param {Object} context - Firebase callable context
+ * @throws {functions.https.HttpsError} If user is not authenticated
+ * @returns {string} User's Firebase UID
+ *
+ * @example
+ * const userId = requireAuth(context);
+ */
+function requireAuth(context) {
+    if (!context.auth) {
+        throw new functions.https.HttpsError(
+            ERROR_CODES.UNAUTHENTICATED.code,
+            ERROR_CODES.UNAUTHENTICATED.message
+        );
+    }
+    return context.auth.uid;
+}
+
+/**
+ * Check if user has admin role
+ *
+ * @async
+ * @function requireAdmin
+ * @param {Object} context - Firebase callable context
+ * @throws {functions.https.HttpsError} If user is not an admin
+ * @returns {Promise<string>} User's Firebase UID
+ *
+ * @example
+ * const adminId = await requireAdmin(context);
+ */
+async function requireAdmin(context) {
+    const userId = requireAuth(context);
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    const userData = userDoc.data();
+
+    if (userData?.role !== 'admin') {
+        throw new functions.https.HttpsError(
+            ERROR_CODES.PERMISSION_DENIED.code,
+            'Admin access required'
+        );
+    }
+    return userId;
+}
+
+/**
+ * Safe JSON parse with fallback
+ *
+ * @function safeJsonParse
+ * @param {string} str - JSON string to parse
+ * @param {*} [fallback=null] - Fallback value if parsing fails
+ * @returns {*} Parsed JSON or fallback value
+ *
+ * @example
+ * const data = safeJsonParse(req.body, {});
+ */
+function safeJsonParse(str, fallback = null) {
+    try {
+        return JSON.parse(str);
+    } catch {
+        return fallback;
+    }
+}
+
+/**
+ * Sanitize user input to prevent injection attacks
+ *
+ * @function sanitizeInput
+ * @param {string} input - User input string
+ * @param {number} [maxLength=1000] - Maximum allowed length
+ * @returns {string} Sanitized input string
+ *
+ * @example
+ * const cleanMessage = sanitizeInput(data.message, 500);
+ */
+function sanitizeInput(input, maxLength = 1000) {
+    if (typeof input !== 'string') return '';
+    return input
+        .trim()
+        .slice(0, maxLength)
+        .replace(/[<>]/g, ''); // Remove potential HTML tags
+}
+
+// =============================================================================
+// PAYMENT FUNCTIONS (Stripe)
+// =============================================================================
+
 /**
  * Create Stripe Checkout Session for invoice payment
+ *
+ * Creates a Stripe Checkout session that redirects the user to Stripe's
+ * hosted payment page. On successful payment, the stripeWebhook function
+ * will update the invoice status to 'paid'.
+ *
+ * @function createCheckoutSession
+ * @memberof module:PaymentFunctions
+ *
+ * @param {Object} data - The request data
+ * @param {string} data.invoiceId - The Firestore document ID of the invoice
+ * @param {string} [data.successUrl] - URL to redirect on successful payment
+ * @param {string} [data.cancelUrl] - URL to redirect on cancelled payment
+ *
+ * @param {Object} context - Firebase callable context
+ * @param {Object} context.auth - Authentication info (required)
+ * @param {string} context.auth.uid - User's Firebase UID
+ *
+ * @returns {Promise<{sessionId: string, url: string}>} Stripe session details
+ * @property {string} sessionId - Stripe Checkout Session ID
+ * @property {string} url - URL to redirect user to Stripe Checkout
+ *
+ * @throws {functions.https.HttpsError} 'unauthenticated' - User not logged in
+ * @throws {functions.https.HttpsError} 'invalid-argument' - Missing invoiceId
+ * @throws {functions.https.HttpsError} 'not-found' - Invoice doesn't exist
+ * @throws {functions.https.HttpsError} 'permission-denied' - Not user's invoice
+ * @throws {functions.https.HttpsError} 'failed-precondition' - Invoice already paid
+ *
+ * @example
+ * // Client-side usage
+ * const createCheckout = firebase.functions().httpsCallable('createCheckoutSession');
+ * const result = await createCheckout({ invoiceId: 'INV-001' });
+ * window.location.href = result.data.url;
  */
 exports.createCheckoutSession = functions.https.onCall(async (data, context) => {
     // Verify authenticated
@@ -94,6 +466,30 @@ exports.createCheckoutSession = functions.https.onCall(async (data, context) => 
 
 /**
  * Stripe Webhook to handle successful payments
+ *
+ * Receives webhook events from Stripe and processes payment completions.
+ * When a checkout.session.completed event is received, updates the
+ * corresponding invoice in Firestore to 'paid' status.
+ *
+ * @function stripeWebhook
+ * @memberof module:PaymentFunctions
+ *
+ * @param {Object} req - Express request object
+ * @param {string} req.headers['stripe-signature'] - Stripe signature header
+ * @param {Buffer} req.rawBody - Raw request body for signature verification
+ *
+ * @param {Object} res - Express response object
+ *
+ * @returns {void} Responds with { received: true } on success
+ *
+ * @fires Firestore Update on invoices/{invoiceId} - Sets status to 'paid'
+ *
+ * @example
+ * // Configure webhook in Stripe Dashboard:
+ * // Endpoint: https://us-central1-miamialliance3pl.cloudfunctions.net/stripeWebhook
+ * // Events: checkout.session.completed
+ *
+ * @see {@link https://stripe.com/docs/webhooks} Stripe Webhooks Documentation
  */
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     const sig = req.headers['stripe-signature'];
@@ -132,7 +528,33 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
 
 /**
  * Create Stripe Payment Link for an invoice
- * (Alternative to Checkout - creates a reusable link)
+ *
+ * Creates a reusable payment link that can be shared with customers.
+ * Unlike Checkout Sessions, Payment Links don't expire and can be
+ * used multiple times (though for invoices, typically once).
+ *
+ * @function createPaymentLink
+ * @memberof module:PaymentFunctions
+ * @access admin
+ *
+ * @param {Object} data - The request data
+ * @param {string} data.invoiceId - The Firestore document ID of the invoice
+ *
+ * @param {Object} context - Firebase callable context
+ * @param {Object} context.auth - Authentication info (required, must be admin)
+ *
+ * @returns {Promise<{url: string}>} The payment link URL
+ *
+ * @throws {functions.https.HttpsError} 'unauthenticated' - User not logged in
+ * @throws {functions.https.HttpsError} 'permission-denied' - Not an admin user
+ *
+ * @example
+ * // Admin creates payment link and sends to customer
+ * const createLink = firebase.functions().httpsCallable('createPaymentLink');
+ * const result = await createLink({ invoiceId: 'INV-001' });
+ * console.log('Send this to customer:', result.data.url);
+ *
+ * @see {@link https://stripe.com/docs/payment-links} Stripe Payment Links
  */
 exports.createPaymentLink = functions.https.onCall(async (data, context) => {
     // Verify admin
@@ -186,11 +608,26 @@ exports.createPaymentLink = functions.https.onCall(async (data, context) => {
 });
 
 // =============================================================================
-// SMS NOTIFICATION FUNCTIONS
+// SMS NOTIFICATION FUNCTIONS (Twilio)
 // =============================================================================
 
 /**
- * SMS Status Messages
+ * SMS message templates for shipment status notifications
+ *
+ * Each template is a function that takes shipment details and returns
+ * a formatted message string with emoji indicators.
+ *
+ * @constant {Object.<string, Function>} SMS_TEMPLATES
+ * @property {Function} received - Shipment received at facility
+ * @property {Function} processing - Order being picked and packed
+ * @property {Function} shipped - Shipment dispatched with tracking
+ * @property {Function} out_for_delivery - Out for delivery today
+ * @property {Function} delivered - Successfully delivered
+ * @property {Function} exception - Delivery exception alert
+ *
+ * @example
+ * const message = SMS_TEMPLATES.shipped('MA3PL-ABC123', 'FedEx');
+ * // "🚚 Miami Alliance 3PL: Shipment MA3PL-ABC123 has SHIPPED via FedEx!"
  */
 const SMS_TEMPLATES = {
     received: (tracking) => `📦 Miami Alliance 3PL: Your shipment ${tracking} has been RECEIVED at our facility. We'll notify you when it ships.`,
@@ -202,7 +639,27 @@ const SMS_TEMPLATES = {
 };
 
 /**
- * Send SMS via Twilio
+ * Send SMS message via Twilio
+ *
+ * Sends a text message to the specified phone number using the
+ * configured Twilio account. Validates US phone number format.
+ *
+ * @async
+ * @function sendSMS
+ * @param {string} to - Recipient phone number in E.164 format (+1XXXXXXXXXX)
+ * @param {string} message - The message body (max 1600 characters)
+ *
+ * @returns {Promise<{success: boolean, sid?: string, error?: string, channel: string}>}
+ * @property {boolean} success - Whether the message was sent
+ * @property {string} [sid] - Twilio message SID if successful
+ * @property {string} [error] - Error message if failed
+ * @property {string} channel - Always 'sms'
+ *
+ * @example
+ * const result = await sendSMS('+13055551234', 'Your package shipped!');
+ * if (result.success) {
+ *   console.log('Sent with SID:', result.sid);
+ * }
  */
 async function sendSMS(to, message) {
     if (!twilioClient) {
@@ -233,6 +690,28 @@ async function sendSMS(to, message) {
 
 /**
  * Send WhatsApp message via Twilio
+ *
+ * Sends a WhatsApp message using Twilio's WhatsApp Business API.
+ * Automatically formats phone numbers and handles the WhatsApp prefix.
+ *
+ * @async
+ * @function sendWhatsApp
+ * @param {string} to - Recipient phone number (any format, will be normalized)
+ * @param {string} message - The message body
+ *
+ * @returns {Promise<{success: boolean, sid?: string, error?: string, channel: string}>}
+ * @property {boolean} success - Whether the message was sent
+ * @property {string} [sid] - Twilio message SID if successful
+ * @property {string} [error] - Error message if failed
+ * @property {string} channel - Always 'whatsapp'
+ *
+ * @example
+ * const result = await sendWhatsApp('+13055551234', 'Hello via WhatsApp!');
+ * if (result.success) {
+ *   console.log('WhatsApp sent with SID:', result.sid);
+ * }
+ *
+ * @note For sandbox: Customer must first text "join shade-slave" to +14155238886
  */
 async function sendWhatsApp(to, message) {
     if (!twilioClient) {

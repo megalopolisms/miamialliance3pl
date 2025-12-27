@@ -1,10 +1,59 @@
+<!--
+================================================================================
+AI COMMAND CENTER - Miami Alliance 3PL Admin Dashboard
+================================================================================
+
+DESCRIPTION:
+    Real-time admin dashboard for monitoring and managing the Claude AI chatbot.
+    Provides visibility into conversations, escalations, campaigns, and analytics.
+
+FEATURES:
+    - Real-time conversation monitoring (live feed)
+    - Sentiment analysis visualization (positive/neutral/negative)
+    - Tool usage analytics with Chart.js
+    - Campaign management (bulk messaging)
+    - Escalation management with resolution workflow
+    - Customer health scoring display
+    - Admin reply capability for escalated chats
+
+DEPENDENCIES:
+    - Firebase Auth (admin authentication)
+    - Firebase Firestore (real-time data)
+    - Chart.js (analytics charts)
+    - ../css/style.css (base styles)
+
+FIREBASE COLLECTIONS USED:
+    - chat_logs: All AI conversation logs
+    - escalations: Human handoff tickets
+    - tool_usage: Tool call analytics
+    - campaigns: Bulk message campaigns
+    - feedback: Customer satisfaction ratings
+
+CLOUD FUNCTIONS CALLED:
+    - getDashboardStats: Real-time metrics
+    - resolveEscalation: Close escalation tickets
+    - sendBulkMessage: Campaign messaging
+    - getConversationSummary: Handoff context
+
+ACCESS:
+    Admin only - requires authenticated user with role='admin'
+
+AUTHOR: Miami Alliance 3PL
+VERSION: 2.0.0
+LAST UPDATED: 2024-12-27
+================================================================================
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Command Center - Miami Alliance 3PL</title>
+
+    <!-- Base Styles -->
     <link rel="stylesheet" href="../css/style.css">
+
+    <!-- Chart.js for Analytics Visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {

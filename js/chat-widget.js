@@ -1,12 +1,111 @@
 /**
- * Miami Alliance 3PL - AI Chat Widget
- * Embed on any page: <script src="js/chat-widget.js"></script>
+ * @fileoverview Miami Alliance 3PL - AI Chat Widget
+ *
+ * A self-contained, embeddable chat widget that provides AI-powered
+ * customer support via the Claude AI chatbot. The widget is fully
+ * styled with inline CSS and requires no external dependencies.
+ *
+ * @version 2.0.0
+ * @author Miami Alliance 3PL
+ * @license MIT
+ *
+ * @example
+ * // Basic embedding - add to any HTML page:
+ * <script src="js/chat-widget.js"></script>
+ *
+ * @example
+ * // The widget will automatically initialize on page load
+ * // To programmatically control it:
+ * window.MA3PLChat.toggle();  // Open/close the chat window
+ * window.MA3PLChat.send('Hello');  // Send a message
+ *
+ * @example
+ * // For logged-in users, include Firebase before the widget:
+ * <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+ * <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+ * <script>
+ *   firebase.initializeApp({ ... });
+ * </script>
+ * <script src="js/chat-widget.js"></script>
+ * // The widget will automatically detect logged-in users and provide personalized responses
+ *
+ * ============================================================================
+ * FEATURES
+ * ============================================================================
+ *
+ * - Self-contained with inline styles (no external CSS needed)
+ * - Responsive design (adapts to mobile screens)
+ * - Quick reply suggestions for common queries
+ * - Session-based conversation history
+ * - Typing indicator animation
+ * - Firebase Auth integration (optional - for personalized responses)
+ * - Smooth animations and transitions
+ * - Dark theme optimized for readability
+ *
+ * ============================================================================
+ * CONFIGURATION
+ * ============================================================================
+ *
+ * The CONFIG object can be modified to customize the widget:
+ *
+ * @property {string} webhookUrl - The Cloud Function endpoint for AI responses
+ * @property {string} brandColor - Primary color for buttons and accents (hex)
+ * @property {string} position - Widget position: 'bottom-right' or 'bottom-left'
+ * @property {string} greeting - Initial greeting message from the AI
+ *
+ * ============================================================================
+ * API REFERENCE
+ * ============================================================================
+ *
+ * window.MA3PLChat.toggle()
+ *   Opens or closes the chat window
+ *
+ * window.MA3PLChat.send(message)
+ *   Sends a message to the AI. If message is omitted, uses input field value.
+ *
+ * window.MA3PLChat.addMessage(role, content)
+ *   Adds a message to the chat. role: 'user' | 'assistant'
+ *
+ * window.MA3PLChat.isOpen
+ *   Boolean indicating if chat window is open
+ *
+ * window.MA3PLChat.messages
+ *   Array of all messages in current session
+ *
+ * window.MA3PLChat.sessionId
+ *   Unique session identifier for conversation continuity
+ *
+ * ============================================================================
+ * CLOUD FUNCTION INTEGRATION
+ * ============================================================================
+ *
+ * The widget sends POST requests to portalChatWebhook with:
+ * {
+ *   message: string,      // User's message
+ *   sessionId: string,    // Unique session ID
+ *   userId: string|null,  // Firebase UID if logged in
+ *   history: array        // Last 10 messages for context
+ * }
+ *
+ * Expected response:
+ * {
+ *   response: string      // AI's response message
+ * }
+ *
+ * ============================================================================
  */
 
 (function() {
     'use strict';
 
-    // Configuration
+    /**
+     * Widget configuration
+     * @constant {Object} CONFIG
+     * @property {string} webhookUrl - Cloud Function endpoint for AI chat
+     * @property {string} brandColor - Primary accent color (hex)
+     * @property {string} position - Widget position on screen
+     * @property {string} greeting - Initial AI greeting message
+     */
     const CONFIG = {
         webhookUrl: 'https://us-central1-miamialliance3pl.cloudfunctions.net/portalChatWebhook',
         brandColor: '#6366f1',
