@@ -268,6 +268,7 @@ class QuoteCalculator {
         const accentColor = [20, 184, 166];     // #14b8a6
         const grayColor = [100, 116, 139];      // #64748b
         const lightGray = [241, 245, 249];      // #f1f5f9
+        const darkNavy = [15, 23, 42];          // #0f172a
 
         // Calculate values
         const cubicFt = this.getCubicFeet();
@@ -275,260 +276,266 @@ class QuoteCalculator {
         const billableWeight = this.getBillableWeight();
         const results = this.calculate();
 
-        // ===== HEADER WITH LOGO =====
-        // Logo background bar
-        doc.setFillColor(...primaryColor);
-        doc.rect(0, 0, 210, 45, 'F');
+        // Load company logo
+        const logoLoaded = await this.loadLogoForPDF(doc);
 
-        // Draw 3D Box Logo
-        const logoX = 20;
-        const logoY = 22;
-        const boxSize = 12;
+        // ===== HEADER - DRAMATIC GRADIENT BAR =====
+        // Dark gradient background
+        doc.setFillColor(...darkNavy);
+        doc.rect(0, 0, 210, 55, 'F');
 
-        // Box top (parallelogram)
+        // Accent stripe
         doc.setFillColor(...accentColor);
-        doc.triangle(
-            logoX, logoY - boxSize/2,
-            logoX + boxSize, logoY - boxSize,
-            logoX + boxSize * 2, logoY - boxSize/2,
-            'F'
-        );
-        doc.triangle(
-            logoX, logoY - boxSize/2,
-            logoX + boxSize * 2, logoY - boxSize/2,
-            logoX + boxSize, logoY,
-            'F'
-        );
+        doc.rect(0, 55, 210, 3, 'F');
 
-        // Box left side
-        doc.setFillColor(13, 148, 136);
-        doc.triangle(
-            logoX, logoY - boxSize/2,
-            logoX, logoY + boxSize/2,
-            logoX + boxSize, logoY + boxSize,
-            'F'
-        );
-        doc.triangle(
-            logoX, logoY - boxSize/2,
-            logoX + boxSize, logoY + boxSize,
-            logoX + boxSize, logoY,
-            'F'
-        );
+        // Add logo if loaded
+        if (logoLoaded) {
+            doc.addImage(this.logoData, 'JPEG', 12, 8, 40, 40);
+        }
 
-        // Box right side
-        doc.setFillColor(15, 118, 110);
-        doc.triangle(
-            logoX + boxSize * 2, logoY - boxSize/2,
-            logoX + boxSize * 2, logoY + boxSize/2,
-            logoX + boxSize, logoY + boxSize,
-            'F'
-        );
-        doc.triangle(
-            logoX + boxSize * 2, logoY - boxSize/2,
-            logoX + boxSize, logoY + boxSize,
-            logoX + boxSize, logoY,
-            'F'
-        );
-
-        // Company name
+        // Company name - large and bold
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(24);
+        doc.setFontSize(28);
         doc.setTextColor(255, 255, 255);
-        doc.text('MIAMI ALLIANCE', 50, 20);
+        doc.text('MIAMI ALLIANCE', 58, 25);
+
+        // 3PL in accent color
         doc.setTextColor(...accentColor);
-        doc.text('3PL', 145, 20);
+        doc.text('3PL', 58, 40);
 
         // Tagline
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
+        doc.setFontSize(11);
         doc.setTextColor(148, 163, 184);
-        doc.text('Warehousing | Fulfillment | Logistics', 50, 28);
+        doc.text('WAREHOUSING  |  FULFILLMENT  |  LOGISTICS', 58, 50);
 
-        // Contact info in header
-        doc.setFontSize(9);
-        doc.setTextColor(200, 200, 200);
-        doc.text(COMPANY_INFO.address + ' | ' + COMPANY_INFO.city, 50, 38);
-
-        // ===== QUOTE TITLE & INFO =====
-        doc.setFillColor(...lightGray);
-        doc.rect(0, 45, 210, 25, 'F');
-
+        // Quote badge on right
+        doc.setFillColor(...accentColor);
+        doc.roundedRect(145, 10, 55, 35, 3, 3, 'F');
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(20);
-        doc.setTextColor(...primaryColor);
-        doc.text('INSTANT QUOTE', 20, 60);
-
-        // Quote number and date (right aligned)
-        doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
-        doc.setTextColor(...grayColor);
-        doc.text(`Quote #: ${quoteNumber}`, 190, 53, { align: 'right' });
-        doc.text(`Date: ${currentDate}`, 190, 60, { align: 'right' });
-        doc.text('Valid for 30 days', 190, 67, { align: 'right' });
+        doc.setTextColor(255, 255, 255);
+        doc.text('INSTANT', 172, 22, { align: 'center' });
+        doc.setFontSize(16);
+        doc.text('QUOTE', 172, 35, { align: 'center' });
 
-        // ===== PACKAGE DETAILS SECTION =====
-        let yPos = 85;
+        // ===== QUOTE INFO BAR =====
+        doc.setFillColor(...lightGray);
+        doc.rect(0, 58, 210, 20, 'F');
 
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(14);
+        doc.setFontSize(10);
         doc.setTextColor(...primaryColor);
-        doc.text('Package Details', 20, yPos);
+        doc.text(`QUOTE #: ${quoteNumber}`, 20, 70);
 
-        yPos += 8;
-        doc.setDrawColor(...accentColor);
-        doc.setLineWidth(0.5);
-        doc.line(20, yPos, 190, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...grayColor);
+        doc.text(`Date: ${currentDate}`, 105, 70, { align: 'center' });
+        doc.text('Valid for 30 days', 190, 70, { align: 'right' });
 
-        yPos += 10;
+        // ===== PACKAGE DETAILS - LEFT COLUMN =====
+        let yPos = 90;
+        const leftCol = 20;
+        const rightCol = 110;
 
-        // Package details grid
-        const details = [
-            ['Package Type:', this.packageType === 'pallet' ? 'Pallet' : 'Box'],
-            ['Dimensions (LxWxH):', `${this.dimensions.length}" x ${this.dimensions.width}" x ${this.dimensions.height}"`],
-            ['Actual Weight:', `${this.weight} lbs`],
-            ['Dimensional Weight:', `${dimWeight.toFixed(1)} lbs`],
-            ['Billable Weight:', `${billableWeight.toFixed(1)} lbs`],
-            ['Cubic Feet:', `${cubicFt.toFixed(2)} cu ft`],
-            ['Quantity:', this.quantity.toString()],
-            ['Shipping Zone:', this.getZoneName(this.shippingZone)],
-            ['Storage Period:', `${this.storageDays} days`]
+        // Section header with icon
+        doc.setFillColor(...primaryColor);
+        doc.roundedRect(leftCol, yPos - 6, 80, 10, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(255, 255, 255);
+        doc.text('PACKAGE DETAILS', leftCol + 5, yPos + 1);
+
+        yPos += 12;
+
+        // Package info with styled rows
+        const packageDetails = [
+            ['Type', this.packageType === 'pallet' ? 'PALLET' : 'BOX'],
+            ['Dimensions', `${this.dimensions.length}" x ${this.dimensions.width}" x ${this.dimensions.height}"`],
+            ['Weight', `${this.weight} lbs (actual)`],
+            ['DIM Weight', `${dimWeight.toFixed(1)} lbs`],
+            ['Billable', `${billableWeight.toFixed(1)} lbs`],
+            ['Volume', `${cubicFt.toFixed(2)} cu ft`],
+            ['Quantity', `${this.quantity} unit${this.quantity > 1 ? 's' : ''}`],
+            ['Zone', this.getZoneName(this.shippingZone)]
         ];
 
-        doc.setFontSize(11);
-        details.forEach(([label, value], index) => {
+        doc.setFontSize(9);
+        packageDetails.forEach(([label, value], index) => {
+            const rowY = yPos + (index * 7);
             if (index % 2 === 0) {
-                doc.setFillColor(250, 250, 252);
-                doc.rect(20, yPos - 5, 170, 8, 'F');
+                doc.setFillColor(248, 250, 252);
+                doc.rect(leftCol, rowY - 4, 80, 7, 'F');
             }
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(...grayColor);
-            doc.text(label, 25, yPos);
+            doc.text(label + ':', leftCol + 3, rowY);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...primaryColor);
-            doc.text(value, 120, yPos);
-            yPos += 8;
+            doc.text(value, leftCol + 77, rowY, { align: 'right' });
         });
 
-        // ===== PRICING BREAKDOWN SECTION =====
-        yPos += 10;
+        // ===== PRICING BREAKDOWN - RIGHT COLUMN =====
+        yPos = 90;
 
+        // Section header
+        doc.setFillColor(...accentColor);
+        doc.roundedRect(rightCol, yPos - 6, 80, 10, 2, 2, 'F');
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(14);
-        doc.setTextColor(...primaryColor);
-        doc.text('Pricing Breakdown', 20, yPos);
-
-        yPos += 8;
-        doc.setDrawColor(...accentColor);
-        doc.line(20, yPos, 190, yPos);
-
-        yPos += 10;
-
-        // Pricing table header
-        doc.setFillColor(...primaryColor);
-        doc.rect(20, yPos - 5, 170, 10, 'F');
         doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
         doc.setTextColor(255, 255, 255);
-        doc.text('Service', 25, yPos + 2);
-        doc.text('Rate', 100, yPos + 2);
-        doc.text('Amount', 160, yPos + 2);
+        doc.text('PRICING BREAKDOWN', rightCol + 5, yPos + 1);
 
         yPos += 12;
 
         // Pricing rows
         const priceRows = [
-            ['Storage (' + this.storageDays + ' days)',
-             this.packageType === 'pallet' ? '$0.75/pallet/day' : '$0.025/cu ft/day',
-             this.formatCurrency(results.storage)],
-            ['Handling Fee',
-             this.packageType === 'pallet' ? '$15.00/pallet' : '$3.50/unit',
-             this.formatCurrency(results.handling)],
-            ['Pick & Pack',
-             this.packageType === 'pallet' ? '$5.00/pallet' : '$1.25/item',
-             this.formatCurrency(results.pickPack)],
-            ['Estimated Shipping',
-             '$' + PRICING.shippingZones[this.shippingZone].toFixed(2) + '/lb',
-             this.formatCurrency(results.shipping)]
+            ['Storage (' + this.storageDays + 'd)', this.formatCurrency(results.storage)],
+            ['Handling Fee', this.formatCurrency(results.handling)],
+            ['Pick & Pack', this.formatCurrency(results.pickPack)],
+            ['Est. Shipping', this.formatCurrency(results.shipping)]
         ];
 
         doc.setFontSize(10);
-        priceRows.forEach(([service, rate, amount], index) => {
+        priceRows.forEach(([service, amount], index) => {
+            const rowY = yPos + (index * 9);
             if (index % 2 === 0) {
-                doc.setFillColor(250, 250, 252);
-                doc.rect(20, yPos - 4, 170, 8, 'F');
+                doc.setFillColor(248, 250, 252);
+                doc.rect(rightCol, rowY - 4, 80, 9, 'F');
             }
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(...grayColor);
-            doc.text(service, 25, yPos);
-            doc.text(rate, 100, yPos);
+            doc.text(service, rightCol + 3, rowY + 1);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...primaryColor);
-            doc.text(amount, 175, yPos, { align: 'right' });
-            yPos += 8;
+            doc.text(amount, rightCol + 77, rowY + 1, { align: 'right' });
         });
 
-        // Total row
-        yPos += 5;
-        doc.setFillColor(...accentColor);
-        doc.rect(20, yPos - 5, 170, 12, 'F');
-        doc.setFontSize(14);
+        // TOTAL - Big and bold
+        const totalY = yPos + 45;
+        doc.setFillColor(...primaryColor);
+        doc.roundedRect(rightCol, totalY - 6, 80, 16, 2, 2, 'F');
         doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
         doc.setTextColor(255, 255, 255);
-        doc.text('TOTAL ESTIMATE', 25, yPos + 3);
-        doc.text(this.formatCurrency(results.total), 175, yPos + 3, { align: 'right' });
+        doc.text('TOTAL', rightCol + 5, totalY + 3);
+        doc.setFontSize(16);
+        doc.setTextColor(...accentColor);
+        doc.text(this.formatCurrency(results.total), rightCol + 75, totalY + 4, { align: 'right' });
 
-        // ===== NOTES SECTION =====
-        yPos += 25;
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(12);
-        doc.setTextColor(...primaryColor);
-        doc.text('Important Notes', 20, yPos);
-
-        yPos += 8;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        doc.setTextColor(...grayColor);
-
-        const notes = [
-            '• This is an estimate. Final pricing may vary based on actual dimensions and services required.',
-            '• Storage rates are calculated for ' + this.storageDays + ' days. Extended storage available at same daily rate.',
-            '• Shipping estimates based on ' + this.getZoneName(this.shippingZone) + ' zone rates.',
-            '• Special handling, hazmat, or oversized items may incur additional fees.',
-            '• Volume discounts available for large or recurring shipments. Contact us for a custom quote.',
-            '• Quote valid for 30 days from issue date.'
-        ];
-
-        notes.forEach(note => {
-            doc.text(note, 20, yPos);
-            yPos += 6;
-        });
-
-        // ===== FOOTER =====
-        const footerY = 270;
+        // ===== RATE DETAILS =====
+        yPos = 165;
 
         doc.setDrawColor(...lightGray);
         doc.setLineWidth(0.5);
-        doc.line(20, footerY, 190, footerY);
+        doc.line(20, yPos, 190, yPos);
 
-        doc.setFontSize(10);
+        yPos += 10;
         doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
         doc.setTextColor(...primaryColor);
-        doc.text('Ready to get started?', 20, footerY + 10);
+        doc.text('RATE DETAILS', 20, yPos);
+
+        yPos += 8;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...grayColor);
+
+        const rates = [
+            `Storage: ${this.packageType === 'pallet' ? '$0.75/pallet/day' : '$0.025/cu ft/day'}`,
+            `Handling: ${this.packageType === 'pallet' ? '$15.00/pallet' : '$3.50/unit'}`,
+            `Pick & Pack: ${this.packageType === 'pallet' ? '$5.00/pallet' : '$1.25/item'}`,
+            `Shipping: $${PRICING.shippingZones[this.shippingZone].toFixed(2)}/lb (${this.getZoneName(this.shippingZone)})`
+        ];
+        doc.text(rates.join('   |   '), 105, yPos, { align: 'center' });
+
+        // ===== IMPORTANT NOTES =====
+        yPos += 15;
+
+        doc.setFillColor(254, 249, 195); // Yellow background
+        doc.roundedRect(20, yPos - 5, 170, 35, 3, 3, 'F');
+        doc.setDrawColor(250, 204, 21);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(20, yPos - 5, 170, 35, 3, 3, 'S');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(146, 64, 14);
+        doc.text('IMPORTANT NOTES', 25, yPos + 3);
 
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(...grayColor);
-        doc.text('Contact us for a detailed quote tailored to your specific needs.', 20, footerY + 17);
+        doc.setFontSize(7);
+        const notes = [
+            'This is an estimate. Final pricing may vary based on actual dimensions and services.',
+            'Volume discounts available for recurring shipments. Quote valid for 30 days.',
+            'Special handling, hazmat, or oversized items may incur additional fees.'
+        ];
+        notes.forEach((note, i) => {
+            doc.text('• ' + note, 25, yPos + 11 + (i * 6));
+        });
 
-        // Contact info
+        // ===== CALL TO ACTION =====
+        yPos = 235;
+
+        doc.setFillColor(...primaryColor);
+        doc.roundedRect(20, yPos, 170, 25, 3, 3, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.setTextColor(255, 255, 255);
+        doc.text('Ready to get started?', 30, yPos + 11);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text('Contact us for a detailed quote tailored to your needs.', 30, yPos + 20);
+
+        // Contact button style
+        doc.setFillColor(...accentColor);
+        doc.roundedRect(145, yPos + 5, 40, 15, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(9);
-        doc.text(`${COMPANY_INFO.phone}  |  ${COMPANY_INFO.email}  |  ${COMPANY_INFO.website}`, 105, footerY + 25, { align: 'center' });
+        doc.text('CONTACT', 165, yPos + 15, { align: 'center' });
+
+        // ===== FOOTER =====
+        const footerY = 275;
+
+        doc.setDrawColor(...lightGray);
+        doc.line(20, footerY, 190, footerY);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...grayColor);
+        doc.text(COMPANY_INFO.address + ', ' + COMPANY_INFO.city, 105, footerY + 7, { align: 'center' });
+        doc.text(`${COMPANY_INFO.phone}  |  ${COMPANY_INFO.email}  |  ${COMPANY_INFO.website}`, 105, footerY + 13, { align: 'center' });
 
         // Save PDF
         doc.save(`MiamiAlliance3PL_Quote_${quoteNumber}.pdf`);
 
         // Show success message
         this.showPDFSuccess(quoteNumber);
+    }
+
+    async loadLogoForPDF(doc) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = () => {
+                // Create canvas to convert image
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                this.logoData = canvas.toDataURL('image/jpeg', 0.9);
+                resolve(true);
+            };
+            img.onerror = () => {
+                console.log('Could not load logo, continuing without it');
+                resolve(false);
+            };
+            // Try to load the logo
+            img.src = 'assets/logo.jpg';
+        });
     }
 
     showPDFSuccess(quoteNumber) {
