@@ -237,6 +237,16 @@ class QuoteCalculator {
             total: total
         });
 
+        // Track quote calculation (debounced)
+        if (window.MA3PLAnalytics && !this._calcDebounce) {
+            this._calcDebounce = setTimeout(() => {
+                MA3PLAnalytics.trackQuoteCalculation(this.packageType,
+                    `${this.dimensions.length}x${this.dimensions.width}x${this.dimensions.height}`,
+                    this.quantity, total);
+                this._calcDebounce = null;
+            }, 2000);
+        }
+
         return { storage, handling, pickPack, shipping, wrapping, total };
     }
 
@@ -553,6 +563,11 @@ class QuoteCalculator {
         doc.setTextColor(...grayColor);
         doc.text(COMPANY_INFO.address + ', ' + COMPANY_INFO.city, 105, footerY + 7, { align: 'center' });
         doc.text(`${COMPANY_INFO.phone}  |  ${COMPANY_INFO.email}  |  ${COMPANY_INFO.website}`, 105, footerY + 13, { align: 'center' });
+
+        // Track PDF download
+        if (window.MA3PLAnalytics) {
+            MA3PLAnalytics.trackPDFDownload(quoteNumber, results.total);
+        }
 
         // Save PDF
         doc.save(`MiamiAlliance3PL_Quote_${quoteNumber}.pdf`);

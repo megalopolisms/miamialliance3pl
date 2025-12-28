@@ -89,4 +89,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // CTA Button Tracking
+    document.querySelectorAll('.btn-primary, .btn-outline, [class*="cta"]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            if (window.MA3PLAnalytics) {
+                var text = this.textContent.trim().substring(0, 50);
+                var section = this.closest('section');
+                var location = section ? (section.id || section.className.split(' ')[0]) : 'header';
+                MA3PLAnalytics.trackCTAClick(text, location);
+            }
+        });
+    });
 });

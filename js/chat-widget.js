@@ -440,6 +440,9 @@
 
             if (this.isOpen) {
                 document.getElementById('ma3pl-input').focus();
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.trackChatOpen();
+                }
             }
         },
 
@@ -483,6 +486,11 @@
             // Add user message
             this.addMessage('user', message);
             input.value = '';
+
+            // Track chat message
+            if (window.MA3PLAnalytics) {
+                MA3PLAnalytics.trackChatMessage(this.messages.length <= 2);
+            }
 
             // Show typing indicator
             this.showTyping();

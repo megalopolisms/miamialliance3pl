@@ -22,6 +22,16 @@
     <meta name="twitter:title" content="Contact Us | Miami Alliance 3PL">
     <meta name="twitter:description" content="Contact Miami Alliance 3PL for warehousing, fulfillment, and logistics services.">
 
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-QSRV99D8BX');
+    </script>
+    <script src="js/analytics.js"></script>
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
 
@@ -237,6 +247,10 @@
         // Contact form submission handler
         document.getElementById('contact-form').addEventListener('submit', function(e) {
             e.preventDefault();
+            // Track in GA4
+            if (window.MA3PLAnalytics) {
+                MA3PLAnalytics.trackFormSubmit('contact_form', true);
+            }
             // In production, this would send to a backend or email service
             alert('Thank you for your message! We will get back to you within 24 hours.');
             this.reset();

@@ -16,6 +16,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-QSRV99D8BX');
+    </script>
+    <script src="js/analytics.js"></script>
+
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -195,6 +205,11 @@
                 // Small delay to ensure auth state is persisted
                 await new Promise(resolve => setTimeout(resolve, 500));
 
+                // Track Google sign-in in GA4
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.trackLogin('google');
+                }
+
                 window.location.href = 'portal/dashboard.html';
             } catch (error) {
                 console.error('Google sign-in error:', error);
@@ -259,6 +274,10 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
+                // Track email login in GA4
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.trackLogin('email');
+                }
                 window.location.href = 'portal/dashboard.html';
             } catch (error) {
                 alert('Login failed: ' + error.message);
@@ -292,6 +311,11 @@
                     role: 'customer',
                     created_at: new Date().toISOString()
                 });
+
+                // Track signup in GA4
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.trackSignup('email');
+                }
 
                 window.location.href = 'portal/dashboard.html';
             } catch (error) {
