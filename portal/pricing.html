@@ -16,6 +16,15 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="../css/style.css?v=8">
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-QSRV99D8BX');
+    </script>
+    <script src="../js/analytics.js"></script>
     <style>
         .pricing-section {
             background: white;
@@ -327,21 +336,21 @@
                         <h4>🎯 Pallet Storage</h4>
                         <div class="price-inputs">
                             <div class="price-row">
-                                <label>Daily Rate</label>
+                                <label for="pallet-daily">Daily Rate</label>
                                 <span>$</span>
-                                <input type="number" step="0.01" id="pallet-daily" placeholder="0.00">
+                                <input type="number" step="0.01" min="0" id="pallet-daily" name="pallet-daily" data-validate="currency" placeholder="0.00">
                                 <span class="unit">/day</span>
                             </div>
                             <div class="price-row">
-                                <label>Weekly Rate</label>
+                                <label for="pallet-weekly">Weekly Rate</label>
                                 <span>$</span>
-                                <input type="number" step="0.01" id="pallet-weekly" placeholder="0.00">
+                                <input type="number" step="0.01" min="0" id="pallet-weekly" name="pallet-weekly" data-validate="currency" placeholder="0.00">
                                 <span class="unit">/week</span>
                             </div>
                             <div class="price-row">
-                                <label>Monthly Rate</label>
+                                <label for="pallet-monthly">Monthly Rate</label>
                                 <span>$</span>
-                                <input type="number" step="0.01" id="pallet-monthly" placeholder="0.00">
+                                <input type="number" step="0.01" min="0" id="pallet-monthly" name="pallet-monthly" data-validate="currency" placeholder="0.00">
                                 <span class="unit">/month</span>
                             </div>
                         </div>
@@ -350,21 +359,21 @@
                         <h4>📦 Container Storage</h4>
                         <div class="price-inputs">
                             <div class="price-row">
-                                <label>20ft Container</label>
+                                <label for="container-20ft">20ft Container</label>
                                 <span>$</span>
-                                <input type="number" step="0.01" id="container-20ft" placeholder="0.00">
+                                <input type="number" step="0.01" min="0" id="container-20ft" name="container-20ft" data-validate="currency" placeholder="0.00">
                                 <span class="unit">/day</span>
                             </div>
                             <div class="price-row">
-                                <label>40ft Container</label>
+                                <label for="container-40ft">40ft Container</label>
                                 <span>$</span>
-                                <input type="number" step="0.01" id="container-40ft" placeholder="0.00">
+                                <input type="number" step="0.01" min="0" id="container-40ft" name="container-40ft" data-validate="currency" placeholder="0.00">
                                 <span class="unit">/day</span>
                             </div>
                             <div class="price-row">
-                                <label>40ft HC</label>
+                                <label for="container-40hc">40ft HC</label>
                                 <span>$</span>
-                                <input type="number" step="0.01" id="container-40hc" placeholder="0.00">
+                                <input type="number" step="0.01" min="0" id="container-40hc" name="container-40hc" data-validate="currency" placeholder="0.00">
                                 <span class="unit">/day</span>
                             </div>
                         </div>
@@ -635,6 +644,9 @@
 
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
+
+    <!-- Form Validation Module -->
+    <script src="../js/form-validation.js"></script>
 
     <!-- Firebase SDK -->
     <script type="module">

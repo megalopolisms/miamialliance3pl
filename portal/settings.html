@@ -10,6 +10,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css?v=8">
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-QSRV99D8BX');
+    </script>
+    <script src="../js/analytics.js"></script>
     <style>
         .admin-badge {
             background: linear-gradient(135deg, #f97316, #ea580c);
@@ -241,29 +250,31 @@
             <!-- Company Information -->
             <div class="settings-section">
                 <h2>🏢 Company Information</h2>
-                <div class="company-info-grid">
-                    <div class="form-group">
-                        <label>Company Name</label>
-                        <input type="text" id="company-name" value="Miami Alliance 3PL">
+                <form id="company-form" data-validate-form>
+                    <div class="company-info-grid">
+                        <div class="form-group">
+                            <label for="company-name">Company Name</label>
+                            <input type="text" id="company-name" name="company-name" required minlength="2" value="Miami Alliance 3PL">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-phone">Phone</label>
+                            <input type="tel" id="company-phone" name="company-phone" data-validate="phone" placeholder="(555) 555-5555">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-email">Email</label>
+                            <input type="email" id="company-email" name="company-email" required placeholder="contact@company.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="company-website">Website</label>
+                            <input type="url" id="company-website" name="company-website" value="https://miamialliance3pl.com" placeholder="https://example.com">
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>Phone</label>
-                        <input type="tel" id="company-phone" value="">
+                        <label for="company-address">Address</label>
+                        <textarea id="company-address" name="company-address" rows="2" required>8780 NW 100th ST, Medley, FL 33178</textarea>
                     </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="company-email" value="">
-                    </div>
-                    <div class="form-group">
-                        <label>Website</label>
-                        <input type="url" id="company-website" value="https://miamialliance3pl.com">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Address</label>
-                    <textarea id="company-address" rows="2">8780 NW 100th ST, Medley, FL 33178</textarea>
-                </div>
-                <button class="btn-sm" id="save-company">Save Company Info</button>
+                    <button type="submit" class="btn-sm" id="save-company">Save Company Info</button>
+                </form>
             </div>
 
             <!-- Notification Settings -->
@@ -305,16 +316,17 @@
             <div class="settings-section">
                 <h2>💳 Payment Settings (Stripe)</h2>
                 <p style="color: var(--color-gray-600); margin-bottom: var(--spacing-md);">Configure Stripe for accepting online payments. Get your keys from <a href="https://dashboard.stripe.com/apikeys" target="_blank">Stripe Dashboard</a>.</p>
-                <div class="company-info-grid">
-                    <div class="form-group">
-                        <label>Stripe Publishable Key</label>
-                        <input type="text" id="stripe-pk" placeholder="pk_live_...">
+                <form id="stripe-form" data-validate-form>
+                    <div class="company-info-grid">
+                        <div class="form-group">
+                            <label for="stripe-pk">Stripe Publishable Key</label>
+                            <input type="text" id="stripe-pk" name="stripe-pk" pattern="pk_(live|test)_.*" title="Must start with pk_live_ or pk_test_" placeholder="pk_live_...">
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-terms">Payment Terms (Days)</label>
+                            <input type="number" id="payment-terms" name="payment-terms" value="30" min="1" max="90" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Payment Terms (Days)</label>
-                        <input type="number" id="payment-terms" value="30" min="1" max="90">
-                    </div>
-                </div>
                 <div class="setting-row">
                     <div class="setting-info">
                         <h3>Enable Online Payments</h3>
@@ -335,10 +347,11 @@
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
-                <button class="btn-sm" id="save-stripe">Save Payment Settings</button>
+                <button type="submit" class="btn-sm" id="save-stripe">Save Payment Settings</button>
                 <p style="margin-top: var(--spacing-md); font-size: var(--font-size-sm); color: var(--color-gray-500);">
                     Note: For full Stripe integration, deploy Firebase Functions. See <code>/functions/README.md</code> for setup instructions.
                 </p>
+                </form>
             </div>
 
             <!-- System Stats -->
@@ -542,5 +555,7 @@
         }
     </script>
     <script src="../js/main.js?v=3"></script>
+    <!-- Form Validation Module -->
+    <script src="../js/form-validation.js"></script>
 </body>
 </html>

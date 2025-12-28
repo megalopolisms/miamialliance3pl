@@ -16,6 +16,15 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="../css/style.css">
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-QSRV99D8BX');
+    </script>
+    <script src="../js/analytics.js"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -40,18 +49,18 @@
     <div class="portal-layout">
         <!-- Sidebar -->
         <aside class="portal-sidebar">
-            <nav>
+            <nav role="navigation" aria-label="Main navigation">
                 <a href="dashboard.html" class="portal-nav-item">
-                    <span>📊</span> Dashboard
+                    <span aria-hidden="true">📊</span> Dashboard
                 </a>
                 <a href="shipments.html" class="portal-nav-item">
-                    <span>🚚</span> Shipments
+                    <span aria-hidden="true">🚚</span> Shipments
                 </a>
-                <a href="tracking.html" class="portal-nav-item active">
-                    <span>🔍</span> Tracking
+                <a href="tracking.html" class="portal-nav-item active" aria-current="page">
+                    <span aria-hidden="true">🔍</span> Tracking
                 </a>
                 <a href="inventory.html" class="portal-nav-item">
-                    <span>📦</span> Inventory
+                    <span aria-hidden="true">📦</span> Inventory
                 </a>
             </nav>
         </aside>
@@ -62,14 +71,15 @@
 
             <!-- Search Form -->
             <div class="dashboard-card" style="margin-bottom: var(--spacing-xl);">
-                <form id="tracking-form" style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
-                    <input type="text" id="tracking-input" placeholder="Enter tracking number (e.g., MA3PL12345678)" style="flex: 1; min-width: 250px; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: var(--font-size-base);">
+                <form id="tracking-form" style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;" role="search" aria-label="Track shipment">
+                    <label for="tracking-input" class="visually-hidden">Tracking number</label>
+                    <input type="text" id="tracking-input" placeholder="Enter tracking number (e.g., MA3PL12345678)" style="flex: 1; min-width: 250px; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: var(--font-size-base);" aria-required="true">
                     <button type="submit" class="btn btn-primary">Track</button>
                 </form>
             </div>
 
             <!-- Tracking Result -->
-            <div id="tracking-result" style="display: none;">
+            <div id="tracking-result" style="display: none;" aria-live="polite">
                 <div class="dashboard-card" style="margin-bottom: var(--spacing-lg);">
                     <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: var(--spacing-md);">
                         <div>
@@ -110,7 +120,7 @@
             </div>
 
             <!-- No Result -->
-            <div id="no-result" style="display: none;" class="dashboard-card">
+            <div id="no-result" style="display: none;" class="dashboard-card" role="alert" aria-live="polite">
                 <div style="text-align: center; padding: var(--spacing-xl);">
                     <div style="font-size: 3rem; margin-bottom: var(--spacing-sm);">🔍</div>
                     <h3 style="color: var(--color-gray-900); margin-bottom: var(--spacing-xs);">Shipment Not Found</h3>

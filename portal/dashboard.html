@@ -19,6 +19,15 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="../css/style.css?v=8">
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-QSRV99D8BX');
+    </script>
+    <script src="../js/analytics.js"></script>
     <style>
         .admin-badge {
             background: linear-gradient(135deg, #f97316, #ea580c);
@@ -175,50 +184,50 @@
     <div class="portal-layout">
         <!-- Sidebar -->
         <aside class="portal-sidebar">
-            <nav>
-                <a href="dashboard.html" class="portal-nav-item active">
-                    <span>📊</span> Dashboard
+            <nav role="navigation" aria-label="Main navigation">
+                <a href="dashboard.html" class="portal-nav-item active" aria-current="page">
+                    <span aria-hidden="true">📊</span> Dashboard
                 </a>
                 <a href="shipments.html" class="portal-nav-item">
-                    <span>🚚</span> Shipments
+                    <span aria-hidden="true">🚚</span> Shipments
                 </a>
                 <a href="tracking.html" class="portal-nav-item">
-                    <span>🔍</span> Tracking
+                    <span aria-hidden="true">🔍</span> Tracking
                 </a>
                 <a href="inventory.html" class="portal-nav-item">
-                    <span>📦</span> Inventory
+                    <span aria-hidden="true">📦</span> Inventory
                 </a>
                 <a href="billing.html" class="portal-nav-item">
-                    <span>💵</span> Billing
+                    <span aria-hidden="true">💵</span> Billing
                 </a>
                 <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
-                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Staff</div>
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true">Staff</div>
                     <a href="customers.html" class="portal-nav-item" id="nav-all-users">
-                        <span>👥</span> All Customers
+                        <span aria-hidden="true">👥</span> All Customers
                     </a>
                     <a href="admin-shipments.html" class="portal-nav-item" id="nav-all-shipments">
-                        <span>📋</span> All Shipments
+                        <span aria-hidden="true">📋</span> All Shipments
                     </a>
                 </div>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
-                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true">Admin</div>
                     <a href="invoices.html" class="portal-nav-item">
-                        <span>💵</span> Invoices
+                        <span aria-hidden="true">💵</span> Invoices
                     </a>
                     <a href="storage-log.html" class="portal-nav-item">
-                        <span>📊</span> Storage Log
+                        <span aria-hidden="true">📊</span> Storage Log
                     </a>
                     <a href="pricing.html" class="portal-nav-item">
-                        <span>💰</span> Pricing
+                        <span aria-hidden="true">💰</span> Pricing
                     </a>
                     <a href="settings.html" class="portal-nav-item">
-                        <span>⚙️</span> Settings
+                        <span aria-hidden="true">⚙️</span> Settings
                     </a>
                     <a href="team.html" class="portal-nav-item">
-                        <span>👔</span> Manage Team
+                        <span aria-hidden="true">👔</span> Manage Team
                     </a>
                     <a href="changelog.html" class="portal-nav-item">
-                        <span>📝</span> Changelog
+                        <span aria-hidden="true">📝</span> Changelog
                     </a>
                 </div>
             </nav>
@@ -370,13 +379,13 @@
             <div>
                 <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Recent Shipments</h2>
                 <div class="table-wrapper">
-                    <table class="data-table">
+                    <table class="data-table" role="table" aria-label="Recent shipments list">
                         <thead>
                             <tr>
-                                <th>Tracking #</th>
-                                <th>Destination</th>
-                                <th>Status</th>
-                                <th>Date</th>
+                                <th scope="col">Tracking #</th>
+                                <th scope="col">Destination</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Date</th>
                             </tr>
                         </thead>
                         <tbody id="recent-shipments">

@@ -16,6 +16,15 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="../css/style.css">
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-QSRV99D8BX');
+    </script>
+    <script src="../js/analytics.js"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -40,18 +49,18 @@
     <div class="portal-layout">
         <!-- Sidebar -->
         <aside class="portal-sidebar">
-            <nav>
+            <nav role="navigation" aria-label="Main navigation">
                 <a href="dashboard.html" class="portal-nav-item">
-                    <span>📊</span> Dashboard
+                    <span aria-hidden="true">📊</span> Dashboard
                 </a>
-                <a href="shipments.html" class="portal-nav-item active">
-                    <span>🚚</span> Shipments
+                <a href="shipments.html" class="portal-nav-item active" aria-current="page">
+                    <span aria-hidden="true">🚚</span> Shipments
                 </a>
                 <a href="tracking.html" class="portal-nav-item">
-                    <span>🔍</span> Tracking
+                    <span aria-hidden="true">🔍</span> Tracking
                 </a>
                 <a href="inventory.html" class="portal-nav-item">
-                    <span>📦</span> Inventory
+                    <span aria-hidden="true">📦</span> Inventory
                 </a>
             </nav>
         </aside>
@@ -69,26 +78,26 @@
             <!-- New Shipment Form (hidden by default) -->
             <div id="shipment-form-container" class="dashboard-card" style="display: none; margin-bottom: var(--spacing-xl);">
                 <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Create New Shipment</h2>
-                <form id="shipment-form">
+                <form id="shipment-form" data-validate-form>
                     <div style="display: grid; grid-template-columns: 1fr; gap: var(--spacing-md);">
                         <div>
                             <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);">Origin Address</h3>
                             <div class="form-group">
                                 <label for="origin-street">Street Address</label>
-                                <input type="text" id="origin-street" required value="8780 NW 100th ST">
+                                <input type="text" id="origin-street" required value="8780 NW 100th ST" aria-required="true">
                             </div>
                             <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
                                 <div class="form-group">
                                     <label for="origin-city">City</label>
-                                    <input type="text" id="origin-city" required value="Medley">
+                                    <input type="text" id="origin-city" required value="Medley" aria-required="true">
                                 </div>
                                 <div class="form-group">
                                     <label for="origin-state">State</label>
-                                    <input type="text" id="origin-state" required value="FL" maxlength="2">
+                                    <input type="text" id="origin-state" name="origin-state" required value="FL" maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" data-validate="state" aria-required="true">
                                 </div>
                                 <div class="form-group">
                                     <label for="origin-zip">ZIP</label>
-                                    <input type="text" id="origin-zip" required value="33178">
+                                    <input type="text" id="origin-zip" name="origin-zip" required value="33178" pattern="\d{5}(-\d{4})?" title="5 or 9 digit ZIP code" data-validate="zip" aria-required="true">
                                 </div>
                             </div>
                         </div>
@@ -97,24 +106,24 @@
                             <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);">Destination Address</h3>
                             <div class="form-group">
                                 <label for="dest-name">Recipient Name</label>
-                                <input type="text" id="dest-name" required placeholder="John Smith">
+                                <input type="text" id="dest-name" required placeholder="John Smith" aria-required="true">
                             </div>
                             <div class="form-group">
                                 <label for="dest-street">Street Address</label>
-                                <input type="text" id="dest-street" required placeholder="123 Main St">
+                                <input type="text" id="dest-street" required placeholder="123 Main St" aria-required="true">
                             </div>
                             <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
                                 <div class="form-group">
                                     <label for="dest-city">City</label>
-                                    <input type="text" id="dest-city" required placeholder="City">
+                                    <input type="text" id="dest-city" required placeholder="City" aria-required="true">
                                 </div>
                                 <div class="form-group">
                                     <label for="dest-state">State</label>
-                                    <input type="text" id="dest-state" required placeholder="ST" maxlength="2">
+                                    <input type="text" id="dest-state" name="dest-state" required placeholder="ST" maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" data-validate="state" aria-required="true">
                                 </div>
                                 <div class="form-group">
                                     <label for="dest-zip">ZIP</label>
-                                    <input type="text" id="dest-zip" required placeholder="12345">
+                                    <input type="text" id="dest-zip" name="dest-zip" required placeholder="12345" pattern="\d{5}(-\d{4})?" title="5 or 9 digit ZIP code" data-validate="zip" aria-required="true">
                                 </div>
                             </div>
                         </div>
@@ -124,7 +133,7 @@
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-sm);">
                                 <div class="form-group">
                                     <label for="pkg-weight">Weight (lbs)</label>
-                                    <input type="number" id="pkg-weight" required placeholder="0" min="0" step="0.1">
+                                    <input type="number" id="pkg-weight" name="pkg-weight" required placeholder="0" min="0.1" step="0.1" data-validate="decimal" aria-required="true">
                                 </div>
                                 <div class="form-group">
                                     <label for="pkg-length">Length (in)</label>
@@ -140,7 +149,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="pkg-qty">Quantity</label>
-                                    <input type="number" id="pkg-qty" required value="1" min="1">
+                                    <input type="number" id="pkg-qty" required value="1" min="1" aria-required="true">
                                 </div>
                             </div>
                         </div>
@@ -148,7 +157,7 @@
                         <div>
                             <div class="form-group">
                                 <label for="service-type">Service Type</label>
-                                <select id="service-type" required>
+                                <select id="service-type" required aria-required="true">
                                     <option value="standard">Standard (3-5 days)</option>
                                     <option value="express">Express (1-2 days)</option>
                                     <option value="overnight">Overnight</option>
@@ -181,15 +190,15 @@
 
             <!-- Shipments Table -->
             <div class="table-wrapper">
-                <table class="data-table">
+                <table class="data-table" role="table" aria-label="Shipments list">
                     <thead>
                         <tr>
-                            <th>Tracking #</th>
-                            <th>Recipient</th>
-                            <th>Destination</th>
-                            <th>Service</th>
-                            <th>Status</th>
-                            <th>Created</th>
+                            <th scope="col">Tracking #</th>
+                            <th scope="col">Recipient</th>
+                            <th scope="col">Destination</th>
+                            <th scope="col">Service</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Created</th>
                         </tr>
                     </thead>
                     <tbody id="shipments-list">
@@ -205,11 +214,11 @@
     </div>
 
     <!-- Chat Wizard Modal -->
-    <div id="chat-modal" class="chat-modal">
+    <div id="chat-modal" class="chat-modal" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title">
         <div class="chat-container">
             <div class="chat-header">
-                <h2>📦 New Shipment</h2>
-                <button class="chat-close" id="chat-close">&times;</button>
+                <h2 id="chat-modal-title"><span aria-hidden="true">📦</span> New Shipment</h2>
+                <button class="chat-close" id="chat-close" aria-label="Close dialog">&times;</button>
             </div>
             <div class="chat-progress" id="chat-progress">
                 <div class="chat-progress-dot active"></div>
@@ -777,5 +786,7 @@
         });
     </script>
     <script src="../js/main.js"></script>
+    <!-- Form Validation Module -->
+    <script src="../js/form-validation.js"></script>
 </body>
 </html>
