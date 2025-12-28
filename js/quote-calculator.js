@@ -10,6 +10,7 @@ const PRICING = {
     handlingFee: 3.50,              // $ per unit
     pickAndPack: 1.25,              // $ per item
     palletStoragePerDay: 0.75,      // $/pallet/day
+    blackWrapping: 7.00,            // $ per pallet - added by Master Jorge
     shippingZones: {
         local: 0.45,                // $/lb - Florida
         regional: 0.65,             // $/lb - Southeast
@@ -37,6 +38,7 @@ class QuoteCalculator {
         this.quantity = 1;
         this.shippingZone = 'regional';
         this.storageDays = 30;
+        this.blackWrapping = false;  // Black wrapping option - $7/pallet
 
         this.init();
     }
@@ -150,6 +152,15 @@ class QuoteCalculator {
             });
         }
 
+        // Black wrapping checkbox (pallets only - $7/pallet)
+        const blackWrappingCheck = document.getElementById('black-wrapping');
+        if (blackWrappingCheck) {
+            blackWrappingCheck.addEventListener('change', (e) => {
+                this.blackWrapping = e.target.checked;
+                this.calculate();
+            });
+        }
+
         // Initial calculation
         this.calculate();
     }
@@ -177,7 +188,7 @@ class QuoteCalculator {
         const dimWeight = this.getDimensionalWeight();
         const billableWeight = this.getBillableWeight();
 
-        let storage, handling, pickPack, shipping;
+        let storage, handling, pickPack, shipping, wrapping = 0;
 
         if (this.packageType === 'pallet') {
             // Pallet pricing
@@ -185,6 +196,10 @@ class QuoteCalculator {
             handling = 15.00 * this.quantity; // Higher handling for pallets
             pickPack = 5.00 * this.quantity;  // Higher pick/pack for pallets
             shipping = billableWeight * PRICING.shippingZones[this.shippingZone] * this.quantity;
+            // Black wrapping option - $7/pallet (added by Master Jorge)
+            if (this.blackWrapping) {
+                wrapping = PRICING.blackWrapping * this.quantity;
+            }
         } else {
             // Box pricing
             storage = cubicFt * PRICING.storagePerCubicFtDay * this.storageDays * this.quantity;
@@ -196,7 +211,7 @@ class QuoteCalculator {
         // Minimum storage charge
         storage = Math.max(storage, 5.00);
 
-        const total = storage + handling + pickPack + shipping;
+        const total = storage + handling + pickPack + shipping + wrapping;
 
         // Update UI
         this.updateDisplay({
@@ -206,10 +221,11 @@ class QuoteCalculator {
             handling: handling,
             pickPack: pickPack,
             shipping: shipping,
+            wrapping: wrapping,
             total: total
         });
 
-        return { storage, handling, pickPack, shipping, total };
+        return { storage, handling, pickPack, shipping, wrapping, total };
     }
 
     updateDisplay(values) {
@@ -220,12 +236,19 @@ class QuoteCalculator {
             'result-handling': this.formatCurrency(values.handling),
             'result-pickpack': this.formatCurrency(values.pickPack),
             'result-shipping': this.formatCurrency(values.shipping),
+            'result-wrapping': this.formatCurrency(values.wrapping),
             'result-total': this.formatCurrency(values.total)
         };
 
         for (const [id, value] of Object.entries(elements)) {
             const el = document.getElementById(id);
             if (el) el.textContent = value;
+        }
+
+        // Show/hide wrapping row based on pallet + option selected
+        const wrappingRow = document.getElementById('wrapping-row');
+        if (wrappingRow) {
+            wrappingRow.style.display = (this.packageType === 'pallet' && this.blackWrapping) ? 'flex' : 'none';
         }
     }
 
@@ -398,6 +421,10 @@ class QuoteCalculator {
             ['Pick & Pack', this.formatCurrency(results.pickPack)],
             ['Est. Shipping', this.formatCurrency(results.shipping)]
         ];
+        // Add black wrapping if selected (pallet only)
+        if (this.packageType === 'pallet' && this.blackWrapping) {
+            priceRows.push(['Black Wrapping', this.formatCurrency(results.wrapping)]);
+        }
 
         doc.setFontSize(10);
         priceRows.forEach(([service, amount], index) => {
@@ -414,8 +441,8 @@ class QuoteCalculator {
             doc.text(amount, rightCol + 77, rowY + 1, { align: 'right' });
         });
 
-        // TOTAL - Big and bold
-        const totalY = yPos + 45;
+        // TOTAL - Big and bold (adjust for extra row if black wrapping)
+        const totalY = yPos + 45 + (this.blackWrapping && this.packageType === 'pallet' ? 9 : 0);
         doc.setFillColor(...primaryColor);
         doc.roundedRect(rightCol, totalY - 6, 80, 16, 2, 2, 'F');
         doc.setFont('helvetica', 'bold');
@@ -450,6 +477,10 @@ class QuoteCalculator {
             `Pick & Pack: ${this.packageType === 'pallet' ? '$5.00/pallet' : '$1.25/item'}`,
             `Shipping: $${PRICING.shippingZones[this.shippingZone].toFixed(2)}/lb (${this.getZoneName(this.shippingZone)})`
         ];
+        // Add black wrapping rate if applicable
+        if (this.packageType === 'pallet') {
+            rates.push(`Black Wrap: $${PRICING.blackWrapping.toFixed(2)}/pallet`);
+        }
         doc.text(rates.join('   |   '), 105, yPos, { align: 'center' });
 
         // ===== IMPORTANT NOTES =====
