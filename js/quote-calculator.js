@@ -72,6 +72,18 @@ class QuoteCalculator {
 
                 this.calculate();
 
+                // Show/hide black wrapping option based on package type
+                const blackWrapGroup = document.getElementById('black-wrapping-group');
+                if (blackWrapGroup) {
+                    blackWrapGroup.style.display = this.packageType === 'pallet' ? 'block' : 'none';
+                    // Reset checkbox when switching away from pallet
+                    if (this.packageType !== 'pallet') {
+                        const checkbox = document.getElementById('black-wrapping');
+                        if (checkbox) checkbox.checked = false;
+                        this.blackWrapping = false;
+                    }
+                }
+
                 // Notify 3D viewer if available
                 if (window.quote3D) {
                     window.quote3D.setPackageType(this.packageType);
