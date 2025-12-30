@@ -42,6 +42,39 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- Structured Data - BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://miamialliance3pl.com/"},
+            {"@type": "ListItem", "position": 2, "name": "Contact", "item": "https://miamialliance3pl.com/contact.html"}
+        ]
+    }
+    </script>
+
+    <!-- Structured Data - ContactPage -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ContactPage",
+        "name": "Contact Miami Alliance 3PL",
+        "description": "Contact Miami Alliance 3PL for warehousing, fulfillment, and logistics services.",
+        "mainEntity": {
+            "@type": "LocalBusiness",
+            "name": "Miami Alliance 3PL",
+            "telephone": "+1-305-555-0123",
+            "email": "info@miamialliance3pl.com",
+            "address": {"@type": "PostalAddress", "streetAddress": "8780 NW 100th ST", "addressLocality": "Medley", "addressRegion": "FL", "postalCode": "33178", "addressCountry": "US"},
+            "openingHoursSpecification": [
+                {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "08:00", "closes": "18:00"},
+                {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "09:00", "closes": "14:00"}
+            ]
+        }
+    }
+    </script>
 </head>
 <body>
     <!-- Navigation -->
@@ -70,7 +103,7 @@
         <!-- Page Header -->
         <section class="page-header">
             <div class="container">
-                <h1>Contact Us</h1>
+                <h1>Contact Miami Alliance 3PL: Get Your Free Warehouse Quote</h1>
                 <p>Get in touch for a custom quote or to learn more about our services</p>
             </div>
         </section>

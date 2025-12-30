@@ -1,5 +1,5 @@
 # Miami Alliance 3PL Robots.txt
-# https://megalopolisms.github.io/miamialliance3pl/
+# https://miamialliance3pl.com/
 
 User-agent: *
 Allow: /
@@ -19,11 +19,11 @@ Allow: /css/
 Allow: /js/
 Allow: /images/
 
-# Crawl-delay for politeness (optional, not all bots respect this)
+# Crawl-delay for politeness
 Crawl-delay: 1
 
 # Sitemap location
-Sitemap: https://megalopolisms.github.io/miamialliance3pl/sitemap.xml
+Sitemap: https://miamialliance3pl.com/sitemap.xml
 
 # Google specific
 User-agent: Googlebot
@@ -36,19 +36,3 @@ User-agent: Bingbot
 Allow: /
 Disallow: /portal/
 Disallow: /login.html
-
-# Block AI training crawlers (optional - remove if you want AI indexing)
-User-agent: GPTBot
-Disallow: /
-
-User-agent: ChatGPT-User
-Disallow: /
-
-User-agent: CCBot
-Disallow: /
-
-User-agent: anthropic-ai
-Disallow: /
-
-User-agent: Claude-Web
-Disallow: /
