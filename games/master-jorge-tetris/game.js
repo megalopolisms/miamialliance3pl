@@ -1017,6 +1017,15 @@
   /* ══════════════════════════════════════════════════════════════
    *  8. HUD UPDATES
    * ══════════════════════════════════════════════════════════════ */
+  /* Mobile HUD refs */
+  var mScoreEl = document.getElementById("mScore");
+  var mLevelEl = document.getElementById("mLevel");
+  var mLinesEl = document.getElementById("mLines");
+  var mRankEl = document.getElementById("mRank");
+  var mForceMeterEl = document.getElementById("mForceMeter");
+  var mobileForceBtn = document.getElementById("mobileForceBtn");
+  var mobileStartBtnEl = document.getElementById("mobileStartBtn");
+
   function updateHUD(state) {
     scoreEl.textContent = String(state.score);
     linesEl.textContent = String(state.lines);
@@ -1058,6 +1067,32 @@
       forceHintEl.textContent = "Charge to 100%, then press F for Force Blast.";
       forceHintEl.style.color = "";
       forceMeterEl.style.background = "";
+    }
+
+    // ── Mobile HUD sync ──
+    if (mScoreEl) mScoreEl.textContent = String(state.score);
+    if (mLevelEl) mLevelEl.textContent = String(state.level);
+    if (mLinesEl) mLinesEl.textContent = String(state.lines);
+    if (mRankEl) mRankEl.textContent = state.rank;
+    if (mForceMeterEl)
+      mForceMeterEl.style.width = Math.round(state.forceMeter) + "%";
+
+    // Mobile force button glow
+    if (mobileForceBtn) {
+      if (state.forceReady) {
+        mobileForceBtn.classList.add("force-ready");
+      } else {
+        mobileForceBtn.classList.remove("force-ready");
+      }
+    }
+
+    // Mobile start button text
+    if (mobileStartBtnEl) {
+      if (state.running && !state.gameOver) {
+        mobileStartBtnEl.innerHTML = "&#x21BB; Restart";
+      } else {
+        mobileStartBtnEl.innerHTML = "&#x25B6; Start";
+      }
     }
   }
 
@@ -1312,16 +1347,62 @@
   });
 
   /* ══════════════════════════════════════════════════════════════
-   *  12. MOBILE TOUCH CONTROLS
+   *  12. MOBILE TOUCH CONTROLS (with DAS auto-repeat)
    * ══════════════════════════════════════════════════════════════ */
+  var DAS_DELAY = 170; // ms before auto-repeat starts
+  var DAS_RATE = 45; // ms between repeats
+  var dasTimers = {};
+
+  function startDAS(action) {
+    stopDAS(action);
+    var repeat = function () {
+      switch (action) {
+        case "left":
+          engine.move(-1);
+          break;
+        case "right":
+          engine.move(1);
+          break;
+        case "down":
+          var sd = engine.softDrop();
+          if (sd.locked) handleLock(sd);
+          break;
+      }
+    };
+    dasTimers[action] = {
+      delay: setTimeout(function () {
+        dasTimers[action].interval = setInterval(repeat, DAS_RATE);
+      }, DAS_DELAY),
+    };
+  }
+
+  function stopDAS(action) {
+    if (dasTimers[action]) {
+      clearTimeout(dasTimers[action].delay);
+      clearInterval(dasTimers[action].interval);
+      delete dasTimers[action];
+    }
+  }
+
+  function stopAllDAS() {
+    for (var key in dasTimers) {
+      stopDAS(key);
+    }
+  }
+
+  function vibrateShort() {
+    if (navigator.vibrate) navigator.vibrate(12);
+  }
+
   var mobileButtons = document.querySelectorAll("[data-action]");
   for (var i = 0; i < mobileButtons.length; i++) {
     (function (btn) {
       var action = btn.getAttribute("data-action");
+      var isDAS = btn.hasAttribute("data-das");
 
-      var handler = function (e) {
-        e.preventDefault();
+      var doAction = function () {
         ensureAudio();
+        vibrateShort();
 
         switch (action) {
           case "left":
@@ -1366,10 +1447,181 @@
         }
       };
 
-      btn.addEventListener("touchstart", handler, { passive: false });
-      btn.addEventListener("click", handler);
+      // Touch events with DAS support
+      btn.addEventListener(
+        "touchstart",
+        function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          doAction();
+          if (isDAS) startDAS(action);
+        },
+        { passive: false },
+      );
+
+      btn.addEventListener(
+        "touchend",
+        function (e) {
+          e.preventDefault();
+          if (isDAS) stopDAS(action);
+        },
+        { passive: false },
+      );
+
+      btn.addEventListener("touchcancel", function () {
+        if (isDAS) stopDAS(action);
+      });
+
+      // Mouse fallback (desktop testing)
+      btn.addEventListener("mousedown", function (e) {
+        e.preventDefault();
+        doAction();
+        if (isDAS) startDAS(action);
+      });
+
+      btn.addEventListener("mouseup", function () {
+        if (isDAS) stopDAS(action);
+      });
+
+      btn.addEventListener("mouseleave", function () {
+        if (isDAS) stopDAS(action);
+      });
     })(mobileButtons[i]);
   }
+
+  /* ══════════════════════════════════════════════════════════════
+   *  12b. CANVAS SWIPE GESTURES (Mobile)
+   * ══════════════════════════════════════════════════════════════ */
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var touchStartTime = 0;
+  var touchMoved = false;
+  var swipeThreshold = 28;
+  var tapMaxDist = 18;
+  var tapMaxTime = 220;
+  var boardWrapEl = document.getElementById("boardWrap");
+
+  if (boardWrapEl) {
+    boardWrapEl.addEventListener(
+      "touchstart",
+      function (e) {
+        if (e.touches.length !== 1) return;
+        var touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        touchStartTime = Date.now();
+        touchMoved = false;
+        e.preventDefault();
+      },
+      { passive: false },
+    );
+
+    boardWrapEl.addEventListener(
+      "touchmove",
+      function (e) {
+        e.preventDefault();
+        if (e.touches.length !== 1) return;
+
+        var touch = e.touches[0];
+        var dx = touch.clientX - touchStartX;
+        var dy = touch.clientY - touchStartY;
+
+        // Continuous horizontal swipe: move piece for each threshold crossed
+        if (Math.abs(dx) > swipeThreshold) {
+          ensureAudio();
+          if (dx > 0) {
+            if (engine.move(1)) audio.move();
+          } else {
+            if (engine.move(-1)) audio.move();
+          }
+          touchStartX = touch.clientX;
+          touchMoved = true;
+        }
+
+        // Continuous downward swipe: soft drop
+        if (dy > swipeThreshold * 1.2) {
+          ensureAudio();
+          var sd = engine.softDrop();
+          if (sd.moved) audio.softDrop();
+          if (sd.locked) handleLock(sd);
+          touchStartY = touch.clientY;
+          touchMoved = true;
+        }
+      },
+      { passive: false },
+    );
+
+    boardWrapEl.addEventListener(
+      "touchend",
+      function (e) {
+        var touch = e.changedTouches[0];
+        var dx = touch.clientX - touchStartX;
+        var dy = touch.clientY - touchStartY;
+        var dt = Date.now() - touchStartTime;
+        var absDx = Math.abs(dx);
+        var absDy = Math.abs(dy);
+
+        ensureAudio();
+
+        // Tap = rotate
+        if (
+          !touchMoved &&
+          dt < tapMaxTime &&
+          absDx < tapMaxDist &&
+          absDy < tapMaxDist
+        ) {
+          if (engine.rotate(1)) {
+            audio.rotate();
+            vibrateShort();
+          }
+          return;
+        }
+
+        // Quick upward swipe = hard drop
+        if (dy < -swipeThreshold * 2 && absDy > absDx && dt < 350) {
+          var st = engine.getPublicState();
+          var hd = engine.hardDrop();
+          if (hd.locked) {
+            audio.hardDrop();
+            spawnHardDropParticles(st.active);
+            triggerShake(6);
+            handleLock(hd);
+            vibrateShort();
+          }
+        }
+      },
+      { passive: false },
+    );
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+   *  12c. PREVENT PAGE SCROLL DURING GAMEPLAY
+   * ══════════════════════════════════════════════════════════════ */
+  var mobileControlsEl = document.getElementById("mobileControls");
+
+  document.body.addEventListener(
+    "touchmove",
+    function (e) {
+      var state = engine.getPublicState();
+      if (!state.running || state.paused || state.gameOver) return;
+
+      var target = e.target;
+      while (target && target !== document.body) {
+        if (target === boardWrapEl || target === mobileControlsEl) {
+          e.preventDefault();
+          return;
+        }
+        target = target.parentElement;
+      }
+    },
+    { passive: false },
+  );
+
+  // Stop all DAS when game ends or pauses
+  window.addEventListener("blur", stopAllDAS);
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) stopAllDAS();
+  });
 
   /* ══════════════════════════════════════════════════════════════
    *  13. GAME ACTIONS
