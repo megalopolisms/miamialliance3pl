@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Master Jorge: Tetris Wars | Miami Alliance 3PL</title>
+  <meta name="description" content="Master Jorge: Tetris Wars - A Star Wars themed browser Tetris game. Stack the fleet, hold the line, and rise through the ranks from Padawan to Grand Master. Built by Miami Alliance 3PL.">
+  <meta name="keywords" content="tetris, star wars, browser game, arcade, miami alliance 3pl, master jorge">
+  <meta name="author" content="Miami Alliance 3PL">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="color-scheme" content="dark">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Master Jorge: Tetris Wars | Miami Alliance 3PL">
+  <meta property="og:description" content="Star Wars themed browser Tetris. Stack the fleet. Hold the line. The Force is in your hands.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://megalopolisms.github.io/miamialliance3pl/games/master-jorge-tetris/">
+  <meta property="og:image" content="https://megalopolisms.github.io/miamialliance3pl/games/master-jorge-tetris/og-image.png">
+  <meta property="og:site_name" content="Miami Alliance 3PL">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Master Jorge: Tetris Wars">
+  <meta name="twitter:description" content="Star Wars themed browser Tetris. Stack the fleet. Hold the line.">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x2694;&#xFE0F;</text></svg>">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Exo+2:wght@300;400;600;700;800&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Touch optimization -->
+  <style>
+    button, [data-action] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body>
+  <!-- Stars background -->
+  <div class="stars" aria-hidden="true"></div>
+
+  <!-- Miami3PL Brand Bar -->
+  <nav class="brand-bar" role="navigation" aria-label="Miami Alliance 3PL navigation">
+    <div class="brand-bar-inner">
+      <a href="../../index.html" class="brand-bar-logo" aria-label="Back to Miami Alliance 3PL homepage">
+        <span class="brand-bar-icon" aria-hidden="true">&#x1F680;</span>
+        <span class="brand-bar-text">Miami Alliance 3PL</span>
+      </a>
+      <div class="brand-bar-links">
+        <a href="../../index.html" class="brand-bar-link">Home</a>
+        <a href="../../services.html" class="brand-bar-link brand-bar-link-hide-mobile">Services</a>
+        <a href="../../portal/dashboard.html" class="brand-bar-link">Portal</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="loading-screen" role="status" aria-label="Loading game">
+    <div class="loading-content">
+      <div class="loading-saber" aria-hidden="true"></div>
+      <p class="loading-text">Initializing Holocron...</p>
+      <div class="loading-bar-track">
+        <div class="loading-bar-fill" id="loadingBar"></div>
+      </div>
+    </div>
+  </div>
+
+  <main class="game-shell" id="gameShell">
+    <!-- Hero Header -->
+    <header class="hero" role="banner">
+      <p class="kicker">Jedi Arcade Holocron</p>
+      <h1 id="gameTitle">Master Jorge: Tetris Wars</h1>
+      <p class="subtitle">Stack the fleet. Hold the line. The Force is in your hands.</p>
+      <p class="portal-link">
+        <a href="../../portal/dashboard.html" aria-label="Open Miami3PL Customer Portal">Miami3PL Portal</a>
+        <span class="portal-sep" aria-hidden="true">|</span>
+        <button id="leaderboardBtn" type="button" class="link-btn" aria-label="View leaderboard">Leaderboard</button>
+        <span class="portal-sep" aria-hidden="true">|</span>
+        <button id="settingsBtn" type="button" class="link-btn" aria-label="Open settings">Settings</button>
+      </p>
+    </header>
+
+    <!-- Game Area -->
+    <section class="game-wrap" aria-label="Star Wars themed Tetris game">
+
+      <!-- Left HUD: Stats + Controls + Buttons -->
+      <aside class="hud left-hud" aria-label="Mission stats and controls">
+        <div class="card stats-card">
+          <h2>Mission Stats</h2>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-label">Score</span>
+              <strong id="score" class="stat-value score-value" aria-live="polite">0</strong>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Lines</span>
+              <strong id="lines" class="stat-value" aria-live="polite">0</strong>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Level</span>
+              <strong id="level" class="stat-value level-value" aria-live="polite">1</strong>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Rank</span>
+              <strong id="rank" class="stat-value rank-value" aria-live="polite">Padawan</strong>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Combo</span>
+              <strong id="combo" class="stat-value">0</strong>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">B2B</span>
+              <strong id="backToBack" class="stat-value">No</strong>
+            </div>
+            <div class="stat-item stat-item-wide">
+              <span class="stat-label">Mode</span>
+              <strong id="mode" class="stat-value mode-value">Alliance</strong>
+            </div>
+            <div class="stat-item stat-item-wide">
+              <span class="stat-label">High Score</span>
+              <strong id="highScore" class="stat-value score-value">0</strong>
+            </div>
+            <div class="stat-item stat-item-wide">
+              <span class="stat-label">Status</span>
+              <strong id="status" class="stat-value status-value">Waiting</strong>
+            </div>
+          </div>
+          <div class="meter-wrap" aria-label="Force meter">
+            <span>Force Meter <strong id="forceLabel">0%</strong></span>
+            <div class="meter">
+              <div id="forceMeter" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <p class="hint" id="forceHint">Charge to 100%, then press <kbd>F</kbd> for Force Blast.</p>
+          </div>
+        </div>
+
+        <!-- Controls Card (Collapsible) -->
+        <details class="card controls-card" id="controlsDetails">
+          <summary class="controls-summary" aria-label="Toggle keyboard shortcuts reference">
+            <h2 class="controls-title">Keyboard Shortcuts</h2>
+            <span class="controls-chevron" aria-hidden="true">&#x25BC;</span>
+          </summary>
+          <div class="controls-body">
+            <div class="control-row"><kbd aria-label="Left arrow">&#x2190;</kbd> / <kbd aria-label="Right arrow">&#x2192;</kbd> <span>Move</span></div>
+            <div class="control-row"><kbd aria-label="Down arrow">&#x2193;</kbd> <span>Soft Drop</span></div>
+            <div class="control-row"><kbd aria-label="Up arrow">&#x2191;</kbd> <span>Rotate CW</span></div>
+            <div class="control-row"><kbd>Z</kbd> <span>Rotate CCW</span></div>
+            <div class="control-row"><kbd>Space</kbd> <span>Hard Drop</span></div>
+            <div class="control-row"><kbd>C</kbd> <span>Hold Piece</span></div>
+            <div class="control-row"><kbd>F</kbd> <span>Force Blast</span></div>
+            <div class="control-row"><kbd>M</kbd> <span>Toggle Mode</span></div>
+            <div class="control-row"><kbd>P</kbd> <span>Pause / Resume</span></div>
+            <div class="control-row"><kbd>L</kbd> <span>Leaderboard</span></div>
+          </div>
+        </details>
+
+        <!-- Action Buttons -->
+        <div class="button-row" role="group" aria-label="Game action buttons">
+          <button id="startBtn" type="button" class="btn-primary" aria-label="Start a new mission">Start Mission</button>
+          <button id="pauseBtn" type="button" class="btn-secondary" aria-label="Pause or resume the game">Pause</button>
+          <button id="modeBtn" type="button" class="btn-secondary" aria-label="Toggle between Alliance and Empire mode">Mode: Alliance</button>
+          <button id="audioBtn" type="button" class="btn-secondary" aria-label="Toggle audio on or off">Audio: On</button>
+        </div>
+      </aside>
+
+      <!-- Central Game Board -->
+      <div class="board-wrap" id="boardWrap">
+        <div class="board-container">
+          <canvas id="board" width="300" height="600" aria-label="Tetris game board" role="img"></canvas>
+          <div class="board-watermark" aria-hidden="true">M3PL</div>
+          <!-- Game Over Overlay -->
+          <div id="gameOverOverlay" class="game-over-overlay" role="dialog" aria-label="Game over" aria-hidden="true">
+            <div class="game-over-content">
+              <h2 class="game-over-title">Mission Failed</h2>
+              <p class="game-over-score">Score: <span id="gameOverScore">0</span></p>
+              <p class="game-over-rank">Rank: <span id="gameOverRank">Padawan</span></p>
+              <p class="game-over-lines">Lines: <span id="gameOverLines">0</span></p>
+              <div class="game-over-actions">
+                <button id="gameOverRestart" type="button" class="btn-primary" aria-label="Restart the mission">Restart Mission</button>
+                <button id="gameOverLeaderboard" type="button" class="btn-secondary" aria-label="View leaderboard">Leaderboard</button>
+              </div>
+            </div>
+          </div>
+          <!-- Tetris Clear Text -->
+          <div id="tetrisText" class="tetris-text" aria-hidden="true">TETRIS!</div>
+          <!-- Combo Popup -->
+          <div id="comboText" class="combo-text" aria-hidden="true"></div>
+          <!-- Level Up Flash -->
+          <div id="levelUpFlash" class="level-up-flash" aria-hidden="true">LEVEL UP!</div>
+        </div>
+        <p id="announcer" class="sr-only" aria-live="polite">Mission ready. Press Start Mission to begin the trench run.</p>
+      </div>
+
+      <!-- Right HUD: Next, Hold, Mission Log -->
+      <aside class="hud right-hud" aria-label="Piece preview and mission log">
+        <div class="card next-card">
+          <h2>Next Fleet</h2>
+          <canvas id="next" width="120" height="330" aria-label="Next five pieces preview"></canvas>
+        </div>
+        <div class="card hold-card">
+          <h2>Hold Dock</h2>
+          <canvas id="hold" width="120" height="120" aria-label="Held piece display"></canvas>
+        </div>
+        <div class="card mission-log">
+          <h2>Mission Brief</h2>
+          <p id="missionText">Press Start Mission to begin the trench run.</p>
+          <ul id="eventFeed" aria-live="polite" aria-label="Game event log"></ul>
+        </div>
+      </aside>
+    </section>
+
+    <!-- Mobile Touch Controls -->
+    <section class="mobile-controls" aria-label="Touch controls for mobile play">
+      <div class="mobile-row mobile-row-top">
+        <button data-action="rotate" type="button" aria-label="Rotate piece">&#x21BB; Rotate</button>
+        <button data-action="drop" type="button" aria-label="Hard drop piece">&#x2B07; Drop</button>
+        <button data-action="hold" type="button" aria-label="Hold current piece">&#x1F91A; Hold</button>
+      </div>
+      <div class="mobile-row mobile-row-move">
+        <button data-action="left" type="button" aria-label="Move piece left">&#x25C0; Left</button>
+        <button data-action="down" type="button" aria-label="Soft drop piece">&#x25BC; Down</button>
+        <button data-action="right" type="button" aria-label="Move piece right">Right &#x25B6;</button>
+      </div>
+      <div class="mobile-row mobile-row-util">
+        <button data-action="force" type="button" aria-label="Activate force blast">&#x26A1; Force</button>
+        <button data-action="mode" type="button" aria-label="Toggle game mode">&#x2694; Mode</button>
+        <button data-action="pause" type="button" aria-label="Pause game">&#x23F8; Pause</button>
+        <button data-action="start" type="button" aria-label="Start game">&#x25B6; Start</button>
+      </div>
+    </section>
+
+    <!-- How to Play (Star Wars Opening Crawl Style) -->
+    <details class="how-to-play" id="howToPlay">
+      <summary class="how-to-play-summary" aria-label="Toggle how to play guide">
+        <span class="how-to-play-icon" aria-hidden="true">&#x2139;</span>
+        How to Play
+      </summary>
+      <div class="how-to-play-crawl">
+        <div class="crawl-fade" aria-hidden="true"></div>
+        <div class="crawl-content">
+          <p class="crawl-episode">Episode I</p>
+          <h3 class="crawl-title">The Tetris Wars</h3>
+          <p>A long time ago in a warehouse far, far away... blocks began to fall from the sky. Only the bravest pilots could stack them into perfect formation.</p>
+          <h4>The Basics</h4>
+          <p>Move falling pieces left and right to build complete horizontal lines. When a line is fully filled, it clears and earns you points. The more lines you clear at once, the higher the bonus.</p>
+          <h4>Scoring Ranks</h4>
+          <ul>
+            <li><strong>Padawan</strong> - Starting rank, everyone begins here</li>
+            <li><strong>Pilot</strong> - 1,700+ points or 14+ lines</li>
+            <li><strong>Squad Lead</strong> - 4,200+ points or 30+ lines</li>
+            <li><strong>Commander</strong> - 8,000+ points or 60+ lines</li>
+            <li><strong>Jedi Knight</strong> - 13,000+ points or 95+ lines</li>
+            <li><strong>Grand Master</strong> - 22,000+ points or 160+ lines</li>
+          </ul>
+          <h4>Force Blast</h4>
+          <p>Clear lines to charge the Force Meter. At 100%, press <kbd>F</kbd> to obliterate the most filled row on the board. Hard drops and combos charge the meter faster.</p>
+          <h4>Game Modes</h4>
+          <p><strong>Alliance Mode</strong> (Blue) - Standard speed. Precision and strategy win the battle. Great for new cadets.</p>
+          <p><strong>Empire Mode</strong> (Red) - 18% faster gravity. Relentless pace. Only seasoned pilots survive. Higher risk, higher glory.</p>
+          <h4>Combo System</h4>
+          <p>Clear lines on consecutive piece locks to build combos. Each combo level adds bonus points. Clear 4 lines in a row (TETRIS!) for massive bonus, and chain them back-to-back for an additional 50% multiplier.</p>
+          <h4>Hold Dock</h4>
+          <p>Press <kbd>C</kbd> to stash your current piece in the Hold Dock for later use. You can only swap once per piece lock. Use it strategically to save I-pieces for Tetris clears.</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- Footer -->
+    <footer class="game-footer" role="contentinfo">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <span class="footer-logo" aria-hidden="true">&#x1F680;</span>
+          <span class="footer-name">Miami Alliance 3PL</span>
+        </div>
+        <p class="footer-address">8780 NW 100th ST, Medley, FL 33178</p>
+        <p class="footer-credits">Master Jorge: Tetris Wars &mdash; Built with the Force by Miami Alliance 3PL</p>
+        <div class="footer-links">
+          <a href="../../index.html">Home</a>
+          <span aria-hidden="true">&middot;</span>
+          <a href="../../services.html">Services</a>
+          <span aria-hidden="true">&middot;</span>
+          <a href="../../contact.html">Contact</a>
+          <span aria-hidden="true">&middot;</span>
+          <a href="../../portal/dashboard.html">Portal</a>
+        </div>
+        <p class="footer-copy">&copy; 2026 Miami Alliance 3PL. All rights reserved.</p>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Leaderboard Modal -->
+  <div id="leaderboardModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Leaderboard" aria-hidden="true">
+    <div class="modal-panel leaderboard-panel">
+      <div class="modal-header">
+        <h2 class="modal-title">Holocron Leaderboard</h2>
+        <button id="leaderboardClose" type="button" class="modal-close" aria-label="Close leaderboard">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Score submission (shown when game over with qualifying score) -->
+        <div id="scoreSubmitSection" class="score-submit" style="display:none;">
+          <p class="score-submit-label">New High Score! Enter your callsign:</p>
+          <div class="score-submit-row">
+            <input id="nameInput" type="text" maxlength="16" placeholder="Your callsign..." aria-label="Enter your name for the leaderboard" autocomplete="off" spellcheck="false">
+            <button id="submitScore" type="button" class="btn-primary btn-small" aria-label="Submit score to leaderboard">Submit</button>
+          </div>
+        </div>
+        <!-- Leaderboard Table -->
+        <div class="leaderboard-table-wrap">
+          <table class="leaderboard-table" aria-label="Top 10 scores">
+            <thead>
+              <tr>
+                <th scope="col" class="lb-col-rank">#</th>
+                <th scope="col" class="lb-col-name">Callsign</th>
+                <th scope="col" class="lb-col-score">Score</th>
+                <th scope="col" class="lb-col-lines">Lines</th>
+                <th scope="col" class="lb-col-level">Lvl</th>
+                <th scope="col" class="lb-col-title">Rank</th>
+                <th scope="col" class="lb-col-mode">Mode</th>
+                <th scope="col" class="lb-col-date">Date</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardTable">
+              <tr class="lb-empty-row">
+                <td colspan="8">No scores yet. Be the first to complete a mission!</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <p class="modal-footer-text">Scores stored locally in your holocron databank.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Panel (Slide-in from right) -->
+  <div id="settingsPanel" class="settings-panel" role="dialog" aria-modal="false" aria-label="Game settings" aria-hidden="true">
+    <div class="settings-inner">
+      <div class="settings-header">
+        <h2 class="settings-title">Settings</h2>
+        <button id="settingsClose" type="button" class="settings-close" aria-label="Close settings">&times;</button>
+      </div>
+      <div class="settings-body">
+        <!-- Audio Volume -->
+        <div class="setting-group">
+          <label for="volumeSlider" class="setting-label">
+            <span class="setting-icon" aria-hidden="true">&#x1F50A;</span>
+            Audio Volume
+          </label>
+          <div class="setting-control">
+            <input id="volumeSlider" type="range" min="0" max="100" value="70" step="1" aria-label="Audio volume slider">
+            <span id="volumeValue" class="setting-value">70%</span>
+          </div>
+        </div>
+        <!-- Ghost Piece Toggle -->
+        <div class="setting-group">
+          <label for="ghostToggle" class="setting-label">
+            <span class="setting-icon" aria-hidden="true">&#x1F47B;</span>
+            Ghost Piece
+          </label>
+          <div class="setting-control">
+            <label class="toggle-switch">
+              <input id="ghostToggle" type="checkbox" checked aria-label="Toggle ghost piece visibility">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="setting-desc">Shows where the piece will land</span>
+          </div>
+        </div>
+        <!-- Grid Lines Toggle -->
+        <div class="setting-group">
+          <label for="gridToggle" class="setting-label">
+            <span class="setting-icon" aria-hidden="true">&#x1F4CF;</span>
+            Grid Lines
+          </label>
+          <div class="setting-control">
+            <label class="toggle-switch">
+              <input id="gridToggle" type="checkbox" aria-label="Toggle grid lines on the board">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="setting-desc">Display grid overlay on board</span>
+          </div>
+        </div>
+        <!-- Particle Effects Toggle -->
+        <div class="setting-group">
+          <label for="particleToggle" class="setting-label">
+            <span class="setting-icon" aria-hidden="true">&#x2728;</span>
+            Particle Effects
+          </label>
+          <div class="setting-control">
+            <label class="toggle-switch">
+              <input id="particleToggle" type="checkbox" checked aria-label="Toggle particle effects">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="setting-desc">Visual effects on clears and drops</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings backdrop -->
+  <div id="settingsBackdrop" class="settings-backdrop" aria-hidden="true"></div>
+
+  <!-- Scripts -->
+  <script src="tetris-core.js"></script>
+  <script src="game.js"></script>
+
+  <!-- Loading screen auto-dismiss -->
+  <script>
+    (function() {
+      var loadEl = document.getElementById('loadingScreen');
+      var barEl = document.getElementById('loadingBar');
+      if (!loadEl) return;
+      var progress = 0;
+      var step = function() {
+        progress += Math.random() * 30 + 10;
+        if (progress > 100) progress = 100;
+        if (barEl) barEl.style.width = progress + '%';
+        if (progress < 100) {
+          setTimeout(step, 120 + Math.random() * 200);
+        } else {
+          setTimeout(function() {
+            loadEl.classList.add('loading-done');
+            setTimeout(function() { loadEl.style.display = 'none'; }, 600);
+          }, 300);
+        }
+      };
+      step();
+    })();
+  </script>
+</body>
+</html>
