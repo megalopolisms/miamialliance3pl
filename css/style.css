@@ -1839,17 +1839,24 @@ ul {
 /* Quote Section */
 .quote-section {
   padding: var(--spacing-xl) 0;
+  overflow: hidden;
+}
+
+.quote-section .container {
+  max-width: 1200px;
+  overflow: visible;
 }
 
 /* Quote Tool Layout */
 .quote-tool {
   display: grid;
-  grid-template-columns: 400px 1fr;
-  gap: var(--spacing-lg);
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  gap: 0;
   background: var(--color-white);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
+  max-width: 100%;
 }
 
 @media (max-width: 1023px) {
@@ -1863,6 +1870,8 @@ ul {
   padding: var(--spacing-lg);
   background: var(--color-white);
   border-right: 1px solid var(--color-gray-200);
+  overflow: hidden;
+  min-width: 0;
 }
 
 @media (max-width: 1023px) {
@@ -1874,6 +1883,8 @@ ul {
 
 .quote-control-group {
   margin-bottom: var(--spacing-lg);
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .quote-label {
@@ -1890,10 +1901,12 @@ ul {
 .package-toggle {
   display: flex;
   gap: var(--spacing-sm);
+  max-width: 100%;
 }
 
 .package-option {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1905,6 +1918,7 @@ ul {
   cursor: pointer;
   transition: all var(--transition-fast);
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 .package-option:hover {
@@ -1930,7 +1944,7 @@ ul {
 /* Dimension Inputs */
 .dimension-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--spacing-sm);
 }
 
@@ -1940,6 +1954,7 @@ ul {
 
 .dimension-input {
   width: 100%;
+  max-width: 100%;
   padding: var(--spacing-sm);
   text-align: center;
   font-size: var(--font-size-xl);
@@ -1948,6 +1963,7 @@ ul {
   border-radius: var(--radius-md);
   transition: border-color var(--transition-fast);
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 .dimension-input:focus {
@@ -2095,7 +2111,7 @@ ul {
 /* Drop Ship Unit Pricing Grid */
 .dropship-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--spacing-sm);
 }
 
@@ -2111,6 +2127,8 @@ ul {
   border-radius: var(--radius-md);
   padding: var(--spacing-sm);
   transition: border-color var(--transition-fast);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .dropship-item:hover {
@@ -2166,6 +2184,9 @@ ul {
   padding: var(--spacing-md);
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-md);
+  overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .quote-results-title {
@@ -2179,9 +2200,18 @@ ul {
 .quote-line {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 0.5rem 0;
   font-size: var(--font-size-sm);
   color: var(--color-gray-600);
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.quote-line span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .quote-divider {
@@ -2216,6 +2246,8 @@ ul {
   position: relative;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   min-height: 500px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 @media (max-width: 1023px) {
@@ -2228,6 +2260,12 @@ ul {
   width: 100%;
   height: 100%;
   min-height: 500px;
+  overflow: hidden;
+}
+
+#quote-canvas canvas {
+  display: block;
+  max-width: 100%;
 }
 
 @media (max-width: 1023px) {
@@ -2264,6 +2302,9 @@ ul {
   text-align: center;
   box-shadow: var(--shadow-md);
   transition: all var(--transition-normal);
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .benefit-card:hover {
