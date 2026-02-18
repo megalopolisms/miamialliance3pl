@@ -323,7 +323,64 @@
                                 <option value="local">Local (FL)</option>
                                 <option value="regional" selected>Regional (Southeast)</option>
                                 <option value="national">National</option>
+                                <option value="none">No Shipping Required</option>
+                                <option value="dropship">Shipping by Units (Drop Ship)</option>
                             </select>
+                        </div>
+
+                        <!-- Drop Ship Unit Pricing (shown when "Shipping by Units" selected) -->
+                        <div class="quote-control-group" id="dropship-group" style="display: none;">
+                            <label class="quote-label">Drop Ship — Units by Box Size</label>
+                            <div class="dropship-grid">
+                                <div class="dropship-item">
+                                    <label class="dropship-label">
+                                        <span class="dropship-icon">📦</span>
+                                        <span>Envelopes</span>
+                                        <span class="dropship-price">$1.50/ea</span>
+                                    </label>
+                                    <div class="dropship-qty">
+                                        <button class="qty-btn dropship-btn" data-box="envelope" data-action="decrease">-</button>
+                                        <input type="number" id="dropship-envelope" class="dropship-input" value="0" min="0" max="9999">
+                                        <button class="qty-btn dropship-btn" data-box="envelope" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="dropship-item">
+                                    <label class="dropship-label">
+                                        <span class="dropship-icon">📦</span>
+                                        <span>Small Box</span>
+                                        <span class="dropship-price">$3.00/ea</span>
+                                    </label>
+                                    <div class="dropship-qty">
+                                        <button class="qty-btn dropship-btn" data-box="small" data-action="decrease">-</button>
+                                        <input type="number" id="dropship-small" class="dropship-input" value="0" min="0" max="9999">
+                                        <button class="qty-btn dropship-btn" data-box="small" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="dropship-item">
+                                    <label class="dropship-label">
+                                        <span class="dropship-icon">📦</span>
+                                        <span>Medium Box</span>
+                                        <span class="dropship-price">$5.00/ea</span>
+                                    </label>
+                                    <div class="dropship-qty">
+                                        <button class="qty-btn dropship-btn" data-box="medium" data-action="decrease">-</button>
+                                        <input type="number" id="dropship-medium" class="dropship-input" value="0" min="0" max="9999">
+                                        <button class="qty-btn dropship-btn" data-box="medium" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="dropship-item">
+                                    <label class="dropship-label">
+                                        <span class="dropship-icon">📦</span>
+                                        <span>Large Box</span>
+                                        <span class="dropship-price">$20.00/ea</span>
+                                    </label>
+                                    <div class="dropship-qty">
+                                        <button class="qty-btn dropship-btn" data-box="large" data-action="decrease">-</button>
+                                        <input type="number" id="dropship-large" class="dropship-input" value="0" min="0" max="9999">
+                                        <button class="qty-btn dropship-btn" data-box="large" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Black Wrapping (Pallet Only) - Added by Master Jorge - $7/pallet OPTIONAL -->
@@ -368,6 +425,10 @@
                             <div class="quote-line" id="wrapping-row" style="display: none;">
                                 <span>Black Wrapping</span>
                                 <span id="result-wrapping">$7.00</span>
+                            </div>
+                            <div class="quote-line" id="dropship-row" style="display: none;">
+                                <span>Drop Ship (by unit)</span>
+                                <span id="result-dropship">$0.00</span>
                             </div>
 
                             <div class="quote-divider"></div>
