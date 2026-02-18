@@ -203,6 +203,15 @@
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        .quote-buttons .btn {
+            min-width: 0;
+            flex: 1 1 auto;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .btn-pdf {
             background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
