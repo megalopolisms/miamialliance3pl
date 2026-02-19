@@ -202,6 +202,8 @@ body {
 .board-wrap {
   position: relative;
   justify-self: center;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #board {
@@ -220,6 +222,11 @@ body {
     rgba(5, 13, 28, 0.95),
     rgba(2, 7, 17, 0.95)
   );
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #next,
@@ -284,16 +291,15 @@ kbd {
 }
 
 .mobile-controls {
-  margin-top: 18px;
   display: none;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
 }
 
-.mobile-controls button {
-  font-family: "Exo 2", sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+.gesture-hint {
+  display: none;
+}
+
+.mobile-hud {
+  display: none;
 }
 
 .sr-only {
@@ -324,13 +330,511 @@ kbd {
   }
 }
 
+/* ============================================================
+ * MOBILE PHONE LAYOUT  (<760px)
+ * Fixed bottom controls, compact HUD, board-first layout
+ * ============================================================ */
 @media (max-width: 760px) {
+  /* ── MOBILE SCROLL LOCK ──
+   * Prevent ALL page scrolling on mobile.  The game layout fits the
+   * viewport (hero + HUD + board + fixed controls), so body scroll
+   * is never needed and only fights with touch-to-move-piece gestures.
+   * iOS Safari: position:fixed + overflow:hidden on both html AND body
+   * is the only 100 % reliable way to kill rubber-band / overscroll.  */
+  html {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overscroll-behavior: none;
+    touch-action: none;
+    -webkit-touch-callout: none;
+  }
+
+  body {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overscroll-behavior: none;
+    touch-action: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Compact shell padding + reserved room for fixed controls (fewer buttons now) */
   .game-shell {
-    padding: 18px 10px 26px;
+    padding: 6px 6px 168px !important;
+    max-width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: none;
+    overscroll-behavior: contain;
+  }
+
+  /* Simplified hero */
+  .hero {
+    margin-bottom: 6px;
+    padding: 0;
+  }
+
+  .hero h1 {
+    font-size: 1.2rem;
+    margin: 2px 0 4px;
+  }
+
+  .kicker {
+    display: none;
+  }
+  .subtitle {
+    display: none;
+  }
+  .portal-link {
+    display: none;
+  }
+
+  /* ── Mobile Compact HUD ── */
+  .mobile-hud {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    background: linear-gradient(
+      135deg,
+      rgba(7, 19, 39, 0.84),
+      rgba(12, 28, 52, 0.74)
+    );
+    border: 1px solid rgba(107, 195, 255, 0.26);
+    border-radius: 10px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+    margin-bottom: 6px;
+  }
+
+  .mobile-hud-item {
+    flex: 1;
+    text-align: center;
+    min-width: 0;
+  }
+
+  .mobile-hud-item span {
+    font-size: 0.58rem;
+    color: rgba(200, 220, 240, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: block;
+    line-height: 1;
+  }
+
+  .mobile-hud-item strong {
+    font-family: "Orbitron", sans-serif;
+    font-size: 0.82rem;
+    color: var(--gold);
+    display: block;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-hud-level strong {
+    color: #6be6ff;
+  }
+  .mobile-hud-rank strong {
+    color: #67e79d;
+    font-size: 0.68rem;
+  }
+
+  .mobile-hud-meter {
+    flex: 1.5;
+    height: 6px;
+    background: rgba(7, 23, 44, 0.7);
+    border-radius: 999px;
+    border: 1px solid rgba(198, 228, 255, 0.3);
+    overflow: hidden;
+    min-width: 40px;
+  }
+
+  .mobile-hud-meter-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #5eaef5, #f8cf63);
+    transition: width 0.2s ease;
+  }
+
+  /* ── Hide desktop HUD panels ── */
+  .left-hud,
+  .right-hud {
+    display: none !important;
+  }
+
+  /* ── Game grid: single column, board centered ── */
+  .game-wrap {
+    grid-template-columns: 1fr !important;
+    gap: 6px;
+    padding: 0;
+  }
+
+  .board-wrap {
+    order: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    touch-action: none;
+  }
+
+  .board-container {
+    padding: 6px;
+    border-radius: 16px;
+    background: linear-gradient(
+      160deg,
+      rgba(12, 30, 58, 0.64),
+      rgba(4, 10, 20, 0.82)
+    );
+    border: 1px solid rgba(107, 195, 255, 0.28);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  #board {
+    width: min(94vw, clamp(200px, calc((100dvh - 220px) / 2), 360px));
+    max-width: 360px;
+    margin: 0 auto;
+    display: block;
+    height: auto;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    cursor: grab;
+  }
+
+  #board:active {
+    cursor: grabbing;
+  }
+
+  /* ── Fixed Bottom Mobile Controls ── */
+  .mobile-controls {
+    display: grid !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: linear-gradient(
+      180deg,
+      rgba(6, 14, 28, 0.96),
+      rgba(2, 5, 12, 0.99)
+    );
+    border-top: 1px solid rgba(107, 195, 255, 0.25);
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    gap: 6px;
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-row {
+    display: grid !important;
+  }
+
+  /* Gesture hint bar */
+  .gesture-hint {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 5px 8px;
+    background: linear-gradient(
+      90deg,
+      rgba(107, 230, 255, 0.08),
+      rgba(248, 207, 99, 0.08)
+    );
+    border: 1px solid rgba(107, 195, 255, 0.18);
+    border-radius: 8px;
+    font-size: 0.68rem;
+    color: rgba(200, 220, 240, 0.7);
+    text-align: center;
+    transition:
+      opacity 0.5s ease,
+      max-height 0.5s ease;
+    overflow: hidden;
+    max-height: 40px;
+  }
+
+  .gesture-hint.hidden {
+    opacity: 0;
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+  }
+
+  .gh-item {
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .gh-sep {
+    color: rgba(107, 195, 255, 0.3);
+  }
+
+  /* Actions row: Hold, Force, Start, Pause */
+  .mobile-row-actions {
+    grid-template-columns: 1fr 1fr 1.5fr 1fr;
+    gap: 5px;
+  }
+
+  .mobile-row-system {
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+
+  /* ── Mobile Button Base ── */
+  .mc-btn {
+    min-height: 50px;
+    font-family: "Exo 2", sans-serif;
+    font-size: 0.88rem;
+    font-weight: 800;
+    border-radius: 11px;
+    padding: 6px 4px;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    transition:
+      transform 0.08s,
+      filter 0.08s;
+    will-change: transform;
+  }
+
+  .mc-btn span {
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+  }
+
+  .mc-btn:active {
+    transform: scale(0.93) !important;
+    filter: brightness(1.3);
+  }
+
+  /* Hold button — blue */
+  .mc-hold {
+    border: 1px solid rgba(107, 195, 255, 0.4);
+    background: linear-gradient(
+      135deg,
+      rgba(20, 60, 100, 0.9),
+      rgba(40, 100, 170, 0.9)
+    );
+    color: #c8e4ff;
+  }
+
+  /* Force button — cyan glow */
+  .mc-force {
+    border: 1px solid rgba(107, 230, 255, 0.5);
+    background: linear-gradient(
+      135deg,
+      rgba(10, 70, 90, 0.9),
+      rgba(20, 120, 150, 0.9)
+    );
+    color: #c8f8ff;
+  }
+
+  .mc-force.force-ready {
+    animation: force-pulse-btn 1s ease-in-out infinite;
+    border-color: rgba(107, 230, 255, 0.8);
+    box-shadow: 0 0 12px rgba(107, 230, 255, 0.3);
+  }
+
+  @keyframes force-pulse-btn {
+    0%,
+    100% {
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(1.3);
+    }
+  }
+
+  /* Start button — prominent gold */
+  .mc-start {
+    border: 1px solid rgba(248, 207, 99, 0.6);
+    background: linear-gradient(
+      135deg,
+      rgba(140, 90, 10, 0.95),
+      rgba(220, 150, 30, 0.95)
+    );
+    color: #fff2cd;
+    font-family: "Audiowide", cursive;
+    font-size: 0.85rem;
+  }
+
+  /* Pause button — subtle blue */
+  .mc-pause {
+    border: 1px solid rgba(107, 195, 255, 0.3);
+    background: linear-gradient(
+      135deg,
+      rgba(15, 40, 70, 0.9),
+      rgba(30, 70, 120, 0.9)
+    );
+    color: #a0c8e8;
+    font-size: 0.8rem;
+  }
+
+  .mc-mode,
+  .mc-audio {
+    border: 1px solid rgba(110, 187, 255, 0.35);
+    background: linear-gradient(
+      135deg,
+      rgba(10, 32, 60, 0.92),
+      rgba(20, 64, 108, 0.92)
+    );
+    color: #cde8ff;
+    font-size: 0.74rem;
+    font-weight: 700;
+    min-height: 42px;
+    letter-spacing: 0.01em;
+  }
+
+  .mc-mode {
+    border-color: rgba(211, 139, 255, 0.4);
+    color: #ecd2ff;
+  }
+
+  .mc-audio {
+    border-color: rgba(248, 207, 99, 0.4);
+    color: #ffe8aa;
+  }
+
+  /* ── Hide non-mobile elements ── */
+  .how-to-play {
+    display: none;
+  }
+  .game-footer {
+    display: none;
+  }
+  .controls-card {
+    display: none;
+  }
+
+  /* Brand bar compact */
+  .brand-bar-text {
+    font-size: 0.78rem;
+  }
+  .brand-bar-link-hide-mobile {
+    display: none;
+  }
+
+  /* Modals clear controls */
+  .modal-panel {
+    max-height: 68vh;
+    max-height: 68dvh;
+  }
+
+  .game-over-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .game-over-actions button {
+    min-height: 44px;
+    width: 100%;
+  }
+
+  .game-over-title {
+    font-size: 1.3rem;
+  }
+  .game-over-score {
+    font-size: 1rem;
+  }
+}
+
+/* ── Extra small phones (<380px) ── */
+@media (max-width: 380px) {
+  .hero h1 {
+    font-size: 1rem;
+  }
+
+  .mobile-hud {
+    gap: 4px;
+    padding: 4px 6px;
+  }
+
+  .mobile-hud-item strong {
+    font-size: 0.72rem;
+  }
+  .mobile-hud-rank strong {
+    font-size: 0.6rem;
+  }
+
+  .mc-btn {
+    min-height: 44px;
+    font-size: 0.8rem;
+  }
+
+  .mobile-row-actions {
+    grid-template-columns: 1fr 1fr 1.5fr 1fr;
+  }
+
+  .mobile-row-system {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .gesture-hint {
+    font-size: 0.6rem;
+    gap: 4px;
+    padding: 3px 6px;
+  }
+}
+
+/* ── Landscape phone optimization ── */
+@media (max-width: 760px) and (max-height: 500px) and (orientation: landscape) {
+  .game-shell {
+    padding: 4px 4px 110px !important;
+  }
+
+  .hero {
+    display: none;
+  }
+  .mobile-hud {
+    margin-bottom: 4px;
+    padding: 3px 8px;
+  }
+  .mobile-hud-item strong {
+    font-size: 0.7rem;
+  }
+
+  #board {
+    width: min(42vh, 260px);
   }
 
   .mobile-controls {
-    display: grid;
+    padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px));
+    gap: 3px;
+  }
+
+  .mc-btn {
+    min-height: 38px;
+    font-size: 0.75rem;
+  }
+  .mobile-row-actions {
+    gap: 3px;
+  }
+  .mobile-row-system {
+    gap: 3px;
+  }
+
+  .gesture-hint {
+    display: none !important;
   }
 }
 
@@ -1283,28 +1787,7 @@ details[open] .controls-chevron {
   user-select: none;
 }
 
-/* Mobile controls rows */
+/* Mobile controls rows (visible at <760px via media query) */
 .mobile-row {
-  display: contents;
-}
-
-.mobile-row-top {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.mobile-row-move {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.mobile-row-util {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  display: none;
 }

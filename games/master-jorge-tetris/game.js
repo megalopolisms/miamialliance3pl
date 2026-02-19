@@ -504,6 +504,10 @@
   function toggleAudio() {
     audioEnabled = !audioEnabled;
     audioBtn.textContent = "Audio: " + (audioEnabled ? "On" : "Off");
+    if (mobileAudioBtnEl) {
+      mobileAudioBtnEl.innerHTML =
+        "&#x1F50A; Audio: " + (audioEnabled ? "On" : "Off");
+    }
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -1017,6 +1021,18 @@
   /* ══════════════════════════════════════════════════════════════
    *  8. HUD UPDATES
    * ══════════════════════════════════════════════════════════════ */
+  /* Mobile HUD refs */
+  var mScoreEl = document.getElementById("mScore");
+  var mLevelEl = document.getElementById("mLevel");
+  var mLinesEl = document.getElementById("mLines");
+  var mRankEl = document.getElementById("mRank");
+  var mForceMeterEl = document.getElementById("mForceMeter");
+  var mobileForceBtn = document.getElementById("mobileForceBtn");
+  var mobileStartBtnEl = document.getElementById("mobileStartBtn");
+  var mobilePauseBtnEl = document.getElementById("mobilePauseBtn");
+  var mobileModeBtnEl = document.getElementById("mobileModeBtn");
+  var mobileAudioBtnEl = document.getElementById("mobileAudioBtn");
+
   function updateHUD(state) {
     scoreEl.textContent = String(state.score);
     linesEl.textContent = String(state.lines);
@@ -1027,6 +1043,10 @@
     modeEl.textContent = state.mode === "empire" ? "Empire" : "Alliance";
     modeBtn.textContent =
       "Mode: " + (state.mode === "empire" ? "Empire" : "Alliance");
+    if (mobileModeBtnEl) {
+      mobileModeBtnEl.textContent =
+        "Mode: " + (state.mode === "empire" ? "Empire" : "Alliance");
+    }
 
     // High score
     if (state.score > highScore) {
@@ -1058,6 +1078,43 @@
       forceHintEl.textContent = "Charge to 100%, then press F for Force Blast.";
       forceHintEl.style.color = "";
       forceMeterEl.style.background = "";
+    }
+
+    // ── Mobile HUD sync ──
+    if (mScoreEl) mScoreEl.textContent = String(state.score);
+    if (mLevelEl) mLevelEl.textContent = String(state.level);
+    if (mLinesEl) mLinesEl.textContent = String(state.lines);
+    if (mRankEl) mRankEl.textContent = state.rank;
+    if (mForceMeterEl)
+      mForceMeterEl.style.width = Math.round(state.forceMeter) + "%";
+
+    // Mobile force button glow
+    if (mobileForceBtn) {
+      if (state.forceReady) {
+        mobileForceBtn.classList.add("force-ready");
+      } else {
+        mobileForceBtn.classList.remove("force-ready");
+      }
+    }
+
+    // Mobile start button text
+    if (mobileStartBtnEl) {
+      if (state.running && !state.gameOver) {
+        mobileStartBtnEl.innerHTML = "&#x21BB; Restart";
+      } else {
+        mobileStartBtnEl.innerHTML = "&#x25B6; Start";
+      }
+    }
+
+    if (mobilePauseBtnEl) {
+      mobilePauseBtnEl.innerHTML = state.paused
+        ? "&#x25B6; Resume"
+        : "&#x23F8; Pause";
+    }
+
+    if (mobileAudioBtnEl) {
+      mobileAudioBtnEl.innerHTML =
+        "&#x1F50A; Audio: " + (audioEnabled ? "On" : "Off");
     }
   }
 
@@ -1312,16 +1369,63 @@
   });
 
   /* ══════════════════════════════════════════════════════════════
-   *  12. MOBILE TOUCH CONTROLS
+   *  12. MOBILE CONTROLS (touch + pointer, with DAS auto-repeat)
    * ══════════════════════════════════════════════════════════════ */
+  var DAS_DELAY = 170; // ms before auto-repeat starts
+  var DAS_RATE = 45; // ms between repeats
+  var dasTimers = {};
+  var SUPPORTS_POINTER = typeof window !== "undefined" && !!window.PointerEvent;
+
+  function startDAS(action) {
+    stopDAS(action);
+    var repeat = function () {
+      switch (action) {
+        case "left":
+          engine.move(-1);
+          break;
+        case "right":
+          engine.move(1);
+          break;
+        case "down":
+          var sd = engine.softDrop();
+          if (sd.locked) handleLock(sd);
+          break;
+      }
+    };
+    dasTimers[action] = {
+      delay: setTimeout(function () {
+        dasTimers[action].interval = setInterval(repeat, DAS_RATE);
+      }, DAS_DELAY),
+    };
+  }
+
+  function stopDAS(action) {
+    if (dasTimers[action]) {
+      clearTimeout(dasTimers[action].delay);
+      clearInterval(dasTimers[action].interval);
+      delete dasTimers[action];
+    }
+  }
+
+  function stopAllDAS() {
+    for (var key in dasTimers) {
+      stopDAS(key);
+    }
+  }
+
+  function vibrateShort() {
+    if (navigator.vibrate) navigator.vibrate(12);
+  }
+
   var mobileButtons = document.querySelectorAll("[data-action]");
   for (var i = 0; i < mobileButtons.length; i++) {
     (function (btn) {
       var action = btn.getAttribute("data-action");
+      var isDAS = btn.hasAttribute("data-das");
 
-      var handler = function (e) {
-        e.preventDefault();
+      var doAction = function () {
         ensureAudio();
+        vibrateShort();
 
         switch (action) {
           case "left":
@@ -1357,6 +1461,9 @@
           case "mode":
             toggleMode();
             break;
+          case "audio":
+            toggleAudio();
+            break;
           case "pause":
             engine.togglePause();
             break;
@@ -1366,10 +1473,445 @@
         }
       };
 
-      btn.addEventListener("touchstart", handler, { passive: false });
-      btn.addEventListener("click", handler);
+      if (SUPPORTS_POINTER) {
+        btn.addEventListener(
+          "pointerdown",
+          function (e) {
+            if (e.pointerType === "mouse" && e.button !== 0) return;
+            e.preventDefault();
+            e.stopPropagation();
+            doAction();
+            if (isDAS) startDAS(action);
+            if (btn.setPointerCapture) {
+              try {
+                btn.setPointerCapture(e.pointerId);
+              } catch (err) {
+                /* ignore capture errors */
+              }
+            }
+          },
+          { passive: false },
+        );
+
+        btn.addEventListener("pointerup", function () {
+          if (isDAS) stopDAS(action);
+        });
+
+        btn.addEventListener("pointercancel", function () {
+          if (isDAS) stopDAS(action);
+        });
+
+        btn.addEventListener("pointerleave", function () {
+          if (isDAS) stopDAS(action);
+        });
+      } else {
+        // Touch events with DAS support
+        btn.addEventListener(
+          "touchstart",
+          function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            doAction();
+            if (isDAS) startDAS(action);
+          },
+          { passive: false },
+        );
+
+        btn.addEventListener(
+          "touchend",
+          function (e) {
+            e.preventDefault();
+            if (isDAS) stopDAS(action);
+          },
+          { passive: false },
+        );
+
+        btn.addEventListener("touchcancel", function () {
+          if (isDAS) stopDAS(action);
+        });
+
+        // Mouse fallback (desktop testing)
+        btn.addEventListener("mousedown", function (e) {
+          e.preventDefault();
+          doAction();
+          if (isDAS) startDAS(action);
+        });
+
+        btn.addEventListener("mouseup", function () {
+          if (isDAS) stopDAS(action);
+        });
+
+        btn.addEventListener("mouseleave", function () {
+          if (isDAS) stopDAS(action);
+        });
+      }
+
+      // Avoid delayed click handlers re-firing after pointer/touch action.
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+      });
     })(mobileButtons[i]);
   }
+
+  /* ══════════════════════════════════════════════════════════════
+   *  12b. TOUCH DRAG-AND-DROP + TAP/CLICK-TO-ROTATE (Mobile+Desktop)
+   *  Piece follows finger position directly (column-mapped).
+   *  Tap/click on board = rotate. Drag down = soft drop. Swipe up = hard drop.
+   * ══════════════════════════════════════════════════════════════ */
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var touchStartTime = 0;
+  var gestureIntentMoved = false;
+  var gestureInputType = "touch";
+  var tapMaxDist = 22; // max px for tap detection
+  var tapMaxTimeTouch = 280; // max ms for touch tap detection
+  var tapMaxTimeMouse = 700; // allow a slower click press-and-release
+  var dragIntentThreshold = 8; // px before a gesture is treated as a drag
+  var boardWrapEl = document.getElementById("boardWrap");
+  var gestureActive = false;
+  var gestureHintEl = document.getElementById("gestureHint");
+  var gestureHintShown = false;
+  var suppressSyntheticClickUntil = 0;
+  var lastGestureEndAt = 0;
+
+  // Drag-and-drop state
+  var dragAnchorOffset = 0; // finger-column offset from piece.x at touch start
+  var softDropAccum = 0; // how many soft drops already triggered this gesture
+  var lastDragX = -999; // last target X to avoid redundant moves
+
+  function hideGestureHint() {
+    if (gestureHintEl && !gestureHintShown) {
+      gestureHintShown = true;
+      gestureHintEl.classList.add("hidden");
+    }
+  }
+
+  // Convert a clientX pixel to a fractional board column
+  function clientXToCol(clientX) {
+    var rect = boardCanvas.getBoundingClientRect();
+    return (clientX - rect.left) / (rect.width / COLS);
+  }
+
+  // Get rendered cell height for soft drop mapping
+  function getRenderedCellH() {
+    var rect = boardCanvas.getBoundingClientRect();
+    return rect.height / ROWS;
+  }
+
+  function beginGesture(clientX, clientY, inputType) {
+    touchStartX = clientX;
+    touchStartY = clientY;
+    touchStartTime = Date.now();
+    gestureIntentMoved = false;
+    gestureInputType = inputType || "touch";
+    gestureActive = true;
+    softDropAccum = 0;
+    lastDragX = -999;
+
+    // Calculate anchor offset: difference between finger column and piece X
+    var state = engine.getPublicState();
+    if (state.active && state.running && !state.paused && !state.gameOver) {
+      var fingerCol = clientXToCol(clientX);
+      dragAnchorOffset = fingerCol - state.active.x;
+    } else {
+      dragAnchorOffset = 0;
+    }
+    return true;
+  }
+
+  function moveGesture(clientX, clientY) {
+    var state = engine.getPublicState();
+    if (!state.running || state.paused || state.gameOver || !state.active)
+      return;
+
+    var totalDx = Math.abs(clientX - touchStartX);
+    var totalDy = Math.abs(clientY - touchStartY);
+    if (totalDx >= dragIntentThreshold || totalDy >= dragIntentThreshold) {
+      gestureIntentMoved = true;
+    }
+
+    /* ── Horizontal: Direct drag-and-drop (piece follows finger column) ── */
+    var fingerCol = clientXToCol(clientX);
+    var targetX = Math.round(fingerCol - dragAnchorOffset);
+    var currentX = state.active.x;
+
+    if (targetX !== currentX && targetX !== lastDragX) {
+      ensureAudio();
+      var dir = targetX > currentX ? 1 : -1;
+      var steps = Math.abs(targetX - currentX);
+      for (var i = 0; i < steps; i++) {
+        if (!engine.move(dir)) break;
+      }
+      lastDragX = targetX;
+      hideGestureHint();
+    }
+
+    /* ── Vertical: Drag down = soft drop (mapped to cell height) ── */
+    var dy = clientY - touchStartY;
+    if (dy > 0) {
+      var cellH = getRenderedCellH();
+      var dropsNeeded = Math.floor(dy / cellH);
+      while (softDropAccum < dropsNeeded) {
+        ensureAudio();
+        var sd = engine.softDrop();
+        if (sd.moved) audio.softDrop();
+        softDropAccum++;
+        if (sd.locked) {
+          handleLock(sd);
+          break;
+        }
+      }
+      if (dropsNeeded > 0) {
+        hideGestureHint();
+      }
+    }
+  }
+
+  function handleBoardTapAction() {
+    ensureAudio();
+
+    var state = engine.getPublicState();
+
+    // If game over or not running, start/restart game
+    if (!state.running || state.gameOver) {
+      startGame();
+      hideGestureHint();
+      return;
+    }
+
+    // If paused, resume
+    if (state.paused) {
+      engine.togglePause();
+      return;
+    }
+
+    // Tap/click = rotate clockwise
+    if (engine.rotate(1)) {
+      audio.rotate();
+      vibrateShort();
+    }
+    hideGestureHint();
+  }
+
+  function endGesture(clientX, clientY) {
+    if (!gestureActive) return;
+
+    var dx = clientX - touchStartX;
+    var dy = clientY - touchStartY;
+    var dt = Date.now() - touchStartTime;
+    var absDx = Math.abs(dx);
+    var absDy = Math.abs(dy);
+    gestureActive = false;
+    lastGestureEndAt = Date.now();
+    var maxTapTime =
+      gestureInputType === "mouse" ? tapMaxTimeMouse : tapMaxTimeTouch;
+
+    // ── TAP/CLICK DETECTION: tap/click = rotate ──
+    if (
+      !gestureIntentMoved &&
+      dt < maxTapTime &&
+      absDx < tapMaxDist &&
+      absDy < tapMaxDist
+    ) {
+      handleBoardTapAction();
+      return;
+    }
+
+    // Only process end-swipes if game is active
+    var state = engine.getPublicState();
+    if (!state.running || state.paused || state.gameOver) return;
+
+    // ── SWIPE UP = HARD DROP ──
+    if (dy < -40 && absDy > absDx && dt < 450) {
+      var hd = engine.hardDrop();
+      if (hd.locked) {
+        audio.hardDrop();
+        spawnHardDropParticles(state.active);
+        triggerShake(6);
+        handleLock(hd);
+        vibrateShort();
+      }
+      hideGestureHint();
+    }
+  }
+
+  // Prevent iOS context menu / callout on long-press over the board
+  if (boardWrapEl) {
+    boardWrapEl.addEventListener("contextmenu", function (e) {
+      e.preventDefault();
+    });
+  }
+
+  // Board gesture handlers — use TOUCH EVENTS as primary (best iPhone compat)
+  // Pointer Events as secondary for desktop mouse testing.
+  // iOS Safari 13+ supports PointerEvent but touch events are more reliable
+  // for drag-and-drop on real devices.
+  if (boardWrapEl) {
+    // ── TOUCH EVENTS (primary — iPhone / Android) ──
+    boardWrapEl.addEventListener(
+      "touchstart",
+      function (e) {
+        if (e.touches.length !== 1) return;
+        if (!beginGesture(e.touches[0].clientX, e.touches[0].clientY, "touch"))
+          return;
+        e.preventDefault();
+      },
+      { passive: false },
+    );
+
+    boardWrapEl.addEventListener(
+      "touchmove",
+      function (e) {
+        if (!gestureActive) return;
+        e.preventDefault();
+        if (e.touches.length !== 1) return;
+        moveGesture(e.touches[0].clientX, e.touches[0].clientY);
+      },
+      { passive: false },
+    );
+
+    boardWrapEl.addEventListener(
+      "touchend",
+      function (e) {
+        if (!gestureActive || !e.changedTouches.length) return;
+        suppressSyntheticClickUntil = Date.now() + 450;
+        e.preventDefault();
+        endGesture(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+      },
+      { passive: false },
+    );
+
+    boardWrapEl.addEventListener("touchcancel", function () {
+      gestureActive = false;
+      suppressSyntheticClickUntil = Date.now() + 450;
+    });
+
+    // ── MOUSE EVENTS (desktop fallback for testing) ──
+    boardWrapEl.addEventListener(
+      "mousedown",
+      function (e) {
+        if (e.button !== 0) return;
+        if (!beginGesture(e.clientX, e.clientY, "mouse")) return;
+        e.preventDefault();
+      },
+      { passive: false },
+    );
+
+    boardWrapEl.addEventListener(
+      "mousemove",
+      function (e) {
+        if (!gestureActive) return;
+        e.preventDefault();
+        moveGesture(e.clientX, e.clientY);
+      },
+      { passive: false },
+    );
+
+    boardWrapEl.addEventListener("mouseup", function (e) {
+      if (!gestureActive) return;
+      endGesture(e.clientX, e.clientY);
+    });
+
+    boardWrapEl.addEventListener("mouseleave", function () {
+      if (gestureActive) {
+        gestureActive = false;
+      }
+    });
+
+    // Click fallback: guarantees rotate/start/resume when a plain click lands
+    // without a completed drag sequence. Synthetic iOS clicks are ignored.
+    boardWrapEl.addEventListener("click", function (e) {
+      if (Date.now() < suppressSyntheticClickUntil) {
+        e.preventDefault();
+        return;
+      }
+      if (Date.now() - lastGestureEndAt < 220) return;
+      if (e.button !== undefined && e.button !== 0) return;
+      handleBoardTapAction();
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+   *  12c. PREVENT PAGE SCROLL DURING GAMEPLAY  (FULL LOCKDOWN)
+   *
+   *  Root-cause fix:  On mobile, ANY touchmove on the page was
+   *  scrolling the viewport instead of moving the Tetris piece.
+   *  The old handler only blocked scroll when the touch target was
+   *  inside boardWrapEl or mobileControlsEl — touches on the hero,
+   *  HUD, game-shell, or body itself still scrolled the page.
+   *
+   *  Fix: During active gameplay, block ALL touchmove events on
+   *  both <body> AND <html>.  Touches on the board are already
+   *  handled by the boardWrap gesture system.  Touches elsewhere
+   *  should simply be swallowed (no game action, no scroll).
+   *
+   *  When the game is NOT running / is paused / is game-over, we
+   *  allow normal scroll so the user can navigate the page.
+   * ══════════════════════════════════════════════════════════════ */
+  var mobileControlsEl = document.getElementById("mobileControls");
+  var gameShellEl = document.getElementById("gameShell");
+
+  function isGameplayActive() {
+    var state = engine.getPublicState();
+    return state.running && !state.paused && !state.gameOver;
+  }
+
+  // Block ALL touchmove during active gameplay on body
+  document.body.addEventListener(
+    "touchmove",
+    function (e) {
+      if (isGameplayActive()) {
+        e.preventDefault();
+      }
+    },
+    { passive: false },
+  );
+
+  // Block on <html> too — iOS Safari sometimes fires touchmove on
+  // documentElement before it reaches body
+  document.documentElement.addEventListener(
+    "touchmove",
+    function (e) {
+      if (isGameplayActive()) {
+        e.preventDefault();
+      }
+    },
+    { passive: false },
+  );
+
+  // Block touchstart default on game-shell during gameplay to prevent
+  // iOS from initiating a scroll gesture before touchmove fires
+  if (gameShellEl) {
+    gameShellEl.addEventListener(
+      "touchstart",
+      function (e) {
+        if (isGameplayActive()) {
+          // Only preventDefault if the touch is NOT on a button (keep buttons responsive)
+          var tag = e.target.tagName;
+          if (tag !== "BUTTON" && tag !== "INPUT" && tag !== "A") {
+            e.preventDefault();
+          }
+        }
+      },
+      { passive: false },
+    );
+
+    gameShellEl.addEventListener(
+      "touchmove",
+      function (e) {
+        if (isGameplayActive()) {
+          e.preventDefault();
+        }
+      },
+      { passive: false },
+    );
+  }
+
+  // Stop all DAS when game ends or pauses
+  window.addEventListener("blur", stopAllDAS);
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) stopAllDAS();
+  });
 
   /* ══════════════════════════════════════════════════════════════
    *  13. GAME ACTIONS
@@ -1563,11 +2105,10 @@
   // Game over overlay (HTML-based)
   function showGameOverOverlay(state) {
     if (!gameOverOverlay) return;
-    if (gameOverScore) gameOverScore.textContent = "Score: " + state.score;
-    if (gameOverRank) gameOverRank.textContent = "Rank: " + state.rank;
+    if (gameOverScore) gameOverScore.textContent = String(state.score);
+    if (gameOverRank) gameOverRank.textContent = state.rank;
     if (gameOverLines)
-      gameOverLines.textContent =
-        "Lines: " + state.lines + "  |  Level: " + state.level;
+      gameOverLines.textContent = state.lines + "  |  Level: " + state.level;
     gameOverOverlay.classList.add("visible");
   }
 
