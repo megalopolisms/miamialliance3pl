@@ -1850,6 +1850,7 @@
    * ══════════════════════════════════════════════════════════════ */
   var mobileControlsEl = document.getElementById("mobileControls");
   var gameShellEl = document.getElementById("gameShell");
+  var brandBarEl = document.querySelector(".brand-bar");
 
   function isGameplayActive() {
     var state = engine.getPublicState();
@@ -1868,13 +1869,21 @@
    *
    * Fix: capture phase on DOCUMENT for both touchstart and touchmove,
    * plus element-level handlers as backup.
+   *
+   * CRITICAL: On mobile (<760px), the game is fullscreen — there is
+   * NEVER a reason to scroll.  Block ALL touchmove/touchstart that
+   * could initiate scroll, not just during gameplay.
    * ──────────────────────────────────────────────────────────────── */
 
+  var isMobileViewport = window.matchMedia("(max-width: 760px)").matches;
+
   // CAPTURE PHASE: Block touchmove at the very top of the event chain
+  // On mobile: ALWAYS block (fullscreen game, no scroll needed)
+  // On desktop: only block during gameplay
   document.addEventListener(
     "touchmove",
     function (e) {
-      if (isGameplayActive()) {
+      if (isMobileViewport || isGameplayActive()) {
         e.preventDefault();
       }
     },
@@ -1886,7 +1895,7 @@
   document.addEventListener(
     "touchstart",
     function (e) {
-      if (isGameplayActive()) {
+      if (isMobileViewport || isGameplayActive()) {
         var tag = e.target.tagName;
         if (
           tag !== "BUTTON" &&
@@ -1903,11 +1912,17 @@
     { passive: false, capture: true },
   );
 
+  // Update mobile detection on resize/orientation change
+  window.addEventListener("resize", function () {
+    isMobileViewport = window.matchMedia("(max-width: 760px)").matches;
+  });
+
   // BUBBLE PHASE BACKUP: body
+  // On mobile: always block. On desktop: only during gameplay.
   document.body.addEventListener(
     "touchmove",
     function (e) {
-      if (isGameplayActive()) {
+      if (isMobileViewport || isGameplayActive()) {
         e.preventDefault();
       }
     },
@@ -1918,12 +1933,23 @@
   document.documentElement.addEventListener(
     "touchmove",
     function (e) {
-      if (isGameplayActive()) {
+      if (isMobileViewport || isGameplayActive()) {
         e.preventDefault();
       }
     },
     { passive: false },
   );
+
+  // Brand bar: prevent scroll initiation from nav bar on mobile
+  if (brandBarEl) {
+    brandBarEl.addEventListener(
+      "touchmove",
+      function (e) {
+        e.preventDefault();
+      },
+      { passive: false },
+    );
+  }
 
   // game-shell specific handlers (belt-and-suspenders)
   if (gameShellEl) {

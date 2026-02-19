@@ -1,9 +1,10 @@
 "use strict";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Mobile Touch Control Test Suite — Tetris Wars
+// Mobile Touch Control Test Suite — Tetris Wars  (v2 — expanded)
 // Tests CSS touch-action rules, JS event handler registration, gesture logic,
-// and scroll-prevention coverage.  Pure Node.js, no external deps.
+// scroll-prevention coverage, brand-bar fix, modal containment, and mobile
+// always-block strategy.  Pure Node.js, no external deps.
 //
 // Run:  node tests/mobile-touch.test.js
 // ─────────────────────────────────────────────────────────────────────────────
@@ -47,7 +48,6 @@ const indexHTML = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
 section("CSS touch-action Rules");
 
 test("T01. html has touch-action: none in mobile media query", () => {
-  // Must find touch-action: none for html within a @media (max-width: 760px) block
   const mobileBlock = extractMobileMediaBlock(stylesCSS);
   assert.ok(
     mobileBlock,
@@ -200,15 +200,10 @@ test("T19. gameShell element exists in HTML", () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3: JS EVENT HANDLER REGISTRATION (passive: false)
-// All touch event listeners MUST be registered with { passive: false } so
-// that preventDefault() actually works.  If passive: true (the default for
-// touchstart/touchmove on modern Chrome), preventDefault() is a no-op.
 // ─────────────────────────────────────────────────────────────────────────────
 section("JS Event Handler Registration (passive: false)");
 
 test("T20. boardWrap touchstart registered with { passive: false }", () => {
-  // Pattern: boardWrapEl.addEventListener("touchstart", ..., { passive: false })
-  // or equivalent
   const pattern =
     /boardWrapEl[\s\S]{0,30}addEventListener\(\s*["']touchstart["'][\s\S]*?passive\s*:\s*false/;
   assert.ok(
@@ -273,8 +268,6 @@ test("T26. gameShellEl touchstart registered with { passive: false }", () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 4: JS SCROLL PREVENTION LOGIC
-// The body/html/gameShell touchmove handlers MUST call preventDefault
-// during active gameplay regardless of which element was touched.
 // ─────────────────────────────────────────────────────────────────────────────
 section("JS Scroll Prevention Logic");
 
@@ -286,16 +279,12 @@ test("T27. isGameplayActive() helper function exists", () => {
 });
 
 test("T28. body touchmove calls preventDefault during gameplay (unconditional)", () => {
-  // The new handler should NOT walk up the DOM tree to check target —
-  // it should unconditionally preventDefault when gameplay is active.
-  // Check that the body handler does NOT contain the old "target === boardWrapEl" check.
   const bodyHandlerMatch = gameJS.match(
-    /document\.body\.addEventListener\(\s*["']touchmove["']\s*,\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
+    /document\.body\.addEventListener\(\s*["']touchmove["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
   );
   assert.ok(bodyHandlerMatch, "Could not extract body touchmove handler");
   const handlerBody = bodyHandlerMatch[1];
 
-  // Old pattern had: target === boardWrapEl — should NOT exist anymore
   assert.ok(
     !handlerBody.includes("boardWrapEl"),
     "body touchmove handler must NOT check for boardWrapEl (must block ALL scroll during gameplay)",
@@ -312,7 +301,7 @@ test("T28. body touchmove calls preventDefault during gameplay (unconditional)",
 
 test("T29. html (documentElement) touchmove calls preventDefault during gameplay", () => {
   const htmlHandlerMatch = gameJS.match(
-    /document\.documentElement\.addEventListener\(\s*["']touchmove["']\s*,\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
+    /document\.documentElement\.addEventListener\(\s*["']touchmove["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
   );
   assert.ok(htmlHandlerMatch, "Could not extract html touchmove handler");
   assert.ok(
@@ -333,8 +322,6 @@ test("T30. gameShell touchmove calls preventDefault during gameplay", () => {
 });
 
 test("T31. gameShell touchstart preserves button accessibility", () => {
-  // The touchstart handler on gameShell should NOT preventDefault on buttons
-  // so that mobile buttons (Hold, Force, Start, Pause) remain tappable.
   const shellStartMatch = gameJS.match(
     /gameShellEl[\s\S]{0,30}addEventListener\(\s*["']touchstart["']\s*,\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
   );
@@ -348,7 +335,6 @@ test("T31. gameShell touchstart preserves button accessibility", () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5: GESTURE SYSTEM INTEGRITY
-// Verify the drag-and-drop, tap-to-rotate, and swipe-up-to-drop logic
 // ─────────────────────────────────────────────────────────────────────────────
 section("Gesture System Integrity");
 
@@ -388,7 +374,6 @@ test("T36. clientXToCol function exists (finger-to-column mapping)", () => {
 });
 
 test("T37. moveGesture handles horizontal drag (piece follows finger)", () => {
-  // moveGesture must contain column-based movement logic
   assert.ok(
     gameJS.includes("clientXToCol") && gameJS.includes("dragAnchorOffset"),
     "moveGesture must use clientXToCol and dragAnchorOffset for direct drag-and-drop",
@@ -403,7 +388,6 @@ test("T38. moveGesture handles vertical drag (soft drop)", () => {
 });
 
 test("T39. endGesture detects tap gesture (distance < threshold, time < max)", () => {
-  // tapMaxDist, tapMaxTimeTouch variables must exist
   assert.ok(
     gameJS.includes("tapMaxDist") && gameJS.includes("tapMaxTimeTouch"),
     "Tap detection thresholds tapMaxDist and tapMaxTimeTouch must be defined",
@@ -411,7 +395,6 @@ test("T39. endGesture detects tap gesture (distance < threshold, time < max)", (
 });
 
 test("T40. endGesture detects swipe-up for hard drop", () => {
-  // Pattern: dy < -40 (negative = upward swipe)
   assert.ok(
     /dy\s*<\s*-\s*40/.test(gameJS),
     "endGesture must check dy < -40 for swipe-up hard drop detection",
@@ -434,13 +417,10 @@ test("T42. Synthetic click suppression exists (prevents iOS ghost clicks)", () =
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 6: MOBILE BUTTON EVENT BINDING
-// Mobile control buttons must use pointer events (or touch fallback) with
-// proper preventDefault to avoid scroll/zoom conflicts.
 // ─────────────────────────────────────────────────────────────────────────────
 section("Mobile Button Event Binding");
 
 test("T43. Mobile buttons use pointerdown OR touchstart with preventDefault", () => {
-  // At least one of these patterns must exist
   const hasPointerDown = /pointerdown[\s\S]*?preventDefault/.test(gameJS);
   const hasTouchStart =
     /touchstart[\s\S]*?preventDefault[\s\S]*?stopPropagation/.test(gameJS);
@@ -583,7 +563,6 @@ test("T57. Rotate CW works (simulates tap gesture)", () => {
   const eng = freshEngine();
   const before = JSON.stringify(eng.active.matrix);
   const result = eng.rotate(1);
-  // O-piece doesn't visually change on rotation
   if (eng.active.type !== "O") {
     assert.ok(result, "rotate(1) should return true");
     assert.notStrictEqual(JSON.stringify(eng.active.matrix), before);
@@ -615,22 +594,15 @@ test("T60. Paused state correctly reports (scroll should be allowed when paused)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 9: DEFENSIVE LAYERS COUNT
-// Verify we have N independent layers of scroll prevention
 // ─────────────────────────────────────────────────────────────────────────────
 section("Defensive Layers Audit");
 
 test("T61. At least 3 independent CSS scroll-prevention layers exist", () => {
   let layers = 0;
-
-  // Layer 1: CSS touch-action: none on html/body
   if (/touch-action\s*:\s*none/.test(stylesCSS)) layers++;
-  // Layer 2: CSS overflow: hidden on html/body
   if (/overflow\s*:\s*hidden/.test(stylesCSS)) layers++;
-  // Layer 3: CSS overscroll-behavior: none
   if (/overscroll-behavior\s*:\s*none/.test(stylesCSS)) layers++;
-  // Layer 4: CSS position: fixed on body
   if (/position\s*:\s*fixed/.test(stylesCSS)) layers++;
-
   assert.ok(
     layers >= 3,
     `Expected at least 3 CSS scroll-prevention layers, found ${layers}`,
@@ -639,24 +611,18 @@ test("T61. At least 3 independent CSS scroll-prevention layers exist", () => {
 
 test("T62. At least 3 independent JS scroll-prevention handlers exist", () => {
   let handlers = 0;
-
-  // Handler 1: body touchmove
   if (/document\.body\.addEventListener\([\s\S]*?touchmove/.test(gameJS))
     handlers++;
-  // Handler 2: html touchmove
   if (
     /document\.documentElement\.addEventListener\([\s\S]*?touchmove/.test(
       gameJS,
     )
   )
     handlers++;
-  // Handler 3: gameShell touchmove
   if (/gameShellEl[\s\S]*?addEventListener\([\s\S]*?touchmove/.test(gameJS))
     handlers++;
-  // Handler 4: boardWrap touchmove
   if (/boardWrapEl[\s\S]*?addEventListener\([\s\S]*?touchmove/.test(gameJS))
     handlers++;
-
   assert.ok(
     handlers >= 3,
     `Expected at least 3 JS touchmove handlers, found ${handlers}`,
@@ -664,8 +630,6 @@ test("T62. At least 3 independent JS scroll-prevention handlers exist", () => {
 });
 
 test("T63. Inline HTML style adds redundant touch-action: none", () => {
-  // The inline <style> in index.html should also declare touch-action: none
-  // as a failsafe in case styles.css loads late
   const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
   assert.ok(inlineStyleMatch, "Inline <style> tag must exist in index.html");
   assert.ok(
@@ -676,14 +640,10 @@ test("T63. Inline HTML style adds redundant touch-action: none", () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 10: CAPTURE-PHASE SCROLL BLOCKERS (iOS NUCLEAR FIX)
-// These are the critical NEW handlers that fix the finger-scrolls-page bug.
-// Document-level capture:true handlers fire BEFORE element bubble handlers,
-// intercepting iOS scroll gestures before they propagate.
 // ─────────────────────────────────────────────────────────────────────────────
 section("Capture-Phase Scroll Blockers (iOS Nuclear Fix)");
 
 test("T64. document.addEventListener('touchmove') with capture:true exists", () => {
-  // Must find: document.addEventListener("touchmove", ..., { passive: false, capture: true })
   const pattern =
     /document\.addEventListener\(\s*["']touchmove["'][\s\S]*?capture\s*:\s*true/;
   assert.ok(
@@ -710,10 +670,6 @@ test("T66. Capture-phase touchmove calls preventDefault during gameplay", () => 
     match[1].includes("preventDefault"),
     "Capture-phase touchmove must call e.preventDefault()",
   );
-  assert.ok(
-    match[1].includes("isGameplayActive"),
-    "Capture-phase touchmove must check isGameplayActive() before blocking",
-  );
 });
 
 test("T67. Capture-phase touchstart preserves interactive elements", () => {
@@ -729,24 +685,16 @@ test("T67. Capture-phase touchstart preserves interactive elements", () => {
     match[1].includes("INPUT"),
     "Capture-phase touchstart must exempt INPUT elements",
   );
-  assert.ok(
-    match[1].includes("isGameplayActive"),
-    "Capture-phase touchstart must check isGameplayActive()",
-  );
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 11: CSS SCROLL CONTAINER FIX
-// The game-shell must NOT create an internal scrollable container on mobile.
-// overflow-y:auto + -webkit-overflow-scrolling:touch was causing iOS to scroll
-// the game-shell element instead of moving pieces.
 // ─────────────────────────────────────────────────────────────────────────────
 section("CSS Game-Shell Scroll Container Fix");
 
 test("T68. game-shell does NOT have overflow-y: auto on mobile", () => {
   const mobileBlock = extractMobileMediaBlock(stylesCSS);
   assert.ok(mobileBlock, "Could not find mobile media query");
-  // Match the game-shell rule within the mobile block
   const gameShellMatch = mobileBlock.match(/\.game-shell\s*\{([^}]*)\}/);
   assert.ok(gameShellMatch, "Could not find .game-shell rule in mobile block");
   const props = gameShellMatch[1];
@@ -816,27 +764,309 @@ test("T73. Inline HTML style includes position: fixed for html/body on mobile", 
 
 test("T74. At least 5 total independent scroll-prevention layers", () => {
   let layers = 0;
+  if (/touch-action\s*:\s*none/.test(stylesCSS)) layers++;
+  if (/overflow\s*:\s*hidden/.test(stylesCSS)) layers++;
+  if (/overscroll-behavior\s*:\s*none/.test(stylesCSS)) layers++;
+  if (/position\s*:\s*fixed/.test(stylesCSS)) layers++;
+  if (/capture\s*:\s*true/.test(gameJS)) layers++;
+  if (/document\.body\.addEventListener/.test(gameJS)) layers++;
+  if (/document\.documentElement\.addEventListener/.test(gameJS)) layers++;
+  if (/gameShellEl[\s\S]*?addEventListener/.test(gameJS)) layers++;
+  if (/boardWrapEl[\s\S]*?addEventListener/.test(gameJS)) layers++;
+  if (/touch-action\s*:\s*none/.test(indexHTML)) layers++;
+  assert.ok(
+    layers >= 5,
+    `Expected at least 5 total scroll-prevention layers, found ${layers}`,
+  );
+});
 
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 12: BRAND BAR SCROLL FIX (NEW — v2)
+// The brand bar was using position:sticky which can initiate scroll on iOS.
+// It must be position:fixed on mobile and have touch-action:none.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Brand Bar Scroll Prevention (v2 fix)");
+
+test("T75. Brand bar has touch-action on desktop (manipulation or none)", () => {
+  assert.ok(
+    /\.brand-bar\s*\{[^}]*touch-action\s*:/s.test(stylesCSS),
+    ".brand-bar must have a touch-action rule in desktop styles",
+  );
+});
+
+test("T76. Brand bar is position:fixed (not sticky) on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  assert.ok(mobileBlock, "Could not find mobile media query");
+  const brandBarMatch = mobileBlock.match(/\.brand-bar\s*\{([^}]*)\}/);
+  assert.ok(brandBarMatch, "Could not find .brand-bar rule in mobile block");
+  const props = brandBarMatch[1];
+  assert.ok(
+    props.includes("position: fixed") || props.includes("position:fixed"),
+    ".brand-bar must be position: fixed on mobile (sticky can trigger iOS scroll)",
+  );
+});
+
+test("T77. Brand bar has touch-action: none on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  const brandBarMatch = mobileBlock.match(/\.brand-bar\s*\{([^}]*)\}/);
+  assert.ok(brandBarMatch, "Could not find .brand-bar rule in mobile block");
+  const props = brandBarMatch[1];
+  assert.ok(
+    props.includes("touch-action: none") || props.includes("touch-action:none"),
+    ".brand-bar must have touch-action: none on mobile",
+  );
+});
+
+test("T78. Brand bar touchmove handler exists in JS", () => {
+  assert.ok(
+    /brandBarEl[\s\S]{0,40}addEventListener\(\s*["']touchmove["']/.test(gameJS),
+    "brandBarEl touchmove handler must exist to prevent scroll from nav bar",
+  );
+});
+
+test("T79. Brand bar touchmove calls preventDefault", () => {
+  const match = gameJS.match(
+    /brandBarEl[\s\S]{0,40}addEventListener\(\s*["']touchmove["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
+  );
+  assert.ok(match, "Could not extract brandBar touchmove handler");
+  assert.ok(
+    match[1].includes("preventDefault"),
+    "Brand bar touchmove handler must call preventDefault()",
+  );
+});
+
+test("T80. Inline HTML style includes .brand-bar in touch-action: none list", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    inlineStyleMatch[1].includes(".brand-bar"),
+    "Inline <style> must include .brand-bar in the touch-action: none selector list",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 13: MOBILE ALWAYS-BLOCK STRATEGY (NEW — v2)
+// On mobile (<760px), the game is fullscreen. Scroll should be blocked
+// ALWAYS, not just during active gameplay.  This prevents scroll during
+// loading, game-over, or before the game starts.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Mobile Always-Block Strategy (v2 fix)");
+
+test("T81. isMobileViewport detection variable exists", () => {
+  assert.ok(
+    gameJS.includes("isMobileViewport"),
+    "isMobileViewport variable must exist for mobile-specific scroll blocking",
+  );
+});
+
+test("T82. isMobileViewport uses matchMedia for responsive detection", () => {
+  assert.ok(
+    /isMobileViewport\s*=\s*window\.matchMedia/.test(gameJS),
+    "isMobileViewport must use window.matchMedia for accurate detection",
+  );
+});
+
+test("T83. Capture-phase touchmove blocks on mobile regardless of game state", () => {
+  const match = gameJS.match(
+    /document\.addEventListener\(\s*["']touchmove["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false\s*,\s*capture\s*:\s*true/,
+  );
+  assert.ok(match, "Could not extract capture-phase touchmove handler");
+  assert.ok(
+    match[1].includes("isMobileViewport"),
+    "Capture-phase touchmove must check isMobileViewport to block scroll on mobile ALWAYS",
+  );
+});
+
+test("T84. Capture-phase touchstart blocks on mobile regardless of game state", () => {
+  const match = gameJS.match(
+    /document\.addEventListener\(\s*["']touchstart["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false\s*,\s*capture\s*:\s*true/,
+  );
+  assert.ok(match, "Could not extract capture-phase touchstart handler");
+  assert.ok(
+    match[1].includes("isMobileViewport"),
+    "Capture-phase touchstart must check isMobileViewport for mobile always-block",
+  );
+});
+
+test("T85. Body touchmove uses isMobileViewport for always-block on mobile", () => {
+  const match = gameJS.match(
+    /document\.body\.addEventListener\(\s*["']touchmove["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
+  );
+  assert.ok(match, "Could not extract body touchmove handler");
+  assert.ok(
+    match[1].includes("isMobileViewport"),
+    "Body touchmove must use isMobileViewport for mobile always-block",
+  );
+});
+
+test("T86. HTML touchmove uses isMobileViewport for always-block on mobile", () => {
+  const match = gameJS.match(
+    /document\.documentElement\.addEventListener\(\s*["']touchmove["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
+  );
+  assert.ok(match, "Could not extract html touchmove handler");
+  assert.ok(
+    match[1].includes("isMobileViewport"),
+    "HTML touchmove must use isMobileViewport for mobile always-block",
+  );
+});
+
+test("T87. Resize handler updates isMobileViewport", () => {
+  assert.ok(
+    /window\.addEventListener\(\s*["']resize["'][\s\S]*?isMobileViewport/.test(
+      gameJS,
+    ),
+    "resize handler must update isMobileViewport for orientation changes",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 14: LOADING SCREEN & MODAL TOUCH CONTAINMENT (NEW — v2)
+// ─────────────────────────────────────────────────────────────────────────────
+section("Loading Screen & Modal Touch Containment (v2 fix)");
+
+test("T88. Loading screen has touch-action: none in CSS", () => {
+  assert.ok(
+    /\.loading-screen\s*\{[^}]*touch-action\s*:\s*none/s.test(stylesCSS),
+    ".loading-screen must have touch-action: none to prevent scroll during load",
+  );
+});
+
+test("T89. Loading screen has overscroll-behavior: none in CSS", () => {
+  assert.ok(
+    /\.loading-screen\s*\{[^}]*overscroll-behavior\s*:\s*none/s.test(stylesCSS),
+    ".loading-screen must have overscroll-behavior: none",
+  );
+});
+
+test("T90. Modal overlay has touch-action: none in CSS", () => {
+  assert.ok(
+    /\.modal-overlay\s*\{[^}]*touch-action\s*:\s*none/s.test(stylesCSS),
+    ".modal-overlay must have touch-action: none",
+  );
+});
+
+test("T91. Modal overlay has overscroll-behavior in CSS", () => {
+  assert.ok(
+    /\.modal-overlay\s*\{[^}]*overscroll-behavior/s.test(stylesCSS),
+    ".modal-overlay must have overscroll-behavior to contain scroll",
+  );
+});
+
+test("T92. Settings panel has overscroll-behavior: contain in CSS", () => {
+  assert.ok(
+    /\.settings-panel\s*\{[^}]*overscroll-behavior\s*:\s*contain/s.test(
+      stylesCSS,
+    ),
+    ".settings-panel must have overscroll-behavior: contain (internal scroll only)",
+  );
+});
+
+test("T93. Inline HTML style includes .loading-screen in touch-action kill list", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    inlineStyleMatch[1].includes(".loading-screen"),
+    "Inline <style> must include .loading-screen in touch-action: none selector list",
+  );
+});
+
+test("T94. Inline HTML style includes .modal-overlay in touch-action kill list", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    inlineStyleMatch[1].includes(".modal-overlay"),
+    "Inline <style> must include .modal-overlay in touch-action: none selector list",
+  );
+});
+
+test("T95. Inline HTML style includes .game-over-overlay in touch-action kill list", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    inlineStyleMatch[1].includes(".game-over-overlay"),
+    "Inline <style> must include .game-over-overlay in touch-action: none selector list",
+  );
+});
+
+test("T96. Inline HTML style includes .settings-panel in touch-action kill list", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    inlineStyleMatch[1].includes(".settings-panel"),
+    "Inline <style> must include .settings-panel in touch-action: none selector list",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 15: COMPLETE ANCESTOR CHAIN COVERAGE (NEW — v2)
+// Every ancestor of the game board must have touch-action: none on mobile.
+// One missing ancestor = iOS can initiate scroll from there.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Complete Ancestor Chain Touch Coverage");
+
+test("T97. Inline HTML style includes .stars in touch-action kill list", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    inlineStyleMatch[1].includes(".stars"),
+    "Inline <style> must include .stars in touch-action: none list (background div can leak scroll)",
+  );
+});
+
+test("T98. .board-container has touch-action prevention on mobile", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    inlineStyleMatch[1].includes(".board-container"),
+    "Inline <style> must include .board-container in touch-action: none list",
+  );
+});
+
+test("T99. At least 8 total independent scroll-prevention layers (upgraded from 5)", () => {
+  let layers = 0;
   // CSS layers
   if (/touch-action\s*:\s*none/.test(stylesCSS)) layers++;
   if (/overflow\s*:\s*hidden/.test(stylesCSS)) layers++;
   if (/overscroll-behavior\s*:\s*none/.test(stylesCSS)) layers++;
   if (/position\s*:\s*fixed/.test(stylesCSS)) layers++;
-
-  // JS layers
-  if (/capture\s*:\s*true/.test(gameJS)) layers++; // capture-phase handlers
+  // JS capture layers
+  if (/capture\s*:\s*true/.test(gameJS)) layers++;
+  // JS bubble layers
   if (/document\.body\.addEventListener/.test(gameJS)) layers++;
   if (/document\.documentElement\.addEventListener/.test(gameJS)) layers++;
   if (/gameShellEl[\s\S]*?addEventListener/.test(gameJS)) layers++;
   if (/boardWrapEl[\s\S]*?addEventListener/.test(gameJS)) layers++;
-
+  if (/brandBarEl[\s\S]*?addEventListener/.test(gameJS)) layers++;
   // Inline CSS layer
   if (/touch-action\s*:\s*none/.test(indexHTML)) layers++;
+  // Mobile always-block
+  if (/isMobileViewport/.test(gameJS)) layers++;
 
   assert.ok(
-    layers >= 5,
-    `Expected at least 5 total scroll-prevention layers, found ${layers}`,
+    layers >= 8,
+    `Expected at least 8 total scroll-prevention layers, found ${layers}`,
   );
+});
+
+test("T100. Game-shell top padding accommodates fixed brand-bar on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  const gameShellMatch = mobileBlock.match(/\.game-shell\s*\{([^}]*)\}/);
+  assert.ok(gameShellMatch, "Could not find .game-shell rule in mobile block");
+  const props = gameShellMatch[1];
+  // Check that padding-top is at least 30px to accommodate the brand bar
+  const paddingMatch = props.match(/padding\s*:\s*(\d+)px/);
+  if (paddingMatch) {
+    assert.ok(
+      parseInt(paddingMatch[1]) >= 30,
+      "game-shell padding-top must be >= 30px to clear fixed brand-bar",
+    );
+  } else {
+    // Check for padding shorthand with !important
+    assert.ok(
+      /padding\s*:.*?!important/.test(props),
+      "game-shell must have padding defined on mobile",
+    );
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
