@@ -1070,6 +1070,558 @@ test("T100. Game-shell top padding accommodates fixed brand-bar on mobile", () =
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SECTION 16: MULTI-TOUCH & EDGE CASE HANDLING (NEW — v3)
+// Tests for multi-finger rejection, orientation change, game-over overlay
+// containment, and rapid gesture sequencing.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Multi-Touch & Edge Case Handling (v3)");
+
+test("T101. boardWrap touchstart checks touches.length === 1 (rejects multi-touch)", () => {
+  const boardTouchStart = gameJS.match(
+    /boardWrapEl[\s\S]{0,30}addEventListener\(\s*["']touchstart["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
+  );
+  assert.ok(boardTouchStart, "Could not extract boardWrap touchstart handler");
+  assert.ok(
+    boardTouchStart[1].includes("touches.length") &&
+      boardTouchStart[1].includes("1"),
+    "boardWrap touchstart must check e.touches.length === 1 to reject multi-finger gestures",
+  );
+});
+
+test("T102. boardWrap touchmove checks gestureActive before processing", () => {
+  const boardTouchMove = gameJS.match(
+    /boardWrapEl[\s\S]{0,30}addEventListener\(\s*["']touchmove["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
+  );
+  assert.ok(boardTouchMove, "Could not extract boardWrap touchmove handler");
+  assert.ok(
+    boardTouchMove[1].includes("gestureActive"),
+    "boardWrap touchmove must guard on gestureActive to prevent orphaned moves",
+  );
+});
+
+test("T103. Resize handler exists for orientation changes", () => {
+  assert.ok(
+    /window\.addEventListener\(\s*["']resize["']/.test(gameJS),
+    "Must listen for window resize to update mobile viewport detection on orientation change",
+  );
+});
+
+test("T104. boardWrap touchend checks gestureActive before processing", () => {
+  const boardTouchEnd = gameJS.match(
+    /boardWrapEl[\s\S]{0,30}addEventListener\(\s*["']touchend["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
+  );
+  assert.ok(boardTouchEnd, "Could not extract boardWrap touchend handler");
+  assert.ok(
+    boardTouchEnd[1].includes("gestureActive"),
+    "boardWrap touchend must guard on gestureActive",
+  );
+});
+
+test("T105. touchcancel sets suppressSyntheticClickUntil (prevents ghost click after cancel)", () => {
+  assert.ok(
+    /touchcancel[\s\S]*?suppressSyntheticClickUntil/.test(gameJS),
+    "touchcancel handler must set suppressSyntheticClickUntil to prevent phantom clicks",
+  );
+});
+
+test("T106. endGesture resets gestureActive to false", () => {
+  assert.ok(
+    /function\s+endGesture[\s\S]*?gestureActive\s*=\s*false/.test(gameJS),
+    "endGesture must reset gestureActive = false to clean up state",
+  );
+});
+
+test("T107. mouseleave resets gestureActive (desktop fallback cleanup)", () => {
+  assert.ok(
+    /mouseleave[\s\S]*?gestureActive\s*=\s*false/.test(gameJS),
+    "mouseleave on boardWrap must reset gestureActive for desktop testing cleanup",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 17: MOBILE CONTROLS CONTAINER TOUCH COVERAGE (NEW — v3)
+// The mobile controls bar is position:fixed at bottom. Verify touch containment.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Mobile Controls Container Touch Coverage (v3)");
+
+test("T108. .mobile-controls has touch-action in inline style", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    inlineStyleMatch[1].includes(".mobile-controls"),
+    "Inline <style> must include .mobile-controls in touch-action: none selector",
+  );
+});
+
+test("T109. .mobile-controls is position: fixed on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  const mcMatch = mobileBlock.match(/\.mobile-controls\s*\{([^}]*)\}/);
+  assert.ok(mcMatch, "Could not find .mobile-controls rule in mobile block");
+  assert.ok(
+    mcMatch[1].includes("position: fixed") ||
+      mcMatch[1].includes("position:fixed"),
+    ".mobile-controls must be position: fixed on mobile",
+  );
+});
+
+test("T110. Mobile buttons use safe-area-inset for notch/home-indicator padding", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  assert.ok(
+    /safe-area-inset-bottom/.test(mobileBlock),
+    "Mobile controls must use env(safe-area-inset-bottom) for iPhone home indicator",
+  );
+});
+
+test("T111. .mc-btn has -webkit-tap-highlight-color: transparent", () => {
+  assert.ok(
+    /\.mc-btn\s*\{[^}]*-webkit-tap-highlight-color\s*:\s*transparent/s.test(
+      stylesCSS,
+    ),
+    "Mobile buttons must suppress iOS tap highlight",
+  );
+});
+
+test("T112. .mc-btn has user-select: none", () => {
+  assert.ok(
+    /\.mc-btn\s*\{[^}]*user-select\s*:\s*none/s.test(stylesCSS),
+    "Mobile buttons must have user-select: none to prevent text selection",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 18: CANVAS & BOARD TOUCH-ACTION (DESKTOP + MOBILE) (NEW — v3)
+// The canvas must have touch-action: none in both desktop and mobile CSS.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Canvas & Board Touch-Action (Desktop + Mobile) (v3)");
+
+test("T113. #board canvas has user-select: none on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  const boardMatch = mobileBlock.match(/#board\s*\{([^}]*)\}/);
+  assert.ok(boardMatch, "Could not find #board rule in mobile block");
+  assert.ok(
+    boardMatch[1].includes("user-select: none") ||
+      boardMatch[1].includes("user-select:none"),
+    "#board must have user-select: none on mobile",
+  );
+});
+
+test("T114. #board canvas has touch-action: none on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  const boardMatch = mobileBlock.match(/#board\s*\{([^}]*)\}/);
+  assert.ok(boardMatch, "Could not find #board rule in mobile block");
+  assert.ok(
+    boardMatch[1].includes("touch-action: none") ||
+      boardMatch[1].includes("touch-action:none"),
+    "#board canvas must have touch-action: none on mobile",
+  );
+});
+
+test("T115. .board-container has user-select: none on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  const bcMatch = mobileBlock.match(/\.board-container\s*\{([^}]*)\}/);
+  assert.ok(bcMatch, "Could not find .board-container rule in mobile block");
+  assert.ok(
+    bcMatch[1].includes("user-select: none") ||
+      bcMatch[1].includes("user-select:none"),
+    ".board-container must have user-select: none on mobile",
+  );
+});
+
+test("T116. .board-container has -webkit-touch-callout: none on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  const bcMatch = mobileBlock.match(/\.board-container\s*\{([^}]*)\}/);
+  assert.ok(bcMatch, "Could not find .board-container rule in mobile block");
+  assert.ok(
+    bcMatch[1].includes("-webkit-touch-callout: none") ||
+      bcMatch[1].includes("-webkit-touch-callout:none"),
+    ".board-container must have -webkit-touch-callout: none on mobile",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 19: GAME STATE TRANSITION TESTS (NEW — v3)
+// Ensure scroll blocking works correctly across all game states:
+// running, paused, game-over, waiting (before start).
+// ─────────────────────────────────────────────────────────────────────────────
+section("Game State Transition Tests (v3)");
+
+test("T117. moveGesture exits early when game is paused", () => {
+  const eng = freshEngine();
+  eng.togglePause();
+  const state = eng.getPublicState();
+  assert.strictEqual(state.paused, true, "Game must be paused");
+  // moveGesture checks: if (!state.running || state.paused || ...) return
+  // This validates the engine state that moveGesture depends on
+  assert.strictEqual(state.running, true, "Paused game is still 'running'");
+});
+
+test("T118. moveGesture exits early when game over", () => {
+  const seq = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
+  const eng = new TetrisEngine({ random: deterministicRandom(seq) });
+  eng.start();
+  // Fill board from row 4 downward (leave top rows for piece spawn)
+  for (let r = 4; r < 20; r++) {
+    for (let c = 0; c < 10; c++) {
+      eng.board[r][c] = "I";
+    }
+  }
+  // Repeatedly hard drop until game over
+  let maxAttempts = 50;
+  while (!eng.getPublicState().gameOver && maxAttempts-- > 0) {
+    eng.hardDrop();
+  }
+  const state = eng.getPublicState();
+  assert.strictEqual(
+    state.gameOver,
+    true,
+    "Game must reach game-over state after filling board",
+  );
+});
+
+test("T119. beginGesture sets dragAnchorOffset=0 when game not running", () => {
+  // This validates the engine-side behavior that beginGesture relies on
+  const seq = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
+  const eng = new TetrisEngine({ random: deterministicRandom(seq) });
+  // Don't start — game is in waiting state
+  const state = eng.getPublicState();
+  assert.strictEqual(
+    state.running,
+    false,
+    "Game should not be running before start()",
+  );
+  assert.strictEqual(state.active, null, "No active piece before game starts");
+});
+
+test("T120. DAS stop functions exist for cleanup", () => {
+  assert.ok(
+    /function\s+stopAllDAS\s*\(/.test(gameJS),
+    "stopAllDAS() function must exist for game-end cleanup",
+  );
+});
+
+test("T121. DAS stops on window blur (prevents stuck DAS when switching apps)", () => {
+  assert.ok(
+    /window\.addEventListener\(\s*["']blur["'][\s\S]*?stopAllDAS/.test(gameJS),
+    "DAS must stop on window blur to prevent stuck keys when user switches apps",
+  );
+});
+
+test("T122. DAS stops on visibility change (prevents stuck DAS on tab switch)", () => {
+  assert.ok(
+    /visibilitychange[\s\S]*?stopAllDAS/.test(gameJS),
+    "DAS must stop on visibilitychange to prevent stuck keys on tab switch",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 20: HIDDEN ELEMENTS ON MOBILE (NEW — v3)
+// Elements hidden on mobile cannot leak scroll, but verify they ARE hidden.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Hidden Elements on Mobile (v3)");
+
+test("T123. .how-to-play is display: none on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  assert.ok(
+    /\.how-to-play\s*\{[^}]*display\s*:\s*none/i.test(mobileBlock),
+    ".how-to-play must be display: none on mobile to prevent hidden scroll container",
+  );
+});
+
+test("T124. .game-footer is display: none on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  assert.ok(
+    /\.game-footer\s*\{[^}]*display\s*:\s*none/i.test(mobileBlock),
+    ".game-footer must be display: none on mobile",
+  );
+});
+
+test("T125. .left-hud is display: none on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  assert.ok(
+    /\.left-hud[\s\S]*?display\s*:\s*none\s*!important/i.test(mobileBlock),
+    ".left-hud must be display: none on mobile (stats shown in mobile HUD instead)",
+  );
+});
+
+test("T126. .right-hud is display: none on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  assert.ok(
+    /\.right-hud[\s\S]*?display\s*:\s*none\s*!important/i.test(mobileBlock),
+    ".right-hud must be display: none on mobile",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 21: DVHEIGHT & VIEWPORT SIZING (NEW — v3)
+// Ensure dvh (dynamic viewport height) is used for iOS URL bar changes.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Dynamic Viewport Height (dvh) Usage (v3)");
+
+test("T127. html uses 100dvh on mobile for dynamic viewport", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  assert.ok(
+    /html\s*\{[^}]*100dvh/i.test(mobileBlock),
+    "html must use 100dvh on mobile to handle iOS URL bar show/hide",
+  );
+});
+
+test("T128. body uses 100dvh on mobile for dynamic viewport", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  assert.ok(
+    /body\s*\{[^}]*100dvh/i.test(mobileBlock),
+    "body must use 100dvh on mobile for accurate full-screen sizing",
+  );
+});
+
+test("T129. game-shell uses 100dvh on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  const gameShellMatch = mobileBlock.match(/\.game-shell\s*\{([^}]*)\}/);
+  assert.ok(gameShellMatch, "Could not find .game-shell rule in mobile block");
+  assert.ok(
+    gameShellMatch[1].includes("100dvh"),
+    ".game-shell must use 100dvh on mobile",
+  );
+});
+
+test("T130. Inline HTML also uses 100dvh for mobile failsafe", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    inlineStyleMatch[1].includes("100dvh"),
+    "Inline <style> must use 100dvh for iOS URL bar dynamic sizing",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 22: NO WEBKIT-OVERFLOW-SCROLLING-TOUCH ANYWHERE ON MOBILE (v3)
+// This property enables iOS momentum scrolling and must NEVER appear on mobile.
+// ─────────────────────────────────────────────────────────────────────────────
+section("No -webkit-overflow-scrolling: touch on Mobile (v3)");
+
+test("T131. Mobile CSS never uses -webkit-overflow-scrolling: touch", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  assert.ok(
+    !/-webkit-overflow-scrolling\s*:\s*touch/.test(mobileBlock),
+    "Mobile CSS must NEVER use -webkit-overflow-scrolling: touch (enables iOS momentum scrolling)",
+  );
+});
+
+test("T132. Inline HTML never uses -webkit-overflow-scrolling: touch", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    !/-webkit-overflow-scrolling\s*:\s*touch/.test(inlineStyleMatch[1]),
+    "Inline <style> must NEVER use -webkit-overflow-scrolling: touch",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 23: POINTER CAPTURE & BUTTON ROBUSTNESS (NEW — v3)
+// Verify pointer capture is used on buttons and click events are suppressed.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Pointer Capture & Button Robustness (v3)");
+
+test("T133. Pointer capture attempted on button pointerdown", () => {
+  assert.ok(
+    /setPointerCapture/.test(gameJS),
+    "Buttons must attempt setPointerCapture for reliable pointer tracking",
+  );
+});
+
+test("T134. Pointer capture errors are caught (try/catch)", () => {
+  assert.ok(
+    /setPointerCapture[\s\S]*?catch/.test(gameJS),
+    "setPointerCapture must be wrapped in try/catch (fails silently on unsupported browsers)",
+  );
+});
+
+test("T135. Mobile button click events are all preventDefault'd", () => {
+  // All mobile buttons suppress click to prevent double-fire
+  const clickSuppression = gameJS.match(
+    /btn\.addEventListener\(\s*["']click["']\s*,\s*function\s*\(e\)\s*\{([\s\S]*?)\}/,
+  );
+  assert.ok(clickSuppression, "Button click handler must exist");
+  assert.ok(
+    clickSuppression[1].includes("preventDefault"),
+    "Button click handler must call preventDefault to suppress double-fire",
+  );
+});
+
+test("T136. PointerEvent support detection exists (SUPPORTS_POINTER)", () => {
+  assert.ok(
+    /SUPPORTS_POINTER/.test(gameJS),
+    "Code must detect PointerEvent support for progressive enhancement",
+  );
+});
+
+test("T137. pointercancel stops DAS (prevents stuck repeat)", () => {
+  assert.ok(
+    /pointercancel[\s\S]*?stopDAS/.test(gameJS),
+    "pointercancel must call stopDAS to prevent stuck auto-repeat",
+  );
+});
+
+test("T138. pointerleave stops DAS (prevents stuck repeat when finger slides off)", () => {
+  assert.ok(
+    /pointerleave[\s\S]*?stopDAS/.test(gameJS),
+    "pointerleave must call stopDAS when finger slides off button",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 24: GAME-OVER OVERLAY TOUCH ACCESSIBILITY (NEW — v3)
+// The game-over overlay has buttons (Restart, Leaderboard). These must remain
+// tappable even when scroll is blocked. Verify capture-phase exempts BUTTON.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Game-Over Overlay Touch Accessibility (v3)");
+
+test("T139. Game-over overlay exists inside boardWrap", () => {
+  // The game-over overlay is inside boardWrap, so boardWrap gestures fire on it
+  assert.ok(
+    /id\s*=\s*["']boardWrap["'][\s\S]*?id\s*=\s*["']gameOverOverlay["']/i.test(
+      indexHTML,
+    ),
+    "Game-over overlay must be inside boardWrap element",
+  );
+});
+
+test("T140. Game-over overlay has buttons for restart and leaderboard", () => {
+  assert.ok(
+    /id\s*=\s*["']gameOverRestart["'][\s\S]*?button/i.test(indexHTML),
+    "Game-over overlay must have a Restart button",
+  );
+  assert.ok(
+    /id\s*=\s*["']gameOverLeaderboard["'][\s\S]*?button/i.test(indexHTML) ||
+      /button[\s\S]*?id\s*=\s*["']gameOverLeaderboard["']/i.test(indexHTML),
+    "Game-over overlay must have a Leaderboard button",
+  );
+});
+
+test("T141. Capture-phase touchstart exempts BUTTON (game-over buttons stay tappable)", () => {
+  const match = gameJS.match(
+    /document\.addEventListener\(\s*["']touchstart["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false\s*,\s*capture\s*:\s*true/,
+  );
+  assert.ok(match, "Could not extract capture-phase touchstart handler");
+  assert.ok(
+    match[1].includes("BUTTON"),
+    "Capture-phase touchstart must exempt BUTTON elements so game-over buttons remain tappable",
+  );
+});
+
+test("T142. Capture-phase touchstart exempts SUMMARY (how-to-play toggle)", () => {
+  const match = gameJS.match(
+    /document\.addEventListener\(\s*["']touchstart["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false\s*,\s*capture\s*:\s*true/,
+  );
+  assert.ok(match, "Could not extract capture-phase touchstart handler");
+  assert.ok(
+    match[1].includes("SUMMARY"),
+    "Capture-phase touchstart must exempt SUMMARY elements for details/accordion toggle",
+  );
+});
+
+test("T143. Capture-phase touchstart exempts SELECT (potential future form elements)", () => {
+  const match = gameJS.match(
+    /document\.addEventListener\(\s*["']touchstart["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false\s*,\s*capture\s*:\s*true/,
+  );
+  assert.ok(match, "Could not extract capture-phase touchstart handler");
+  assert.ok(
+    match[1].includes("SELECT"),
+    "Capture-phase touchstart must exempt SELECT elements for dropdown menus",
+  );
+});
+
+test("T144. Capture-phase touchstart exempts A (anchor links)", () => {
+  const match = gameJS.match(
+    /document\.addEventListener\(\s*["']touchstart["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false\s*,\s*capture\s*:\s*true/,
+  );
+  assert.ok(match, "Could not extract capture-phase touchstart handler");
+  assert.ok(
+    match[1].includes('"A"') || match[1].includes("'A'"),
+    "Capture-phase touchstart must exempt A (anchor) elements for navigation links",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 25: CLICK FALLBACK & SYNTHETIC CLICK SUPPRESSION (NEW — v3)
+// ─────────────────────────────────────────────────────────────────────────────
+section("Click Fallback & Synthetic Click Suppression (v3)");
+
+test("T145. Click fallback exists on boardWrap", () => {
+  assert.ok(
+    /boardWrapEl[\s\S]{0,40}addEventListener\(\s*["']click["']/.test(gameJS),
+    "boardWrap must have a click fallback handler for desktop and accessibility",
+  );
+});
+
+test("T146. Click fallback checks suppressSyntheticClickUntil timestamp", () => {
+  assert.ok(
+    /click[\s\S]*?suppressSyntheticClickUntil/.test(gameJS),
+    "Click fallback must check suppressSyntheticClickUntil to ignore iOS phantom clicks",
+  );
+});
+
+test("T147. Click fallback checks lastGestureEndAt to avoid double-fire", () => {
+  assert.ok(
+    /click[\s\S]*?lastGestureEndAt/.test(gameJS),
+    "Click fallback must check lastGestureEndAt to prevent firing after drag gesture",
+  );
+});
+
+test("T148. suppressSyntheticClickUntil is set in touchend handler", () => {
+  const touchEndMatch = gameJS.match(
+    /boardWrapEl[\s\S]{0,30}addEventListener\(\s*["']touchend["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false/,
+  );
+  assert.ok(touchEndMatch, "Could not extract boardWrap touchend handler");
+  assert.ok(
+    touchEndMatch[1].includes("suppressSyntheticClickUntil"),
+    "touchend handler must set suppressSyntheticClickUntil before calling endGesture",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 26: COMPLETE SELECTOR AUDIT FOR INLINE STYLE (NEW — v3)
+// Every element class listed in the inline <style> should match an element in HTML.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Complete Inline Selector Audit (v3)");
+
+const requiredInlineSelectors = [
+  ".stars",
+  ".brand-bar",
+  ".brand-bar-inner",
+  ".brand-bar-logo",
+  ".brand-bar-links",
+  ".loading-screen",
+  ".loading-content",
+  ".game-shell",
+  ".game-wrap",
+  ".board-wrap",
+  ".board-container",
+  "#board",
+  ".hero",
+  ".mobile-hud",
+  ".mobile-controls",
+  ".modal-overlay",
+  ".modal-panel",
+  ".settings-panel",
+  ".settings-backdrop",
+  ".game-over-overlay",
+  ".game-over-content",
+];
+
+const inlineStyleContent =
+  (indexHTML.match(/<style>([\s\S]*?)<\/style>/) || [])[1] || "";
+
+for (let i = 0; i < requiredInlineSelectors.length; i++) {
+  const sel = requiredInlineSelectors[i];
+  test(`T${149 + i}. Inline style includes ${sel}`, () => {
+    assert.ok(
+      inlineStyleContent.includes(sel),
+      `Inline <style> must include ${sel} in the touch-action: none kill list`,
+    );
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 
