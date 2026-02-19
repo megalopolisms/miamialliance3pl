@@ -224,22 +224,25 @@
       </aside>
     </section>
 
-    <!-- Mobile Touch Controls (fixed bottom on phones) -->
+    <!-- Mobile Touch Controls (fixed bottom — gesture-first design) -->
     <section class="mobile-controls" id="mobileControls" aria-label="Touch controls for mobile play">
-      <div class="mobile-row mobile-row-top">
+      <!-- Gesture hint bar (auto-hides after first interaction) -->
+      <div class="gesture-hint" id="gestureHint">
+        <span class="gh-item">&#x1F446; Tap = Rotate</span>
+        <span class="gh-sep">|</span>
+        <span class="gh-item">&#x1F448;&#x1F449; Drag = Move</span>
+        <span class="gh-sep">|</span>
+        <span class="gh-item">&#x1F447; Down = Drop</span>
+      </div>
+      <div class="mobile-row mobile-row-actions">
         <button data-action="hold" type="button" class="mc-btn mc-hold" aria-label="Hold current piece">&#x1F91A;<span>Hold</span></button>
-        <button data-action="rotate" type="button" class="mc-btn mc-rotate" aria-label="Rotate piece clockwise">&#x21BB;<span>Rotate</span></button>
-        <button data-action="drop" type="button" class="mc-btn mc-drop" aria-label="Hard drop piece">&#x2B07;<span>Drop</span></button>
         <button data-action="force" type="button" class="mc-btn mc-force" aria-label="Activate force blast" id="mobileForceBtn">&#x26A1;<span>Force</span></button>
-      </div>
-      <div class="mobile-row mobile-row-move">
-        <button data-action="left" type="button" class="mc-btn mc-dir" aria-label="Move piece left" data-das="left">&#x25C0;</button>
-        <button data-action="down" type="button" class="mc-btn mc-dir mc-down" aria-label="Soft drop piece" data-das="down">&#x25BC;</button>
-        <button data-action="right" type="button" class="mc-btn mc-dir" aria-label="Move piece right" data-das="right">&#x25B6;</button>
-      </div>
-      <div class="mobile-row mobile-row-util">
         <button data-action="start" type="button" class="mc-btn mc-start" aria-label="Start game" id="mobileStartBtn">&#x25B6; Start</button>
-        <button data-action="pause" type="button" class="mc-btn mc-pause" aria-label="Pause game">&#x23F8; Pause</button>
+        <button data-action="pause" type="button" class="mc-btn mc-pause" aria-label="Pause game" id="mobilePauseBtn">&#x23F8; Pause</button>
+      </div>
+      <div class="mobile-row mobile-row-system">
+        <button data-action="mode" type="button" class="mc-btn mc-mode" aria-label="Toggle game mode" id="mobileModeBtn">Mode: Alliance</button>
+        <button data-action="audio" type="button" class="mc-btn mc-audio" aria-label="Toggle audio" id="mobileAudioBtn">&#x1F50A; Audio: On</button>
       </div>
     </section>
 

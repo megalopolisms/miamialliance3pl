@@ -504,6 +504,10 @@
   function toggleAudio() {
     audioEnabled = !audioEnabled;
     audioBtn.textContent = "Audio: " + (audioEnabled ? "On" : "Off");
+    if (mobileAudioBtnEl) {
+      mobileAudioBtnEl.innerHTML =
+        "&#x1F50A; Audio: " + (audioEnabled ? "On" : "Off");
+    }
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -1025,6 +1029,9 @@
   var mForceMeterEl = document.getElementById("mForceMeter");
   var mobileForceBtn = document.getElementById("mobileForceBtn");
   var mobileStartBtnEl = document.getElementById("mobileStartBtn");
+  var mobilePauseBtnEl = document.getElementById("mobilePauseBtn");
+  var mobileModeBtnEl = document.getElementById("mobileModeBtn");
+  var mobileAudioBtnEl = document.getElementById("mobileAudioBtn");
 
   function updateHUD(state) {
     scoreEl.textContent = String(state.score);
@@ -1036,6 +1043,10 @@
     modeEl.textContent = state.mode === "empire" ? "Empire" : "Alliance";
     modeBtn.textContent =
       "Mode: " + (state.mode === "empire" ? "Empire" : "Alliance");
+    if (mobileModeBtnEl) {
+      mobileModeBtnEl.textContent =
+        "Mode: " + (state.mode === "empire" ? "Empire" : "Alliance");
+    }
 
     // High score
     if (state.score > highScore) {
@@ -1093,6 +1104,17 @@
       } else {
         mobileStartBtnEl.innerHTML = "&#x25B6; Start";
       }
+    }
+
+    if (mobilePauseBtnEl) {
+      mobilePauseBtnEl.innerHTML = state.paused
+        ? "&#x25B6; Resume"
+        : "&#x23F8; Pause";
+    }
+
+    if (mobileAudioBtnEl) {
+      mobileAudioBtnEl.innerHTML =
+        "&#x1F50A; Audio: " + (audioEnabled ? "On" : "Off");
     }
   }
 
@@ -1347,11 +1369,12 @@
   });
 
   /* ══════════════════════════════════════════════════════════════
-   *  12. MOBILE TOUCH CONTROLS (with DAS auto-repeat)
+   *  12. MOBILE CONTROLS (touch + pointer, with DAS auto-repeat)
    * ══════════════════════════════════════════════════════════════ */
   var DAS_DELAY = 170; // ms before auto-repeat starts
   var DAS_RATE = 45; // ms between repeats
   var dasTimers = {};
+  var SUPPORTS_POINTER = typeof window !== "undefined" && !!window.PointerEvent;
 
   function startDAS(action) {
     stopDAS(action);
@@ -1438,6 +1461,9 @@
           case "mode":
             toggleMode();
             break;
+          case "audio":
+            toggleAudio();
+            break;
           case "pause":
             engine.togglePause();
             break;
@@ -1447,44 +1473,82 @@
         }
       };
 
-      // Touch events with DAS support
-      btn.addEventListener(
-        "touchstart",
-        function (e) {
+      if (SUPPORTS_POINTER) {
+        btn.addEventListener(
+          "pointerdown",
+          function (e) {
+            if (e.pointerType === "mouse" && e.button !== 0) return;
+            e.preventDefault();
+            e.stopPropagation();
+            doAction();
+            if (isDAS) startDAS(action);
+            if (btn.setPointerCapture) {
+              try {
+                btn.setPointerCapture(e.pointerId);
+              } catch (err) {
+                /* ignore capture errors */
+              }
+            }
+          },
+          { passive: false },
+        );
+
+        btn.addEventListener("pointerup", function () {
+          if (isDAS) stopDAS(action);
+        });
+
+        btn.addEventListener("pointercancel", function () {
+          if (isDAS) stopDAS(action);
+        });
+
+        btn.addEventListener("pointerleave", function () {
+          if (isDAS) stopDAS(action);
+        });
+      } else {
+        // Touch events with DAS support
+        btn.addEventListener(
+          "touchstart",
+          function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            doAction();
+            if (isDAS) startDAS(action);
+          },
+          { passive: false },
+        );
+
+        btn.addEventListener(
+          "touchend",
+          function (e) {
+            e.preventDefault();
+            if (isDAS) stopDAS(action);
+          },
+          { passive: false },
+        );
+
+        btn.addEventListener("touchcancel", function () {
+          if (isDAS) stopDAS(action);
+        });
+
+        // Mouse fallback (desktop testing)
+        btn.addEventListener("mousedown", function (e) {
           e.preventDefault();
-          e.stopPropagation();
           doAction();
           if (isDAS) startDAS(action);
-        },
-        { passive: false },
-      );
+        });
 
-      btn.addEventListener(
-        "touchend",
-        function (e) {
-          e.preventDefault();
+        btn.addEventListener("mouseup", function () {
           if (isDAS) stopDAS(action);
-        },
-        { passive: false },
-      );
+        });
 
-      btn.addEventListener("touchcancel", function () {
-        if (isDAS) stopDAS(action);
-      });
+        btn.addEventListener("mouseleave", function () {
+          if (isDAS) stopDAS(action);
+        });
+      }
 
-      // Mouse fallback (desktop testing)
-      btn.addEventListener("mousedown", function (e) {
+      // Avoid delayed click handlers re-firing after pointer/touch action.
+      btn.addEventListener("click", function (e) {
         e.preventDefault();
-        doAction();
-        if (isDAS) startDAS(action);
-      });
-
-      btn.addEventListener("mouseup", function () {
-        if (isDAS) stopDAS(action);
-      });
-
-      btn.addEventListener("mouseleave", function () {
-        if (isDAS) stopDAS(action);
       });
     })(mobileButtons[i]);
   }
@@ -1496,102 +1560,210 @@
   var touchStartY = 0;
   var touchStartTime = 0;
   var touchMoved = false;
-  var swipeThreshold = 28;
-  var tapMaxDist = 18;
-  var tapMaxTime = 220;
+  var swipeThreshold = 20; // lowered for responsive drag-to-move
+  var softDropThreshold = 26; // separate threshold for down drag
+  var tapMaxDist = 24; // forgiving tap detection
+  var tapMaxTime = 300; // forgiving tap window
   var boardWrapEl = document.getElementById("boardWrap");
+  var gestureActive = false;
+  var gestureHintEl = document.getElementById("gestureHint");
+  var gestureHintShown = false;
 
+  function hideGestureHint() {
+    if (gestureHintEl && !gestureHintShown) {
+      gestureHintShown = true;
+      gestureHintEl.classList.add("hidden");
+    }
+  }
+
+  function beginGesture(clientX, clientY) {
+    var state = engine.getPublicState();
+    // Allow gesture start even during non-running state (tap to start/resume)
+    if (state.gameOver) {
+      // Still allow tap on game-over to restart
+      touchStartX = clientX;
+      touchStartY = clientY;
+      touchStartTime = Date.now();
+      touchMoved = false;
+      gestureActive = true;
+      return true;
+    }
+    touchStartX = clientX;
+    touchStartY = clientY;
+    touchStartTime = Date.now();
+    touchMoved = false;
+    gestureActive = true;
+    return true;
+  }
+
+  function moveGesture(clientX, clientY) {
+    var state = engine.getPublicState();
+    if (!state.running || state.paused || state.gameOver) return;
+
+    var dx = clientX - touchStartX;
+    var dy = clientY - touchStartY;
+
+    // Continuous horizontal drag: move piece for each threshold crossed
+    if (Math.abs(dx) > swipeThreshold) {
+      ensureAudio();
+      var moves = Math.floor(Math.abs(dx) / swipeThreshold);
+      var dir = dx > 0 ? 1 : -1;
+      for (var m = 0; m < moves; m++) {
+        if (engine.move(dir)) audio.move();
+      }
+      touchStartX = clientX - (Math.abs(dx) % swipeThreshold) * dir;
+      touchMoved = true;
+      hideGestureHint();
+    }
+
+    // Continuous downward drag: soft drop
+    if (dy > softDropThreshold) {
+      ensureAudio();
+      var drops = Math.floor(dy / softDropThreshold);
+      for (var d = 0; d < drops; d++) {
+        var sd = engine.softDrop();
+        if (sd.moved) audio.softDrop();
+        if (sd.locked) {
+          handleLock(sd);
+          break;
+        }
+      }
+      touchStartY = clientY - (dy % softDropThreshold);
+      touchMoved = true;
+      hideGestureHint();
+    }
+  }
+
+  function endGesture(clientX, clientY) {
+    if (!gestureActive) return;
+
+    var dx = clientX - touchStartX;
+    var dy = clientY - touchStartY;
+    var dt = Date.now() - touchStartTime;
+    var absDx = Math.abs(dx);
+    var absDy = Math.abs(dy);
+    gestureActive = false;
+
+    ensureAudio();
+
+    var state = engine.getPublicState();
+
+    // Tap detection
+    if (
+      !touchMoved &&
+      dt < tapMaxTime &&
+      absDx < tapMaxDist &&
+      absDy < tapMaxDist
+    ) {
+      // If game over or not running, start/restart game
+      if (!state.running || state.gameOver) {
+        startGame();
+        hideGestureHint();
+        return;
+      }
+      // If paused, resume
+      if (state.paused) {
+        engine.togglePause();
+        return;
+      }
+      // Otherwise: TAP = ROTATE
+      if (engine.rotate(1)) {
+        audio.rotate();
+        vibrateShort();
+      }
+      hideGestureHint();
+      return;
+    }
+
+    // Only process end-swipes if game is active
+    if (!state.running || state.paused || state.gameOver) return;
+
+    // Quick upward swipe = hard drop
+    if (dy < -swipeThreshold * 2.5 && absDy > absDx && dt < 400) {
+      var hd = engine.hardDrop();
+      if (hd.locked) {
+        audio.hardDrop();
+        spawnHardDropParticles(state.active);
+        triggerShake(6);
+        handleLock(hd);
+        vibrateShort();
+      }
+      hideGestureHint();
+    }
+  }
+
+  // Board gesture handlers — works for BOTH touch AND mouse (desktop testing)
   if (boardWrapEl) {
-    boardWrapEl.addEventListener(
-      "touchstart",
-      function (e) {
-        if (e.touches.length !== 1) return;
-        var touch = e.touches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-        touchStartTime = Date.now();
-        touchMoved = false;
-        e.preventDefault();
-      },
-      { passive: false },
-    );
-
-    boardWrapEl.addEventListener(
-      "touchmove",
-      function (e) {
-        e.preventDefault();
-        if (e.touches.length !== 1) return;
-
-        var touch = e.touches[0];
-        var dx = touch.clientX - touchStartX;
-        var dy = touch.clientY - touchStartY;
-
-        // Continuous horizontal swipe: move piece for each threshold crossed
-        if (Math.abs(dx) > swipeThreshold) {
-          ensureAudio();
-          if (dx > 0) {
-            if (engine.move(1)) audio.move();
-          } else {
-            if (engine.move(-1)) audio.move();
+    if (SUPPORTS_POINTER) {
+      boardWrapEl.addEventListener(
+        "pointerdown",
+        function (e) {
+          if (e.pointerType === "mouse" && e.button !== 0) return;
+          if (!beginGesture(e.clientX, e.clientY)) return;
+          e.preventDefault();
+          // Capture pointer so drag works even if finger slides off board
+          if (boardWrapEl.setPointerCapture) {
+            try {
+              boardWrapEl.setPointerCapture(e.pointerId);
+            } catch (err) {}
           }
-          touchStartX = touch.clientX;
-          touchMoved = true;
-        }
+        },
+        { passive: false },
+      );
 
-        // Continuous downward swipe: soft drop
-        if (dy > swipeThreshold * 1.2) {
-          ensureAudio();
-          var sd = engine.softDrop();
-          if (sd.moved) audio.softDrop();
-          if (sd.locked) handleLock(sd);
-          touchStartY = touch.clientY;
-          touchMoved = true;
-        }
-      },
-      { passive: false },
-    );
+      boardWrapEl.addEventListener(
+        "pointermove",
+        function (e) {
+          if (!gestureActive) return;
+          e.preventDefault();
+          moveGesture(e.clientX, e.clientY);
+        },
+        { passive: false },
+      );
 
-    boardWrapEl.addEventListener(
-      "touchend",
-      function (e) {
-        var touch = e.changedTouches[0];
-        var dx = touch.clientX - touchStartX;
-        var dy = touch.clientY - touchStartY;
-        var dt = Date.now() - touchStartTime;
-        var absDx = Math.abs(dx);
-        var absDy = Math.abs(dy);
+      boardWrapEl.addEventListener("pointerup", function (e) {
+        if (!gestureActive) return;
+        endGesture(e.clientX, e.clientY);
+      });
 
-        ensureAudio();
+      boardWrapEl.addEventListener("pointercancel", function () {
+        gestureActive = false;
+      });
+    } else {
+      boardWrapEl.addEventListener(
+        "touchstart",
+        function (e) {
+          if (e.touches.length !== 1) return;
+          if (!beginGesture(e.touches[0].clientX, e.touches[0].clientY)) return;
+          e.preventDefault();
+        },
+        { passive: false },
+      );
 
-        // Tap = rotate
-        if (
-          !touchMoved &&
-          dt < tapMaxTime &&
-          absDx < tapMaxDist &&
-          absDy < tapMaxDist
-        ) {
-          if (engine.rotate(1)) {
-            audio.rotate();
-            vibrateShort();
-          }
-          return;
-        }
+      boardWrapEl.addEventListener(
+        "touchmove",
+        function (e) {
+          if (!gestureActive) return;
+          e.preventDefault();
+          if (e.touches.length !== 1) return;
+          moveGesture(e.touches[0].clientX, e.touches[0].clientY);
+        },
+        { passive: false },
+      );
 
-        // Quick upward swipe = hard drop
-        if (dy < -swipeThreshold * 2 && absDy > absDx && dt < 350) {
-          var st = engine.getPublicState();
-          var hd = engine.hardDrop();
-          if (hd.locked) {
-            audio.hardDrop();
-            spawnHardDropParticles(st.active);
-            triggerShake(6);
-            handleLock(hd);
-            vibrateShort();
-          }
-        }
-      },
-      { passive: false },
-    );
+      boardWrapEl.addEventListener(
+        "touchend",
+        function (e) {
+          if (!gestureActive || !e.changedTouches.length) return;
+          endGesture(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        },
+        { passive: false },
+      );
+
+      boardWrapEl.addEventListener("touchcancel", function () {
+        gestureActive = false;
+      });
+    }
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -1815,11 +1987,10 @@
   // Game over overlay (HTML-based)
   function showGameOverOverlay(state) {
     if (!gameOverOverlay) return;
-    if (gameOverScore) gameOverScore.textContent = "Score: " + state.score;
-    if (gameOverRank) gameOverRank.textContent = "Rank: " + state.rank;
+    if (gameOverScore) gameOverScore.textContent = String(state.score);
+    if (gameOverRank) gameOverRank.textContent = state.rank;
     if (gameOverLines)
-      gameOverLines.textContent =
-        "Lines: " + state.lines + "  |  Level: " + state.level;
+      gameOverLines.textContent = state.lines + "  |  Level: " + state.level;
     gameOverOverlay.classList.add("visible");
   }
 
