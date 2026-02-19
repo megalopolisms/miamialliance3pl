@@ -37,10 +37,20 @@
   <!-- Touch optimization — prevent page scroll on mobile game -->
   <style>
     button, [data-action] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-    /* Defensive: kill scroll on the entire game shell at CSS level for mobile */
+    /* NUCLEAR SCROLL KILL: every element in the game gets touch-action:none on mobile.
+       This is the CSS-level guarantee; JS capture-phase handlers are the runtime guarantee. */
     @media (max-width: 760px) {
-      html, body { touch-action: none; overscroll-behavior: none; }
-      .game-shell, .game-wrap, .board-wrap, .board-container, #board {
+      html, body {
+        touch-action: none;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: auto;   /* never 'touch' */
+        overflow: hidden;
+        position: fixed;
+        width: 100%; height: 100%; height: 100dvh;
+      }
+      .game-shell, .game-wrap, .board-wrap, .board-container, #board,
+      .hero, .mobile-hud, .hud, .left-hud, .right-hud, .mobile-controls,
+      .card, .how-to-play, .game-footer, canvas {
         touch-action: none;
         -webkit-touch-callout: none;
         -webkit-user-select: none;

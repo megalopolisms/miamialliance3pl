@@ -675,6 +675,171 @@ test("T63. Inline HTML style adds redundant touch-action: none", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SECTION 10: CAPTURE-PHASE SCROLL BLOCKERS (iOS NUCLEAR FIX)
+// These are the critical NEW handlers that fix the finger-scrolls-page bug.
+// Document-level capture:true handlers fire BEFORE element bubble handlers,
+// intercepting iOS scroll gestures before they propagate.
+// ─────────────────────────────────────────────────────────────────────────────
+section("Capture-Phase Scroll Blockers (iOS Nuclear Fix)");
+
+test("T64. document.addEventListener('touchmove') with capture:true exists", () => {
+  // Must find: document.addEventListener("touchmove", ..., { passive: false, capture: true })
+  const pattern =
+    /document\.addEventListener\(\s*["']touchmove["'][\s\S]*?capture\s*:\s*true/;
+  assert.ok(
+    pattern.test(gameJS),
+    "document-level touchmove must be registered with { capture: true } to intercept before iOS scroll",
+  );
+});
+
+test("T65. document.addEventListener('touchstart') with capture:true exists", () => {
+  const pattern =
+    /document\.addEventListener\(\s*["']touchstart["'][\s\S]*?capture\s*:\s*true/;
+  assert.ok(
+    pattern.test(gameJS),
+    "document-level touchstart must be registered with { capture: true } to prevent iOS from beginning scroll gesture",
+  );
+});
+
+test("T66. Capture-phase touchmove calls preventDefault during gameplay", () => {
+  const match = gameJS.match(
+    /document\.addEventListener\(\s*["']touchmove["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false\s*,\s*capture\s*:\s*true/,
+  );
+  assert.ok(match, "Could not extract capture-phase touchmove handler");
+  assert.ok(
+    match[1].includes("preventDefault"),
+    "Capture-phase touchmove must call e.preventDefault()",
+  );
+  assert.ok(
+    match[1].includes("isGameplayActive"),
+    "Capture-phase touchmove must check isGameplayActive() before blocking",
+  );
+});
+
+test("T67. Capture-phase touchstart preserves interactive elements", () => {
+  const match = gameJS.match(
+    /document\.addEventListener\(\s*["']touchstart["']\s*,\s*\n?\s*function\s*\(e\)\s*\{([\s\S]*?)\}\s*,\s*\{\s*passive\s*:\s*false\s*,\s*capture\s*:\s*true/,
+  );
+  assert.ok(match, "Could not extract capture-phase touchstart handler");
+  assert.ok(
+    match[1].includes("BUTTON"),
+    "Capture-phase touchstart must exempt BUTTON elements",
+  );
+  assert.ok(
+    match[1].includes("INPUT"),
+    "Capture-phase touchstart must exempt INPUT elements",
+  );
+  assert.ok(
+    match[1].includes("isGameplayActive"),
+    "Capture-phase touchstart must check isGameplayActive()",
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 11: CSS SCROLL CONTAINER FIX
+// The game-shell must NOT create an internal scrollable container on mobile.
+// overflow-y:auto + -webkit-overflow-scrolling:touch was causing iOS to scroll
+// the game-shell element instead of moving pieces.
+// ─────────────────────────────────────────────────────────────────────────────
+section("CSS Game-Shell Scroll Container Fix");
+
+test("T68. game-shell does NOT have overflow-y: auto on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  assert.ok(mobileBlock, "Could not find mobile media query");
+  // Match the game-shell rule within the mobile block
+  const gameShellMatch = mobileBlock.match(/\.game-shell\s*\{([^}]*)\}/);
+  assert.ok(gameShellMatch, "Could not find .game-shell rule in mobile block");
+  const props = gameShellMatch[1];
+  assert.ok(
+    !props.includes("overflow-y: auto") && !props.includes("overflow-y:auto"),
+    "game-shell must NOT have overflow-y: auto (creates scrollable container that iOS scrolls)",
+  );
+});
+
+test("T69. game-shell does NOT have -webkit-overflow-scrolling: touch on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  const gameShellMatch = mobileBlock.match(/\.game-shell\s*\{([^}]*)\}/);
+  assert.ok(gameShellMatch, "Could not find .game-shell rule in mobile block");
+  const props = gameShellMatch[1];
+  assert.ok(
+    !props.includes("-webkit-overflow-scrolling: touch") &&
+      !props.includes("-webkit-overflow-scrolling:touch"),
+    "game-shell must NOT have -webkit-overflow-scrolling: touch (enables iOS momentum scrolling)",
+  );
+});
+
+test("T70. game-shell has overflow: hidden on mobile", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  const gameShellMatch = mobileBlock.match(/\.game-shell\s*\{([^}]*)\}/);
+  assert.ok(gameShellMatch, "Could not find .game-shell rule in mobile block");
+  const props = gameShellMatch[1];
+  assert.ok(
+    props.includes("overflow: hidden") || props.includes("overflow:hidden"),
+    "game-shell must have overflow: hidden on mobile",
+  );
+});
+
+test("T71. game-shell has overscroll-behavior: none on mobile (not contain)", () => {
+  const mobileBlock = extractMobileMediaBlock(stylesCSS);
+  const gameShellMatch = mobileBlock.match(/\.game-shell\s*\{([^}]*)\}/);
+  assert.ok(gameShellMatch, "Could not find .game-shell rule in mobile block");
+  const props = gameShellMatch[1];
+  assert.ok(
+    props.includes("overscroll-behavior: none") ||
+      props.includes("overscroll-behavior:none"),
+    "game-shell must have overscroll-behavior: none (not contain)",
+  );
+  assert.ok(
+    !props.includes("overscroll-behavior: contain") &&
+      !props.includes("overscroll-behavior:contain"),
+    "game-shell must NOT have overscroll-behavior: contain (too permissive)",
+  );
+});
+
+test("T72. Inline HTML style includes overflow: hidden for html/body on mobile", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    /overflow\s*:\s*hidden/.test(inlineStyleMatch[1]),
+    "Inline <style> must include overflow: hidden as failsafe",
+  );
+});
+
+test("T73. Inline HTML style includes position: fixed for html/body on mobile", () => {
+  const inlineStyleMatch = indexHTML.match(/<style>([\s\S]*?)<\/style>/);
+  assert.ok(inlineStyleMatch, "Inline <style> tag must exist");
+  assert.ok(
+    /position\s*:\s*fixed/.test(inlineStyleMatch[1]),
+    "Inline <style> must include position: fixed as failsafe",
+  );
+});
+
+test("T74. At least 5 total independent scroll-prevention layers", () => {
+  let layers = 0;
+
+  // CSS layers
+  if (/touch-action\s*:\s*none/.test(stylesCSS)) layers++;
+  if (/overflow\s*:\s*hidden/.test(stylesCSS)) layers++;
+  if (/overscroll-behavior\s*:\s*none/.test(stylesCSS)) layers++;
+  if (/position\s*:\s*fixed/.test(stylesCSS)) layers++;
+
+  // JS layers
+  if (/capture\s*:\s*true/.test(gameJS)) layers++; // capture-phase handlers
+  if (/document\.body\.addEventListener/.test(gameJS)) layers++;
+  if (/document\.documentElement\.addEventListener/.test(gameJS)) layers++;
+  if (/gameShellEl[\s\S]*?addEventListener/.test(gameJS)) layers++;
+  if (/boardWrapEl[\s\S]*?addEventListener/.test(gameJS)) layers++;
+
+  // Inline CSS layer
+  if (/touch-action\s*:\s*none/.test(indexHTML)) layers++;
+
+  assert.ok(
+    layers >= 5,
+    `Expected at least 5 total scroll-prevention layers, found ${layers}`,
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 
