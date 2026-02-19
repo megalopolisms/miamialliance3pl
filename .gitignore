@@ -30,5 +30,3 @@ Thumbs.db
 npm-debug.log*
 mcp/node_modules/
 mcp/audit.log
-functions/node_modules/
-mcp/firebase-key.json

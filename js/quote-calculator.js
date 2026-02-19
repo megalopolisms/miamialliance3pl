@@ -157,7 +157,7 @@ class QuoteCalculator {
 
     // Quantity controls
     const qtyInput = document.getElementById("quantity-input");
-    const qtyBtns = document.querySelectorAll(".qty-btn:not(.dropship-btn)");
+    const qtyBtns = document.querySelectorAll(".qty-btn");
 
     qtyBtns.forEach((btn) => {
       btn.addEventListener("click", () => {

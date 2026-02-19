@@ -1856,7 +1856,54 @@
     return state.running && !state.paused && !state.gameOver;
   }
 
-  // Block ALL touchmove during active gameplay on body
+  /* ── NUCLEAR SCROLL LOCK ──
+   * iOS Safari initiates scroll gestures at the DOCUMENT level before
+   * element-level handlers fire.  Using { capture: true } ensures our
+   * preventDefault() runs first (capture phase → top-down).
+   *
+   * Previous bug: body/html listeners used bubble phase only, and
+   * .game-shell had overflow-y:auto + -webkit-overflow-scrolling:touch,
+   * creating an internal scrollable container that iOS happily scrolled
+   * even though body was position:fixed.
+   *
+   * Fix: capture phase on DOCUMENT for both touchstart and touchmove,
+   * plus element-level handlers as backup.
+   * ──────────────────────────────────────────────────────────────── */
+
+  // CAPTURE PHASE: Block touchmove at the very top of the event chain
+  document.addEventListener(
+    "touchmove",
+    function (e) {
+      if (isGameplayActive()) {
+        e.preventDefault();
+      }
+    },
+    { passive: false, capture: true },
+  );
+
+  // CAPTURE PHASE: Block touchstart on non-interactive elements
+  // This prevents iOS from even BEGINNING a scroll gesture
+  document.addEventListener(
+    "touchstart",
+    function (e) {
+      if (isGameplayActive()) {
+        var tag = e.target.tagName;
+        if (
+          tag !== "BUTTON" &&
+          tag !== "INPUT" &&
+          tag !== "A" &&
+          tag !== "LABEL" &&
+          tag !== "SELECT" &&
+          tag !== "SUMMARY"
+        ) {
+          e.preventDefault();
+        }
+      }
+    },
+    { passive: false, capture: true },
+  );
+
+  // BUBBLE PHASE BACKUP: body
   document.body.addEventListener(
     "touchmove",
     function (e) {
@@ -1867,8 +1914,7 @@
     { passive: false },
   );
 
-  // Block on <html> too — iOS Safari sometimes fires touchmove on
-  // documentElement before it reaches body
+  // BUBBLE PHASE BACKUP: <html>
   document.documentElement.addEventListener(
     "touchmove",
     function (e) {
@@ -1879,14 +1925,12 @@
     { passive: false },
   );
 
-  // Block touchstart default on game-shell during gameplay to prevent
-  // iOS from initiating a scroll gesture before touchmove fires
+  // game-shell specific handlers (belt-and-suspenders)
   if (gameShellEl) {
     gameShellEl.addEventListener(
       "touchstart",
       function (e) {
         if (isGameplayActive()) {
-          // Only preventDefault if the touch is NOT on a button (keep buttons responsive)
           var tag = e.target.tagName;
           if (tag !== "BUTTON" && tag !== "INPUT" && tag !== "A") {
             e.preventDefault();
