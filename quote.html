@@ -200,24 +200,18 @@
             font-family: monospace;
         }
         .quote-buttons {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            display: flex;
             gap: 12px;
-            width: 100%;
+            flex-wrap: wrap;
             max-width: 100%;
             box-sizing: border-box;
         }
         .quote-buttons .btn {
             min-width: 0;
-            width: 100%;
-            max-width: 100%;
-            white-space: normal;
-            overflow-wrap: anywhere;
-        }
-        @media (max-width: 640px) {
-            .quote-buttons {
-                grid-template-columns: 1fr;
-            }
+            flex: 1 1 auto;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .btn-pdf {
             background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);

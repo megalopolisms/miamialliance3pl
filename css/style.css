@@ -1885,7 +1885,6 @@ ul {
   margin-bottom: var(--spacing-lg);
   max-width: 100%;
   overflow: hidden;
-  min-width: 0;
 }
 
 .quote-label {
@@ -1903,12 +1902,6 @@ ul {
   display: flex;
   gap: var(--spacing-sm);
   max-width: 100%;
-}
-
-@media (max-width: 420px) {
-  .package-toggle {
-    flex-direction: column;
-  }
 }
 
 .package-option {
@@ -1953,12 +1946,6 @@ ul {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--spacing-sm);
-}
-
-@media (max-width: 420px) {
-  .dimension-row {
-    grid-template-columns: 1fr;
-  }
 }
 
 .dimension-input-group {
@@ -2124,7 +2111,7 @@ ul {
 /* Drop Ship Unit Pricing Grid */
 .dropship-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--spacing-sm);
 }
 
@@ -2149,19 +2136,13 @@ ul {
 }
 
 .dropship-label {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
-  column-gap: 6px;
-  row-gap: 2px;
+  gap: 6px;
   font-size: var(--font-size-sm);
   color: var(--color-gray-700);
   margin-bottom: 6px;
   font-weight: 600;
-}
-
-.dropship-label span:nth-child(2) {
-  min-width: 0;
 }
 
 .dropship-icon {
@@ -2176,22 +2157,13 @@ ul {
 }
 
 .dropship-qty {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  width: 100%;
-}
-
-.dropship-qty .qty-btn {
-  width: 100%;
-  min-width: 0;
-  height: 40px;
+  gap: 4px;
 }
 
 .dropship-input {
-  width: 100%;
-  min-width: 0;
+  width: 60px;
   text-align: center;
   font-size: var(--font-size-base);
   font-weight: 700;
@@ -2267,28 +2239,6 @@ ul {
 
 .quote-cta {
   width: 100%;
-}
-
-.quote-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  width: 100%;
-  max-width: 100%;
-}
-
-.quote-buttons .btn {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-@media (max-width: 640px) {
-  .quote-buttons {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* 3D Canvas Wrapper */
