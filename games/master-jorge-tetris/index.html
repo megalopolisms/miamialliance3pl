@@ -34,9 +34,19 @@
   <!-- Styles -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Touch optimization -->
+  <!-- Touch optimization — prevent page scroll on mobile game -->
   <style>
     button, [data-action] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    /* Defensive: kill scroll on the entire game shell at CSS level for mobile */
+    @media (max-width: 760px) {
+      html, body { touch-action: none; overscroll-behavior: none; }
+      .game-shell, .game-wrap, .board-wrap, .board-container, #board {
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+    }
   </style>
 </head>
 <body>

@@ -1554,20 +1554,25 @@
   }
 
   /* ══════════════════════════════════════════════════════════════
-   *  12b. TOUCH DRAG-AND-DROP + TAP-TO-ROTATE (Mobile)
+   *  12b. TOUCH DRAG-AND-DROP + TAP/CLICK-TO-ROTATE (Mobile+Desktop)
    *  Piece follows finger position directly (column-mapped).
-   *  Tap on board = rotate. Drag down = soft drop. Swipe up = hard drop.
+   *  Tap/click on board = rotate. Drag down = soft drop. Swipe up = hard drop.
    * ══════════════════════════════════════════════════════════════ */
   var touchStartX = 0;
   var touchStartY = 0;
   var touchStartTime = 0;
-  var touchMoved = false;
+  var gestureIntentMoved = false;
+  var gestureInputType = "touch";
   var tapMaxDist = 22; // max px for tap detection
-  var tapMaxTime = 280; // max ms for tap detection
+  var tapMaxTimeTouch = 280; // max ms for touch tap detection
+  var tapMaxTimeMouse = 700; // allow a slower click press-and-release
+  var dragIntentThreshold = 8; // px before a gesture is treated as a drag
   var boardWrapEl = document.getElementById("boardWrap");
   var gestureActive = false;
   var gestureHintEl = document.getElementById("gestureHint");
   var gestureHintShown = false;
+  var suppressSyntheticClickUntil = 0;
+  var lastGestureEndAt = 0;
 
   // Drag-and-drop state
   var dragAnchorOffset = 0; // finger-column offset from piece.x at touch start
@@ -1593,11 +1598,12 @@
     return rect.height / ROWS;
   }
 
-  function beginGesture(clientX, clientY) {
+  function beginGesture(clientX, clientY, inputType) {
     touchStartX = clientX;
     touchStartY = clientY;
     touchStartTime = Date.now();
-    touchMoved = false;
+    gestureIntentMoved = false;
+    gestureInputType = inputType || "touch";
     gestureActive = true;
     softDropAccum = 0;
     lastDragX = -999;
@@ -1618,6 +1624,12 @@
     if (!state.running || state.paused || state.gameOver || !state.active)
       return;
 
+    var totalDx = Math.abs(clientX - touchStartX);
+    var totalDy = Math.abs(clientY - touchStartY);
+    if (totalDx >= dragIntentThreshold || totalDy >= dragIntentThreshold) {
+      gestureIntentMoved = true;
+    }
+
     /* ── Horizontal: Direct drag-and-drop (piece follows finger column) ── */
     var fingerCol = clientXToCol(clientX);
     var targetX = Math.round(fingerCol - dragAnchorOffset);
@@ -1631,7 +1643,6 @@
         if (!engine.move(dir)) break;
       }
       lastDragX = targetX;
-      touchMoved = true;
       hideGestureHint();
     }
 
@@ -1651,10 +1662,35 @@
         }
       }
       if (dropsNeeded > 0) {
-        touchMoved = true;
         hideGestureHint();
       }
     }
+  }
+
+  function handleBoardTapAction() {
+    ensureAudio();
+
+    var state = engine.getPublicState();
+
+    // If game over or not running, start/restart game
+    if (!state.running || state.gameOver) {
+      startGame();
+      hideGestureHint();
+      return;
+    }
+
+    // If paused, resume
+    if (state.paused) {
+      engine.togglePause();
+      return;
+    }
+
+    // Tap/click = rotate clockwise
+    if (engine.rotate(1)) {
+      audio.rotate();
+      vibrateShort();
+    }
+    hideGestureHint();
   }
 
   function endGesture(clientX, clientY) {
@@ -1666,39 +1702,23 @@
     var absDx = Math.abs(dx);
     var absDy = Math.abs(dy);
     gestureActive = false;
+    lastGestureEndAt = Date.now();
+    var maxTapTime =
+      gestureInputType === "mouse" ? tapMaxTimeMouse : tapMaxTimeTouch;
 
-    ensureAudio();
-
-    var state = engine.getPublicState();
-
-    // ── TAP DETECTION: tap = rotate ──
+    // ── TAP/CLICK DETECTION: tap/click = rotate ──
     if (
-      !touchMoved &&
-      dt < tapMaxTime &&
+      !gestureIntentMoved &&
+      dt < maxTapTime &&
       absDx < tapMaxDist &&
       absDy < tapMaxDist
     ) {
-      // If game over or not running, start/restart game
-      if (!state.running || state.gameOver) {
-        startGame();
-        hideGestureHint();
-        return;
-      }
-      // If paused, resume
-      if (state.paused) {
-        engine.togglePause();
-        return;
-      }
-      // TAP = ROTATE (clockwise)
-      if (engine.rotate(1)) {
-        audio.rotate();
-        vibrateShort();
-      }
-      hideGestureHint();
+      handleBoardTapAction();
       return;
     }
 
     // Only process end-swipes if game is active
+    var state = engine.getPublicState();
     if (!state.running || state.paused || state.gameOver) return;
 
     // ── SWIPE UP = HARD DROP ──
@@ -1732,7 +1752,8 @@
       "touchstart",
       function (e) {
         if (e.touches.length !== 1) return;
-        if (!beginGesture(e.touches[0].clientX, e.touches[0].clientY)) return;
+        if (!beginGesture(e.touches[0].clientX, e.touches[0].clientY, "touch"))
+          return;
         e.preventDefault();
       },
       { passive: false },
@@ -1753,6 +1774,8 @@
       "touchend",
       function (e) {
         if (!gestureActive || !e.changedTouches.length) return;
+        suppressSyntheticClickUntil = Date.now() + 450;
+        e.preventDefault();
         endGesture(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
       },
       { passive: false },
@@ -1760,6 +1783,7 @@
 
     boardWrapEl.addEventListener("touchcancel", function () {
       gestureActive = false;
+      suppressSyntheticClickUntil = Date.now() + 450;
     });
 
     // ── MOUSE EVENTS (desktop fallback for testing) ──
@@ -1767,7 +1791,7 @@
       "mousedown",
       function (e) {
         if (e.button !== 0) return;
-        if (!beginGesture(e.clientX, e.clientY)) return;
+        if (!beginGesture(e.clientX, e.clientY, "mouse")) return;
         e.preventDefault();
       },
       { passive: false },
@@ -1793,30 +1817,95 @@
         gestureActive = false;
       }
     });
+
+    // Click fallback: guarantees rotate/start/resume when a plain click lands
+    // without a completed drag sequence. Synthetic iOS clicks are ignored.
+    boardWrapEl.addEventListener("click", function (e) {
+      if (Date.now() < suppressSyntheticClickUntil) {
+        e.preventDefault();
+        return;
+      }
+      if (Date.now() - lastGestureEndAt < 220) return;
+      if (e.button !== undefined && e.button !== 0) return;
+      handleBoardTapAction();
+    });
   }
 
   /* ══════════════════════════════════════════════════════════════
-   *  12c. PREVENT PAGE SCROLL DURING GAMEPLAY
+   *  12c. PREVENT PAGE SCROLL DURING GAMEPLAY  (FULL LOCKDOWN)
+   *
+   *  Root-cause fix:  On mobile, ANY touchmove on the page was
+   *  scrolling the viewport instead of moving the Tetris piece.
+   *  The old handler only blocked scroll when the touch target was
+   *  inside boardWrapEl or mobileControlsEl — touches on the hero,
+   *  HUD, game-shell, or body itself still scrolled the page.
+   *
+   *  Fix: During active gameplay, block ALL touchmove events on
+   *  both <body> AND <html>.  Touches on the board are already
+   *  handled by the boardWrap gesture system.  Touches elsewhere
+   *  should simply be swallowed (no game action, no scroll).
+   *
+   *  When the game is NOT running / is paused / is game-over, we
+   *  allow normal scroll so the user can navigate the page.
    * ══════════════════════════════════════════════════════════════ */
   var mobileControlsEl = document.getElementById("mobileControls");
+  var gameShellEl = document.getElementById("gameShell");
 
+  function isGameplayActive() {
+    var state = engine.getPublicState();
+    return state.running && !state.paused && !state.gameOver;
+  }
+
+  // Block ALL touchmove during active gameplay on body
   document.body.addEventListener(
     "touchmove",
     function (e) {
-      var state = engine.getPublicState();
-      if (!state.running || state.paused || state.gameOver) return;
-
-      var target = e.target;
-      while (target && target !== document.body) {
-        if (target === boardWrapEl || target === mobileControlsEl) {
-          e.preventDefault();
-          return;
-        }
-        target = target.parentElement;
+      if (isGameplayActive()) {
+        e.preventDefault();
       }
     },
     { passive: false },
   );
+
+  // Block on <html> too — iOS Safari sometimes fires touchmove on
+  // documentElement before it reaches body
+  document.documentElement.addEventListener(
+    "touchmove",
+    function (e) {
+      if (isGameplayActive()) {
+        e.preventDefault();
+      }
+    },
+    { passive: false },
+  );
+
+  // Block touchstart default on game-shell during gameplay to prevent
+  // iOS from initiating a scroll gesture before touchmove fires
+  if (gameShellEl) {
+    gameShellEl.addEventListener(
+      "touchstart",
+      function (e) {
+        if (isGameplayActive()) {
+          // Only preventDefault if the touch is NOT on a button (keep buttons responsive)
+          var tag = e.target.tagName;
+          if (tag !== "BUTTON" && tag !== "INPUT" && tag !== "A") {
+            e.preventDefault();
+          }
+        }
+      },
+      { passive: false },
+    );
+
+    gameShellEl.addEventListener(
+      "touchmove",
+      function (e) {
+        if (isGameplayActive()) {
+          e.preventDefault();
+        }
+      },
+      { passive: false },
+    );
+  }
 
   // Stop all DAS when game ends or pauses
   window.addEventListener("blur", stopAllDAS);
