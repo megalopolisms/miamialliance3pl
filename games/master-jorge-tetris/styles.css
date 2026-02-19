@@ -470,6 +470,9 @@ kbd {
     );
     border: 1px solid rgba(107, 195, 255, 0.28);
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
 
   #board {
@@ -479,6 +482,14 @@ kbd {
     display: block;
     height: auto;
     touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    cursor: grab;
+  }
+
+  #board:active {
+    cursor: grabbing;
   }
 
   /* ── Fixed Bottom Mobile Controls ── */
