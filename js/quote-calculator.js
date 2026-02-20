@@ -30,7 +30,7 @@ const COMPANY_INFO = {
   name: "MIAMI ALLIANCE 3PL",
   address: "8780 NW 100th ST",
   city: "Medley, FL 33178",
-  phone: "(305) 555-0123",
+  phone: "(786) 873-8819",
   email: "info@miamialliance3pl.com",
   website: "www.miamialliance3pl.com",
 };
@@ -749,6 +749,9 @@ class QuoteCalculator {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.text("CONTACT", 165, yPos + 15, { align: "center" });
+    doc.link(145, yPos + 5, 40, 15, {
+      url: "https://miamialliance3pl.com/contact.html",
+    });
 
     // ===== FOOTER =====
     const footerY = 275;
