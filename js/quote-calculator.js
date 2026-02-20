@@ -30,7 +30,7 @@ const COMPANY_INFO = {
   name: "MIAMI ALLIANCE 3PL",
   address: "8780 NW 100th ST",
   city: "Medley, FL 33178",
-  phone: "(305) 555-0123",
+  phone: "(786) 873-8819",
   email: "info@miamialliance3pl.com",
   website: "www.miamialliance3pl.com",
 };
