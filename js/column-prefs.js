@@ -49,11 +49,20 @@
     "th.col-drag-over{box-shadow:inset -3px 0 0 var(--color-accent,#10b981)}",
     "th.col-dragging{opacity:.4}",
     // Rename feature styles
-    ".col-rename-btn{background:none;border:none;cursor:pointer;padding:0 2px;font-size:.75rem;line-height:1;opacity:.5;transition:opacity .15s;flex-shrink:0}",
-    ".col-rename-btn:hover{opacity:1}",
+    ".col-rename-btn{background:none;border:none;cursor:pointer;padding:2px 4px;font-size:1rem;line-height:1;opacity:.85;transition:all .15s;flex-shrink:0;border-radius:3px}",
+    ".col-rename-btn:hover{opacity:1;background:rgba(16,185,129,.1)}",
     ".col-label-input{flex:1;border:1px solid var(--color-accent,#10b981);border-radius:4px;padding:2px 6px;font-size:.85rem;font-family:inherit;outline:none;background:#fff;color:var(--color-gray-700,#334155);min-width:0}",
     ".col-label-input:focus{box-shadow:0 0 0 2px rgba(16,185,129,.2)}",
     ".col-label.renamed{font-style:italic;color:var(--color-accent,#10b981)}",
+    // Standalone rename button (visible next to Columns gear)
+    ".col-rename-standalone{background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:.813rem;font-weight:600;color:#fff;display:inline-flex;align-items:center;gap:5px;transition:all .15s;font-family:inherit;margin-right:6px;box-shadow:0 1px 3px rgba(16,185,129,.3)}",
+    ".col-rename-standalone:hover{background:linear-gradient(135deg,#059669,#047857);box-shadow:0 2px 6px rgba(16,185,129,.4);transform:translateY(-1px)}",
+    // Header rename indicator (for direct header dblclick)
+    "th.col-renameable{position:relative}",
+    "th.col-renameable::after{content:'✏️';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:.7rem;opacity:0;transition:opacity .2s;pointer-events:none}",
+    "th.col-renameable:hover::after{opacity:.7}",
+    // Header inline rename input
+    ".col-header-input{border:2px solid var(--color-accent,#10b981);border-radius:4px;padding:4px 8px;font-size:inherit;font-weight:inherit;font-family:inherit;outline:none;background:#fff;color:var(--color-gray-700,#334155);width:100%;box-sizing:border-box;box-shadow:0 0 0 3px rgba(16,185,129,.15)}",
   ].join("\n");
   document.head.appendChild(css);
 
@@ -334,6 +343,24 @@
     var container = document.createElement("div");
     container.className = "col-prefs-container";
 
+    // Add standalone "Rename Columns" button for admin (Jorge) — high visibility
+    if (this.canRename) {
+      var renameStandalone = document.createElement("button");
+      renameStandalone.className = "col-rename-standalone";
+      renameStandalone.innerHTML = "✏️ Rename Columns";
+      renameStandalone.title =
+        "Click to open column settings and rename any column";
+      var self2 = this;
+      renameStandalone.addEventListener("click", function (e) {
+        e.stopPropagation();
+        // Open the panel if not already open
+        if (!self2._panel) {
+          self2._createPanel(container);
+        }
+      });
+      container.appendChild(renameStandalone);
+    }
+
     var btn = document.createElement("button");
     btn.className = "col-prefs-btn";
     btn.innerHTML = '<span style="font-size:1rem">&#9881;</span> Columns';
@@ -348,6 +375,11 @@
     container.appendChild(btn);
     wrapper.insertBefore(container, wrapper.firstChild);
     this._anchor = container;
+
+    // Add double-click rename directly on table headers (admin only)
+    if (this.canRename) {
+      this._setupHeaderRename();
+    }
   };
 
   // ── Panel toggle ─────────────────────────────────────────────────────
@@ -644,6 +676,82 @@
     input.addEventListener("blur", function () {
       // Small delay to allow Enter to fire first
       setTimeout(commit, 100);
+    });
+  };
+
+  // ── Direct header rename (double-click on <th> — admin only) ────────
+  ColumnPrefs.prototype._setupHeaderRename = function () {
+    var self = this;
+    var ths = Array.prototype.slice.call(this.headerRow.children);
+    ths.forEach(function (th) {
+      th.classList.add("col-renameable");
+      th.addEventListener("dblclick", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (th.querySelector(".col-header-input")) return; // Already editing
+
+        var origIdx = th.dataset.colIdx;
+        var currentText = th.textContent.trim();
+        var origLabel = th.dataset.origLabel || currentText;
+
+        // Save original content and clear
+        var originalHTML = th.innerHTML;
+        th.innerHTML = "";
+
+        var input = document.createElement("input");
+        input.type = "text";
+        input.className = "col-header-input";
+        input.value = currentText;
+        input.placeholder = origLabel;
+        th.appendChild(input);
+        input.focus();
+        input.select();
+
+        var committed = false;
+        function commit() {
+          if (committed) return;
+          committed = true;
+          var newName = input.value.trim();
+
+          if (newName && newName !== currentText) {
+            if (newName === origLabel) {
+              delete self.customLabels[String(origIdx)];
+            } else {
+              self.customLabels[String(origIdx)] = newName;
+            }
+            th.textContent = newName;
+            th.dataset.colLabel = newName;
+
+            if (self.saveGlobalLabels) {
+              self.saveGlobalLabels(self.customLabels).catch(function (err) {
+                console.error("[ColumnPrefs] Failed to save labels:", err);
+              });
+            }
+          } else {
+            th.innerHTML = originalHTML;
+          }
+        }
+
+        function cancel() {
+          if (committed) return;
+          committed = true;
+          th.innerHTML = originalHTML;
+        }
+
+        input.addEventListener("keydown", function (ev) {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            commit();
+          }
+          if (ev.key === "Escape") {
+            ev.preventDefault();
+            cancel();
+          }
+        });
+        input.addEventListener("blur", function () {
+          setTimeout(commit, 100);
+        });
+      });
     });
   };
 
