@@ -546,7 +546,7 @@
                 new ColumnPrefs({
                     table: document.querySelector('.data-table'),
                     tableId: 'dashboard-recent',
-                    canRename: isAdmin,
+                    canRename: userEmail === 'ceo@usglatam.com',
                     loadGlobalLabels: labelFns.load,
                     saveGlobalLabels: labelFns.save
                 });

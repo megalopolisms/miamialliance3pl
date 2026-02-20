@@ -305,7 +305,7 @@
                 new ColumnPrefs({
                     table: document.querySelector('.data-table'),
                     tableId: 'shipments',
-                    canRename: currentUserRole === 'admin',
+                    canRename: user.email.toLowerCase() === 'ceo@usglatam.com',
                     loadGlobalLabels: labelFns.load,
                     saveGlobalLabels: labelFns.save
                 });

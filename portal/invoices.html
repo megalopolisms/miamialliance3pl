@@ -460,7 +460,7 @@
                 new ColumnPrefs({
                     table: document.querySelector('.invoice-table'),
                     tableId: 'invoices',
-                    canRename: userRole === 'admin',
+                    canRename: user.email.toLowerCase() === 'ceo@usglatam.com',
                     loadGlobalLabels: labelFns.load,
                     saveGlobalLabels: labelFns.save
                 });

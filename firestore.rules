@@ -17,6 +17,11 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'employee'];
     }
 
+    function isJorge() {
+      return isAuthenticated() &&
+        request.auth.token.email == 'ceo@usglatam.com';
+    }
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
@@ -63,6 +68,12 @@ service cloud.firestore {
     match /billable_events/{eventId} {
       allow read: if isAuthenticated() && (resource.data.customer_id == request.auth.uid || isStaff());
       allow write: if isStaff();
+    }
+
+    // Column labels — ONLY Jorge can rename columns
+    match /settings/column_labels {
+      allow read: if isStaff();
+      allow write: if isJorge();
     }
 
     // Settings (admin only write, staff read)

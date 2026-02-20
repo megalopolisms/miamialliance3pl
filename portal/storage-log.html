@@ -406,7 +406,7 @@
                 new ColumnPrefs({
                     table: document.querySelector('.history-table'),
                     tableId: 'storage-history',
-                    canRename: userRole === 'admin',
+                    canRename: user.email.toLowerCase() === 'ceo@usglatam.com',
                     loadGlobalLabels: labelFns.load,
                     saveGlobalLabels: labelFns.save
                 });
