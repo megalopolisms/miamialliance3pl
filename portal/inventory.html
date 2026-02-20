@@ -217,7 +217,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
@@ -323,6 +323,18 @@
                 document.getElementById('customer-select-group').style.display = 'block';
                 document.getElementById('customer-col-header').style.display = 'table-cell';
                 await loadCustomers();
+
+                // Initialize column preferences (staff only — full column set)
+                if (window.ColumnPrefs) {
+                    var labelFns = ColumnPrefs.firestoreLabels({ doc, getDoc, setDoc, db }, 'inventory');
+                    new ColumnPrefs({
+                        table: document.querySelector('.data-table'),
+                        tableId: 'inventory',
+                        canRename: user.email.toLowerCase() === 'ceo@usglatam.com',
+                        loadGlobalLabels: labelFns.load,
+                        saveGlobalLabels: labelFns.save
+                    });
+                }
             }
 
             loadInventory();
@@ -604,6 +616,7 @@
             }
         }
     </script>
+    <script src="../js/column-prefs.js"></script>
     <script src="../js/main.js"></script>
 </body>
 </html>
