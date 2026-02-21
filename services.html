@@ -2,18 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Services | Miami Alliance 3PL - Warehousing, Fulfillment & Logistics</title>
-    <meta name="description" content="Comprehensive 3PL services including receiving, warehousing, fulfillment, and inventory management. Located in Medley, FL near Miami.">
-    <meta name="keywords" content="3PL services Miami, warehousing services, fulfillment services, inventory management, receiving services">
-    <meta name="robots" content="index, follow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>3PL Services Miami | Warehousing, Fulfillment & Logistics | Miami Alliance</title>
+    <meta name="description" content="Comprehensive 3PL services: receiving & QC, warehouse storage, pick-pack-ship fulfillment, inventory management, and import/export logistics. Located in Medley, FL near Miami International Airport.">
+    <meta name="keywords" content="3PL services Miami, warehousing services, fulfillment services, inventory management, receiving services, pick pack ship Miami, import export logistics Florida, warehouse storage Medley FL">
+    <meta name="robots" content="index, follow, max-image-preview:large">
     <link rel="canonical" href="https://miamialliance3pl.com/services.html">
+    <meta name="theme-color" content="#0f172a">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Services | Miami Alliance 3PL">
-    <meta property="og:description" content="Comprehensive 3PL services including receiving, warehousing, fulfillment, and inventory management.">
+    <meta property="og:title" content="3PL Services | Warehousing, Fulfillment & Logistics | Miami Alliance">
+    <meta property="og:description" content="Comprehensive 3PL services including receiving, warehousing, fulfillment, and inventory management in Miami.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://miamialliance3pl.com/services.html">
+    <meta property="og:site_name" content="Miami Alliance 3PL">
+    <meta property="og:image" content="https://miamialliance3pl.com/images/og-default.svg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="3PL Services | Miami Alliance">
+    <meta name="twitter:description" content="Full-service 3PL: receiving, warehousing, fulfillment, inventory management, import/export.">
 
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
@@ -31,7 +39,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
@@ -57,6 +65,7 @@
         "provider": {
             "@type": "LocalBusiness",
             "name": "Miami Alliance 3PL",
+            "telephone": "+1-786-873-8819",
             "address": {"@type": "PostalAddress", "streetAddress": "8780 NW 100th ST", "addressLocality": "Medley", "addressRegion": "FL", "postalCode": "33178", "addressCountry": "US"}
         },
         "areaServed": [
@@ -80,10 +89,14 @@
     </script>
 </head>
 <body>
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress" aria-hidden="true"></div>
+
     <!-- Navigation -->
     <header class="header">
         <nav class="nav container">
             <a href="index.html" class="logo">
+                <img src="assets/logo.jpg" alt="Miami Alliance 3PL" class="nav-logo-img">
                 <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
             </a>
             <button class="nav-toggle" aria-label="Toggle navigation">
@@ -95,6 +108,7 @@
                 <li><a href="index.html" class="nav-link">Home</a></li>
                 <li><a href="services.html" class="nav-link active">Services</a></li>
                 <li><a href="quote.html" class="nav-link">Instant Quote</a></li>
+                <li><a href="blog.html" class="nav-link">Blog</a></li>
                 <li><a href="about.html" class="nav-link">About</a></li>
                 <li><a href="contact.html" class="nav-link">Contact</a></li>
                 <li><a href="login.html" class="nav-link btn btn-outline">Customer Portal</a></li>
@@ -104,10 +118,27 @@
 
     <main>
         <!-- Page Header -->
-        <section class="page-header">
+        <section class="page-header" style="position: relative; overflow: hidden;">
+            <div class="hero-shapes">
+                <div class="hero-shape"></div>
+                <div class="hero-shape"></div>
+                <div class="hero-shape"></div>
+            </div>
+            <div class="container" style="position: relative; z-index: 1;">
+                <h1>Miami 3PL Services: <span class="gradient-text">Fulfillment, Warehousing & Logistics</span></h1>
+                <p>Comprehensive logistics solutions to help your business grow — from receiving to last-mile delivery</p>
+            </div>
+        </section>
+
+        <!-- Trust Bar -->
+        <section class="trust-bar reveal">
             <div class="container">
-                <h1>Miami 3PL Services: Fulfillment, Warehousing & Logistics</h1>
-                <p>Comprehensive logistics solutions to help your business grow</p>
+                <div class="trust-items">
+                    <div class="trust-item"><span class="trust-icon">🎯</span><span>99.8% Accuracy</span></div>
+                    <div class="trust-item"><span class="trust-icon">⚡</span><span>Same-Day Processing</span></div>
+                    <div class="trust-item"><span class="trust-icon">📋</span><span>No Contracts</span></div>
+                    <div class="trust-item"><span class="trust-icon">🔒</span><span>24/7 Security</span></div>
+                </div>
             </div>
         </section>
 
@@ -115,8 +146,8 @@
         <section class="content-section">
             <div class="container">
                 <!-- Receiving -->
-                <div class="service-detail" id="receiving">
-                    <div class="service-detail-icon">🏭</div>
+                <div class="service-detail reveal-left" id="receiving">
+                    <div class="service-detail-icon float float-delay-1">🏭</div>
                     <div class="service-detail-content">
                         <h3>Receiving Services</h3>
                         <p>Our receiving team ensures your inventory is accurately counted, inspected, and logged into our system the moment it arrives. We handle shipments from domestic and international suppliers with equal efficiency.</p>
@@ -132,8 +163,8 @@
                 </div>
 
                 <!-- Warehousing -->
-                <div class="service-detail" id="warehousing">
-                    <div class="service-detail-icon">📦</div>
+                <div class="service-detail reveal-right" id="warehousing">
+                    <div class="service-detail-icon float float-delay-2">📦</div>
                     <div class="service-detail-content">
                         <h3>Warehousing</h3>
                         <p>Our 20,000+ sq ft facility in Medley, FL offers secure, climate-controlled storage with strategic access to Port Miami, Miami International Airport (just 8 miles away), and major highways.</p>
@@ -149,8 +180,8 @@
                 </div>
 
                 <!-- Fulfillment -->
-                <div class="service-detail" id="fulfillment">
-                    <div class="service-detail-icon">🚚</div>
+                <div class="service-detail reveal-left" id="fulfillment">
+                    <div class="service-detail-icon float float-delay-3">🚚</div>
                     <div class="service-detail-content">
                         <h3>Fulfillment & Shipping</h3>
                         <p>From pick and pack to final delivery, we handle your order fulfillment with precision and speed. Our integrations with major carriers ensure competitive rates and reliable delivery.</p>
@@ -166,8 +197,8 @@
                 </div>
 
                 <!-- Inventory Management -->
-                <div class="service-detail" id="inventory">
-                    <div class="service-detail-icon">📊</div>
+                <div class="service-detail reveal-right" id="inventory">
+                    <div class="service-detail-icon float float-delay-1">📊</div>
                     <div class="service-detail-content">
                         <h3>Inventory Management</h3>
                         <p>Stay in control with real-time inventory visibility through our customer portal. Track stock levels, set alerts, and make data-driven decisions for your business.</p>
@@ -183,8 +214,8 @@
                 </div>
 
                 <!-- Inbound Logistics -->
-                <div class="service-detail" id="inbound">
-                    <div class="service-detail-icon">📥</div>
+                <div class="service-detail reveal-left" id="inbound">
+                    <div class="service-detail-icon float float-delay-2">📥</div>
                     <div class="service-detail-content">
                         <h3>Inbound Logistics</h3>
                         <p>Streamline your supply chain with our comprehensive inbound logistics services. We coordinate with your suppliers and freight forwarders to ensure smooth delivery to our facility.</p>
@@ -200,8 +231,8 @@
                 </div>
 
                 <!-- Import Services -->
-                <div class="service-detail" id="import">
-                    <div class="service-detail-icon">🌎</div>
+                <div class="service-detail reveal-right" id="import">
+                    <div class="service-detail-icon float float-delay-3">🌎</div>
                     <div class="service-detail-content">
                         <h3>Import Services</h3>
                         <p>Miami's gateway position makes us ideal for international imports. We work with customs brokers and freight forwarders to receive your international shipments efficiently.</p>
@@ -217,8 +248,8 @@
                 </div>
 
                 <!-- Export Services -->
-                <div class="service-detail" id="export">
-                    <div class="service-detail-icon">✈️</div>
+                <div class="service-detail reveal-left" id="export">
+                    <div class="service-detail-icon float float-delay-1">✈️</div>
                     <div class="service-detail-content">
                         <h3>Export Services</h3>
                         <p>Reach international markets with our export logistics support. Our strategic Miami location makes us the perfect hub for shipping to Latin America, the Caribbean, and beyond.</p>
@@ -236,37 +267,40 @@
         </section>
 
         <!-- Carrier Partners Section -->
-        <section class="content-section" style="background-color: var(--color-gray-50);">
+        <section class="content-section reveal" style="background-color: var(--color-gray-50);">
             <div class="container">
                 <h2 class="section-title">Our Shipping Partners</h2>
                 <p class="section-subtitle">Integrated with all major carriers for domestic and international shipping</p>
-                <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: var(--spacing-xl); margin-top: var(--spacing-lg);">
-                    <div style="text-align: center; padding: var(--spacing-lg); background: white; border-radius: var(--radius-lg); min-width: 160px;">
+                <div class="carrier-grid stagger-children">
+                    <div class="carrier-card">
                         <div style="font-size: 2rem; font-weight: 700; color: #4a1c1c;">UPS</div>
-                        <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">Ground • Air • Intl</div>
+                        <div style="font-size: var(--font-size-sm); color: var(--color-gray-500);">Ground &bull; Air &bull; Intl</div>
                     </div>
-                    <div style="text-align: center; padding: var(--spacing-lg); background: white; border-radius: var(--radius-lg); min-width: 160px;">
+                    <div class="carrier-card">
                         <div style="font-size: 2rem; font-weight: 700; color: #333366;">USPS</div>
-                        <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">Priority • First Class</div>
+                        <div style="font-size: var(--font-size-sm); color: var(--color-gray-500);">Priority &bull; First Class</div>
                     </div>
-                    <div style="text-align: center; padding: var(--spacing-lg); background: white; border-radius: var(--radius-lg); min-width: 160px;">
+                    <div class="carrier-card">
                         <div style="font-size: 2rem; font-weight: 700; color: #4d148c;">FedEx</div>
-                        <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">Express • Ground • Freight</div>
+                        <div style="font-size: var(--font-size-sm); color: var(--color-gray-500);">Express &bull; Ground &bull; Freight</div>
                     </div>
-                    <div style="text-align: center; padding: var(--spacing-lg); background: white; border-radius: var(--radius-lg); min-width: 160px;">
+                    <div class="carrier-card">
                         <div style="font-size: 2rem; font-weight: 700; color: #ff6600;">DHL</div>
-                        <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">International Express</div>
+                        <div style="font-size: var(--font-size-sm); color: var(--color-gray-500);">International Express</div>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- CTA Section -->
-        <section class="cta-section">
+        <section class="cta-section reveal-scale">
             <div class="container">
                 <h2>Ready to Get Started?</h2>
                 <p>Contact us today for a custom quote tailored to your business needs.</p>
-                <a href="contact.html" class="btn btn-primary btn-large">Request a Quote</a>
+                <div class="cta-buttons">
+                    <a href="quote.html" class="btn btn-primary btn-large">Get Instant Quote</a>
+                    <a href="contact.html" class="btn btn-secondary btn-large" style="border-color: rgba(255,255,255,0.3); color: white;">Schedule a Call</a>
+                </div>
             </div>
         </section>
     </main>
@@ -277,6 +311,7 @@
             <div class="footer-grid">
                 <div class="footer-brand">
                     <div class="logo">
+                        <img src="assets/logo.jpg" alt="Miami Alliance 3PL" class="nav-logo-img" style="height: 48px;">
                         <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
                     </div>
                     <p>Your trusted logistics partner in Miami. Warehousing, fulfillment, and shipping services for businesses of all sizes.</p>
@@ -286,6 +321,7 @@
                     <ul>
                         <li><a href="services.html">Services</a></li>
                         <li><a href="quote.html">Instant Quote</a></li>
+                        <li><a href="blog.html">Blog</a></li>
                         <li><a href="about.html">About Us</a></li>
                         <li><a href="contact.html">Contact</a></li>
                         <li><a href="login.html">Customer Portal</a></li>
@@ -294,7 +330,7 @@
                 <div class="footer-links">
                     <h4>Services</h4>
                     <ul>
-                        <li><a href="services.html#receiving">Receiving</a></li>
+                        <li><a href="services.html#receiving">Receiving & QC</a></li>
                         <li><a href="services.html#warehousing">Warehousing</a></li>
                         <li><a href="services.html#fulfillment">Fulfillment</a></li>
                         <li><a href="services.html#import">Import/Export</a></li>
@@ -304,15 +340,20 @@
                     <h4>Contact</h4>
                     <p>8780 NW 100th ST</p>
                     <p>Medley, FL 33178</p>
-                    <p>info@miamialliance3pl.com</p>
-                    <p>(786) 873-8819</p>
+                    <p><a href="mailto:info@miamialliance3pl.com" style="color: var(--color-accent);">info@miamialliance3pl.com</a></p>
+                    <p><a href="tel:+17868738819" style="color: var(--color-accent);">(786) 873-8819</a></p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Miami Alliance 3PL. All rights reserved.</p>
+                <p>&copy; 2026 Miami Alliance 3PL. All rights reserved.</p>
             </div>
         </div>
     </footer>
+
+    <!-- Sticky CTA -->
+    <div class="sticky-cta">
+        <a href="quote.html"><span class="sticky-cta-icon">📦</span> Get Free Quote</a>
+    </div>
 
     <script src="js/main.js"></script>
 </body>

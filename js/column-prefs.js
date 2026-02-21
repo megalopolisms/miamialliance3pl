@@ -26,7 +26,7 @@
   // ── Inject Styles ────────────────────────────────────────────────────
   var css = document.createElement("style");
   css.textContent = [
-    ".col-prefs-container{position:relative;display:flex;justify-content:flex-end;margin-bottom:8px}",
+    ".col-prefs-container{position:relative;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}",
     ".col-prefs-btn{background:var(--color-gray-100,#f1f5f9);border:1px solid var(--color-gray-300,#cbd5e1);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:.813rem;font-weight:500;color:var(--color-gray-600,#475569);display:inline-flex;align-items:center;gap:4px;transition:all .15s;font-family:inherit}",
     ".col-prefs-btn:hover{background:var(--color-gray-200,#e2e8f0);color:var(--color-gray-800,#1e293b)}",
     ".col-prefs-panel{position:absolute;right:0;top:calc(100% + 4px);z-index:1000;background:#fff;border:1px solid var(--color-gray-200,#e2e8f0);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.12),0 4px 8px rgba(0,0,0,.06);padding:16px;min-width:270px;max-height:420px;overflow-y:auto}",
@@ -55,8 +55,14 @@
     ".col-label-input:focus{box-shadow:0 0 0 2px rgba(16,185,129,.2)}",
     ".col-label.renamed{font-style:italic;color:var(--color-accent,#10b981)}",
     // Standalone rename button (visible next to Columns gear)
-    ".col-rename-standalone{background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:.813rem;font-weight:600;color:#fff;display:inline-flex;align-items:center;gap:5px;transition:all .15s;font-family:inherit;margin-right:6px;box-shadow:0 1px 3px rgba(16,185,129,.3)}",
-    ".col-rename-standalone:hover{background:linear-gradient(135deg,#059669,#047857);box-shadow:0 2px 6px rgba(16,185,129,.4);transform:translateY(-1px)}",
+    "@keyframes colRenamePulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)}70%{box-shadow:0 0 0 12px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}",
+    ".col-rename-standalone{background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:8px;padding:10px 18px;cursor:pointer;font-size:.938rem;font-weight:700;color:#fff;display:inline-flex;align-items:center;gap:6px;transition:all .15s;font-family:inherit;margin-right:8px;box-shadow:0 2px 8px rgba(16,185,129,.4);animation:colRenamePulse 1.5s ease-in-out 5}",
+    ".col-rename-standalone:hover{background:linear-gradient(135deg,#059669,#047857);box-shadow:0 4px 12px rgba(16,185,129,.5);transform:translateY(-1px)}",
+    // Admin rename banner (one-time welcome tip)
+    ".col-rename-banner{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:2px solid #10b981;border-radius:10px;padding:12px 18px;margin-bottom:12px;display:flex;align-items:center;gap:12px;font-size:.875rem;color:#065f46;box-shadow:0 2px 8px rgba(16,185,129,.15);animation:colRenamePulse 2s ease-in-out 3}",
+    ".col-rename-banner strong{color:#047857}",
+    ".col-rename-banner .banner-dismiss{background:none;border:1px solid #10b981;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:.75rem;color:#047857;margin-left:auto;font-family:inherit;transition:all .15s;white-space:nowrap}",
+    ".col-rename-banner .banner-dismiss:hover{background:#10b981;color:#fff}",
     // Header rename indicator (for direct header dblclick)
     "th.col-renameable{position:relative}",
     "th.col-renameable::after{content:'✏️';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:.7rem;opacity:0;transition:opacity .2s;pointer-events:none}",
@@ -340,10 +346,32 @@
   ColumnPrefs.prototype._addGearButton = function () {
     var wrapper =
       this.table.closest(".table-wrapper") || this.table.parentElement;
+
+    // Show one-time admin rename banner (dismissed with localStorage)
+    var bannerKey = "m3pl_rename_banner_seen_" + this.tableId;
+    if (this.canRename && !localStorage.getItem(bannerKey)) {
+      var banner = document.createElement("div");
+      banner.className = "col-rename-banner";
+      banner.innerHTML =
+        '<span style="font-size:1.4rem">✏️</span>' +
+        "<span><strong>Admin Feature:</strong> You can rename any column! " +
+        'Click the green <strong>"Rename Columns"</strong> button below, ' +
+        "or <strong>double-click</strong> any column header directly.</span>";
+      var dismissBtn = document.createElement("button");
+      dismissBtn.className = "banner-dismiss";
+      dismissBtn.textContent = "Got it";
+      dismissBtn.addEventListener("click", function () {
+        localStorage.setItem(bannerKey, "1");
+        banner.remove();
+      });
+      banner.appendChild(dismissBtn);
+      wrapper.insertBefore(banner, wrapper.firstChild);
+    }
+
     var container = document.createElement("div");
     container.className = "col-prefs-container";
 
-    // Add standalone "Rename Columns" button for admin (Jorge) — high visibility
+    // Left side: rename button (admin only — high visibility)
     if (this.canRename) {
       var renameStandalone = document.createElement("button");
       renameStandalone.className = "col-rename-standalone";
@@ -361,6 +389,7 @@
       container.appendChild(renameStandalone);
     }
 
+    // Right side: gear button (all users)
     var btn = document.createElement("button");
     btn.className = "col-prefs-btn";
     btn.innerHTML = '<span style="font-size:1rem">&#9881;</span> Columns';

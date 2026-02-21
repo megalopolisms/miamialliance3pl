@@ -749,6 +749,9 @@ class QuoteCalculator {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.text("CONTACT", 165, yPos + 15, { align: "center" });
+    doc.link(145, yPos + 5, 40, 15, {
+      url: "https://miamialliance3pl.com/contact.html",
+    });
 
     // ===== FOOTER =====
     const footerY = 275;

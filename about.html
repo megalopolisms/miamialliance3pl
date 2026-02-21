@@ -2,18 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us | Miami Alliance 3PL - Your Logistics Partner</title>
-    <meta name="description" content="Learn about Miami Alliance 3PL, your trusted third-party logistics partner in Medley, FL. Dedicated to reliable warehousing and fulfillment services.">
-    <meta name="keywords" content="about Miami Alliance 3PL, logistics company Miami, 3PL provider Florida">
-    <meta name="robots" content="index, follow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>About Us | Miami Alliance 3PL - Your South Florida Logistics Partner</title>
+    <meta name="description" content="Learn about Miami Alliance 3PL, your trusted third-party logistics partner in Medley, FL. 20,000+ sq ft warehouse, 99.8% accuracy, strategic Miami location near MIA and Port Miami.">
+    <meta name="keywords" content="about Miami Alliance 3PL, logistics company Miami, 3PL provider Florida, warehouse Medley FL, South Florida logistics">
+    <meta name="robots" content="index, follow, max-image-preview:large">
     <link rel="canonical" href="https://miamialliance3pl.com/about.html">
+    <meta name="theme-color" content="#0f172a">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="About Us | Miami Alliance 3PL">
+    <meta property="og:title" content="About Us | Miami Alliance 3PL - Your Logistics Partner">
     <meta property="og:description" content="Learn about Miami Alliance 3PL, your trusted third-party logistics partner in Medley, FL.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://miamialliance3pl.com/about.html">
+    <meta property="og:site_name" content="Miami Alliance 3PL">
+    <meta property="og:image" content="https://miamialliance3pl.com/images/og-default.svg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="About Miami Alliance 3PL">
+    <meta name="twitter:description" content="Your trusted 3PL partner in South Florida. Warehousing, fulfillment, and logistics.">
 
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
@@ -31,12 +39,12 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
 
-    <!-- Structured Data - BreadcrumbList -->
+    <!-- Structured Data -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -47,8 +55,6 @@
         ]
     }
     </script>
-
-    <!-- Structured Data - AboutPage -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -58,18 +64,23 @@
         "mainEntity": {
             "@type": "Organization",
             "name": "Miami Alliance 3PL",
+            "telephone": "+1-786-873-8819",
             "foundingLocation": {"@type": "Place", "name": "Medley, Florida"},
             "areaServed": ["Miami", "Florida", "United States", "Latin America", "Caribbean"],
-            "knowsAbout": ["Third-party logistics", "E-commerce fulfillment", "Warehousing", "Supply chain management"]
+            "knowsAbout": ["Third-party logistics", "E-commerce fulfillment", "Warehousing", "Supply chain management", "International shipping"]
         }
     }
     </script>
 </head>
 <body>
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress" aria-hidden="true"></div>
+
     <!-- Navigation -->
     <header class="header">
         <nav class="nav container">
             <a href="index.html" class="logo">
+                <img src="assets/logo.jpg" alt="Miami Alliance 3PL" class="nav-logo-img">
                 <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
             </a>
             <button class="nav-toggle" aria-label="Toggle navigation">
@@ -81,6 +92,7 @@
                 <li><a href="index.html" class="nav-link">Home</a></li>
                 <li><a href="services.html" class="nav-link">Services</a></li>
                 <li><a href="quote.html" class="nav-link">Instant Quote</a></li>
+                <li><a href="blog.html" class="nav-link">Blog</a></li>
                 <li><a href="about.html" class="nav-link active">About</a></li>
                 <li><a href="contact.html" class="nav-link">Contact</a></li>
                 <li><a href="login.html" class="nav-link btn btn-outline">Customer Portal</a></li>
@@ -90,10 +102,15 @@
 
     <main>
         <!-- Page Header -->
-        <section class="page-header">
-            <div class="container">
-                <h1>About Miami Alliance 3PL: Your South Florida Logistics Partner</h1>
-                <p>Your trusted logistics partner in the heart of Miami</p>
+        <section class="page-header" style="position: relative; overflow: hidden;">
+            <div class="hero-shapes">
+                <div class="hero-shape"></div>
+                <div class="hero-shape"></div>
+                <div class="hero-shape"></div>
+            </div>
+            <div class="container" style="position: relative; z-index: 1;">
+                <h1>About <span class="gradient-text">Miami Alliance 3PL</span></h1>
+                <p>Your trusted logistics partner in the heart of Miami's industrial corridor</p>
             </div>
         </section>
 
@@ -101,13 +118,13 @@
         <section class="content-section">
             <div class="container">
                 <div class="benefits-grid">
-                    <div class="benefit-item">
+                    <div class="benefit-item reveal-left">
                         <h2 class="section-title" style="text-align: left;">Our Story</h2>
                         <p>Miami Alliance 3PL was founded with a simple mission: to provide reliable, efficient logistics services that help businesses thrive. Based in Medley, FL, we serve as a strategic hub for companies looking to reach customers across the United States, Latin America, and beyond.</p>
                         <br>
                         <p>Our facility is strategically located near Port Miami, Miami International Airport, and major interstate highways, giving our clients unparalleled access to domestic and international shipping routes.</p>
                     </div>
-                    <div class="benefit-item">
+                    <div class="benefit-item reveal-right">
                         <h2 class="section-title" style="text-align: left;">Our Mission</h2>
                         <p>We believe logistics should be simple, transparent, and reliable. Our mission is to be an extension of your team, handling your warehousing and fulfillment needs so you can focus on what you do best: growing your business.</p>
                         <br>
@@ -118,10 +135,10 @@
         </section>
 
         <!-- Values -->
-        <section class="content-section">
+        <section class="content-section reveal" style="background-color: var(--color-gray-50);">
             <div class="container">
                 <h2 class="section-title">Our Values</h2>
-                <div class="services-grid">
+                <div class="services-grid stagger-children">
                     <div class="service-card">
                         <div class="service-icon">🎯</div>
                         <h3>Reliability</h3>
@@ -146,12 +163,36 @@
             </div>
         </section>
 
-        <!-- Location -->
-        <section class="content-section">
+        <!-- Stats -->
+        <section class="stats reveal">
             <div class="container">
-                <h2 class="section-title">Our Location</h2>
-                <p class="section-subtitle">Strategically positioned for optimal logistics</p>
-                <div class="benefits-grid">
+                <div class="stats-grid stagger-children">
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="99.8" data-suffix="%">99.8%</div>
+                        <div class="stat-label">Order Accuracy</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">Same-Day</div>
+                        <div class="stat-label">Processing</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="20000" data-suffix="+">20,000+</div>
+                        <div class="stat-label">Sq Ft Warehouse</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Security & Tracking</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Location -->
+        <section class="content-section reveal">
+            <div class="container">
+                <h2 class="section-title">Strategic Location</h2>
+                <p class="section-subtitle">Positioned for optimal logistics performance</p>
+                <div class="benefits-grid stagger-children">
                     <div class="benefit-item">
                         <div class="benefit-number">📍</div>
                         <h3>8780 NW 100th ST, Medley, FL 33178</h3>
@@ -177,11 +218,14 @@
         </section>
 
         <!-- CTA Section -->
-        <section class="cta-section">
+        <section class="cta-section reveal-scale">
             <div class="container">
                 <h2>Let's Work Together</h2>
                 <p>Ready to streamline your logistics? Get in touch with our team today.</p>
-                <a href="contact.html" class="btn btn-primary btn-large">Contact Us</a>
+                <div class="cta-buttons">
+                    <a href="quote.html" class="btn btn-primary btn-large">Get Instant Quote</a>
+                    <a href="contact.html" class="btn btn-secondary btn-large" style="border-color: rgba(255,255,255,0.3); color: white;">Contact Us</a>
+                </div>
             </div>
         </section>
     </main>
@@ -192,6 +236,7 @@
             <div class="footer-grid">
                 <div class="footer-brand">
                     <div class="logo">
+                        <img src="assets/logo.jpg" alt="Miami Alliance 3PL" class="nav-logo-img" style="height: 48px;">
                         <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
                     </div>
                     <p>Your trusted logistics partner in Miami. Warehousing, fulfillment, and shipping services for businesses of all sizes.</p>
@@ -201,6 +246,7 @@
                     <ul>
                         <li><a href="services.html">Services</a></li>
                         <li><a href="quote.html">Instant Quote</a></li>
+                        <li><a href="blog.html">Blog</a></li>
                         <li><a href="about.html">About Us</a></li>
                         <li><a href="contact.html">Contact</a></li>
                         <li><a href="login.html">Customer Portal</a></li>
@@ -209,7 +255,7 @@
                 <div class="footer-links">
                     <h4>Services</h4>
                     <ul>
-                        <li><a href="services.html#receiving">Receiving</a></li>
+                        <li><a href="services.html#receiving">Receiving & QC</a></li>
                         <li><a href="services.html#warehousing">Warehousing</a></li>
                         <li><a href="services.html#fulfillment">Fulfillment</a></li>
                         <li><a href="services.html#inventory">Inventory Management</a></li>
@@ -219,15 +265,20 @@
                     <h4>Contact</h4>
                     <p>8780 NW 100th ST</p>
                     <p>Medley, FL 33178</p>
-                    <p>info@miamialliance3pl.com</p>
-                    <p>(786) 873-8819</p>
+                    <p><a href="mailto:info@miamialliance3pl.com" style="color: var(--color-accent);">info@miamialliance3pl.com</a></p>
+                    <p><a href="tel:+17868738819" style="color: var(--color-accent);">(786) 873-8819</a></p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Miami Alliance 3PL. All rights reserved.</p>
+                <p>&copy; 2026 Miami Alliance 3PL. All rights reserved.</p>
             </div>
         </div>
     </footer>
+
+    <!-- Sticky CTA -->
+    <div class="sticky-cta">
+        <a href="quote.html"><span class="sticky-cta-icon">📦</span> Get Free Quote</a>
+    </div>
 
     <script src="js/main.js"></script>
 </body>
