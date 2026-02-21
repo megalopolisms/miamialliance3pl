@@ -5,7 +5,7 @@
     <!-- Homepage -->
     <url>
         <loc>https://miamialliance3pl.com/</loc>
-        <lastmod>2025-12-30</lastmod>
+        <lastmod>2026-02-21</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
     </url>
@@ -13,7 +13,7 @@
     <!-- Instant Quote Calculator - High Priority Tool Page -->
     <url>
         <loc>https://miamialliance3pl.com/quote.html</loc>
-        <lastmod>2025-12-30</lastmod>
+        <lastmod>2026-02-21</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.95</priority>
     </url>
@@ -21,25 +21,169 @@
     <!-- Services -->
     <url>
         <loc>https://miamialliance3pl.com/services.html</loc>
-        <lastmod>2025-12-30</lastmod>
+        <lastmod>2026-02-21</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
+    </url>
+
+    <!-- Blog Hub -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <!-- Blog: What Is a 3PL Warehouse -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/what-is-a-3pl-warehouse.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: 3PL Warehouse Cost Miami Pricing Guide -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/3pl-warehouse-cost-miami-pricing-guide.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Best 3PL Fulfillment Centers Miami -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/best-3pl-fulfillment-centers-miami.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Why Medley FL Best 3PL Location -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/why-medley-fl-best-3pl-location.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: E-Commerce Fulfillment Small Business No Minimums -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/ecommerce-fulfillment-small-business-no-minimums.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Pick Pack Ship Services Explained -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/pick-pack-ship-services-explained.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: When to Switch to 3PL -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/when-to-switch-to-3pl-7-warning-signs.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Miami Fulfillment Hub 2-Day Shipping -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/miami-fulfillment-hub-2-day-shipping.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: 3PL for Shopify Stores -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/3pl-for-shopify-stores-fulfillment-guide.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: What Is Black Wrapping -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/what-is-black-wrapping-discreet-packaging.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: How to Choose a 3PL in Miami -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/how-to-choose-3pl-miami-checklist.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: 3PL for Amazon Sellers -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/3pl-for-amazon-sellers-fba-prep-guide.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Miami to Latin America LATAM Fulfillment -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/miami-to-latin-america-latam-fulfillment-strategy.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: 3PL for DTC Brands -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/3pl-for-dtc-brands-direct-to-consumer-fulfillment.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Kitting and Assembly Services -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/kitting-assembly-services-subscription-boxes-bundles.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
     </url>
 
     <!-- Contact -->
     <url>
         <loc>https://miamialliance3pl.com/contact.html</loc>
-        <lastmod>2025-12-30</lastmod>
+        <lastmod>2026-02-21</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
+    </url>
+
+    <!-- Blog / News -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.85</priority>
     </url>
 
     <!-- About -->
     <url>
         <loc>https://miamialliance3pl.com/about.html</loc>
-        <lastmod>2025-12-30</lastmod>
+        <lastmod>2026-02-21</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
+    </url>
+
+    <!-- Login / Customer Portal -->
+    <url>
+        <loc>https://miamialliance3pl.com/login.html</loc>
+        <lastmod>2026-02-21</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
     </url>
 
 </urlset>
