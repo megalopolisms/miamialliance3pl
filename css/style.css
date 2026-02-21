@@ -330,7 +330,7 @@ ul {
    ========================================================================== */
 .header {
   position: fixed;
-  top: 0;
+  top: var(--banner-height, 0px);
   left: 0;
   right: 0;
   background-color: var(--color-white);
@@ -385,7 +385,7 @@ ul {
 
 .nav-menu {
   position: fixed;
-  top: 70px;
+  top: calc(70px + var(--banner-height, 0px));
   left: 0;
   right: 0;
   background-color: var(--color-white);
@@ -446,7 +446,8 @@ ul {
    Hero Section
    ========================================================================== */
 .hero {
-  padding: calc(70px + var(--spacing-3xl)) 0 var(--spacing-3xl);
+  padding: calc(70px + var(--banner-height, 0px) + var(--spacing-3xl)) 0
+    var(--spacing-3xl);
   background: linear-gradient(
     135deg,
     var(--color-primary) 0%,
@@ -520,7 +521,8 @@ ul {
 
 @media (min-width: 768px) {
   .hero {
-    padding: calc(70px + var(--spacing-3xl)) 0 var(--spacing-3xl);
+    padding: calc(70px + var(--banner-height, 0px) + var(--spacing-3xl)) 0
+      var(--spacing-3xl);
   }
 
   .hero-title {
@@ -964,7 +966,7 @@ ul {
 .portal-layout {
   display: flex;
   min-height: 100vh;
-  padding-top: 70px;
+  padding-top: calc(70px + var(--banner-height, 0px));
 }
 
 .portal-sidebar {
@@ -973,7 +975,7 @@ ul {
   color: var(--color-white);
   padding: var(--spacing-lg);
   position: fixed;
-  top: 70px;
+  top: calc(70px + var(--banner-height, 0px));
   left: 0;
   bottom: 0;
   transform: translateX(-100%);
@@ -1302,7 +1304,8 @@ ul {
   /* Better hero on mobile */
   .hero {
     min-height: 60vh;
-    padding: calc(70px + var(--spacing-xl)) 0 var(--spacing-xl);
+    padding: calc(70px + var(--banner-height, 0px) + var(--spacing-xl)) 0
+      var(--spacing-xl);
   }
 
   .hero-title {
@@ -2537,7 +2540,7 @@ ul {
   padding: var(--spacing-md) 0;
   border-bottom: 1px solid var(--color-gray-200);
   position: sticky;
-  top: 70px;
+  top: calc(70px + var(--banner-height, 0px));
   z-index: 100;
 }
 
@@ -3757,6 +3760,11 @@ ul {
   font-size: var(--font-size-sm);
   font-weight: 600;
   letter-spacing: 0.02em;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001;
 }
 
 .urgency-actions {
