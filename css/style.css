@@ -3518,6 +3518,10 @@ ul {
   bottom: 24px;
   right: 24px;
   z-index: 998;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
   opacity: 0;
   transform: translateY(20px) scale(0.9);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -3543,12 +3547,26 @@ ul {
   box-shadow: 0 8px 30px rgba(16, 185, 129, 0.35);
   transition: all 0.3s ease;
   text-decoration: none;
+}
+
+.sticky-cta-primary {
   animation: pulse-ring 2s ease-in-out infinite;
 }
 
 .sticky-cta a:hover {
   box-shadow: 0 12px 40px rgba(16, 185, 129, 0.5);
   transform: translateY(-2px);
+}
+
+.sticky-cta-secondary {
+  padding: 0.65rem 1.15rem;
+  font-size: var(--font-size-sm);
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.35);
+}
+
+.sticky-cta-secondary:hover {
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.5);
 }
 
 .sticky-cta-icon {
@@ -3729,6 +3747,11 @@ ul {
 .urgency-banner {
   background: linear-gradient(90deg, var(--color-accent), #0ea5e9);
   color: white;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.75rem;
   text-align: center;
   padding: 0.75rem;
   font-size: var(--font-size-sm);
@@ -3736,10 +3759,43 @@ ul {
   letter-spacing: 0.02em;
 }
 
+.urgency-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .urgency-banner a {
   color: white;
   text-decoration: underline;
-  margin-left: 0.5rem;
+}
+
+.urgency-actions a + a {
+  position: relative;
+  padding-left: 0.75rem;
+}
+
+.urgency-actions a + a::before {
+  content: "|";
+  position: absolute;
+  left: 0;
+  opacity: 0.65;
+}
+
+@media (max-width: 640px) {
+  .urgency-banner {
+    padding: 0.625rem;
+  }
+
+  .urgency-actions {
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .urgency-actions a + a {
+    padding-left: 0.5rem;
+  }
 }
 
 /* --- FAQ Enhancement --- */
