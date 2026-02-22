@@ -454,7 +454,7 @@ ul {
    Hero Section
    ========================================================================== */
 .hero {
-  padding: calc(70px + var(--spacing-xs)) 0 var(--spacing-md);
+  padding: 75px 0 var(--spacing-md);
   background: linear-gradient(
     135deg,
     var(--color-primary) 0%,
@@ -528,7 +528,7 @@ ul {
 
 @media (min-width: 768px) {
   .hero {
-    padding: calc(70px + var(--spacing-sm)) 0 var(--spacing-lg);
+    padding: 75px 0 var(--spacing-lg);
   }
 
   .hero-title {
@@ -784,7 +784,7 @@ ul {
 
 /* About Page */
 .page-header {
-  padding: calc(70px + var(--spacing-sm)) 0 var(--spacing-lg);
+  padding: 75px 0 var(--spacing-lg);
   background: linear-gradient(
     135deg,
     var(--color-primary) 0%,
@@ -1310,7 +1310,7 @@ ul {
   /* Better hero on mobile */
   .hero {
     min-height: 60vh;
-    padding: calc(70px + var(--spacing-xs)) 0 var(--spacing-md);
+    padding: 75px 0 var(--spacing-md);
   }
 
   .hero-title {
@@ -1957,7 +1957,7 @@ ul {
 
 /* Compact Page Header */
 .page-header-compact {
-  padding: calc(70px + var(--spacing-xs)) 0 var(--spacing-sm);
+  padding: 75px 0 var(--spacing-sm);
 }
 
 .page-header-compact h1 {
