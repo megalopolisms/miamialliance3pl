@@ -4161,7 +4161,7 @@ h4,
       rgba(6, 182, 212, 0.17),
       transparent 65%
     );
-  min-height: 88vh;
+  min-height: auto;
 }
 
 .hero-grid-upgrade {
