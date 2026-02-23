@@ -4264,9 +4264,35 @@ h4,
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.hero-funnel-card .hero-logo {
-  justify-content: flex-start;
-  margin-bottom: 0.75rem;
+.hero-right-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.hero-logo-standalone {
+  display: flex;
+  justify-content: center;
+}
+
+.hero-logo-standalone img {
+  max-height: 280px;
+  width: auto;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 1080px) {
+  .hero-logo-standalone img {
+    max-height: 220px;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-logo-standalone img {
+    max-height: 180px;
+  }
 }
 
 .hero-funnel-card h2 {
