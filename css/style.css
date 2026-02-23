@@ -4249,6 +4249,7 @@ h4,
 .hero-funnel-card {
   position: relative;
   z-index: 2;
+  width: 100%;
   padding: clamp(1rem, 1.6vw, 1.5rem);
   border-radius: 1.35rem;
   background: linear-gradient(
@@ -4268,30 +4269,61 @@ h4,
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
+  align-self: start;
+  padding-top: var(--spacing-lg);
 }
 
 .hero-logo-standalone {
   display: flex;
   justify-content: center;
+  position: relative;
+}
+
+.hero-logo-standalone::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(
+    ellipse,
+    rgba(16, 185, 129, 0.15) 0%,
+    transparent 70%
+  );
+  z-index: -1;
+  pointer-events: none;
 }
 
 .hero-logo-standalone img {
-  max-height: 280px;
+  max-height: 260px;
   width: auto;
   border-radius: var(--radius-lg);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(16, 185, 129, 0.1);
+  transition: transform 0.4s ease;
+}
+
+.hero-logo-standalone img:hover {
+  transform: scale(1.03);
 }
 
 @media (max-width: 1080px) {
   .hero-logo-standalone img {
-    max-height: 220px;
+    max-height: 200px;
   }
 }
 
 @media (max-width: 767px) {
+  .hero-right-col {
+    padding-top: 0;
+  }
+
   .hero-logo-standalone img {
-    max-height: 180px;
+    max-height: 160px;
   }
 }
 
