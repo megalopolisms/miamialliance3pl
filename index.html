@@ -66,7 +66,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Sora:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="css/style.css?v=202602230210">
+    <link rel="stylesheet" href="css/style.css?v=202602230220">
 
     <!-- Structured Data - Organization -->
     <script type="application/ld+json">
@@ -254,7 +254,7 @@
 
     <!-- Urgency Banner -->
     <div class="urgency-banner">
-        <span class="urgency-copy">Limited availability — Only 3 warehouse bays remaining for Q1 2026</span>
+        <span class="urgency-copy">Limited availability — Only 3 warehouse bays remaining for Q2 2026</span>
         <span class="urgency-actions">
             <a href="quote.html?source=urgency-banner">Lock in your rate &rarr;</a>
             <a href="blog.html?source=urgency-banner" aria-label="Read the Miami Alliance 3PL blog">Read the 3PL Blog &rarr;</a>
@@ -345,7 +345,6 @@
                         <div class="hero-cta">
                             <a href="quote.html?source=homepage-hero" class="btn btn-primary btn-large">Get Free Quote</a>
                             <a href="#contact-funnel" class="btn btn-secondary">Build My 3PL Plan</a>
-                            <a href="blog.html?source=homepage-hero" class="btn btn-blog-cta">📖 Read Our Blog</a>
                         </div>
                     </div>
                     <div class="hero-right-col reveal-right">
@@ -463,7 +462,7 @@
                         <p>Focus on sales & marketing while we handle your entire supply chain.</p>
                     </div>
                 </div>
-                <div style="text-align: center; margin-top: var(--spacing-xl);">
+                <div class="process-cta">
                     <a href="quote.html" class="btn btn-primary btn-large">Start with a Free Quote &rarr;</a>
                 </div>
             </div>
@@ -496,7 +495,7 @@
                         <p>24/7 inventory visibility through our customer portal. Low-stock alerts, detailed analytics, and API integrations included.</p>
                     </div>
                 </div>
-                <div class="services-cta" style="margin-top: var(--spacing-lg);">
+                <div class="services-cta">
                     <a href="services.html" class="btn btn-outline">View All Services &rarr;</a>
                 </div>
             </div>
@@ -585,29 +584,29 @@
         </section>
 
         <!-- ===== CARRIER PARTNERSHIPS ===== -->
-        <section class="content-section reveal" style="padding: var(--spacing-2xl) 0; background-color: var(--color-gray-50);">
+        <section class="carriers-section reveal">
             <div class="container">
                 <h2 class="section-title">Shipping Partners</h2>
                 <p class="section-subtitle">Integrated with all major carriers for the best rates and fastest delivery</p>
                 <div class="carrier-grid stagger-children">
                     <div class="carrier-card">
-                        <div style="font-size: 2.5rem; font-weight: 700; color: #4a1c1c;">UPS</div>
-                        <div style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-top: var(--spacing-xs);">Ground, Air, International</div>
+                        <div class="carrier-name" style="color: #4a1c1c;">UPS</div>
+                        <div class="carrier-desc">Ground, Air, International</div>
                     </div>
                     <div class="carrier-card">
-                        <div style="font-size: 2.5rem; font-weight: 700; color: #333366;">USPS</div>
-                        <div style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-top: var(--spacing-xs);">Priority, First Class, Media</div>
+                        <div class="carrier-name" style="color: #333366;">USPS</div>
+                        <div class="carrier-desc">Priority, First Class, Media</div>
                     </div>
                     <div class="carrier-card">
-                        <div style="font-size: 2.5rem; font-weight: 700; color: #4d148c;">FedEx</div>
-                        <div style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-top: var(--spacing-xs);">Express, Ground, Freight</div>
+                        <div class="carrier-name" style="color: #4d148c;">FedEx</div>
+                        <div class="carrier-desc">Express, Ground, Freight</div>
                     </div>
                     <div class="carrier-card">
-                        <div style="font-size: 2.5rem; font-weight: 700; color: #ff6600;">DHL</div>
-                        <div style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-top: var(--spacing-xs);">International Express</div>
+                        <div class="carrier-name" style="color: #ff6600;">DHL</div>
+                        <div class="carrier-desc">International Express</div>
                     </div>
                 </div>
-                <p style="text-align: center; margin-top: var(--spacing-lg); color: var(--color-gray-600);">Daily pickups &bull; Negotiated rates &bull; Real-time tracking integration</p>
+                <p class="carriers-tagline">Daily pickups &bull; Negotiated rates &bull; Real-time tracking integration</p>
             </div>
         </section>
 
@@ -636,12 +635,12 @@
         </section>
 
         <!-- ===== LOCATION SECTION ===== -->
-        <section class="content-section reveal" style="padding: var(--spacing-2xl) 0; background-color: var(--color-white);">
+        <section class="location-section reveal">
             <div class="container">
                 <h2 class="section-title">Our Location</h2>
                 <p class="section-subtitle">Strategically located in Medley, FL — the heart of Miami's logistics corridor</p>
-                <div class="location-grid" style="margin-top: var(--spacing-lg);">
-                    <div style="border-radius: var(--radius-lg); overflow: hidden; height: 350px;">
+                <div class="location-grid">
+                    <div class="location-map-wrap">
                         <iframe
                             src="https://www.google.com/maps?q=8780+NW+100th+St,+Medley,+FL+33178&output=embed"
                             width="100%"
@@ -653,28 +652,28 @@
                             title="Miami Alliance 3PL Location">
                         </iframe>
                     </div>
-                    <div>
-                        <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Miami Alliance 3PL</h3>
-                        <p style="color: var(--color-gray-600); margin-bottom: var(--spacing-md);">8780 NW 100th St<br>Medley, FL 33178</p>
+                    <div class="location-info">
+                        <h3>Miami Alliance 3PL</h3>
+                        <p class="location-address">8780 NW 100th St<br>Medley, FL 33178</p>
                         <div class="location-features">
                             <div class="location-feature">
                                 <span class="location-feature-icon">✈️</span>
-                                <span style="color: var(--color-gray-700);">8 miles from Miami International Airport (MIA)</span>
+                                <span>8 miles from Miami International Airport (MIA)</span>
                             </div>
                             <div class="location-feature">
                                 <span class="location-feature-icon">🚢</span>
-                                <span style="color: var(--color-gray-700);">15 minutes from Port Miami</span>
+                                <span>15 minutes from Port Miami</span>
                             </div>
                             <div class="location-feature">
                                 <span class="location-feature-icon">🛣️</span>
-                                <span style="color: var(--color-gray-700);">Direct access to I-95 & Florida's Turnpike</span>
+                                <span>Direct access to I-95 & Florida's Turnpike</span>
                             </div>
                             <div class="location-feature">
                                 <span class="location-feature-icon">🏢</span>
-                                <span style="color: var(--color-gray-700);">Heart of Miami-Dade industrial corridor</span>
+                                <span>Heart of Miami-Dade industrial corridor</span>
                             </div>
                         </div>
-                        <a href="https://www.google.com/maps/dir//8780+NW+100th+St,+Medley,+FL+33178" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top: var(--spacing-lg);">Get Directions</a>
+                        <a href="https://www.google.com/maps/dir//8780+NW+100th+St,+Medley,+FL+33178" target="_blank" rel="noopener" class="btn btn-primary location-cta">Get Directions</a>
                     </div>
                 </div>
             </div>
@@ -739,7 +738,7 @@
                         <span class="blog-preview-link">Read more &rarr;</span>
                     </a>
                 </div>
-                <div style="text-align: center; margin-top: var(--spacing-xl);">
+                <div class="blog-preview-cta">
                     <a href="blog.html" class="btn btn-primary btn-large">Explore All Articles &rarr;</a>
                 </div>
             </div>
@@ -752,8 +751,7 @@
                 <p>Get your free fulfillment quote today. No obligations, no hidden fees. Response within 24 hours.</p>
                 <div class="cta-buttons">
                     <a href="quote.html" class="btn btn-primary btn-large">Get Instant Quote</a>
-                    <a href="contact.html" class="btn btn-secondary btn-large" style="border-color: rgba(255,255,255,0.3); color: white;">Schedule a Call</a>
-                    <a href="blog.html?source=homepage-final-cta" class="btn btn-secondary btn-large" style="border-color: rgba(255,255,255,0.3); color: white;">Read 3PL Blog</a>
+                    <a href="contact.html" class="btn btn-outline-light btn-large">Schedule a Call</a>
                 </div>
             </div>
         </section>
