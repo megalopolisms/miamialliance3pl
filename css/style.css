@@ -133,7 +133,11 @@ ul {
   font-weight: 800;
   text-align: center;
   margin-bottom: var(--spacing-sm);
-  background: linear-gradient(135deg, var(--color-gray-900) 0%, var(--color-gray-600) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-gray-900) 0%,
+    var(--color-gray-600) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -460,7 +464,7 @@ ul {
    Hero Section
    ========================================================================== */
 .hero {
-  padding: 75px 0 var(--spacing-md);
+  padding: 70px 0 var(--spacing-lg);
   background: linear-gradient(
     135deg,
     var(--color-primary) 0%,
@@ -534,7 +538,7 @@ ul {
 
 @media (min-width: 768px) {
   .hero {
-    padding: 75px 0 var(--spacing-lg);
+    padding: 70px 0 var(--spacing-xl);
   }
 
   .hero-title {
@@ -790,7 +794,7 @@ ul {
 
 /* About Page */
 .page-header {
-  padding: 75px 0 var(--spacing-lg);
+  padding: 70px 0 var(--spacing-lg);
   background: linear-gradient(
     135deg,
     var(--color-primary) 0%,
@@ -1315,8 +1319,8 @@ ul {
 
   /* Better hero on mobile */
   .hero {
-    min-height: 60vh;
-    padding: 75px 0 var(--spacing-md);
+    min-height: auto;
+    padding: 70px 0 var(--spacing-md);
   }
 
   .hero-title {
@@ -1963,7 +1967,7 @@ ul {
 
 /* Compact Page Header */
 .page-header-compact {
-  padding: 75px 0 var(--spacing-sm);
+  padding: 70px 0 var(--spacing-sm);
 }
 
 .page-header-compact h1 {
@@ -4179,6 +4183,8 @@ h4,
       transparent 65%
     );
   min-height: auto;
+  padding-top: 70px;
+  padding-bottom: var(--spacing-xl);
 }
 
 .hero-grid-upgrade {
