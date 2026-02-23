@@ -130,10 +130,14 @@ ul {
 
 .section-title {
   font-size: var(--font-size-3xl);
-  font-weight: 700;
-  color: var(--color-gray-900);
+  font-weight: 800;
   text-align: center;
   margin-bottom: var(--spacing-sm);
+  background: linear-gradient(135deg, var(--color-gray-900) 0%, var(--color-gray-600) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
 }
 
 .section-subtitle {
@@ -193,6 +197,8 @@ ul {
 .btn-outline:hover {
   background-color: var(--color-primary);
   color: var(--color-white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-large {
@@ -3514,10 +3520,21 @@ ul {
   font-size: var(--font-size-sm);
   color: var(--color-gray-600);
   font-weight: 500;
+  transition: color 0.3s ease;
+  cursor: default;
+}
+
+.trust-item:hover {
+  color: var(--color-gray-900);
 }
 
 .trust-icon {
   font-size: 1.5rem;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.trust-item:hover .trust-icon {
+  transform: scale(1.2) rotate(-5deg);
 }
 
 /* --- Sticky Floating CTA --- */
