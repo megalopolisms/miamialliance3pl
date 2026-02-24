@@ -39,13 +39,12 @@
   };
 
   // ── Detect initial language ─────────────────────────────────────────
+  // English is ALWAYS the default landing page for first-time visitors.
+  // Spanish only activates if the user explicitly chose it via the toggle.
   function getInitialLang() {
     var stored = localStorage.getItem(STORAGE_KEY);
     if (stored && SUPPORTED.indexOf(stored) !== -1) return stored;
-    // Check browser language
-    var browserLang = (navigator.language || "en").substring(0, 2);
-    if (SUPPORTED.indexOf(browserLang) !== -1) return browserLang;
-    return DEFAULT_LANG;
+    return DEFAULT_LANG; // Always English for new visitors
   }
 
   // ── Toggle dual-content blocks (.lang-en / .lang-es) ────────────────
