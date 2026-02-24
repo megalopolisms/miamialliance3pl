@@ -225,7 +225,8 @@
             projectId: "miamialliance3pl",
             storageBucket: "miamialliance3pl.firebasestorage.app",
             messagingSenderId: "657614666588",
-            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99"
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -234,6 +235,8 @@
 
         // Fallback admin emails (used only if Firestore role is missing)
         const FALLBACK_ADMIN_EMAILS = [
+            'ceo@usglatam.com',
+            'yuri@megalopolisms.com',
             'admin@miamialliance3pl.com',
             'yuri@miamialliance3pl.com'
         ];
