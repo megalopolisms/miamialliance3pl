@@ -162,12 +162,12 @@
         <priority>0.8</priority>
     </url>
 
-    <!-- Blog / News -->
+    <!-- Master Jorge Tetris Game -->
     <url>
-        <loc>https://miamialliance3pl.com/blog.html</loc>
+        <loc>https://miamialliance3pl.com/games/master-jorge-tetris/index.html</loc>
         <lastmod>2026-02-21</lastmod>
-        <changefreq>daily</changefreq>
-        <priority>0.85</priority>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
     </url>
 
     <!-- About -->
