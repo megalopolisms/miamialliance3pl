@@ -89,5 +89,13 @@ service cloud.firestore {
       allow update: if isAuthenticated();
       allow delete: if isAdmin();
     }
+
+    // Pending invites — used during signup to auto-assign roles
+    match /pending_invites/{email} {
+      allow read: if isAuthenticated() && request.auth.token.email == email;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
   }
 }
