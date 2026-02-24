@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="../css/style.css?v=202602230300">
+    <link rel="stylesheet" href="../css/style.css">
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
     <script>
@@ -34,14 +34,14 @@
                 <span class="logo-icon">📦</span>
                 <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
             </a>
-            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar" data-i18n-aria="portal.nav.toggleSidebar">
                 <span></span>
                 <span></span>
                 <span></span>
             </button>
             <ul class="nav-menu">
-                <li><span id="user-name" class="nav-link">Welcome</span></li>
-                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+                <li><span id="user-name" class="nav-link" data-i18n="portal.nav.welcome">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline" data-i18n="portal.nav.logout">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -51,16 +51,16 @@
         <aside class="portal-sidebar">
             <nav role="navigation" aria-label="Main navigation">
                 <a href="dashboard.html" class="portal-nav-item">
-                    <span aria-hidden="true">📊</span> Dashboard
+                    <span aria-hidden="true">📊</span> <span data-i18n="portal.sidebar.dashboard">Dashboard</span>
                 </a>
                 <a href="shipments.html" class="portal-nav-item">
-                    <span aria-hidden="true">🚚</span> Shipments
+                    <span aria-hidden="true">🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span>
                 </a>
                 <a href="tracking.html" class="portal-nav-item">
-                    <span aria-hidden="true">🔍</span> Tracking
+                    <span aria-hidden="true">🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span>
                 </a>
                 <a href="inventory.html" class="portal-nav-item active" aria-current="page">
-                    <span aria-hidden="true">📦</span> Inventory
+                    <span aria-hidden="true">📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span>
                 </a>
             </nav>
         </aside>
@@ -68,8 +68,8 @@
         <!-- Main Content -->
         <main class="portal-main">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-sm);">
-                <h1 style="color: var(--color-gray-900);">Inventory</h1>
-                <button id="new-item-btn" class="btn btn-primary" style="display: none;">+ Add Item</button>
+                <h1 style="color: var(--color-gray-900);" data-i18n="portal.inventory.title">Inventory</h1>
+                <button id="new-item-btn" class="btn btn-primary" style="display: none;" data-i18n="portal.inventory.addItem">+ Add Item</button>
             </div>
 
             <!-- Toast Notification -->
@@ -78,40 +78,40 @@
 
             <!-- Add Item Form (hidden by default) -->
             <div id="item-form-container" class="dashboard-card" style="display: none; margin-bottom: var(--spacing-xl);">
-                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Add Inventory Item</h2>
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.inventory.addItemTitle">Add Inventory Item</h2>
                 <form id="item-form">
                     <input type="hidden" id="item-edit-id">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md);">
                         <div class="form-group">
-                            <label for="item-sku">SKU</label>
-                            <input type="text" id="item-sku" required placeholder="ABC-123" aria-required="true">
+                            <label for="item-sku" data-i18n="portal.inventory.form.sku">SKU</label>
+                            <input type="text" id="item-sku" required placeholder="ABC-123" aria-required="true" data-i18n-placeholder="portal.inventory.form.skuPlaceholder">
                         </div>
                         <div class="form-group">
-                            <label for="item-name">Product Name</label>
-                            <input type="text" id="item-name" required placeholder="Product Name" aria-required="true">
+                            <label for="item-name" data-i18n="portal.inventory.form.productName">Product Name</label>
+                            <input type="text" id="item-name" required placeholder="Product Name" aria-required="true" data-i18n-placeholder="portal.inventory.form.productNamePlaceholder">
                         </div>
                         <div class="form-group">
-                            <label for="item-qty">Quantity</label>
+                            <label for="item-qty" data-i18n="portal.inventory.form.quantity">Quantity</label>
                             <input type="number" id="item-qty" required placeholder="0" min="0" aria-required="true">
                         </div>
                         <div class="form-group">
-                            <label for="item-location">Location</label>
-                            <input type="text" id="item-location" placeholder="A1-01">
+                            <label for="item-location" data-i18n="portal.inventory.form.location">Location</label>
+                            <input type="text" id="item-location" placeholder="A1-01" data-i18n-placeholder="portal.inventory.form.locationPlaceholder">
                         </div>
                         <div class="form-group">
-                            <label for="item-reorder">Reorder Level</label>
+                            <label for="item-reorder" data-i18n="portal.inventory.form.reorderLevel">Reorder Level</label>
                             <input type="number" id="item-reorder" placeholder="10" min="0">
                         </div>
                         <div class="form-group" id="customer-select-group" style="display: none;">
-                            <label for="item-customer">Customer (Owner)</label>
+                            <label for="item-customer" data-i18n="portal.inventory.form.customerOwner">Customer (Owner)</label>
                             <select id="item-customer" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);">
-                                <option value="">-- Select Customer --</option>
+                                <option value="" data-i18n="portal.inventory.form.selectCustomer">-- Select Customer --</option>
                             </select>
                         </div>
                     </div>
                     <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
-                        <button type="submit" class="btn btn-primary" id="item-submit-btn">Add Item</button>
-                        <button type="button" id="cancel-item" class="btn btn-outline">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="item-submit-btn" data-i18n="portal.inventory.form.addItemBtn">Add Item</button>
+                        <button type="button" id="cancel-item" class="btn btn-outline" data-i18n="portal.inventory.form.cancel">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -119,42 +119,42 @@
             <!-- Stats -->
             <div class="dashboard-stats" style="margin-bottom: var(--spacing-lg);">
                 <div class="dashboard-card">
-                    <h3>Total Items</h3>
+                    <h3 data-i18n="portal.inventory.stats.totalItems">Total Items</h3>
                     <div class="value" id="total-items">0</div>
                 </div>
                 <div class="dashboard-card">
-                    <h3>Total Units</h3>
+                    <h3 data-i18n="portal.inventory.stats.totalUnits">Total Units</h3>
                     <div class="value" id="total-units">0</div>
                 </div>
                 <div class="dashboard-card">
-                    <h3>Low Stock</h3>
+                    <h3 data-i18n="portal.inventory.stats.lowStock">Low Stock</h3>
                     <div class="value" id="low-stock" style="color: var(--color-accent);">0</div>
                 </div>
             </div>
 
             <!-- Search -->
             <div style="margin-bottom: var(--spacing-md);">
-                <label for="search-input" class="visually-hidden">Search inventory</label>
-                <input type="text" id="search-input" placeholder="Search by SKU or product name..." style="width: 100%; max-width: 400px; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);" role="searchbox" aria-label="Search inventory by SKU or product name">
+                <label for="search-input" class="visually-hidden" data-i18n="portal.inventory.searchLabel">Search inventory</label>
+                <input type="text" id="search-input" placeholder="Search by SKU or product name..." style="width: 100%; max-width: 400px; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);" role="searchbox" aria-label="Search inventory by SKU or product name" data-i18n-placeholder="portal.inventory.searchPlaceholder" data-i18n-aria="portal.inventory.searchAria">
             </div>
 
             <!-- Inventory Table -->
             <div class="table-wrapper">
-                <table class="data-table" role="table" aria-label="Inventory items list">
+                <table class="data-table" role="table" aria-label="Inventory items list" data-i18n-aria="portal.inventory.tableAria">
                     <thead>
                         <tr>
-                            <th scope="col">SKU</th>
-                            <th scope="col">Product Name</th>
-                            <th scope="col" id="customer-col-header" style="display: none;">Customer</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Location</th>
-                            <th scope="col">Last Updated</th>
-                            <th scope="col">Actions</th>
+                            <th scope="col" data-i18n="portal.inventory.table.sku">SKU</th>
+                            <th scope="col" data-i18n="portal.inventory.table.productName">Product Name</th>
+                            <th scope="col" id="customer-col-header" style="display: none;" data-i18n="portal.inventory.table.customer">Customer</th>
+                            <th scope="col" data-i18n="portal.inventory.table.quantity">Quantity</th>
+                            <th scope="col" data-i18n="portal.inventory.table.location">Location</th>
+                            <th scope="col" data-i18n="portal.inventory.table.lastUpdated">Last Updated</th>
+                            <th scope="col" data-i18n="portal.inventory.table.actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="inventory-list">
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">
+                            <td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);" data-i18n="portal.inventory.loading">
                                 Loading inventory...
                             </td>
                         </tr>
@@ -165,12 +165,12 @@
             <!-- Delete Confirmation Modal -->
             <div id="delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
                 <div class="dashboard-card" style="width: 100%; max-width: 400px; margin: var(--spacing-md); text-align: center;">
-                    <h2 id="delete-modal-title" style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Confirm Delete</h2>
-                    <p style="margin-bottom: var(--spacing-lg); color: var(--color-gray-600);">Are you sure you want to delete <strong id="delete-item-name"></strong>? This action cannot be undone.</p>
+                    <h2 id="delete-modal-title" style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.inventory.modal.confirmDelete">Confirm Delete</h2>
+                    <p style="margin-bottom: var(--spacing-lg); color: var(--color-gray-600);" data-i18n-html="portal.inventory.modal.deleteWarning">Are you sure you want to delete <strong id="delete-item-name"></strong>? This action cannot be undone.</p>
                     <input type="hidden" id="delete-item-id">
                     <div style="display: flex; gap: var(--spacing-sm); justify-content: center;">
-                        <button id="confirm-delete-btn" class="btn" style="background: #ef4444; color: white;">Delete</button>
-                        <button id="cancel-delete-btn" class="btn btn-outline">Cancel</button>
+                        <button id="confirm-delete-btn" class="btn" style="background: #ef4444; color: white;" data-i18n="portal.inventory.modal.deleteBtn">Delete</button>
+                        <button id="cancel-delete-btn" class="btn btn-outline" data-i18n="portal.inventory.modal.cancelBtn">Cancel</button>
                     </div>
                 </div>
             </div>
@@ -180,34 +180,34 @@
     <!-- Edit Modal (Full Edit for Staff) -->
     <div id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
         <div class="dashboard-card" style="width: 100%; max-width: 500px; margin: var(--spacing-md);">
-            <h2 id="edit-modal-title" style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Edit Inventory Item</h2>
+            <h2 id="edit-modal-title" style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.inventory.modal.editTitle">Edit Inventory Item</h2>
             <form id="edit-form">
                 <input type="hidden" id="edit-id">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
                     <div class="form-group">
-                        <label for="edit-sku">SKU</label>
+                        <label for="edit-sku" data-i18n="portal.inventory.form.sku">SKU</label>
                         <input type="text" id="edit-sku" required aria-required="true">
                     </div>
                     <div class="form-group">
-                        <label for="edit-name">Product Name</label>
+                        <label for="edit-name" data-i18n="portal.inventory.form.productName">Product Name</label>
                         <input type="text" id="edit-name" required aria-required="true">
                     </div>
                     <div class="form-group">
-                        <label for="edit-qty">Quantity</label>
+                        <label for="edit-qty" data-i18n="portal.inventory.form.quantity">Quantity</label>
                         <input type="number" id="edit-qty" required min="0" aria-required="true">
                     </div>
                     <div class="form-group">
-                        <label for="edit-location">Location</label>
+                        <label for="edit-location" data-i18n="portal.inventory.form.location">Location</label>
                         <input type="text" id="edit-location">
                     </div>
                     <div class="form-group">
-                        <label for="edit-reorder">Reorder Level</label>
+                        <label for="edit-reorder" data-i18n="portal.inventory.form.reorderLevel">Reorder Level</label>
                         <input type="number" id="edit-reorder" min="0">
                     </div>
                 </div>
                 <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                    <button type="button" id="cancel-edit" class="btn btn-outline">Cancel</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="portal.inventory.modal.saveChanges">Save Changes</button>
+                    <button type="button" id="cancel-edit" class="btn btn-outline" data-i18n="portal.inventory.form.cancel">Cancel</button>
                 </div>
             </form>
         </div>
@@ -225,7 +225,8 @@
             projectId: "miamialliance3pl",
             storageBucket: "miamialliance3pl.firebasestorage.app",
             messagingSenderId: "657614666588",
-            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99"
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -234,6 +235,8 @@
 
         // Fallback admin emails (used only if Firestore role is missing)
         const FALLBACK_ADMIN_EMAILS = [
+            'ceo@usglatam.com',
+            'yuri@megalopolisms.com',
             'admin@miamialliance3pl.com',
             'yuri@miamialliance3pl.com'
         ];
@@ -618,5 +621,7 @@
     </script>
     <script src="../js/column-prefs.js"></script>
     <script src="../js/main.js"></script>
+    <script src="../js/lang/es.js"></script>
+    <script src="../js/i18n.js"></script>
 </body>
 </html>

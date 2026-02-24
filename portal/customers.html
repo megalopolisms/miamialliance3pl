@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="../css/style.css?v=202602230300">
+    <link rel="stylesheet" href="../css/style.css">
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
     <script>
@@ -321,7 +321,7 @@
             </button>
             <ul class="nav-menu">
                 <li><span id="user-name" class="nav-link">Welcome</span></li>
-                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline" data-i18n="portal.sidebar.logout">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -331,27 +331,27 @@
         <aside class="portal-sidebar">
             <nav>
                 <a href="dashboard.html" class="portal-nav-item">
-                    <span>📊</span> Dashboard
+                    <span>📊</span> <span data-i18n="portal.sidebar.dashboard">Dashboard</span>
                 </a>
                 <a href="shipments.html" class="portal-nav-item">
-                    <span>🚚</span> Shipments
+                    <span>🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span>
                 </a>
                 <a href="tracking.html" class="portal-nav-item">
-                    <span>🔍</span> Tracking
+                    <span>🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span>
                 </a>
                 <a href="inventory.html" class="portal-nav-item">
-                    <span>📦</span> Inventory
+                    <span>📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span>
                 </a>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
-                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" data-i18n="portal.sidebar.adminLabel">Admin</div>
                     <a href="pricing.html" class="portal-nav-item">
-                        <span>💰</span> Pricing
+                        <span>💰</span> <span data-i18n="portal.sidebar.pricing">Pricing</span>
                     </a>
                     <a href="settings.html" class="portal-nav-item">
-                        <span>⚙️</span> Settings
+                        <span>⚙️</span> <span data-i18n="portal.sidebar.settings">Settings</span>
                     </a>
                     <a href="team.html" class="portal-nav-item">
-                        <span>👔</span> Manage Team
+                        <span>👔</span> <span data-i18n="portal.sidebar.team">Manage Team</span>
                     </a>
                 </div>
             </nav>
@@ -361,28 +361,28 @@
         <main class="portal-main">
             <!-- Page Header -->
             <div class="page-header-bar">
-                <h1 id="page-title">👥 All Customers</h1>
-                <p>Manage and view all registered customers</p>
+                <h1 id="page-title" data-i18n="portal.customers.title">👥 All Customers</h1>
+                <p data-i18n="portal.customers.subtitle">Manage and view all registered customers</p>
             </div>
 
             <!-- Search Bar -->
             <div class="search-bar">
-                <input type="text" id="search-input" placeholder="Search by name, email, or company...">
-                <button class="btn btn-primary" onclick="searchCustomers()">Search</button>
+                <input type="text" id="search-input" placeholder="Search by name, email, or company..." data-i18n-placeholder="portal.customers.searchPlaceholder">
+                <button class="btn btn-primary" onclick="searchCustomers()" data-i18n="portal.customers.searchBtn">Search</button>
             </div>
 
             <!-- Stats Summary -->
             <div class="dashboard-stats" style="margin-bottom: var(--spacing-xl);">
                 <div class="dashboard-card">
-                    <h3>Total Customers</h3>
+                    <h3 data-i18n="portal.customers.totalCustomers">Total Customers</h3>
                     <div class="value" id="total-customers">0</div>
                 </div>
                 <div class="dashboard-card">
-                    <h3>New This Month</h3>
+                    <h3 data-i18n="portal.customers.newThisMonth">New This Month</h3>
                     <div class="value" id="new-customers">0</div>
                 </div>
                 <div class="dashboard-card">
-                    <h3>Active Shippers</h3>
+                    <h3 data-i18n="portal.customers.activeShippers">Active Shippers</h3>
                     <div class="value" id="active-customers">0</div>
                 </div>
             </div>
@@ -391,7 +391,7 @@
             <div id="customers-list">
                 <div class="empty-state">
                     <div class="icon">⏳</div>
-                    <p>Loading customers...</p>
+                    <p data-i18n="portal.customers.loading">Loading customers...</p>
                 </div>
             </div>
         </main>
@@ -401,34 +401,34 @@
     <div class="modal-overlay" id="edit-modal">
         <div class="modal">
             <div class="modal-header">
-                <h2>Edit Customer</h2>
+                <h2 data-i18n="portal.customers.editTitle">Edit Customer</h2>
                 <button class="modal-close" onclick="closeEditModal()">&times;</button>
             </div>
             <form id="edit-customer-form">
                 <input type="hidden" id="edit-customer-id">
                 <div class="form-group">
-                    <label for="edit-name">Name</label>
+                    <label for="edit-name" data-i18n="portal.customers.form.name">Name</label>
                     <input type="text" id="edit-name" required>
                 </div>
                 <div class="form-group">
-                    <label for="edit-company">Company Name</label>
+                    <label for="edit-company" data-i18n="portal.customers.form.company">Company Name</label>
                     <input type="text" id="edit-company">
                 </div>
                 <div class="form-group">
-                    <label for="edit-email">Email</label>
+                    <label for="edit-email" data-i18n="portal.customers.form.email">Email</label>
                     <input type="email" id="edit-email" required>
                 </div>
                 <div class="form-group">
-                    <label for="edit-phone">Phone</label>
+                    <label for="edit-phone" data-i18n="portal.customers.form.phone">Phone</label>
                     <input type="tel" id="edit-phone">
                 </div>
                 <div class="form-group">
-                    <label>Total Shipments</label>
+                    <label data-i18n="portal.customers.form.totalShipments">Total Shipments</label>
                     <div class="readonly-value" id="edit-shipments-count">0</div>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
-                    <button type="submit" class="btn-save" id="save-btn">Save Changes</button>
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()" data-i18n="portal.customers.form.cancel">Cancel</button>
+                    <button type="submit" class="btn-save" id="save-btn" data-i18n="portal.customers.form.save">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -747,5 +747,7 @@
         });
     </script>
     <script src="../js/main.js"></script>
+    <script src="../js/lang/es.js"></script>
+    <script src="../js/i18n.js"></script>
 </body>
 </html>

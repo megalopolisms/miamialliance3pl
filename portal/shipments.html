@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="../css/style.css?v=202602230300">
+    <link rel="stylesheet" href="../css/style.css">
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
     <script>
@@ -41,7 +41,7 @@
             </button>
             <ul class="nav-menu">
                 <li><span id="user-name" class="nav-link">Welcome</span></li>
-                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline" data-i18n="portal.sidebar.logout">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -51,16 +51,16 @@
         <aside class="portal-sidebar">
             <nav role="navigation" aria-label="Main navigation">
                 <a href="dashboard.html" class="portal-nav-item">
-                    <span aria-hidden="true">📊</span> Dashboard
+                    <span aria-hidden="true">📊</span> <span data-i18n="portal.sidebar.dashboard">Dashboard</span>
                 </a>
                 <a href="shipments.html" class="portal-nav-item active" aria-current="page">
-                    <span aria-hidden="true">🚚</span> Shipments
+                    <span aria-hidden="true">🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span>
                 </a>
                 <a href="tracking.html" class="portal-nav-item">
-                    <span aria-hidden="true">🔍</span> Tracking
+                    <span aria-hidden="true">🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span>
                 </a>
                 <a href="inventory.html" class="portal-nav-item">
-                    <span aria-hidden="true">📦</span> Inventory
+                    <span aria-hidden="true">📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span>
                 </a>
             </nav>
         </aside>
@@ -68,87 +68,87 @@
         <!-- Main Content -->
         <main class="portal-main">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-sm);">
-                <h1 style="color: var(--color-gray-900);">Shipments</h1>
+                <h1 style="color: var(--color-gray-900);" data-i18n="portal.shipments.title">Shipments</h1>
                 <div style="display: flex; gap: var(--spacing-xs);">
-                    <button id="new-shipment-chat-btn" class="btn btn-primary">+ New Shipment</button>
-                    <button id="new-shipment-btn" class="btn btn-outline">Classic Form</button>
+                    <button id="new-shipment-chat-btn" class="btn btn-primary" data-i18n="portal.shipments.newShipment">+ New Shipment</button>
+                    <button id="new-shipment-btn" class="btn btn-outline" data-i18n="portal.shipments.classicForm">Classic Form</button>
                 </div>
             </div>
 
             <!-- New Shipment Form (hidden by default) -->
             <div id="shipment-form-container" class="dashboard-card" style="display: none; margin-bottom: var(--spacing-xl);">
-                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Create New Shipment</h2>
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.shipments.createTitle">Create New Shipment</h2>
                 <form id="shipment-form" data-validate-form>
                     <div style="display: grid; grid-template-columns: 1fr; gap: var(--spacing-md);">
                         <div>
-                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);">Origin Address</h3>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);" data-i18n="portal.shipments.originAddress">Origin Address</h3>
                             <div class="form-group">
-                                <label for="origin-street">Street Address</label>
+                                <label for="origin-street" data-i18n="portal.shipments.streetAddress">Street Address</label>
                                 <input type="text" id="origin-street" required value="8780 NW 100th ST" aria-required="true">
                             </div>
                             <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
                                 <div class="form-group">
-                                    <label for="origin-city">City</label>
+                                    <label for="origin-city" data-i18n="portal.shipments.city">City</label>
                                     <input type="text" id="origin-city" required value="Medley" aria-required="true">
                                 </div>
                                 <div class="form-group">
-                                    <label for="origin-state">State</label>
+                                    <label for="origin-state" data-i18n="portal.shipments.state">State</label>
                                     <input type="text" id="origin-state" name="origin-state" required value="FL" maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" data-validate="state" aria-required="true">
                                 </div>
                                 <div class="form-group">
-                                    <label for="origin-zip">ZIP</label>
+                                    <label for="origin-zip" data-i18n="portal.shipments.zip">ZIP</label>
                                     <input type="text" id="origin-zip" name="origin-zip" required value="33178" pattern="\d{5}(-\d{4})?" title="5 or 9 digit ZIP code" data-validate="zip" aria-required="true">
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);">Destination Address</h3>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);" data-i18n="portal.shipments.destAddress">Destination Address</h3>
                             <div class="form-group">
-                                <label for="dest-name">Recipient Name</label>
-                                <input type="text" id="dest-name" required placeholder="John Smith" aria-required="true">
+                                <label for="dest-name" data-i18n="portal.shipments.recipientName">Recipient Name</label>
+                                <input type="text" id="dest-name" required placeholder="John Smith" data-i18n-placeholder="portal.shipments.recipientNamePh" aria-required="true">
                             </div>
                             <div class="form-group">
-                                <label for="dest-street">Street Address</label>
-                                <input type="text" id="dest-street" required placeholder="123 Main St" aria-required="true">
+                                <label for="dest-street" data-i18n="portal.shipments.streetAddress">Street Address</label>
+                                <input type="text" id="dest-street" required placeholder="123 Main St" data-i18n-placeholder="portal.shipments.streetAddressPh" aria-required="true">
                             </div>
                             <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
                                 <div class="form-group">
-                                    <label for="dest-city">City</label>
-                                    <input type="text" id="dest-city" required placeholder="City" aria-required="true">
+                                    <label for="dest-city" data-i18n="portal.shipments.city">City</label>
+                                    <input type="text" id="dest-city" required placeholder="City" data-i18n-placeholder="portal.shipments.cityPh" aria-required="true">
                                 </div>
                                 <div class="form-group">
-                                    <label for="dest-state">State</label>
-                                    <input type="text" id="dest-state" name="dest-state" required placeholder="ST" maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" data-validate="state" aria-required="true">
+                                    <label for="dest-state" data-i18n="portal.shipments.state">State</label>
+                                    <input type="text" id="dest-state" name="dest-state" required placeholder="ST" data-i18n-placeholder="portal.shipments.statePh" maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" data-validate="state" aria-required="true">
                                 </div>
                                 <div class="form-group">
-                                    <label for="dest-zip">ZIP</label>
-                                    <input type="text" id="dest-zip" name="dest-zip" required placeholder="12345" pattern="\d{5}(-\d{4})?" title="5 or 9 digit ZIP code" data-validate="zip" aria-required="true">
+                                    <label for="dest-zip" data-i18n="portal.shipments.zip">ZIP</label>
+                                    <input type="text" id="dest-zip" name="dest-zip" required placeholder="12345" data-i18n-placeholder="portal.shipments.zipPh" pattern="\d{5}(-\d{4})?" title="5 or 9 digit ZIP code" data-validate="zip" aria-required="true">
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);">Package Details</h3>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);" data-i18n="portal.shipments.packageDetails">Package Details</h3>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-sm);">
                                 <div class="form-group">
-                                    <label for="pkg-weight">Weight (lbs)</label>
+                                    <label for="pkg-weight" data-i18n="portal.shipments.weight">Weight (lbs)</label>
                                     <input type="number" id="pkg-weight" name="pkg-weight" required placeholder="0" min="0.1" step="0.1" data-validate="decimal" aria-required="true">
                                 </div>
                                 <div class="form-group">
-                                    <label for="pkg-length">Length (in)</label>
+                                    <label for="pkg-length" data-i18n="portal.shipments.length">Length (in)</label>
                                     <input type="number" id="pkg-length" placeholder="0" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label for="pkg-width">Width (in)</label>
+                                    <label for="pkg-width" data-i18n="portal.shipments.width">Width (in)</label>
                                     <input type="number" id="pkg-width" placeholder="0" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label for="pkg-height">Height (in)</label>
+                                    <label for="pkg-height" data-i18n="portal.shipments.height">Height (in)</label>
                                     <input type="number" id="pkg-height" placeholder="0" min="0">
                                 </div>
                                 <div class="form-group">
-                                    <label for="pkg-qty">Quantity</label>
+                                    <label for="pkg-qty" data-i18n="portal.shipments.quantity">Quantity</label>
                                     <input type="number" id="pkg-qty" required value="1" min="1" aria-required="true">
                                 </div>
                             </div>
@@ -156,23 +156,23 @@
 
                         <div>
                             <div class="form-group">
-                                <label for="service-type">Service Type</label>
+                                <label for="service-type" data-i18n="portal.shipments.serviceType">Service Type</label>
                                 <select id="service-type" required aria-required="true">
-                                    <option value="standard">Standard (3-5 days)</option>
-                                    <option value="express">Express (1-2 days)</option>
-                                    <option value="overnight">Overnight</option>
+                                    <option value="standard" data-i18n="portal.shipments.standard">Standard (3-5 days)</option>
+                                    <option value="express" data-i18n="portal.shipments.express">Express (1-2 days)</option>
+                                    <option value="overnight" data-i18n="portal.shipments.overnight">Overnight</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="notes">Notes (optional)</label>
-                                <textarea id="notes" placeholder="Special instructions..."></textarea>
+                                <label for="notes" data-i18n="portal.shipments.notes">Notes (optional)</label>
+                                <textarea id="notes" placeholder="Special instructions..." data-i18n-placeholder="portal.shipments.notesPh"></textarea>
                             </div>
                         </div>
                     </div>
 
                     <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
-                        <button type="submit" class="btn btn-primary">Create Shipment</button>
-                        <button type="button" id="cancel-shipment" class="btn btn-outline">Cancel</button>
+                        <button type="submit" class="btn btn-primary" data-i18n="portal.shipments.createBtn">Create Shipment</button>
+                        <button type="button" id="cancel-shipment" class="btn btn-outline" data-i18n="portal.shipments.cancelBtn">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -180,11 +180,11 @@
             <!-- Filter -->
             <div style="margin-bottom: var(--spacing-md);">
                 <select id="status-filter" style="padding: 0.5rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);">
-                    <option value="all">All Shipments</option>
-                    <option value="pending">Pending</option>
-                    <option value="picked_up">Picked Up</option>
-                    <option value="in_transit">In Transit</option>
-                    <option value="delivered">Delivered</option>
+                    <option value="all" data-i18n="portal.shipments.filterAll">All Shipments</option>
+                    <option value="pending" data-i18n="portal.shipments.filterPending">Pending</option>
+                    <option value="picked_up" data-i18n="portal.shipments.filterPickedUp">Picked Up</option>
+                    <option value="in_transit" data-i18n="portal.shipments.filterInTransit">In Transit</option>
+                    <option value="delivered" data-i18n="portal.shipments.filterDelivered">Delivered</option>
                 </select>
             </div>
 
@@ -193,17 +193,17 @@
                 <table class="data-table" role="table" aria-label="Shipments list">
                     <thead>
                         <tr>
-                            <th scope="col">Tracking #</th>
-                            <th scope="col">Recipient</th>
-                            <th scope="col">Destination</th>
-                            <th scope="col">Service</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Created</th>
+                            <th scope="col" data-i18n="portal.table.tracking">Tracking #</th>
+                            <th scope="col" data-i18n="portal.table.recipient">Recipient</th>
+                            <th scope="col" data-i18n="portal.table.destination">Destination</th>
+                            <th scope="col" data-i18n="portal.table.service">Service</th>
+                            <th scope="col" data-i18n="portal.table.status">Status</th>
+                            <th scope="col" data-i18n="portal.table.created">Created</th>
                         </tr>
                     </thead>
                     <tbody id="shipments-list">
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">
+                            <td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);" data-i18n="portal.shipments.loading">
                                 Loading shipments...
                             </td>
                         </tr>
@@ -217,7 +217,7 @@
     <div id="chat-modal" class="chat-modal" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title">
         <div class="chat-container">
             <div class="chat-header">
-                <h2 id="chat-modal-title"><span aria-hidden="true">📦</span> New Shipment</h2>
+                <h2 id="chat-modal-title"><span aria-hidden="true">📦</span> <span data-i18n="portal.shipments.chatTitle">New Shipment</span></h2>
                 <button class="chat-close" id="chat-close" aria-label="Close dialog">&times;</button>
             </div>
             <div class="chat-progress" id="chat-progress">
@@ -231,12 +231,16 @@
                 <!-- Messages will be injected here -->
             </div>
             <div class="chat-actions" id="chat-actions" style="display: none;">
-                <button class="btn btn-cancel" id="btn-cancel">Cancel</button>
-                <button class="btn btn-edit" id="btn-edit">Edit</button>
-                <button class="btn btn-confirm" id="btn-confirm">Confirm & Create</button>
+                <button class="btn btn-cancel" id="btn-cancel" data-i18n="portal.shipments.cancelBtn">Cancel</button>
+                <button class="btn btn-edit" id="btn-edit" data-i18n="portal.shipments.editBtn">Edit</button>
+                <button class="btn btn-confirm" id="btn-confirm" data-i18n="portal.shipments.confirmBtn">Confirm & Create</button>
             </div>
         </div>
     </div>
+
+    <!-- i18n -->
+    <script src="../js/lang/es.js"></script>
+    <script src="../js/i18n.js"></script>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -374,23 +378,27 @@
                 const shipmentRef = await addDoc(collection(db, 'shipments'), shipmentData);
 
                 // Log billable event for receiving/outbound
-                const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
-                const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
-                const pickpackRate = pricing?.handling?.pickpack || 5.00;
-                const quantity = parseInt(document.getElementById('package-quantity').value) || 1;
+                try {
+                    const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
+                    const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
+                    const pickpackRate = pricing?.handling?.pickpack || 5.00;
+                    const quantity = parseInt(document.getElementById('pkg-qty').value) || 1;
 
-                await addDoc(collection(db, 'billable_events'), {
-                    customer_id: currentUser.uid,
-                    event_type: 'shipping',
-                    description: 'Outbound Shipment - ' + trackingNumber,
-                    quantity: quantity,
-                    unit: 'packages',
-                    rate: pickpackRate,
-                    shipment_id: shipmentRef.id,
-                    invoiced: false,
-                    created_at: new Date().toISOString(),
-                    created_by: currentUser.uid
-                });
+                    await addDoc(collection(db, 'billable_events'), {
+                        customer_id: currentUser.uid,
+                        event_type: 'shipping',
+                        description: 'Outbound Shipment - ' + trackingNumber,
+                        quantity: quantity,
+                        unit: 'packages',
+                        rate: pickpackRate,
+                        shipment_id: shipmentRef.id,
+                        invoiced: false,
+                        created_at: new Date().toISOString(),
+                        created_by: currentUser.uid
+                    });
+                } catch (billingErr) {
+                    console.warn('Shipment created but billing event failed:', billingErr.message);
+                }
 
                 alert('Shipment created! Tracking #: ' + trackingNumber);
                 document.getElementById('shipment-form-container').style.display = 'none';
@@ -772,22 +780,26 @@
                 const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
 
                 // Log billable event
-                const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
-                const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
-                const pickpackRate = pricing?.handling?.pickpack || 5.00;
+                try {
+                    const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
+                    const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
+                    const pickpackRate = pricing?.handling?.pickpack || 5.00;
 
-                await addDoc(collection(db, 'billable_events'), {
-                    customer_id: currentUser.uid,
-                    event_type: 'shipping',
-                    description: 'Outbound Shipment - ' + trackingNumber,
-                    quantity: chatData.package?.quantity || 1,
-                    unit: 'packages',
-                    rate: pickpackRate,
-                    shipment_id: shipmentRef.id,
-                    invoiced: false,
-                    created_at: new Date().toISOString(),
-                    created_by: currentUser.uid
-                });
+                    await addDoc(collection(db, 'billable_events'), {
+                        customer_id: currentUser.uid,
+                        event_type: 'shipping',
+                        description: 'Outbound Shipment - ' + trackingNumber,
+                        quantity: shipmentData.quantity || 1,
+                        unit: 'packages',
+                        rate: pickpackRate,
+                        shipment_id: shipmentRef.id,
+                        invoiced: false,
+                        created_at: new Date().toISOString(),
+                        created_by: currentUser.uid
+                    });
+                } catch (billingErr) {
+                    console.warn('Chat shipment created but billing event failed:', billingErr.message);
+                }
 
                 closeChat();
                 alert('Shipment created! Tracking #: ' + trackingNumber);

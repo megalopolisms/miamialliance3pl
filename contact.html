@@ -6,6 +6,7 @@
     <title>Contact Us | Miami Alliance 3PL - Get Your Free Warehouse Quote</title>
     <meta name="description" content="Contact Miami Alliance 3PL for warehousing, fulfillment, and logistics services in Miami. Request a free custom quote or speak with our team. Located in Medley, FL.">
     <meta name="keywords" content="contact Miami 3PL, logistics quote Miami, warehousing quote Florida, 3PL pricing, warehouse services quote, fulfillment quote Miami">
+    <meta name="author" content="Miami Alliance 3PL">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <link rel="canonical" href="https://miamialliance3pl.com/contact.html">
     <meta name="theme-color" content="#0f172a">
@@ -42,7 +43,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="css/style.css?v=202602230300">
+    <link rel="stylesheet" href="css/style.css">
 
     <!-- Structured Data - BreadcrumbList -->
     <script type="application/ld+json">
@@ -94,13 +95,13 @@
                 <span></span>
             </button>
             <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="services.html" class="nav-link">Services</a></li>
-                <li><a href="quote.html" class="nav-link">Instant Quote</a></li>
-                <li><a href="blog.html" class="nav-link">Blog</a></li>
-                <li><a href="about.html" class="nav-link">About</a></li>
-                <li><a href="contact.html" class="nav-link active">Contact</a></li>
-                <li><a href="login.html" class="nav-link btn btn-outline">Customer Portal</a></li>
+                <li><a href="index.html" class="nav-link" data-i18n="nav.home">Home</a></li>
+                <li><a href="services.html" class="nav-link" data-i18n="nav.services">Services</a></li>
+                <li><a href="quote.html" class="nav-link" data-i18n="nav.quote">Instant Quote</a></li>
+                <li><a href="blog.html" class="nav-link" data-i18n="nav.blog">Blog</a></li>
+                <li><a href="about.html" class="nav-link" data-i18n="nav.about">About</a></li>
+                <li><a href="contact.html" class="nav-link active" data-i18n="nav.contact">Contact</a></li>
+                <li><a href="login.html" class="nav-link btn btn-outline" data-i18n="nav.portal">Customer Portal</a></li>
             </ul>
         </nav>
     </header>
@@ -114,8 +115,8 @@
                 <div class="hero-shape"></div>
             </div>
             <div class="container" style="position: relative; z-index: 1;">
-                <h1>Contact <span class="gradient-text">Miami Alliance 3PL</span></h1>
-                <p>Get in touch for a custom quote or to learn more about our services</p>
+                <h1 data-i18n-html="contact.title">Contact <span class="gradient-text">Miami Alliance 3PL</span></h1>
+                <p data-i18n="contact.subtitle">Get in touch for a custom quote or to learn more about our services</p>
             </div>
         </section>
 
@@ -123,9 +124,9 @@
         <section class="trust-bar reveal">
             <div class="container">
                 <div class="trust-items">
-                    <div class="trust-item"><span class="trust-icon">⚡</span><span>Response within 24 hours</span></div>
-                    <div class="trust-item"><span class="trust-icon">📋</span><span>Free custom quote</span></div>
-                    <div class="trust-item"><span class="trust-icon">🤝</span><span>No obligation</span></div>
+                    <div class="trust-item"><span class="trust-icon">⚡</span><span data-i18n="contact.trust.response">Response within 24 hours</span></div>
+                    <div class="trust-item"><span class="trust-icon">📋</span><span data-i18n="contact.trust.free">Free custom quote</span></div>
+                    <div class="trust-item"><span class="trust-icon">🤝</span><span data-i18n="contact.trust.obligation">No obligation</span></div>
                 </div>
             </div>
         </section>
@@ -136,107 +137,107 @@
                 <div class="contact-grid">
                     <!-- Contact Form -->
                     <div class="contact-form gradient-border">
-                        <h2 style="margin-bottom: var(--spacing-xs); color: var(--color-gray-900);">Request a Free Quote</h2>
-                        <p style="margin-bottom: var(--spacing-md); color: var(--color-gray-500);">Fill out the form below and we'll get back to you within 24 hours with a custom proposal.</p>
+                        <h2 style="margin-bottom: var(--spacing-xs); color: var(--color-gray-900);" data-i18n="contact.form.title">Request a Free Quote</h2>
+                        <p style="margin-bottom: var(--spacing-md); color: var(--color-gray-500);" data-i18n="contact.form.desc">Fill out the form below and we'll get back to you within 24 hours with a custom proposal.</p>
                         <form id="contact-form" data-validate>
                             <div class="form-group">
-                                <label for="name">Full Name *</label>
-                                <input type="text" id="name" name="name" required placeholder="John Smith" autocomplete="name">
+                                <label for="name" data-i18n="contact.form.name">Full Name *</label>
+                                <input type="text" id="name" name="name" required placeholder="John Smith" data-i18n-placeholder="contact.form.name.ph" autocomplete="name">
                             </div>
                             <div class="form-group">
-                                <label for="company">Company Name</label>
-                                <input type="text" id="company" name="company" placeholder="Your Company" autocomplete="organization">
+                                <label for="company" data-i18n="contact.form.company">Company Name</label>
+                                <input type="text" id="company" name="company" placeholder="Your Company" data-i18n-placeholder="contact.form.company.ph" autocomplete="organization">
                             </div>
                             <div class="form-group">
-                                <label for="email">Email Address *</label>
-                                <input type="email" id="email" name="email" required placeholder="john@company.com" autocomplete="email">
+                                <label for="email" data-i18n="contact.form.email">Email Address *</label>
+                                <input type="email" id="email" name="email" required placeholder="john@company.com" data-i18n-placeholder="contact.form.email.ph" autocomplete="email">
                             </div>
                             <div class="form-group">
-                                <label for="phone">Phone Number</label>
+                                <label for="phone" data-i18n="contact.form.phone">Phone Number</label>
                                 <input type="tel" id="phone" name="phone" placeholder="(786) 873-8819" autocomplete="tel">
                             </div>
                             <div class="form-group">
-                                <label for="service">Service Interested In</label>
+                                <label for="service" data-i18n="contact.form.service">Service Interested In</label>
                                 <select id="service" name="service">
-                                    <option value="">Select a service</option>
-                                    <option value="receiving">Receiving & QC</option>
-                                    <option value="warehousing">Warehousing & Storage</option>
-                                    <option value="fulfillment">Pick, Pack & Ship</option>
-                                    <option value="inventory">Inventory Management</option>
-                                    <option value="import-export">Import / Export</option>
-                                    <option value="all">All Services</option>
+                                    <option value="" data-i18n="contact.form.service.ph">Select a service</option>
+                                    <option value="receiving" data-i18n="contact.form.service.receiving">Receiving & QC</option>
+                                    <option value="warehousing" data-i18n="contact.form.service.warehousing">Warehousing & Storage</option>
+                                    <option value="fulfillment" data-i18n="contact.form.service.fulfillment">Pick, Pack & Ship</option>
+                                    <option value="inventory" data-i18n="contact.form.service.inventory">Inventory Management</option>
+                                    <option value="import-export" data-i18n="contact.form.service.import">Import / Export</option>
+                                    <option value="all" data-i18n="contact.form.service.all">All Services</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="volume">Estimated Monthly Volume</label>
+                                <label for="volume" data-i18n="contact.form.volume">Estimated Monthly Volume</label>
                                 <select id="volume" name="volume">
-                                    <option value="">Select volume</option>
-                                    <option value="0-100">0 - 100 orders</option>
-                                    <option value="100-500">100 - 500 orders</option>
-                                    <option value="500-1000">500 - 1,000 orders</option>
-                                    <option value="1000-5000">1,000 - 5,000 orders</option>
-                                    <option value="5000+">5,000+ orders</option>
+                                    <option value="" data-i18n="contact.form.volume.ph">Select volume</option>
+                                    <option value="0-100" data-i18n="contact.form.volume.opt1">0 - 100 orders</option>
+                                    <option value="100-500" data-i18n="contact.form.volume.opt2">100 - 500 orders</option>
+                                    <option value="500-1000" data-i18n="contact.form.volume.opt3">500 - 1,000 orders</option>
+                                    <option value="1000-5000" data-i18n="contact.form.volume.opt4">1,000 - 5,000 orders</option>
+                                    <option value="5000+" data-i18n="contact.form.volume.opt5">5,000+ orders</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="message">Tell Us About Your Needs *</label>
-                                <textarea id="message" name="message" required placeholder="What products do you sell? What's your current fulfillment challenge?"></textarea>
+                                <label for="message" data-i18n="contact.form.needs">Tell Us About Your Needs *</label>
+                                <textarea id="message" name="message" required placeholder="What products do you sell? What's your current fulfillment challenge?" data-i18n-placeholder="contact.form.needs.ph"></textarea>
                             </div>
-                            <button type="submit" class="btn btn-primary btn-large" style="width: 100%;">Send Message &rarr;</button>
+                            <button type="submit" class="btn btn-primary btn-large" style="width: 100%;" data-i18n-html="contact.form.submit">Send Message &rarr;</button>
                         </form>
                     </div>
 
                     <!-- Contact Info -->
                     <div>
                         <div class="contact-info-card reveal-right">
-                            <h3>Get In Touch</h3>
+                            <h3 data-i18n="contact.info.title">Get In Touch</h3>
                             <div class="contact-info-item">
                                 <div class="icon">📍</div>
                                 <div>
-                                    <h4>Address</h4>
+                                    <h4 data-i18n="contact.info.address">Address</h4>
                                     <p>8780 NW 100th ST<br>Medley, FL 33178</p>
                                 </div>
                             </div>
                             <div class="contact-info-item">
                                 <div class="icon">📧</div>
                                 <div>
-                                    <h4>Email</h4>
+                                    <h4 data-i18n="contact.info.email">Email</h4>
                                     <p><a href="mailto:info@miamialliance3pl.com" style="color: var(--color-accent);">info@miamialliance3pl.com</a></p>
                                 </div>
                             </div>
                             <div class="contact-info-item">
                                 <div class="icon">📞</div>
                                 <div>
-                                    <h4>Phone</h4>
+                                    <h4 data-i18n="contact.info.phone">Phone</h4>
                                     <p><a href="tel:+17868738819" style="color: var(--color-accent);">(786) 873-8819</a></p>
                                 </div>
                             </div>
                             <div class="contact-info-item">
                                 <div class="icon">💬</div>
                                 <div>
-                                    <h4>WhatsApp</h4>
-                                    <p><a href="https://wa.me/17868738819?text=Hi!%20I'm%20interested%20in%20your%203PL%20services." target="_blank" rel="noopener" style="color: var(--color-accent);">Chat with us</a></p>
+                                    <h4 data-i18n="contact.info.whatsapp">WhatsApp</h4>
+                                    <p><a href="https://wa.me/17868738819?text=Hi!%20I'm%20interested%20in%20your%203PL%20services." target="_blank" rel="noopener" style="color: var(--color-accent);" data-i18n="contact.info.whatsapp.link">Chat with us</a></p>
                                 </div>
                             </div>
                             <div class="contact-info-item">
                                 <div class="icon">🕐</div>
                                 <div>
-                                    <h4>Business Hours</h4>
-                                    <p>Monday - Friday: 8:00 AM - 6:00 PM<br>Saturday: 9:00 AM - 2:00 PM<br>Sunday: Closed</p>
+                                    <h4 data-i18n="contact.info.hours">Business Hours</h4>
+                                    <p data-i18n-html="contact.info.hours.weekday">Monday - Friday: 8:00 AM - 6:00 PM<br>Saturday: 9:00 AM - 2:00 PM<br>Sunday: Closed</p>
                                 </div>
                             </div>
                         </div>
 
                         <div style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--color-gray-100); border-radius: var(--radius-lg);" class="reveal">
-                            <h4 style="margin-bottom: var(--spacing-xs); color: var(--color-gray-900);">Already a Customer?</h4>
-                            <p style="font-size: var(--font-size-sm); color: var(--color-gray-600); margin-bottom: var(--spacing-sm);">Access your dashboard to track shipments and manage inventory.</p>
-                            <a href="login.html" class="btn btn-outline" style="width: 100%;">Customer Portal &rarr;</a>
+                            <h4 style="margin-bottom: var(--spacing-xs); color: var(--color-gray-900);" data-i18n="contact.existing.title">Already a Customer?</h4>
+                            <p style="font-size: var(--font-size-sm); color: var(--color-gray-600); margin-bottom: var(--spacing-sm);" data-i18n="contact.existing.desc">Access your dashboard to track shipments and manage inventory.</p>
+                            <a href="login.html" class="btn btn-outline" style="width: 100%;" data-i18n-html="contact.existing.btn">Customer Portal &rarr;</a>
                         </div>
 
                         <div style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(14,165,233,0.06)); border-radius: var(--radius-lg); border: 1px solid rgba(16,185,129,0.15);" class="reveal">
-                            <h4 style="margin-bottom: var(--spacing-xs); color: var(--color-gray-900);">Need an Instant Quote?</h4>
-                            <p style="font-size: var(--font-size-sm); color: var(--color-gray-600); margin-bottom: var(--spacing-sm);">Use our interactive 3D quote calculator for instant pricing.</p>
-                            <a href="quote.html" class="btn btn-primary" style="width: 100%;">Instant Quote Calculator &rarr;</a>
+                            <h4 style="margin-bottom: var(--spacing-xs); color: var(--color-gray-900);" data-i18n="contact.instant.title">Need an Instant Quote?</h4>
+                            <p style="font-size: var(--font-size-sm); color: var(--color-gray-600); margin-bottom: var(--spacing-sm);" data-i18n="contact.instant.desc">Use our interactive 3D quote calculator for instant pricing.</p>
+                            <a href="quote.html" class="btn btn-primary" style="width: 100%;" data-i18n-html="contact.instant.btn">Instant Quote Calculator &rarr;</a>
                         </div>
                     </div>
                 </div>
@@ -258,10 +259,10 @@
                 </iframe>
                 <div class="map-overlay">
                     <div class="map-card">
-                        <h3>📦 Miami Alliance 3PL</h3>
+                        <h3 data-i18n-html="contact.map.name">📦 Miami Alliance 3PL</h3>
                         <p>8780 NW 100th St<br>Medley, FL 33178</p>
-                        <p style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-top: var(--spacing-xs);">8 miles from Miami International Airport (MIA)</p>
-                        <a href="https://www.google.com/maps/dir//8780+NW+100th+St,+Medley,+FL+33178" target="_blank" rel="noopener" class="btn btn-primary">Get Directions</a>
+                        <p style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-top: var(--spacing-xs);" data-i18n="contact.map.note">8 miles from Miami International Airport (MIA)</p>
+                        <a href="https://www.google.com/maps/dir//8780+NW+100th+St,+Medley,+FL+33178" target="_blank" rel="noopener" class="btn btn-primary" data-i18n="contact.map.directions">Get Directions</a>
                     </div>
                 </div>
             </div>
@@ -280,27 +281,27 @@
                     <p>Your trusted logistics partner in Miami. Warehousing, fulfillment, and shipping services for businesses of all sizes.</p>
                 </div>
                 <div class="footer-links">
-                    <h4>Quick Links</h4>
+                    <h4 data-i18n="footer.quicklinks">Quick Links</h4>
                     <ul>
-                        <li><a href="services.html">Services</a></li>
-                        <li><a href="quote.html">Instant Quote</a></li>
-                        <li><a href="blog.html">Blog</a></li>
-                        <li><a href="about.html">About Us</a></li>
-                        <li><a href="contact.html">Contact</a></li>
-                        <li><a href="login.html">Customer Portal</a></li>
+                        <li><a href="services.html" data-i18n="footer.services.link">Services</a></li>
+                        <li><a href="quote.html" data-i18n="footer.quote.link">Instant Quote</a></li>
+                        <li><a href="blog.html" data-i18n="footer.blog.link">Blog</a></li>
+                        <li><a href="about.html" data-i18n="footer.about.link">About Us</a></li>
+                        <li><a href="contact.html" data-i18n="footer.contact.link">Contact</a></li>
+                        <li><a href="login.html" data-i18n="footer.portal.link">Customer Portal</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
-                    <h4>Services</h4>
+                    <h4 data-i18n="footer.services">Services</h4>
                     <ul>
-                        <li><a href="services.html#receiving">Receiving & QC</a></li>
-                        <li><a href="services.html#warehousing">Warehousing</a></li>
-                        <li><a href="services.html#fulfillment">Fulfillment</a></li>
-                        <li><a href="services.html#import">Import/Export</a></li>
+                        <li><a href="services.html#receiving" data-i18n="footer.receiving">Receiving & QC</a></li>
+                        <li><a href="services.html#warehousing" data-i18n="footer.warehousing">Warehousing</a></li>
+                        <li><a href="services.html#fulfillment" data-i18n="footer.fulfillment">Fulfillment</a></li>
+                        <li><a href="services.html#import" data-i18n="footer.import">Import/Export</a></li>
                     </ul>
                 </div>
                 <div class="footer-contact">
-                    <h4>Contact</h4>
+                    <h4 data-i18n="footer.contact">Contact</h4>
                     <p>8780 NW 100th ST</p>
                     <p>Medley, FL 33178</p>
                     <p><a href="mailto:info@miamialliance3pl.com" style="color: var(--color-accent);">info@miamialliance3pl.com</a></p>
@@ -308,7 +309,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 Miami Alliance 3PL. All rights reserved.</p>
+                <p data-i18n="footer.copyright">&copy; 2026 Miami Alliance 3PL. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -327,5 +328,7 @@
             this.reset();
         });
     </script>
+    <script src="js/lang/es.js"></script>
+    <script src="js/i18n.js"></script>
 </body>
 </html>

@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="../css/style.css?v=202602230300">
+    <link rel="stylesheet" href="../css/style.css">
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
     <script>
@@ -41,7 +41,7 @@
             </button>
             <ul class="nav-menu">
                 <li><span id="user-name" class="nav-link">Welcome</span></li>
-                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline" data-i18n="portal.sidebar.logout">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -51,30 +51,30 @@
         <aside class="portal-sidebar">
             <nav role="navigation" aria-label="Main navigation">
                 <a href="dashboard.html" class="portal-nav-item">
-                    <span aria-hidden="true">📊</span> Dashboard
+                    <span aria-hidden="true">📊</span> <span data-i18n="portal.sidebar.dashboard">Dashboard</span>
                 </a>
                 <a href="shipments.html" class="portal-nav-item">
-                    <span aria-hidden="true">🚚</span> Shipments
+                    <span aria-hidden="true">🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span>
                 </a>
                 <a href="tracking.html" class="portal-nav-item active" aria-current="page">
-                    <span aria-hidden="true">🔍</span> Tracking
+                    <span aria-hidden="true">🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span>
                 </a>
                 <a href="inventory.html" class="portal-nav-item">
-                    <span aria-hidden="true">📦</span> Inventory
+                    <span aria-hidden="true">📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span>
                 </a>
             </nav>
         </aside>
 
         <!-- Main Content -->
         <main class="portal-main">
-            <h1 style="margin-bottom: var(--spacing-lg); color: var(--color-gray-900);">Track Shipment</h1>
+            <h1 style="margin-bottom: var(--spacing-lg); color: var(--color-gray-900);" data-i18n="portal.tracking.title">Track Shipment</h1>
 
             <!-- Search Form -->
             <div class="dashboard-card" style="margin-bottom: var(--spacing-xl);">
                 <form id="tracking-form" style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;" role="search" aria-label="Track shipment">
                     <label for="tracking-input" class="visually-hidden">Tracking number</label>
-                    <input type="text" id="tracking-input" placeholder="Enter tracking number (e.g., MA3PL12345678)" style="flex: 1; min-width: 250px; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: var(--font-size-base);" aria-required="true">
-                    <button type="submit" class="btn btn-primary">Track</button>
+                    <input type="text" id="tracking-input" placeholder="Enter tracking number (e.g., MA3PL12345678)" data-i18n-placeholder="portal.tracking.inputPh" style="flex: 1; min-width: 250px; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: var(--font-size-base);" aria-required="true">
+                    <button type="submit" class="btn btn-primary" data-i18n="portal.tracking.trackBtn">Track</button>
                 </form>
             </div>
 
@@ -83,8 +83,8 @@
                 <div class="dashboard-card" style="margin-bottom: var(--spacing-lg);">
                     <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: var(--spacing-md);">
                         <div>
-                            <h2 style="font-size: var(--font-size-xl); color: var(--color-gray-900); margin-bottom: var(--spacing-xs);">Tracking # <span id="result-tracking"></span></h2>
-                            <p style="color: var(--color-gray-500);">Created: <span id="result-date"></span></p>
+                            <h2 style="font-size: var(--font-size-xl); color: var(--color-gray-900); margin-bottom: var(--spacing-xs);"><span data-i18n="portal.tracking.trackingHash">Tracking #</span> <span id="result-tracking"></span></h2>
+                            <p style="color: var(--color-gray-500);"><span data-i18n="portal.tracking.created">Created:</span> <span id="result-date"></span></p>
                         </div>
                         <span id="result-status" class="badge"></span>
                     </div>
@@ -93,26 +93,26 @@
                 <!-- Shipment Details -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
                     <div class="dashboard-card">
-                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">Origin</h3>
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);" data-i18n="portal.tracking.origin">Origin</h3>
                         <p id="result-origin" style="color: var(--color-gray-900);"></p>
                     </div>
                     <div class="dashboard-card">
-                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">Destination</h3>
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);" data-i18n="portal.tracking.destination">Destination</h3>
                         <p id="result-destination" style="color: var(--color-gray-900);"></p>
                     </div>
                     <div class="dashboard-card">
-                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">Package Details</h3>
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);" data-i18n="portal.tracking.packageDetails">Package Details</h3>
                         <p id="result-package" style="color: var(--color-gray-900);"></p>
                     </div>
                     <div class="dashboard-card">
-                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">Service</h3>
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);" data-i18n="portal.tracking.service">Service</h3>
                         <p id="result-service" style="color: var(--color-gray-900); text-transform: capitalize;"></p>
                     </div>
                 </div>
 
                 <!-- Timeline -->
                 <div class="dashboard-card">
-                    <h3 style="font-size: var(--font-size-lg); color: var(--color-gray-900); margin-bottom: var(--spacing-md);">Tracking History</h3>
+                    <h3 style="font-size: var(--font-size-lg); color: var(--color-gray-900); margin-bottom: var(--spacing-md);" data-i18n="portal.tracking.history">Tracking History</h3>
                     <div id="tracking-timeline" style="border-left: 2px solid var(--color-gray-200); padding-left: var(--spacing-md); margin-left: var(--spacing-xs);">
                         <!-- Timeline items will be inserted here -->
                     </div>
@@ -123,12 +123,16 @@
             <div id="no-result" style="display: none;" class="dashboard-card" role="alert" aria-live="polite">
                 <div style="text-align: center; padding: var(--spacing-xl);">
                     <div style="font-size: 3rem; margin-bottom: var(--spacing-sm);">🔍</div>
-                    <h3 style="color: var(--color-gray-900); margin-bottom: var(--spacing-xs);">Shipment Not Found</h3>
-                    <p style="color: var(--color-gray-500);">Please check the tracking number and try again.</p>
+                    <h3 style="color: var(--color-gray-900); margin-bottom: var(--spacing-xs);" data-i18n="portal.tracking.notFound">Shipment Not Found</h3>
+                    <p style="color: var(--color-gray-500);" data-i18n="portal.tracking.notFoundDesc">Please check the tracking number and try again.</p>
                 </div>
             </div>
         </main>
     </div>
+
+    <!-- i18n -->
+    <script src="../js/lang/es.js"></script>
+    <script src="../js/i18n.js"></script>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -142,7 +146,8 @@
             projectId: "miamialliance3pl",
             storageBucket: "miamialliance3pl.firebasestorage.app",
             messagingSenderId: "657614666588",
-            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99"
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -151,6 +156,8 @@
 
         // Fallback admin emails (used only if Firestore role check fails)
         const FALLBACK_ADMIN_EMAILS = [
+            'ceo@usglatam.com',
+            'yuri@megalopolisms.com',
             'admin@miamialliance3pl.com',
             'operations@miamialliance3pl.com'
         ];

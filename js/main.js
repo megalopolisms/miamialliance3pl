@@ -4,6 +4,47 @@
 
 document.addEventListener("DOMContentLoaded", function () {
   // =========================================================================
+  // Urgency Banner Height → CSS Custom Property
+  // Keeps fixed header & hero padding in sync with the banner height
+  // =========================================================================
+  function updateBannerHeight() {
+    var banner = document.querySelector(".urgency-banner");
+    if (banner) {
+      // Use bounding box + ceil so sub-pixel layout never underestimates height
+      var h = Math.ceil(banner.getBoundingClientRect().height);
+      document.documentElement.style.setProperty("--banner-height", h + "px");
+    } else {
+      document.documentElement.style.setProperty("--banner-height", "0px");
+    }
+  }
+
+  function scheduleBannerHeightUpdate() {
+    window.requestAnimationFrame(updateBannerHeight);
+  }
+
+  updateBannerHeight();
+  window.addEventListener("load", scheduleBannerHeightUpdate);
+  window.addEventListener("resize", scheduleBannerHeightUpdate, {
+    passive: true,
+  });
+
+  // Mobile browsers can change visual viewport without triggering window resize
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", scheduleBannerHeightUpdate, {
+      passive: true,
+    });
+  }
+
+  // Recalculate when banner content wraps/un-wraps (font load, viewport changes)
+  if ("ResizeObserver" in window) {
+    var observedBanner = document.querySelector(".urgency-banner");
+    if (observedBanner) {
+      var bannerResizeObserver = new ResizeObserver(scheduleBannerHeightUpdate);
+      bannerResizeObserver.observe(observedBanner);
+    }
+  }
+
+  // =========================================================================
   // Mobile Navigation Toggle
   // =========================================================================
   const navToggle = document.querySelector(".nav-toggle");
@@ -216,10 +257,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (target) {
           const headerHeight =
             document.querySelector(".header")?.offsetHeight || 70;
+          const bannerHeight =
+            document.querySelector(".urgency-banner")?.offsetHeight || 0;
           const targetPosition =
             target.getBoundingClientRect().top +
             window.scrollY -
             headerHeight -
+            bannerHeight -
             20;
           window.scrollTo({
             top: targetPosition,
@@ -347,7 +391,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // =========================================================================
   // Homepage Funnel Selection
   // =========================================================================
-  const funnelPills = document.querySelectorAll(".funnel-pill[data-funnel-service]");
+  const funnelPills = document.querySelectorAll(
+    ".funnel-pill[data-funnel-service]",
+  );
   const funnelServiceInput = document.getElementById("funnelServiceInput");
   const funnelCopy = document.querySelector("[data-funnel-copy]");
 

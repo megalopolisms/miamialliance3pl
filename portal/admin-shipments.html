@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="../css/style.css?v=202602230300">
+    <link rel="stylesheet" href="../css/style.css">
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
     <script>
@@ -358,8 +358,8 @@
                 <span></span>
             </button>
             <ul class="nav-menu">
-                <li><span id="user-name" class="nav-link">Welcome</span></li>
-                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+                <li><span id="user-name" class="nav-link" data-i18n="portal.nav.welcome">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline" data-i18n="portal.sidebar.logout">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -368,27 +368,27 @@
         <!-- Sidebar -->
         <aside class="portal-sidebar">
             <nav>
-                <a href="dashboard.html" class="portal-nav-item">
+                <a href="dashboard.html" class="portal-nav-item" data-i18n-html="portal.sidebar.dashboard">
                     <span>📊</span> Dashboard
                 </a>
-                <a href="shipments.html" class="portal-nav-item">
+                <a href="shipments.html" class="portal-nav-item" data-i18n-html="portal.sidebar.shipments">
                     <span>🚚</span> Shipments
                 </a>
-                <a href="tracking.html" class="portal-nav-item">
+                <a href="tracking.html" class="portal-nav-item" data-i18n-html="portal.sidebar.tracking">
                     <span>🔍</span> Tracking
                 </a>
-                <a href="inventory.html" class="portal-nav-item">
+                <a href="inventory.html" class="portal-nav-item" data-i18n-html="portal.sidebar.inventory">
                     <span>📦</span> Inventory
                 </a>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
-                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
-                    <a href="pricing.html" class="portal-nav-item">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" data-i18n="portal.sidebar.adminLabel">Admin</div>
+                    <a href="pricing.html" class="portal-nav-item" data-i18n-html="portal.sidebar.pricing">
                         <span>💰</span> Pricing
                     </a>
-                    <a href="settings.html" class="portal-nav-item">
+                    <a href="settings.html" class="portal-nav-item" data-i18n-html="portal.sidebar.settings">
                         <span>⚙️</span> Settings
                     </a>
-                    <a href="team.html" class="portal-nav-item">
+                    <a href="team.html" class="portal-nav-item" data-i18n-html="portal.sidebar.team">
                         <span>👔</span> Manage Team
                     </a>
                 </div>
@@ -399,43 +399,43 @@
         <main class="portal-main">
             <!-- Page Header -->
             <div class="page-header-bar">
-                <h1 id="page-title">📋 All Shipments</h1>
-                <p>View and manage shipments from all customers</p>
+                <h1 id="page-title" data-i18n="portal.admin.title">📋 All Shipments</h1>
+                <p data-i18n="portal.admin.subtitle">View and manage shipments from all customers</p>
             </div>
 
             <!-- Filters Bar -->
             <div class="filters-bar">
-                <input type="text" id="search-input" placeholder="Search tracking #, customer, destination...">
+                <input type="text" id="search-input" placeholder="Search tracking #, customer, destination..." data-i18n-placeholder="portal.admin.search.placeholder">
                 <select id="status-filter">
-                    <option value="">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="picked_up">Picked Up</option>
-                    <option value="in_transit">In Transit</option>
-                    <option value="out_for_delivery">Out for Delivery</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
+                    <option value="" data-i18n="portal.admin.filter.allStatuses">All Statuses</option>
+                    <option value="pending" data-i18n="portal.admin.filter.pending">Pending</option>
+                    <option value="processing" data-i18n="portal.admin.filter.processing">Processing</option>
+                    <option value="picked_up" data-i18n="portal.admin.filter.pickedUp">Picked Up</option>
+                    <option value="in_transit" data-i18n="portal.admin.filter.inTransit">In Transit</option>
+                    <option value="out_for_delivery" data-i18n="portal.admin.filter.outForDelivery">Out for Delivery</option>
+                    <option value="delivered" data-i18n="portal.admin.filter.delivered">Delivered</option>
+                    <option value="cancelled" data-i18n="portal.admin.filter.cancelled">Cancelled</option>
                 </select>
-                <button class="btn btn-primary" onclick="applyFilters()">Filter</button>
-                <button class="btn btn-outline" onclick="clearFilters()">Clear</button>
+                <button class="btn btn-primary" onclick="applyFilters()" data-i18n="portal.admin.filter.btn">Filter</button>
+                <button class="btn btn-outline" onclick="clearFilters()" data-i18n="portal.admin.filter.clear">Clear</button>
             </div>
 
             <!-- Stats Summary -->
             <div class="dashboard-stats" style="margin-bottom: var(--spacing-xl);">
                 <div class="dashboard-card">
-                    <h3>Total Shipments</h3>
+                    <h3 data-i18n="portal.admin.stats.total">Total Shipments</h3>
                     <div class="value" id="total-shipments">0</div>
                 </div>
                 <div class="dashboard-card">
-                    <h3>Pending</h3>
+                    <h3 data-i18n="portal.admin.stats.pending">Pending</h3>
                     <div class="value" id="pending-shipments">0</div>
                 </div>
                 <div class="dashboard-card">
-                    <h3>In Transit</h3>
+                    <h3 data-i18n="portal.admin.stats.inTransit">In Transit</h3>
                     <div class="value" id="transit-shipments">0</div>
                 </div>
                 <div class="dashboard-card">
-                    <h3>Delivered</h3>
+                    <h3 data-i18n="portal.admin.stats.delivered">Delivered</h3>
                     <div class="value" id="delivered-shipments">0</div>
                 </div>
             </div>
@@ -444,7 +444,7 @@
             <div id="shipments-list">
                 <div class="empty-state">
                     <div class="icon">⏳</div>
-                    <p>Loading shipments...</p>
+                    <p data-i18n="portal.admin.loading">Loading shipments...</p>
                 </div>
             </div>
         </main>
@@ -453,32 +453,32 @@
     <!-- Edit Modal -->
     <div class="modal-overlay" id="edit-modal">
         <div class="modal">
-            <h2>📝 Edit Shipment</h2>
+            <h2 data-i18n="portal.admin.modal.title">📝 Edit Shipment</h2>
             <form id="edit-form">
                 <input type="hidden" id="edit-shipment-id">
                 <div class="form-group">
-                    <label>Tracking Number</label>
+                    <label data-i18n="portal.admin.modal.tracking">Tracking Number</label>
                     <input type="text" id="edit-tracking" readonly style="background: var(--color-gray-100);">
                 </div>
                 <div class="form-group">
-                    <label>Status</label>
+                    <label data-i18n="portal.admin.modal.status">Status</label>
                     <select id="edit-status">
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="picked_up">Picked Up</option>
-                        <option value="in_transit">In Transit</option>
-                        <option value="out_for_delivery">Out for Delivery</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
+                        <option value="pending" data-i18n="portal.admin.filter.pending">Pending</option>
+                        <option value="processing" data-i18n="portal.admin.filter.processing">Processing</option>
+                        <option value="picked_up" data-i18n="portal.admin.filter.pickedUp">Picked Up</option>
+                        <option value="in_transit" data-i18n="portal.admin.filter.inTransit">In Transit</option>
+                        <option value="out_for_delivery" data-i18n="portal.admin.filter.outForDelivery">Out for Delivery</option>
+                        <option value="delivered" data-i18n="portal.admin.filter.delivered">Delivered</option>
+                        <option value="cancelled" data-i18n="portal.admin.filter.cancelled">Cancelled</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Admin Notes</label>
-                    <textarea id="edit-notes" rows="3" placeholder="Internal notes about this shipment..."></textarea>
+                    <label data-i18n="portal.admin.modal.notes">Admin Notes</label>
+                    <textarea id="edit-notes" rows="3" placeholder="Internal notes about this shipment..." data-i18n-placeholder="portal.admin.modal.notesPlaceholder"></textarea>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal()" data-i18n="portal.admin.modal.cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="portal.admin.modal.save">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -901,5 +901,7 @@
         });
     </script>
     <script src="../js/main.js"></script>
+    <script src="../js/lang/es.js"></script>
+    <script src="../js/i18n.js"></script>
 </body>
 </html>

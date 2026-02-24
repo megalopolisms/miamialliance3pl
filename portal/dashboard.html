@@ -18,7 +18,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- Styles -->
-    <link rel="stylesheet" href="../css/style.css?v=202602230300">
+    <link rel="stylesheet" href="../css/style.css?v=8">
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
     <script>
@@ -176,7 +176,7 @@
             </button>
             <ul class="nav-menu">
                 <li><span id="user-name" class="nav-link">Welcome</span></li>
-                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline" data-i18n="portal.sidebar.logout">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -186,48 +186,48 @@
         <aside class="portal-sidebar">
             <nav role="navigation" aria-label="Main navigation">
                 <a href="dashboard.html" class="portal-nav-item active" aria-current="page">
-                    <span aria-hidden="true">📊</span> Dashboard
+                    <span aria-hidden="true">📊</span> <span data-i18n="portal.sidebar.dashboard">Dashboard</span>
                 </a>
                 <a href="shipments.html" class="portal-nav-item">
-                    <span aria-hidden="true">🚚</span> Shipments
+                    <span aria-hidden="true">🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span>
                 </a>
                 <a href="tracking.html" class="portal-nav-item">
-                    <span aria-hidden="true">🔍</span> Tracking
+                    <span aria-hidden="true">🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span>
                 </a>
                 <a href="inventory.html" class="portal-nav-item">
-                    <span aria-hidden="true">📦</span> Inventory
+                    <span aria-hidden="true">📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span>
                 </a>
                 <a href="billing.html" class="portal-nav-item">
-                    <span aria-hidden="true">💵</span> Billing
+                    <span aria-hidden="true">💵</span> <span data-i18n="portal.sidebar.billing">Billing</span>
                 </a>
                 <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
-                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true">Staff</div>
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true" data-i18n="portal.sidebar.staffLabel">Staff</div>
                     <a href="customers.html" class="portal-nav-item" id="nav-all-users">
-                        <span aria-hidden="true">👥</span> All Customers
+                        <span aria-hidden="true">👥</span> <span data-i18n="portal.sidebar.allCustomers">All Customers</span>
                     </a>
                     <a href="admin-shipments.html" class="portal-nav-item" id="nav-all-shipments">
-                        <span aria-hidden="true">📋</span> All Shipments
+                        <span aria-hidden="true">📋</span> <span data-i18n="portal.sidebar.allShipments">All Shipments</span>
                     </a>
                 </div>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
-                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true">Admin</div>
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true" data-i18n="portal.sidebar.adminLabel">Admin</div>
                     <a href="invoices.html" class="portal-nav-item">
-                        <span aria-hidden="true">💵</span> Invoices
+                        <span aria-hidden="true">💵</span> <span data-i18n="portal.sidebar.invoices">Invoices</span>
                     </a>
                     <a href="storage-log.html" class="portal-nav-item">
-                        <span aria-hidden="true">📊</span> Storage Log
+                        <span aria-hidden="true">📊</span> <span data-i18n="portal.sidebar.storagelog">Storage Log</span>
                     </a>
                     <a href="pricing.html" class="portal-nav-item">
-                        <span aria-hidden="true">💰</span> Pricing
+                        <span aria-hidden="true">💰</span> <span data-i18n="portal.sidebar.pricing">Pricing</span>
                     </a>
                     <a href="settings.html" class="portal-nav-item">
-                        <span aria-hidden="true">⚙️</span> Settings
+                        <span aria-hidden="true">⚙️</span> <span data-i18n="portal.sidebar.settings">Settings</span>
                     </a>
                     <a href="team.html" class="portal-nav-item">
-                        <span aria-hidden="true">👔</span> Manage Team
+                        <span aria-hidden="true">👔</span> <span data-i18n="portal.sidebar.team">Manage Team</span>
                     </a>
                     <a href="changelog.html" class="portal-nav-item">
-                        <span aria-hidden="true">📝</span> Changelog
+                        <span aria-hidden="true">📝</span> <span data-i18n="portal.sidebar.changelog">Changelog</span>
                     </a>
                 </div>
             </nav>
@@ -237,35 +237,35 @@
         <main class="portal-main">
             <!-- Welcome Hero -->
             <div class="welcome-hero">
-                <h1 id="welcome-title">Welcome back!</h1>
-                <p id="welcome-subtitle">Here's what's happening with your logistics today.</p>
+                <h1 id="welcome-title" data-i18n="portal.dashboard.welcomeTitle">Welcome back!</h1>
+                <p id="welcome-subtitle" data-i18n="portal.dashboard.welcomeSubtitle">Here's what's happening with your logistics today.</p>
                 <p id="jorge-quote" style="display: none; margin-top: var(--spacing-md); font-style: italic; opacity: 0.8; font-size: var(--font-size-lg);">"Do or do not ship. There is no try." - Master Yoda, Logistics Division</p>
             </div>
 
             <!-- Admin Section (hidden by default) -->
             <div id="admin-section" class="admin-section" style="display: none;">
-                <h2 id="admin-title">👑 Admin Dashboard</h2>
-                <p id="admin-subtitle" style="color: #92400e; margin-bottom: var(--spacing-sm);">You have full access to manage all customers and shipments.</p>
+                <h2 id="admin-title" data-i18n="portal.dashboard.adminTitle">👑 Admin Dashboard</h2>
+                <p id="admin-subtitle" style="color: #92400e; margin-bottom: var(--spacing-sm);" data-i18n="portal.dashboard.adminSubtitle">You have full access to manage all customers and shipments.</p>
                 <div class="admin-grid">
                     <div class="admin-card" onclick="location.href='#users'">
                         <div class="icon">👥</div>
                         <div class="count" id="total-users">0</div>
-                        <div class="label" id="label-users">Total Customers</div>
+                        <div class="label" id="label-users" data-i18n="portal.dashboard.totalCustomers">Total Customers</div>
                     </div>
                     <div class="admin-card" onclick="location.href='#shipments'">
                         <div class="icon" id="icon-shipments">📦</div>
                         <div class="count" id="total-shipments">0</div>
-                        <div class="label" id="label-shipments">Total Shipments</div>
+                        <div class="label" id="label-shipments" data-i18n="portal.dashboard.totalShipments">Total Shipments</div>
                     </div>
                     <div class="admin-card" onclick="location.href='#inventory'">
                         <div class="icon" id="icon-inventory">🏭</div>
                         <div class="count" id="total-inventory">0</div>
-                        <div class="label" id="label-inventory">Inventory Items</div>
+                        <div class="label" id="label-inventory" data-i18n="portal.dashboard.inventoryItems">Inventory Items</div>
                     </div>
                     <div class="admin-card" onclick="location.href='#pending'">
                         <div class="icon" id="icon-pending">⏳</div>
                         <div class="count" id="total-pending">0</div>
-                        <div class="label" id="label-pending">Pending Actions</div>
+                        <div class="label" id="label-pending" data-i18n="portal.dashboard.pendingActions">Pending Actions</div>
                     </div>
                 </div>
             </div>
@@ -273,40 +273,40 @@
             <!-- Stats Cards -->
             <div class="dashboard-stats">
                 <div class="dashboard-card">
-                    <h3>Pending Shipments</h3>
+                    <h3 data-i18n="portal.dashboard.pendingShipments">Pending Shipments</h3>
                     <div class="value" id="pending-count">0</div>
                 </div>
                 <div class="dashboard-card">
-                    <h3>In Transit</h3>
+                    <h3 data-i18n="portal.dashboard.inTransit">In Transit</h3>
                     <div class="value" id="transit-count">0</div>
                 </div>
                 <div class="dashboard-card">
-                    <h3>Delivered (30 days)</h3>
+                    <h3 data-i18n="portal.dashboard.delivered30">Delivered (30 days)</h3>
                     <div class="value" id="delivered-count">0</div>
                 </div>
                 <div class="dashboard-card">
-                    <h3>Inventory Items</h3>
+                    <h3 data-i18n="portal.dashboard.inventoryItemsCard">Inventory Items</h3>
                     <div class="value" id="inventory-count">0</div>
                 </div>
             </div>
 
             <!-- Quick Actions -->
             <div style="margin-bottom: var(--spacing-xl);">
-                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Quick Actions</h2>
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.dashboard.quickActions">Quick Actions</h2>
                 <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
-                    <a href="shipments.html" class="btn btn-primary">+ Create Shipment</a>
-                    <a href="tracking.html" class="btn btn-outline">Track Package</a>
-                    <a href="inventory.html" class="btn btn-outline">View Inventory</a>
+                    <a href="shipments.html" class="btn btn-primary" data-i18n="portal.dashboard.createShipment">+ Create Shipment</a>
+                    <a href="tracking.html" class="btn btn-outline" data-i18n="portal.dashboard.trackPackage">Track Package</a>
+                    <a href="inventory.html" class="btn btn-outline" data-i18n="portal.dashboard.viewInventory">View Inventory</a>
                 </div>
             </div>
 
             <!-- Analytics Section (Staff only) -->
             <div id="analytics-section" class="analytics-section" style="display: none;">
-                <h2>📈 Analytics Overview</h2>
+                <h2 data-i18n="portal.dashboard.analyticsOverview">📈 Analytics Overview</h2>
                 <div class="charts-grid">
                     <!-- Shipment Status Chart -->
                     <div class="chart-card">
-                        <h3>📊 Shipment Status</h3>
+                        <h3 data-i18n="portal.dashboard.chartShipmentStatus">📊 Shipment Status</h3>
                         <div class="chart-container">
                             <canvas id="statusChart"></canvas>
                         </div>
@@ -314,7 +314,7 @@
 
                     <!-- Monthly Trends Chart -->
                     <div class="chart-card">
-                        <h3>📅 Monthly Shipments</h3>
+                        <h3 data-i18n="portal.dashboard.chartMonthlyShipments">📅 Monthly Shipments</h3>
                         <div class="chart-container">
                             <canvas id="trendsChart"></canvas>
                         </div>
@@ -322,7 +322,7 @@
 
                     <!-- Top Customers (Admin only) -->
                     <div class="chart-card" id="customers-chart-card" style="display: none;">
-                        <h3>👥 Top Customers</h3>
+                        <h3 data-i18n="portal.dashboard.chartTopCustomers">👥 Top Customers</h3>
                         <div class="chart-container">
                             <canvas id="customersChart"></canvas>
                         </div>
@@ -330,7 +330,7 @@
 
                     <!-- Revenue by Service -->
                     <div class="chart-card" id="services-chart-card" style="display: none;">
-                        <h3>💰 Inventory by Type</h3>
+                        <h3 data-i18n="portal.dashboard.chartInventoryByType">💰 Inventory by Type</h3>
                         <div class="chart-container">
                             <canvas id="inventoryChart"></canvas>
                         </div>
@@ -339,35 +339,35 @@
 
                 <!-- Key Metrics -->
                 <div class="chart-card" style="margin-top: var(--spacing-lg);">
-                    <h3>📋 Key Performance Metrics</h3>
+                    <h3 data-i18n="portal.dashboard.keyMetrics">📋 Key Performance Metrics</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg);">
                         <div>
                             <div class="metric-row">
-                                <span class="metric-label"><span class="metric-dot" style="background: #10b981;"></span> On-Time Delivery</span>
+                                <span class="metric-label"><span class="metric-dot" style="background: #10b981;"></span> <span data-i18n="portal.dashboard.metricOnTime">On-Time Delivery</span></span>
                                 <span class="metric-value" id="metric-ontime">--</span>
                             </div>
                             <div class="metric-row">
-                                <span class="metric-label"><span class="metric-dot" style="background: #3b82f6;"></span> Avg. Transit Time</span>
+                                <span class="metric-label"><span class="metric-dot" style="background: #3b82f6;"></span> <span data-i18n="portal.dashboard.metricTransit">Avg. Transit Time</span></span>
                                 <span class="metric-value" id="metric-transit">--</span>
                             </div>
                         </div>
                         <div>
                             <div class="metric-row">
-                                <span class="metric-label"><span class="metric-dot" style="background: #f59e0b;"></span> Active Shipments</span>
+                                <span class="metric-label"><span class="metric-dot" style="background: #f59e0b;"></span> <span data-i18n="portal.dashboard.metricActive">Active Shipments</span></span>
                                 <span class="metric-value" id="metric-active">--</span>
                             </div>
                             <div class="metric-row">
-                                <span class="metric-label"><span class="metric-dot" style="background: #8b5cf6;"></span> Warehouse Utilization</span>
+                                <span class="metric-label"><span class="metric-dot" style="background: #8b5cf6;"></span> <span data-i18n="portal.dashboard.metricWarehouse">Warehouse Utilization</span></span>
                                 <span class="metric-value" id="metric-warehouse">--</span>
                             </div>
                         </div>
                         <div>
                             <div class="metric-row">
-                                <span class="metric-label"><span class="metric-dot" style="background: #ec4899;"></span> This Month</span>
+                                <span class="metric-label"><span class="metric-dot" style="background: #ec4899;"></span> <span data-i18n="portal.dashboard.metricThisMonth">This Month</span></span>
                                 <span class="metric-value" id="metric-month">--</span>
                             </div>
                             <div class="metric-row">
-                                <span class="metric-label"><span class="metric-dot" style="background: #06b6d4;"></span> Total Pallets</span>
+                                <span class="metric-label"><span class="metric-dot" style="background: #06b6d4;"></span> <span data-i18n="portal.dashboard.metricPallets">Total Pallets</span></span>
                                 <span class="metric-value" id="metric-pallets">--</span>
                             </div>
                         </div>
@@ -377,21 +377,21 @@
 
             <!-- Recent Shipments -->
             <div>
-                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Recent Shipments</h2>
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.dashboard.recentShipments">Recent Shipments</h2>
                 <div class="table-wrapper">
                     <table class="data-table" role="table" aria-label="Recent shipments list">
                         <thead>
                             <tr>
-                                <th scope="col">Tracking #</th>
-                                <th scope="col">Destination</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">Date</th>
+                                <th scope="col" data-i18n="portal.table.tracking">Tracking #</th>
+                                <th scope="col" data-i18n="portal.table.destination">Destination</th>
+                                <th scope="col" data-i18n="portal.table.status">Status</th>
+                                <th scope="col" data-i18n="portal.table.date">Date</th>
                             </tr>
                         </thead>
                         <tbody id="recent-shipments">
                             <tr>
                                 <td colspan="4" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">
-                                    No shipments yet. <a href="shipments.html" style="color: var(--color-accent);">Create your first shipment</a>
+                                    <span data-i18n="portal.dashboard.noShipments">No shipments yet.</span> <a href="shipments.html" style="color: var(--color-accent);" data-i18n="portal.dashboard.createFirst">Create your first shipment</a>
                                 </td>
                             </tr>
                         </tbody>
@@ -400,6 +400,10 @@
             </div>
         </main>
     </div>
+
+    <!-- i18n -->
+    <script src="../js/lang/es.js"></script>
+    <script src="../js/i18n.js"></script>
 
     <!-- Firebase SDK -->
     <script type="module">

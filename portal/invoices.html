@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/style.css?v=202602230300">
+    <link rel="stylesheet" href="../css/style.css?v=8">
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
     <script>
@@ -212,8 +212,8 @@
                 <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
             </a>
             <ul class="nav-menu">
-                <li><span id="user-name" class="nav-link">Welcome</span></li>
-                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+                <li><span id="user-name" class="nav-link" data-i18n="portal.nav.welcome">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline" data-i18n="portal.nav.logout">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -221,22 +221,22 @@
     <div class="portal-layout">
         <aside class="portal-sidebar">
             <nav>
-                <a href="dashboard.html" class="portal-nav-item"><span>📊</span> Dashboard</a>
-                <a href="shipments.html" class="portal-nav-item"><span>🚚</span> Shipments</a>
-                <a href="tracking.html" class="portal-nav-item"><span>🔍</span> Tracking</a>
-                <a href="inventory.html" class="portal-nav-item"><span>📦</span> Inventory</a>
+                <a href="dashboard.html" class="portal-nav-item"><span>📊</span> <span data-i18n="portal.sidebar.dashboard">Dashboard</span></a>
+                <a href="shipments.html" class="portal-nav-item"><span>🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span></a>
+                <a href="tracking.html" class="portal-nav-item"><span>🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span></a>
+                <a href="inventory.html" class="portal-nav-item"><span>📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span></a>
                 <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
-                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Staff</div>
-                    <a href="customers.html" class="portal-nav-item"><span>👥</span> All Customers</a>
-                    <a href="admin-shipments.html" class="portal-nav-item"><span>📋</span> All Shipments</a>
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" data-i18n="portal.sidebar.staffLabel">Staff</div>
+                    <a href="customers.html" class="portal-nav-item"><span>👥</span> <span data-i18n="portal.sidebar.customers">All Customers</span></a>
+                    <a href="admin-shipments.html" class="portal-nav-item"><span>📋</span> <span data-i18n="portal.sidebar.allShipments">All Shipments</span></a>
                 </div>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
-                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
-                    <a href="invoices.html" class="portal-nav-item active"><span>💵</span> Invoices</a>
-                    <a href="storage-log.html" class="portal-nav-item"><span>📊</span> Storage Log</a>
-                    <a href="pricing.html" class="portal-nav-item"><span>💰</span> Pricing</a>
-                    <a href="settings.html" class="portal-nav-item"><span>⚙️</span> Settings</a>
-                    <a href="team.html" class="portal-nav-item"><span>👔</span> Manage Team</a>
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" data-i18n="portal.sidebar.adminLabel">Admin</div>
+                    <a href="invoices.html" class="portal-nav-item active"><span>💵</span> <span data-i18n="portal.sidebar.invoices">Invoices</span></a>
+                    <a href="storage-log.html" class="portal-nav-item"><span>📊</span> <span data-i18n="portal.sidebar.storagelog">Storage Log</span></a>
+                    <a href="pricing.html" class="portal-nav-item"><span>💰</span> <span data-i18n="portal.sidebar.pricing">Pricing</span></a>
+                    <a href="settings.html" class="portal-nav-item"><span>⚙️</span> <span data-i18n="portal.sidebar.settings">Settings</span></a>
+                    <a href="team.html" class="portal-nav-item"><span>👔</span> <span data-i18n="portal.sidebar.team">Manage Team</span></a>
                 </div>
             </nav>
         </aside>
@@ -244,44 +244,44 @@
         <main class="portal-main">
             <div class="page-header-bar">
                 <div>
-                    <h1>💵 Invoices</h1>
-                    <p>Manage customer invoices and payments</p>
+                    <h1 data-i18n-html="portal.invoices.title">💵 Invoices</h1>
+                    <p data-i18n="portal.invoices.subtitle">Manage customer invoices and payments</p>
                 </div>
-                <button class="btn btn-primary" onclick="openCreateModal()">+ Create Invoice</button>
+                <button class="btn btn-primary" onclick="openCreateModal()" data-i18n="portal.invoices.createInvoice">+ Create Invoice</button>
             </div>
 
             <!-- Stats -->
             <div class="stats-row">
                 <div class="stat-card">
                     <div class="value" id="stat-total">$0</div>
-                    <div class="label">Total Outstanding</div>
+                    <div class="label" data-i18n="portal.invoices.stats.totalOutstanding">Total Outstanding</div>
                 </div>
                 <div class="stat-card warning">
                     <div class="value" id="stat-pending">0</div>
-                    <div class="label">Pending Invoices</div>
+                    <div class="label" data-i18n="portal.invoices.stats.pendingInvoices">Pending Invoices</div>
                 </div>
                 <div class="stat-card danger">
                     <div class="value" id="stat-overdue">0</div>
-                    <div class="label">Overdue</div>
+                    <div class="label" data-i18n="portal.invoices.stats.overdue">Overdue</div>
                 </div>
                 <div class="stat-card success">
                     <div class="value" id="stat-paid">$0</div>
-                    <div class="label">Paid This Month</div>
+                    <div class="label" data-i18n="portal.invoices.stats.paidThisMonth">Paid This Month</div>
                 </div>
             </div>
 
             <!-- Filters -->
             <div class="filters-bar">
                 <select id="filter-customer" onchange="loadInvoices()">
-                    <option value="">All Customers</option>
+                    <option value="" data-i18n="portal.invoices.filter.allCustomers">All Customers</option>
                 </select>
                 <select id="filter-status" onchange="loadInvoices()">
-                    <option value="">All Statuses</option>
-                    <option value="draft">Draft</option>
-                    <option value="sent">Sent</option>
-                    <option value="paid">Paid</option>
-                    <option value="overdue">Overdue</option>
-                    <option value="partial">Partial</option>
+                    <option value="" data-i18n="portal.invoices.filter.allStatuses">All Statuses</option>
+                    <option value="draft" data-i18n="portal.invoices.filter.draft">Draft</option>
+                    <option value="sent" data-i18n="portal.invoices.filter.sent">Sent</option>
+                    <option value="paid" data-i18n="portal.invoices.filter.paid">Paid</option>
+                    <option value="overdue" data-i18n="portal.invoices.filter.overdue">Overdue</option>
+                    <option value="partial" data-i18n="portal.invoices.filter.partial">Partial</option>
                 </select>
                 <input type="month" id="filter-month" onchange="loadInvoices()">
             </div>
@@ -290,17 +290,17 @@
             <table class="invoice-table">
                 <thead>
                     <tr>
-                        <th>Invoice #</th>
-                        <th>Customer</th>
-                        <th>Period</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Due Date</th>
-                        <th>Actions</th>
+                        <th data-i18n="portal.invoices.table.invoiceNum">Invoice #</th>
+                        <th data-i18n="portal.invoices.table.customer">Customer</th>
+                        <th data-i18n="portal.invoices.table.period">Period</th>
+                        <th data-i18n="portal.invoices.table.amount">Amount</th>
+                        <th data-i18n="portal.invoices.table.status">Status</th>
+                        <th data-i18n="portal.invoices.table.dueDate">Due Date</th>
+                        <th data-i18n="portal.invoices.table.actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="invoices-tbody">
-                    <tr><td colspan="7" style="text-align: center; padding: 40px;">Loading...</td></tr>
+                    <tr><td colspan="7" style="text-align: center; padding: 40px;" data-i18n="portal.invoices.loading">Loading...</td></tr>
                 </tbody>
             </table>
         </main>
@@ -310,64 +310,64 @@
     <div id="create-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Create Invoice</h2>
+                <h2 data-i18n="portal.invoices.modal.createTitle">Create Invoice</h2>
                 <button class="close-btn" onclick="closeModal('create-modal')">&times;</button>
             </div>
             <form id="create-invoice-form">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
                     <div class="form-group">
-                        <label>Customer *</label>
+                        <label data-i18n="portal.invoices.form.customer">Customer *</label>
                         <select id="inv-customer" required onchange="loadCustomerData()">
-                            <option value="">Select customer...</option>
+                            <option value="" data-i18n="portal.invoices.form.selectCustomer">Select customer...</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Invoice Number</label>
+                        <label data-i18n="portal.invoices.form.invoiceNumber">Invoice Number</label>
                         <input type="text" id="inv-number" readonly>
                     </div>
                     <div class="form-group">
-                        <label>Billing Period Start *</label>
+                        <label data-i18n="portal.invoices.form.periodStart">Billing Period Start *</label>
                         <input type="date" id="inv-period-start" required>
                     </div>
                     <div class="form-group">
-                        <label>Billing Period End *</label>
+                        <label data-i18n="portal.invoices.form.periodEnd">Billing Period End *</label>
                         <input type="date" id="inv-period-end" required onchange="calculateInvoice()">
                     </div>
                     <div class="form-group">
-                        <label>Due Date *</label>
+                        <label data-i18n="portal.invoices.form.dueDate">Due Date *</label>
                         <input type="date" id="inv-due-date" required>
                     </div>
                     <div class="form-group">
-                        <label>Billing Cycle</label>
+                        <label data-i18n="portal.invoices.form.billingCycle">Billing Cycle</label>
                         <select id="inv-cycle">
-                            <option value="monthly">Monthly</option>
-                            <option value="biweekly">Bi-Weekly</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="custom">Custom</option>
+                            <option value="monthly" data-i18n="portal.invoices.form.monthly">Monthly</option>
+                            <option value="biweekly" data-i18n="portal.invoices.form.biweekly">Bi-Weekly</option>
+                            <option value="weekly" data-i18n="portal.invoices.form.weekly">Weekly</option>
+                            <option value="custom" data-i18n="portal.invoices.form.custom">Custom</option>
                         </select>
                     </div>
                 </div>
 
-                <h3 style="margin: var(--spacing-lg) 0 var(--spacing-md);">Line Items</h3>
+                <h3 style="margin: var(--spacing-lg) 0 var(--spacing-md);" data-i18n="portal.invoices.form.lineItems">Line Items</h3>
                 <div id="line-items-container">
                     <!-- Line items will be populated here -->
                 </div>
-                <button type="button" class="btn btn-outline" onclick="addLineItem()" style="margin-top: var(--spacing-sm);">+ Add Line Item</button>
+                <button type="button" class="btn btn-outline" onclick="addLineItem()" style="margin-top: var(--spacing-sm);" data-i18n="portal.invoices.form.addLineItem">+ Add Line Item</button>
 
                 <div class="totals-section" style="margin-top: var(--spacing-lg);">
-                    <div class="row"><span>Subtotal:</span> <span id="inv-subtotal">$0.00</span></div>
-                    <div class="row"><span>Tax (0%):</span> <span id="inv-tax">$0.00</span></div>
-                    <div class="row total"><span>Total:</span> <span id="inv-total">$0.00</span></div>
+                    <div class="row"><span data-i18n="portal.invoices.totals.subtotal">Subtotal:</span> <span id="inv-subtotal">$0.00</span></div>
+                    <div class="row"><span data-i18n="portal.invoices.totals.tax">Tax (0%):</span> <span id="inv-tax">$0.00</span></div>
+                    <div class="row total"><span data-i18n="portal.invoices.totals.total">Total:</span> <span id="inv-total">$0.00</span></div>
                 </div>
 
                 <div class="form-group" style="margin-top: var(--spacing-lg);">
-                    <label>Notes</label>
+                    <label data-i18n="portal.invoices.form.notes">Notes</label>
                     <textarea id="inv-notes" rows="3" style="width: 100%; padding: 10px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);"></textarea>
                 </div>
 
                 <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-lg);">
-                    <button type="submit" class="btn btn-primary">Save as Draft</button>
-                    <button type="button" class="btn btn-outline" onclick="saveAndSend()">Save & Send</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="portal.invoices.form.saveAsDraft">Save as Draft</button>
+                    <button type="button" class="btn btn-outline" onclick="saveAndSend()" data-i18n="portal.invoices.form.saveAndSend">Save & Send</button>
                 </div>
             </form>
         </div>
@@ -377,17 +377,17 @@
     <div id="view-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Invoice Details</h2>
+                <h2 data-i18n="portal.invoices.modal.viewTitle">Invoice Details</h2>
                 <button class="close-btn" onclick="closeModal('view-modal')">&times;</button>
             </div>
             <div id="invoice-preview" class="invoice-preview">
                 <!-- Invoice preview will be rendered here -->
             </div>
             <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-lg);">
-                <button class="btn btn-primary" onclick="printInvoice()">Print / PDF</button>
-                <button class="btn btn-send" id="btn-send-invoice" onclick="sendInvoice()">Send to Customer</button>
-                <button class="btn btn-paid" id="btn-mark-paid" onclick="markAsPaid()">Mark as Paid</button>
-                <button class="btn btn-outline" id="btn-stripe-link">Pay with Stripe</button>
+                <button class="btn btn-primary" onclick="printInvoice()" data-i18n="portal.invoices.modal.printPdf">Print / PDF</button>
+                <button class="btn btn-send" id="btn-send-invoice" onclick="sendInvoice()" data-i18n="portal.invoices.modal.sendToCustomer">Send to Customer</button>
+                <button class="btn btn-paid" id="btn-mark-paid" onclick="markAsPaid()" data-i18n="portal.invoices.modal.markAsPaid">Mark as Paid</button>
+                <button class="btn btn-outline" id="btn-stripe-link" data-i18n="portal.invoices.modal.payWithStripe">Pay with Stripe</button>
             </div>
         </div>
     </div>
@@ -398,6 +398,8 @@
     <script src="https://js.stripe.com/v3/"></script>
 
     <script src="../js/column-prefs.js"></script>
+    <script src="../js/lang/es.js"></script>
+    <script src="../js/i18n.js"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -409,7 +411,8 @@
             projectId: "miamialliance3pl",
             storageBucket: "miamialliance3pl.firebasestorage.app",
             messagingSenderId: "657614666588",
-            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99"
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
         };
 
         const app = initializeApp(firebaseConfig);

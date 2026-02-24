@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/style.css?v=202602230300">
+    <link rel="stylesheet" href="../css/style.css?v=8">
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
     <script>
@@ -217,8 +217,8 @@
                 <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
             </a>
             <ul class="nav-menu">
-                <li><span id="user-name" class="nav-link">Welcome</span></li>
-                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+                <li><span id="user-name" class="nav-link" data-i18n="portal.nav.welcome">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline" data-i18n="portal.nav.logout">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -226,57 +226,57 @@
     <div class="portal-layout">
         <aside class="portal-sidebar">
             <nav>
-                <a href="dashboard.html" class="portal-nav-item"><span>📊</span> Dashboard</a>
-                <a href="shipments.html" class="portal-nav-item"><span>🚚</span> Shipments</a>
-                <a href="tracking.html" class="portal-nav-item"><span>🔍</span> Tracking</a>
-                <a href="inventory.html" class="portal-nav-item"><span>📦</span> Inventory</a>
-                <a href="billing.html" class="portal-nav-item active"><span>💵</span> Billing</a>
+                <a href="dashboard.html" class="portal-nav-item"><span>📊</span> <span data-i18n="portal.sidebar.dashboard">Dashboard</span></a>
+                <a href="shipments.html" class="portal-nav-item"><span>🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span></a>
+                <a href="tracking.html" class="portal-nav-item"><span>🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span></a>
+                <a href="inventory.html" class="portal-nav-item"><span>📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span></a>
+                <a href="billing.html" class="portal-nav-item active"><span>💵</span> <span data-i18n="portal.sidebar.billing">Billing</span></a>
                 <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
-                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Staff</div>
-                    <a href="customers.html" class="portal-nav-item"><span>👥</span> All Customers</a>
-                    <a href="admin-shipments.html" class="portal-nav-item"><span>📋</span> All Shipments</a>
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" data-i18n="portal.sidebar.staffLabel">Staff</div>
+                    <a href="customers.html" class="portal-nav-item"><span>👥</span> <span data-i18n="portal.sidebar.customers">All Customers</span></a>
+                    <a href="admin-shipments.html" class="portal-nav-item"><span>📋</span> <span data-i18n="portal.sidebar.allShipments">All Shipments</span></a>
                 </div>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
-                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
-                    <a href="invoices.html" class="portal-nav-item"><span>💵</span> All Invoices</a>
-                    <a href="storage-log.html" class="portal-nav-item"><span>📊</span> Storage Log</a>
-                    <a href="pricing.html" class="portal-nav-item"><span>💰</span> Pricing</a>
-                    <a href="settings.html" class="portal-nav-item"><span>⚙️</span> Settings</a>
-                    <a href="team.html" class="portal-nav-item"><span>👔</span> Manage Team</a>
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" data-i18n="portal.sidebar.adminLabel">Admin</div>
+                    <a href="invoices.html" class="portal-nav-item"><span>💵</span> <span data-i18n="portal.sidebar.allInvoices">All Invoices</span></a>
+                    <a href="storage-log.html" class="portal-nav-item"><span>📊</span> <span data-i18n="portal.sidebar.storagelog">Storage Log</span></a>
+                    <a href="pricing.html" class="portal-nav-item"><span>💰</span> <span data-i18n="portal.sidebar.pricing">Pricing</span></a>
+                    <a href="settings.html" class="portal-nav-item"><span>⚙️</span> <span data-i18n="portal.sidebar.settings">Settings</span></a>
+                    <a href="team.html" class="portal-nav-item"><span>👔</span> <span data-i18n="portal.sidebar.team">Manage Team</span></a>
                 </div>
             </nav>
         </aside>
 
         <main class="portal-main">
             <div class="page-header-bar">
-                <h1>💵 Billing & Invoices</h1>
-                <p>View your invoices and make payments</p>
+                <h1 data-i18n-html="portal.billing.title">💵 Billing & Invoices</h1>
+                <p data-i18n="portal.billing.subtitle">View your invoices and make payments</p>
             </div>
 
             <!-- Balance Card -->
             <div class="balance-card">
                 <div>
-                    <div class="balance-label">Current Balance</div>
+                    <div class="balance-label" data-i18n="portal.billing.currentBalance">Current Balance</div>
                     <div class="balance-amount" id="current-balance">$0.00</div>
                 </div>
                 <div id="pay-now-section" style="display: none;">
-                    <button class="btn-pay" onclick="openPaymentModal()">Pay Now</button>
+                    <button class="btn-pay" onclick="openPaymentModal()" data-i18n="portal.billing.payNow">Pay Now</button>
                 </div>
             </div>
 
             <!-- Outstanding Invoices -->
             <div id="outstanding-section">
-                <h2 class="section-title">Outstanding Invoices</h2>
+                <h2 class="section-title" data-i18n="portal.billing.outstandingInvoices">Outstanding Invoices</h2>
                 <div id="outstanding-invoices">
-                    <div class="empty-state">Loading...</div>
+                    <div class="empty-state" data-i18n="portal.billing.loading">Loading...</div>
                 </div>
             </div>
 
             <!-- Payment History -->
             <div style="margin-top: var(--spacing-xl);">
-                <h2 class="section-title">Payment History</h2>
+                <h2 class="section-title" data-i18n="portal.billing.paymentHistory">Payment History</h2>
                 <div id="paid-invoices">
-                    <div class="empty-state">Loading...</div>
+                    <div class="empty-state" data-i18n="portal.billing.loading">Loading...</div>
                 </div>
             </div>
         </main>
@@ -286,24 +286,24 @@
     <div id="invoice-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Invoice Details</h2>
+                <h2 data-i18n="portal.billing.modal.invoiceDetails">Invoice Details</h2>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
             <div id="invoice-preview" class="invoice-preview"></div>
             <div class="payment-methods" id="payment-section" style="display: none;">
                 <div class="payment-method" onclick="selectPayment('stripe')">
                     <div class="icon">💳</div>
-                    <div><strong>Credit Card</strong></div>
-                    <div style="font-size: 0.8rem; color: var(--color-gray-500);">Pay securely with Stripe</div>
+                    <div><strong data-i18n="portal.billing.modal.creditCard">Credit Card</strong></div>
+                    <div style="font-size: 0.8rem; color: var(--color-gray-500);" data-i18n="portal.billing.modal.stripeDesc">Pay securely with Stripe</div>
                 </div>
                 <div class="payment-method" onclick="selectPayment('ach')">
                     <div class="icon">🏦</div>
-                    <div><strong>Bank Transfer</strong></div>
-                    <div style="font-size: 0.8rem; color: var(--color-gray-500);">ACH / Wire Transfer</div>
+                    <div><strong data-i18n="portal.billing.modal.bankTransfer">Bank Transfer</strong></div>
+                    <div style="font-size: 0.8rem; color: var(--color-gray-500);" data-i18n="portal.billing.modal.achDesc">ACH / Wire Transfer</div>
                 </div>
             </div>
             <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-lg);">
-                <button class="btn btn-primary" onclick="printInvoice()">Print / Download PDF</button>
+                <button class="btn btn-primary" onclick="printInvoice()" data-i18n="portal.billing.modal.printPdf">Print / Download PDF</button>
                 <button class="btn-pay" id="btn-pay-invoice" style="display: none;" onclick="processPayment()">Pay $<span id="pay-amount">0</span></button>
             </div>
         </div>
@@ -314,6 +314,8 @@
 
     <!-- Form Validation Module -->
     <script src="../js/form-validation.js"></script>
+    <script src="../js/lang/es.js"></script>
+    <script src="../js/i18n.js"></script>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -327,7 +329,8 @@
             projectId: "miamialliance3pl",
             storageBucket: "miamialliance3pl.firebasestorage.app",
             messagingSenderId: "657614666588",
-            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99"
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
         };
 
         const app = initializeApp(firebaseConfig);

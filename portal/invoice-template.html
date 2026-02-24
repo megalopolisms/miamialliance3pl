@@ -513,8 +513,8 @@
 <body>
     <!-- Screen Controls -->
     <div class="controls">
-        <button class="btn-back" onclick="window.history.back()">← Back</button>
-        <button class="btn-print" onclick="window.print()">Print / Save PDF</button>
+        <button class="btn-back" onclick="window.history.back()" data-i18n="portal.invoice.btn.back">← Back</button>
+        <button class="btn-print" onclick="window.print()" data-i18n="portal.invoice.btn.print">Print / Save PDF</button>
     </div>
 
     <div class="invoice-container">
@@ -538,11 +538,11 @@
                     </div>
                 </div>
                 <div class="invoice-title-section">
-                    <div class="invoice-title">INVOICE</div>
+                    <div class="invoice-title" data-i18n="portal.invoice.title">INVOICE</div>
                     <div class="invoice-number" id="invoice-number">INV-2025-01-0001</div>
                     <div class="invoice-meta">
-                        <strong>Issue Date:</strong> <span id="issue-date">December 26, 2025</span><br>
-                        <strong>Due Date:</strong> <span id="due-date">January 25, 2026</span>
+                        <strong data-i18n="portal.invoice.issueDate">Issue Date:</strong> <span id="issue-date">December 26, 2025</span><br>
+                        <strong data-i18n="portal.invoice.dueDate">Due Date:</strong> <span id="due-date">January 25, 2026</span>
                     </div>
                 </div>
             </div>
@@ -550,7 +550,7 @@
             <!-- Billing Section -->
             <div class="billing-section">
                 <div class="billing-box">
-                    <h3>Bill To</h3>
+                    <h3 data-i18n="portal.invoice.billTo">Bill To</h3>
                     <div class="name" id="customer-name">Pablo Nicotine Pouches</div>
                     <div class="details" id="customer-details">
                         1234 Commerce Drive<br>
@@ -559,10 +559,10 @@
                     </div>
                 </div>
                 <div class="billing-box" style="text-align: right;">
-                    <h3>Status</h3>
+                    <h3 data-i18n="portal.invoice.status">Status</h3>
                     <span class="status-badge status-pending" id="status-badge">PENDING</span>
                     <div class="details" style="margin-top: 15px;">
-                        <strong>Billing Period:</strong><br>
+                        <strong data-i18n="portal.invoice.billingPeriod">Billing Period:</strong><br>
                         <span id="billing-period">Dec 1, 2025 - Dec 31, 2025</span>
                     </div>
                 </div>
@@ -571,19 +571,19 @@
             <!-- Invoice Details Bar -->
             <div class="invoice-details-bar">
                 <div class="detail-item">
-                    <div class="label">Invoice Total</div>
+                    <div class="label" data-i18n="portal.invoice.detail.total">Invoice Total</div>
                     <div class="value" id="detail-total">$1,847.50</div>
                 </div>
                 <div class="detail-item">
-                    <div class="label">Amount Paid</div>
+                    <div class="label" data-i18n="portal.invoice.detail.paid">Amount Paid</div>
                     <div class="value paid" id="detail-paid">$0.00</div>
                 </div>
                 <div class="detail-item">
-                    <div class="label">Balance Due</div>
+                    <div class="label" data-i18n="portal.invoice.detail.balance">Balance Due</div>
                     <div class="value due" id="detail-balance">$1,847.50</div>
                 </div>
                 <div class="detail-item">
-                    <div class="label">Due Date</div>
+                    <div class="label" data-i18n="portal.invoice.detail.dueDate">Due Date</div>
                     <div class="value" id="detail-due">Jan 25, 2026</div>
                 </div>
             </div>
@@ -592,17 +592,17 @@
             <table class="line-items-table">
                 <thead>
                     <tr>
-                        <th style="width: 45%;">Description</th>
-                        <th style="width: 15%;">Quantity</th>
-                        <th style="width: 15%;">Rate</th>
-                        <th style="width: 25%;">Amount</th>
+                        <th style="width: 45%;" data-i18n="portal.invoice.table.description">Description</th>
+                        <th style="width: 15%;" data-i18n="portal.invoice.table.quantity">Quantity</th>
+                        <th style="width: 15%;" data-i18n="portal.invoice.table.rate">Rate</th>
+                        <th style="width: 25%;" data-i18n="portal.invoice.table.amount">Amount</th>
                     </tr>
                 </thead>
                 <tbody id="line-items-body">
                     <tr>
                         <td>
-                            <div class="item-description">Pallet Storage</div>
-                            <div class="item-details">31 days @ $0.75/pallet/day</div>
+                            <div class="item-description" data-i18n="portal.invoice.sample.storage">Pallet Storage</div>
+                            <div class="item-details" data-i18n="portal.invoice.sample.storageDetail">31 days @ $0.75/pallet/day</div>
                         </td>
                         <td>12 pallets</td>
                         <td>$0.75/day</td>
@@ -610,8 +610,8 @@
                     </tr>
                     <tr>
                         <td>
-                            <div class="item-description">Inbound Receiving</div>
-                            <div class="item-details">Container unload + inspection</div>
+                            <div class="item-description" data-i18n="portal.invoice.sample.receiving">Inbound Receiving</div>
+                            <div class="item-details" data-i18n="portal.invoice.sample.receivingDetail">Container unload + inspection</div>
                         </td>
                         <td>1 container</td>
                         <td>$350.00</td>
@@ -619,8 +619,8 @@
                     </tr>
                     <tr>
                         <td>
-                            <div class="item-description">Order Fulfillment - Pick & Pack</div>
-                            <div class="item-details">E-commerce orders</div>
+                            <div class="item-description" data-i18n="portal.invoice.sample.fulfillment">Order Fulfillment - Pick & Pack</div>
+                            <div class="item-details" data-i18n="portal.invoice.sample.fulfillmentDetail">E-commerce orders</div>
                         </td>
                         <td>487 orders</td>
                         <td>$2.25/order</td>
@@ -628,8 +628,8 @@
                     </tr>
                     <tr>
                         <td>
-                            <div class="item-description">Shipping Labels</div>
-                            <div class="item-details">USPS Priority Mail</div>
+                            <div class="item-description" data-i18n="portal.invoice.sample.labels">Shipping Labels</div>
+                            <div class="item-details" data-i18n="portal.invoice.sample.labelsDetail">USPS Priority Mail</div>
                         </td>
                         <td>487 labels</td>
                         <td>$0.25/label</td>
@@ -642,19 +642,19 @@
             <div class="totals-section">
                 <div class="totals-box">
                     <div class="totals-row subtotal">
-                        <span>Subtotal</span>
+                        <span data-i18n="portal.invoice.totals.subtotal">Subtotal</span>
                         <span id="subtotal">$1,846.50</span>
                     </div>
                     <div class="totals-row subtotal">
-                        <span>Tax (0%)</span>
+                        <span data-i18n="portal.invoice.totals.tax">Tax (0%)</span>
                         <span id="tax">$0.00</span>
                     </div>
                     <div class="totals-row total">
-                        <span>Total</span>
+                        <span data-i18n="portal.invoice.totals.total">Total</span>
                         <span id="total">$1,846.50</span>
                     </div>
                     <div class="totals-row balance-due" id="balance-row">
-                        <span>Balance Due</span>
+                        <span data-i18n="portal.invoice.totals.balanceDue">Balance Due</span>
                         <span id="balance">$1,846.50</span>
                     </div>
                 </div>
@@ -662,14 +662,14 @@
 
             <!-- Notes -->
             <div class="notes-section" id="notes-section">
-                <h4>Notes</h4>
-                <p id="notes-content">Thank you for your business! Payment is due within 30 days of invoice date. Please reference invoice number when making payment.</p>
+                <h4 data-i18n="portal.invoice.notes.title">Notes</h4>
+                <p id="notes-content" data-i18n="portal.invoice.notes.default">Thank you for your business! Payment is due within 30 days of invoice date. Please reference invoice number when making payment.</p>
             </div>
 
             <!-- Payment Terms -->
             <div class="payment-terms">
-                <h4>Payment Information</h4>
-                <p>
+                <h4 data-i18n="portal.invoice.payment.title">Payment Information</h4>
+                <p data-i18n-html="portal.invoice.payment.details">
                     <strong>Bank:</strong> Chase Bank | <strong>Account:</strong> Miami Alliance 3PL LLC<br>
                     <strong>Routing:</strong> 267084131 | <strong>Account #:</strong> ****4589<br>
                     Or pay securely online via the customer portal
@@ -686,7 +686,7 @@
                     </svg>
                     <span class="text">MIAMI ALLIANCE <span class="accent">3PL</span></span>
                 </div>
-                <div class="footer-tagline">Your Trusted Logistics Partner in Miami</div>
+                <div class="footer-tagline" data-i18n="portal.invoice.footer.tagline">Your Trusted Logistics Partner in Miami</div>
                 <div class="footer-contact">
                     <a href="https://miamialliance3pl.com">miamialliance3pl.com</a> |
                     info@miamialliance3pl.com | (786) 873-8819
@@ -695,6 +695,8 @@
         </div>
     </div>
 
+    <script src="../js/lang/es.js"></script>
+    <script src="../js/i18n.js"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -706,7 +708,8 @@
             projectId: "miamialliance3pl",
             storageBucket: "miamialliance3pl.firebasestorage.app",
             messagingSenderId: "657614666588",
-            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99"
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-QSRV99D8BX"
         };
 
         const app = initializeApp(firebaseConfig);
