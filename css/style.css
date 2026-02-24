@@ -4658,17 +4658,10 @@ h4,
   display: flex;
   align-items: center;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 8px;
   padding: 4px 8px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.header.scrolled .lang-switcher-wrap {
-  background: rgba(15, 23, 42, 0.6);
-  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .lang-btn {
@@ -4676,12 +4669,12 @@ h4,
   align-items: center;
   gap: 4px;
   background: none;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 6px;
   transition: all 0.2s ease;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-gray-500, #6b7280);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -4693,18 +4686,18 @@ h4,
 .lang-btn svg {
   flex-shrink: 0;
   border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
 
 .lang-btn:hover {
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-primary, #1e3a5f);
+  background: rgba(15, 23, 42, 0.06);
 }
 
 .lang-btn.active {
-  color: #ffffff;
-  background: rgba(16, 185, 129, 0.25);
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: var(--color-primary, #1e3a5f);
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
 .lang-btn.active svg {
@@ -4712,7 +4705,7 @@ h4,
 }
 
 .lang-divider {
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(15, 23, 42, 0.25);
   font-size: 0.75rem;
   user-select: none;
   padding: 0 2px;
@@ -4728,12 +4721,12 @@ h4,
     order: 0;
     justify-content: center;
     padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     margin-bottom: 8px;
   }
 
   .lang-switcher-wrap {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(15, 23, 42, 0.04);
     padding: 6px 12px;
   }
 
