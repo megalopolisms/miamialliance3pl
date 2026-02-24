@@ -4639,3 +4639,111 @@ h4,
     display: none;
   }
 }
+
+/* ==========================================================================
+   Language Switcher — i18n Toggle (EN/ES with Flags)
+   Built by Symbio for Master Jorge
+   ========================================================================== */
+
+.lang-switcher {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  order: -1;
+}
+
+.lang-switcher-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 4px 8px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.header.scrolled .lang-switcher-wrap {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: var(--font-family);
+  white-space: nowrap;
+}
+
+.lang-btn svg {
+  flex-shrink: 0;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.lang-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.lang-btn.active {
+  color: #ffffff;
+  background: rgba(16, 185, 129, 0.25);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.lang-btn.active svg {
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.5);
+}
+
+.lang-divider {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.75rem;
+  user-select: none;
+  padding: 0 2px;
+}
+
+.lang-label {
+  line-height: 1;
+}
+
+/* ── Mobile adjustments ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .lang-switcher {
+    order: 0;
+    justify-content: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 8px;
+  }
+
+  .lang-switcher-wrap {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px 12px;
+  }
+
+  .lang-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .lang-btn svg {
+    width: 28px;
+    height: 14px;
+  }
+}

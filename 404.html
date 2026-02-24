@@ -101,13 +101,13 @@
                 <span></span><span></span><span></span>
             </button>
             <div class="nav-menu">
-                <a href="index.html" class="nav-link">Home</a>
-                <a href="services.html" class="nav-link">Services</a>
-                <a href="quote.html" class="nav-link">Instant Quote</a>
-                <a href="blog.html" class="nav-link">Blog</a>
-                <a href="about.html" class="nav-link">About</a>
-                <a href="contact.html" class="nav-link">Contact</a>
-                <a href="login.html" class="nav-link nav-cta">Customer Portal</a>
+                <a href="index.html" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="services.html" class="nav-link" data-i18n="nav.services">Services</a>
+                <a href="quote.html" class="nav-link" data-i18n="nav.quote">Instant Quote</a>
+                <a href="blog.html" class="nav-link" data-i18n="nav.blog">Blog</a>
+                <a href="about.html" class="nav-link" data-i18n="nav.about">About</a>
+                <a href="contact.html" class="nav-link" data-i18n="nav.contact">Contact</a>
+                <a href="login.html" class="nav-link nav-cta" data-i18n="nav.portal">Customer Portal</a>
             </div>
         </div>
     </nav>
@@ -115,21 +115,21 @@
     <!-- 404 Content -->
     <section class="error-page">
         <div class="error-code">404</div>
-        <h1 class="error-title">Page Not Found</h1>
-        <p class="error-message">
+        <h1 class="error-title" data-i18n="404.title">Page Not Found</h1>
+        <p class="error-message" data-i18n="404.desc">
             The page you're looking for doesn't exist or has been moved.
             Let's get you back on track with your logistics.
         </p>
         <div class="error-actions">
-            <a href="index.html" class="btn-primary-404">Back to Homepage</a>
-            <a href="contact.html" class="btn-secondary-404">Contact Us</a>
+            <a href="index.html" class="btn-primary-404" data-i18n="404.home">Back to Homepage</a>
+            <a href="contact.html" class="btn-secondary-404" data-i18n="404.contact">Contact Us</a>
             <a href="quote.html" class="btn-secondary-404">Get a Quote</a>
         </div>
     </section>
 
     <!-- Footer -->
     <footer style="text-align:center; padding:2rem; color:var(--color-gray-600, #6b7280); font-size:0.875rem;">
-        <p>&copy; 2026 Miami Alliance 3PL. All rights reserved.</p>
+        <p data-i18n-html="footer.copyright">&copy; 2026 Miami Alliance 3PL. All rights reserved.</p>
         <p style="margin-top:0.5rem;">
             <a href="index.html" style="color:var(--color-accent, #10b981); text-decoration:none;">Home</a> &bull;
             <a href="services.html" style="color:var(--color-accent, #10b981); text-decoration:none;">Services</a> &bull;
@@ -139,6 +139,8 @@
     </footer>
 
     <script src="js/main.js"></script>
+    <script src="js/lang/es.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/analytics.js" defer></script>
 </body>
 </html>
