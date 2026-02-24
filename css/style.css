@@ -4747,3 +4747,7 @@ h4,
     height: 14px;
   }
 }
+
+/* ── Dual-content language blocks (blog articles) ──────────────────── */
+.lang-es { display: none; }
+.lang-en { display: block; }

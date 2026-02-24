@@ -48,12 +48,27 @@
     return DEFAULT_LANG;
   }
 
+  // ── Toggle dual-content blocks (.lang-en / .lang-es) ────────────────
+  function toggleLangContent(lang) {
+    var enBlocks = document.querySelectorAll(".lang-en");
+    var esBlocks = document.querySelectorAll(".lang-es");
+    for (var i = 0; i < enBlocks.length; i++) {
+      enBlocks[i].style.display = lang === "en" ? "" : "none";
+    }
+    for (var j = 0; j < esBlocks.length; j++) {
+      esBlocks[j].style.display = lang === "es" ? "" : "none";
+    }
+  }
+
   // ── Apply translations ──────────────────────────────────────────────
   function applyTranslations(lang) {
     var dict =
       window.MA3PL_TRANSLATIONS && window.MA3PL_TRANSLATIONS[lang]
         ? window.MA3PL_TRANSLATIONS[lang]
         : null;
+
+    // Toggle dual-content blocks (blog articles, etc.)
+    toggleLangContent(lang);
 
     // If English, restore originals
     if (lang === "en" || !dict) {
@@ -127,6 +142,7 @@
   // ── Restore originals (switch back to English) ──────────────────────
   function restoreOriginals() {
     document.documentElement.lang = "en";
+    toggleLangContent("en");
 
     var els = document.querySelectorAll("[data-i18n-original]");
     for (var i = 0; i < els.length; i++) {
