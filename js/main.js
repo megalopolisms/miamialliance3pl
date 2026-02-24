@@ -10,14 +10,39 @@ document.addEventListener("DOMContentLoaded", function () {
   function updateBannerHeight() {
     var banner = document.querySelector(".urgency-banner");
     if (banner) {
-      var h = banner.offsetHeight;
+      // Use bounding box + ceil so sub-pixel layout never underestimates height
+      var h = Math.ceil(banner.getBoundingClientRect().height);
       document.documentElement.style.setProperty("--banner-height", h + "px");
     } else {
       document.documentElement.style.setProperty("--banner-height", "0px");
     }
   }
+
+  function scheduleBannerHeightUpdate() {
+    window.requestAnimationFrame(updateBannerHeight);
+  }
+
   updateBannerHeight();
-  window.addEventListener("resize", updateBannerHeight, { passive: true });
+  window.addEventListener("load", scheduleBannerHeightUpdate);
+  window.addEventListener("resize", scheduleBannerHeightUpdate, {
+    passive: true,
+  });
+
+  // Mobile browsers can change visual viewport without triggering window resize
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", scheduleBannerHeightUpdate, {
+      passive: true,
+    });
+  }
+
+  // Recalculate when banner content wraps/un-wraps (font load, viewport changes)
+  if ("ResizeObserver" in window) {
+    var observedBanner = document.querySelector(".urgency-banner");
+    if (observedBanner) {
+      var bannerResizeObserver = new ResizeObserver(scheduleBannerHeightUpdate);
+      bannerResizeObserver.observe(observedBanner);
+    }
+  }
 
   // =========================================================================
   // Mobile Navigation Toggle
