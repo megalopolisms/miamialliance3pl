@@ -39,12 +39,18 @@
   };
 
   // ── Detect initial language ─────────────────────────────────────────
-  // English is ALWAYS the default landing page for first-time visitors.
-  // Spanish only activates if the user explicitly chose it via the toggle.
+  // 1. Respect stored preference (user clicked the toggle before)
+  // 2. Auto-detect browser language: Spanish speakers → Spanish
+  // 3. All other languages → English (default)
   function getInitialLang() {
     var stored = localStorage.getItem(STORAGE_KEY);
     if (stored && SUPPORTED.indexOf(stored) !== -1) return stored;
-    return DEFAULT_LANG; // Always English for new visitors
+    // Auto-detect from browser language
+    var browserLang = (
+      navigator.language || navigator.userLanguage || ""
+    ).toLowerCase();
+    if (browserLang.indexOf("es") === 0) return "es";
+    return DEFAULT_LANG; // English for non-Spanish browsers
   }
 
   // ── Toggle dual-content blocks (.lang-en / .lang-es) ────────────────
@@ -260,7 +266,7 @@
   window.MA3PL_i18n = {
     setLanguage: setLanguage,
     getLanguage: function () {
-      return localStorage.getItem(STORAGE_KEY) || DEFAULT_LANG;
+      return getInitialLang();
     },
     applyTranslations: applyTranslations,
   };
