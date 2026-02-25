@@ -3641,6 +3641,22 @@ ul {
   z-index: 1;
 }
 
+/* Ghost buttons for dark CTA section — transparent bg, white border/text */
+.cta-ghost,
+.cta-section .btn-secondary {
+  background-color: transparent;
+  color: var(--color-white);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cta-ghost:hover,
+.cta-section .btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--color-white);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+}
+
 /* --- Hero Stats Enhancement --- */
 .hero-stats {
   display: flex;
@@ -4742,5 +4758,9 @@ h4,
 }
 
 /* ── Dual-content language blocks (blog articles) ──────────────────── */
-.lang-es { display: none; }
-.lang-en { display: block; }
+.lang-es {
+  display: none;
+}
+.lang-en {
+  display: block;
+}
