@@ -5,121 +5,813 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shipments | Miami Alliance 3PL Portal</title>
     <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
     <link rel="stylesheet" href="../css/style.css">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QSRV99D8BX"></script>
-    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-QSRV99D8BX');</script>
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KTW0F25ZM1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-KTW0F25ZM1');
+    </script>
     <script src="../js/analytics.js"></script>
-    <style>
-    .shipment-creator{display:none;margin-bottom:var(--spacing-xl);animation:slideDown .3s ease}.shipment-creator.active{display:block}@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}.shipment-tool{display:grid;grid-template-columns:1fr 380px;gap:var(--spacing-lg);background:var(--color-white);border-radius:var(--radius-lg);border:1px solid var(--color-gray-200);padding:var(--spacing-lg)}@media(max-width:900px){.shipment-tool{grid-template-columns:1fr}}.step-indicator{display:flex;gap:0;margin-bottom:var(--spacing-lg);position:relative}.step-item{flex:1;text-align:center;position:relative;cursor:pointer}.step-dot{width:32px;height:32px;border-radius:50%;background:var(--color-gray-200);color:var(--color-gray-500);display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:.8rem;margin-bottom:4px;transition:all .3s ease;position:relative;z-index:1}.step-item.active .step-dot{background:var(--color-accent);color:#fff;box-shadow:0 0 0 4px rgba(16,185,129,.15)}.step-item.completed .step-dot{background:var(--color-accent);color:#fff}.step-label{font-size:.7rem;color:var(--color-gray-400);font-weight:500;text-transform:uppercase;letter-spacing:.05em}.step-item.active .step-label,.step-item.completed .step-label{color:var(--color-accent)}.step-item:not(:last-child)::after{content:'';position:absolute;top:16px;left:calc(50% + 20px);right:calc(-50% + 20px);height:2px;background:var(--color-gray-200);z-index:0}.step-item.completed:not(:last-child)::after{background:var(--color-accent)}.step-panel{display:none}.step-panel.active{display:block;animation:fadeIn .25s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}}.ship-control-group{margin-bottom:var(--spacing-md)}.ship-label{display:block;font-size:.85rem;font-weight:600;color:var(--color-gray-700);margin-bottom:var(--spacing-xs);text-transform:uppercase;letter-spacing:.04em}.pkg-toggle{display:flex;gap:var(--spacing-xs)}.pkg-option{flex:1;padding:var(--spacing-sm) var(--spacing-md);border:2px solid var(--color-gray-200);border-radius:var(--radius-md);background:var(--color-white);cursor:pointer;text-align:center;transition:all .2s ease;font-weight:500}.pkg-option:hover{border-color:var(--color-accent);background:rgba(16,185,129,.03)}.pkg-option.active{border-color:var(--color-accent);background:rgba(16,185,129,.08);color:var(--color-accent)}.pkg-option .pkg-icon{display:block;font-size:1.6rem;margin-bottom:4px}.pkg-option .pkg-name{font-size:.85rem}.dim-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--spacing-sm)}.dim-group{text-align:center}.dim-input{width:100%;padding:10px;border:2px solid var(--color-gray-200);border-radius:var(--radius-md);font-size:1.1rem;font-weight:600;text-align:center;color:var(--color-gray-900);transition:border-color .2s;background:var(--color-white)}.dim-input:focus{border-color:var(--color-accent);outline:none}.dim-sub{font-size:.75rem;color:var(--color-gray-500);margin-top:2px}.weight-wrap{display:flex;align-items:center;gap:var(--spacing-sm)}.weight-slider{flex:1;-webkit-appearance:none;height:6px;border-radius:3px;background:var(--color-gray-200);outline:none}.weight-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--color-accent);cursor:pointer}.weight-num{width:80px;padding:8px;border:2px solid var(--color-gray-200);border-radius:var(--radius-md);font-size:1rem;font-weight:600;text-align:center}.weight-num:focus{border-color:var(--color-accent);outline:none}.weight-unit{font-size:.85rem;color:var(--color-gray-500);font-weight:500}.qty-row{display:flex;align-items:center;gap:var(--spacing-xs)}.qty-btn-ship{width:36px;height:36px;border:2px solid var(--color-gray-200);border-radius:var(--radius-md);background:var(--color-white);cursor:pointer;font-size:1.2rem;font-weight:600;color:var(--color-gray-600);display:flex;align-items:center;justify-content:center;transition:all .2s}.qty-btn-ship:hover{border-color:var(--color-accent);color:var(--color-accent)}.qty-input-ship{width:60px;padding:8px;border:2px solid var(--color-gray-200);border-radius:var(--radius-md);font-size:1.1rem;font-weight:600;text-align:center}.qty-input-ship:focus{border-color:var(--color-accent);outline:none}.zone-select-ship{width:100%;padding:10px 12px;border:2px solid var(--color-gray-200);border-radius:var(--radius-md);font-size:.95rem;color:var(--color-gray-900);background:var(--color-white);cursor:pointer}.zone-select-ship:focus{border-color:var(--color-accent);outline:none}.addr-grid{display:grid;gap:var(--spacing-sm)}.addr-grid input{width:100%;padding:10px 12px;border:2px solid var(--color-gray-200);border-radius:var(--radius-md);font-size:.95rem;color:var(--color-gray-900);transition:border-color .2s}.addr-grid input:focus{border-color:var(--color-accent);outline:none}.addr-grid input::placeholder{color:var(--color-gray-400)}.addr-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:var(--spacing-sm)}.service-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--spacing-sm)}.service-card{padding:var(--spacing-sm);border:2px solid var(--color-gray-200);border-radius:var(--radius-md);background:var(--color-white);cursor:pointer;text-align:center;transition:all .2s ease}.service-card:hover{border-color:var(--color-accent)}.service-card.active{border-color:var(--color-accent);background:rgba(16,185,129,.08)}.service-card .svc-icon{font-size:1.4rem;display:block;margin-bottom:2px}.service-card .svc-name{font-weight:600;font-size:.85rem;color:var(--color-gray-900)}.service-card .svc-time{font-size:.75rem;color:var(--color-gray-500)}.wrap-check{display:flex;align-items:center;gap:8px;padding:10px 12px;border:2px solid var(--color-gray-200);border-radius:var(--radius-md);cursor:pointer;transition:all .2s}.wrap-check:hover{border-color:var(--color-accent)}.wrap-check.checked{border-color:var(--color-accent);background:rgba(16,185,129,.05)}.wrap-check input{width:18px;height:18px;cursor:pointer}.wrap-check span{font-size:.9rem;font-weight:500;color:var(--color-gray-700)}.notes-area{width:100%;padding:10px 12px;border:2px solid var(--color-gray-200);border-radius:var(--radius-md);font-size:.9rem;font-family:inherit;resize:vertical;min-height:60px;color:var(--color-gray-900)}.notes-area:focus{border-color:var(--color-accent);outline:none}.pricing-panel{background:var(--color-gray-50);border-radius:var(--radius-lg);padding:var(--spacing-lg);position:sticky;top:100px;border:1px solid var(--color-gray-200)}.pricing-title{font-size:1rem;font-weight:700;color:var(--color-gray-900);margin-bottom:var(--spacing-md);text-transform:uppercase;letter-spacing:.04em}.price-line{display:flex;justify-content:space-between;padding:6px 0;font-size:.9rem;color:var(--color-gray-600)}.price-line .price-val{font-weight:600;color:var(--color-gray-900)}.price-divider{height:1px;background:var(--color-gray-200);margin:var(--spacing-sm) 0}.price-total{display:flex;justify-content:space-between;padding:10px 0;font-size:1.15rem;font-weight:700}.price-total .price-val{color:var(--color-accent)}.price-disclaimer{font-size:.75rem;color:var(--color-gray-400);margin-top:var(--spacing-sm)}.dest-summary{padding:8px 12px;background:var(--color-white);border-radius:var(--radius-md);font-size:.85rem;color:var(--color-gray-600);margin-bottom:var(--spacing-sm);border:1px solid var(--color-gray-200)}.dest-summary strong{color:var(--color-gray-900)}.step-nav{display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-lg);padding-top:var(--spacing-md);border-top:1px solid var(--color-gray-100)}.btn-step{padding:10px 24px;border-radius:var(--radius-md);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s;border:none}.btn-next-step{background:var(--color-accent);color:#fff;margin-left:auto}.btn-next-step:hover{background:#059669}.btn-prev-step{background:var(--color-white);color:var(--color-gray-600);border:1px solid var(--color-gray-300)}.btn-prev-step:hover{background:var(--color-gray-50)}.btn-create-ship{background:var(--color-accent);color:#fff;margin-left:auto;padding:12px 32px;font-size:1rem}.btn-create-ship:hover{background:#059669}.btn-create-ship:disabled{background:var(--color-gray-300);cursor:not-allowed}.btn-cancel-ship{background:transparent;color:var(--color-gray-500);border:1px solid var(--color-gray-300)}.btn-cancel-ship:hover{background:var(--color-gray-50);color:var(--color-gray-700)}.success-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}.success-overlay.active{display:flex}.success-card{background:#fff;border-radius:var(--radius-lg);padding:var(--spacing-xl);text-align:center;max-width:440px;width:90%;animation:popIn .3s ease}@keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}.success-icon{font-size:3rem;margin-bottom:var(--spacing-sm)}.success-title{font-size:1.4rem;font-weight:700;color:var(--color-gray-900);margin-bottom:var(--spacing-xs)}.success-tracking{font-family:monospace;font-size:1.1rem;font-weight:700;color:var(--color-accent);background:rgba(16,185,129,.1);padding:8px 16px;border-radius:var(--radius-md);display:inline-block;margin:var(--spacing-sm) 0}.success-detail{font-size:.9rem;color:var(--color-gray-500);margin-bottom:var(--spacing-md)}.success-actions{display:flex;gap:var(--spacing-sm);justify-content:center}.toast{position:fixed;bottom:20px;right:20px;background:var(--color-gray-900);color:#fff;padding:12px 24px;border-radius:var(--radius-md);font-size:.9rem;font-weight:500;z-index:2000;transform:translateY(100px);opacity:0;transition:all .3s ease}.toast.show{transform:translateY(0);opacity:1}.toast.error{background:#dc2626}.btn-loading{position:relative;pointer-events:none}.btn-loading::after{content:'';position:absolute;right:12px;top:50%;width:16px;height:16px;margin-top:-8px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
-    </style>
 </head>
 <body>
-    <header class="header"><nav class="nav container"><a href="../index.html" class="logo"><span class="logo-icon">📦</span><span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span></a><button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar"><span></span><span></span><span></span></button><ul class="nav-menu"><li><span id="user-name" class="nav-link">Welcome</span></li><li><a href="#" id="logout-btn" class="nav-link btn btn-outline" data-i18n="portal.sidebar.logout">Logout</a></li></ul></nav></header>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">📦</span>
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline" data-i18n="portal.sidebar.logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
     <div class="portal-layout">
-        <aside class="portal-sidebar"><nav role="navigation" aria-label="Main navigation"><a href="dashboard.html" class="portal-nav-item"><span aria-hidden="true">📊</span> <span data-i18n="portal.sidebar.dashboard">Dashboard</span></a><a href="shipments.html" class="portal-nav-item active" aria-current="page"><span aria-hidden="true">🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span></a><a href="tracking.html" class="portal-nav-item"><span aria-hidden="true">🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span></a><a href="inventory.html" class="portal-nav-item"><span aria-hidden="true">📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span></a></nav></aside>
+        <!-- Sidebar -->
+        <aside class="portal-sidebar">
+            <nav role="navigation" aria-label="Main navigation">
+                <a href="dashboard.html" class="portal-nav-item">
+                    <span aria-hidden="true">📊</span> <span data-i18n="portal.sidebar.dashboard">Dashboard</span>
+                </a>
+                <a href="shipments.html" class="portal-nav-item active" aria-current="page">
+                    <span aria-hidden="true">🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span>
+                </a>
+                <a href="tracking.html" class="portal-nav-item">
+                    <span aria-hidden="true">🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span>
+                </a>
+                <a href="inventory.html" class="portal-nav-item">
+                    <span aria-hidden="true">📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
         <main class="portal-main">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--spacing-lg);flex-wrap:wrap;gap:var(--spacing-sm)"><h1 style="color:var(--color-gray-900)" data-i18n="portal.shipments.title">Shipments</h1><button id="new-shipment-btn" class="btn btn-primary" data-i18n="portal.shipments.newShipment">+ New Shipment</button></div>
-            <div id="shipment-creator" class="shipment-creator">
-                <div class="step-indicator"><div class="step-item active" data-step="0"><div class="step-dot">1</div><div class="step-label">Package</div></div><div class="step-item" data-step="1"><div class="step-dot">2</div><div class="step-label">Details</div></div><div class="step-item" data-step="2"><div class="step-dot">3</div><div class="step-label">Destination</div></div><div class="step-item" data-step="3"><div class="step-dot">4</div><div class="step-label">Review</div></div></div>
-                <div class="shipment-tool">
-                    <div class="ship-controls">
-                        <div class="step-panel active" id="step-0">
-                            <div class="ship-control-group"><label class="ship-label" data-i18n="portal.shipments.packageType">Package Type</label><div class="pkg-toggle" id="pkg-toggle"><button type="button" class="pkg-option active" data-type="box"><span class="pkg-icon">📦</span><span class="pkg-name">Box</span></button><button type="button" class="pkg-option" data-type="pallet"><span class="pkg-icon">🏗️</span><span class="pkg-name">Pallet</span></button><button type="button" class="pkg-option" data-type="container"><span class="pkg-icon">🚢</span><span class="pkg-name">Container</span></button></div></div>
-                            <div class="ship-control-group"><label class="ship-label" data-i18n="portal.shipments.quantity">Quantity</label><div class="qty-row"><button type="button" class="qty-btn-ship" id="qty-dec">-</button><input type="number" id="ship-qty" class="qty-input-ship" value="1" min="1" max="9999"><button type="button" class="qty-btn-ship" id="qty-inc">+</button></div></div>
-                            <div class="ship-control-group" id="wrap-group" style="display:none"><label class="wrap-check" id="wrap-check"><input type="checkbox" id="ship-wrap"><span>Black Wrapping (+$7.00/pallet)</span></label></div>
-                            <div class="step-nav"><button type="button" class="btn-step btn-cancel-ship" id="btn-cancel" data-i18n="portal.shipments.cancelBtn">Cancel</button><button type="button" class="btn-step btn-next-step" id="btn-next-0">Next: Details →</button></div>
-                        </div>
-                        <div class="step-panel" id="step-1">
-                            <div class="ship-control-group"><label class="ship-label">Dimensions (inches)</label><div class="dim-row"><div class="dim-group"><input type="number" id="ship-length" class="dim-input" value="12" min="1" max="120"><div class="dim-sub">Length</div></div><div class="dim-group"><input type="number" id="ship-width" class="dim-input" value="12" min="1" max="120"><div class="dim-sub">Width</div></div><div class="dim-group"><input type="number" id="ship-height" class="dim-input" value="12" min="1" max="120"><div class="dim-sub">Height</div></div></div></div>
-                            <div class="ship-control-group"><label class="ship-label" data-i18n="portal.shipments.weight">Weight (lbs)</label><div class="weight-wrap"><input type="range" id="ship-weight-slider" class="weight-slider" min="1" max="500" value="25"><input type="number" id="ship-weight" class="weight-num" value="25" min="1" max="5000"><span class="weight-unit">lbs</span></div></div>
-                            <div class="ship-control-group"><label class="ship-label">Shipping Zone</label><select id="ship-zone" class="zone-select-ship"><option value="local">Local (FL) — $0.45/lb</option><option value="regional" selected>Regional (Southeast) — $0.65/lb</option><option value="national">National — $0.85/lb</option><option value="none">No Shipping Required</option></select></div>
-                            <div class="ship-control-group"><label class="ship-label" data-i18n="portal.shipments.serviceType">Service Speed</label><div class="service-cards" id="service-cards"><div class="service-card active" data-service="standard"><span class="svc-icon">🐢</span><span class="svc-name">Standard</span><span class="svc-time">3-5 days</span></div><div class="service-card" data-service="express"><span class="svc-icon">🚀</span><span class="svc-name">Express</span><span class="svc-time">1-2 days</span></div><div class="service-card" data-service="overnight"><span class="svc-icon">⚡</span><span class="svc-name">Overnight</span><span class="svc-time">Next day</span></div></div></div>
-                            <div class="step-nav"><button type="button" class="btn-step btn-prev-step" id="btn-prev-1">← Package</button><button type="button" class="btn-step btn-next-step" id="btn-next-1">Next: Destination →</button></div>
-                        </div>
-                        <div class="step-panel" id="step-2">
-                            <div class="ship-control-group"><label class="ship-label">Ship From</label><div style="padding:10px 12px;background:var(--color-gray-50);border-radius:var(--radius-md);font-size:.9rem;color:var(--color-gray-500);border:1px solid var(--color-gray-200)"><strong style="color:var(--color-gray-700)">Miami Alliance 3PL</strong><br>8780 NW 100th ST, Medley, FL 33178</div></div>
-                            <div class="ship-control-group"><label class="ship-label" data-i18n="portal.shipments.destAddress">Ship To</label><div class="addr-grid"><input type="text" id="ship-dest-name" placeholder="Recipient Name" required><input type="text" id="ship-dest-street" placeholder="Street Address" required><div class="addr-row"><input type="text" id="ship-dest-city" placeholder="City" required><input type="text" id="ship-dest-state" placeholder="State" maxlength="2" required><input type="text" id="ship-dest-zip" placeholder="ZIP Code" required></div></div></div>
-                            <div class="ship-control-group"><label class="ship-label" data-i18n="portal.shipments.notes">Notes (optional)</label><textarea id="ship-notes" class="notes-area" placeholder="Special handling instructions..."></textarea></div>
-                            <div class="step-nav"><button type="button" class="btn-step btn-prev-step" id="btn-prev-2">← Details</button><button type="button" class="btn-step btn-next-step" id="btn-next-2">Next: Review →</button></div>
-                        </div>
-                        <div class="step-panel" id="step-3">
-                            <div class="ship-control-group"><label class="ship-label">Shipment Summary</label><div id="review-summary" style="background:var(--color-gray-50);border-radius:var(--radius-md);padding:var(--spacing-md);font-size:.9rem;border:1px solid var(--color-gray-200)"></div></div>
-                            <div class="step-nav"><button type="button" class="btn-step btn-prev-step" id="btn-prev-3">← Destination</button><button type="button" class="btn-step btn-create-ship" id="btn-create" data-i18n="portal.shipments.createBtn">Create Shipment</button></div>
-                        </div>
-                    </div>
-                    <div class="pricing-panel">
-                        <div class="pricing-title">Cost Estimate</div>
-                        <div id="dest-display" class="dest-summary" style="display:none"><strong id="dest-display-name"></strong><br><span id="dest-display-addr"></span></div>
-                        <div class="price-line"><span>Package</span><span class="price-val" id="price-pkg">1x Box</span></div>
-                        <div class="price-line"><span>Dim Weight</span><span class="price-val" id="price-dim">12.4 lbs</span></div>
-                        <div class="price-line"><span>Cubic Feet</span><span class="price-val" id="price-cubic">1.0 ft³</span></div>
-                        <div class="price-divider"></div>
-                        <div class="price-line"><span>Storage (30 days)</span><span class="price-val" id="price-storage">$0.00</span></div>
-                        <div class="price-line"><span>Handling Fee</span><span class="price-val" id="price-handling">$0.00</span></div>
-                        <div class="price-line"><span>Pick & Pack</span><span class="price-val" id="price-pickpack">$0.00</span></div>
-                        <div class="price-line"><span>Est. Shipping</span><span class="price-val" id="price-shipping">$0.00</span></div>
-                        <div class="price-line" id="price-wrap-row" style="display:none"><span>Black Wrapping</span><span class="price-val" id="price-wrap">$0.00</span></div>
-                        <div class="price-divider"></div>
-                        <div class="price-total"><span>TOTAL ESTIMATE</span><span class="price-val" id="price-total">$0.00</span></div>
-                        <p class="price-disclaimer">* Estimates based on standard rates. Final pricing may vary.</p>
-                    </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-sm);">
+                <h1 style="color: var(--color-gray-900);" data-i18n="portal.shipments.title">Shipments</h1>
+                <div style="display: flex; gap: var(--spacing-xs);">
+                    <button id="new-shipment-chat-btn" class="btn btn-primary" data-i18n="portal.shipments.newShipment">+ New Shipment</button>
+                    <button id="new-shipment-btn" class="btn btn-outline" data-i18n="portal.shipments.classicForm">Classic Form</button>
                 </div>
             </div>
-            <div style="margin-bottom:var(--spacing-md)"><select id="status-filter" style="padding:.5rem 1rem;border:1px solid var(--color-gray-300);border-radius:var(--radius-md)"><option value="all" data-i18n="portal.shipments.filterAll">All Shipments</option><option value="pending" data-i18n="portal.shipments.filterPending">Pending</option><option value="picked_up" data-i18n="portal.shipments.filterPickedUp">Picked Up</option><option value="in_transit" data-i18n="portal.shipments.filterInTransit">In Transit</option><option value="delivered" data-i18n="portal.shipments.filterDelivered">Delivered</option></select></div>
-            <div class="table-wrapper"><table class="data-table" role="table" aria-label="Shipments list"><thead><tr><th scope="col" data-i18n="portal.table.tracking">Tracking #</th><th scope="col" data-i18n="portal.table.recipient">Recipient</th><th scope="col" data-i18n="portal.table.destination">Destination</th><th scope="col">Package</th><th scope="col" data-i18n="portal.table.service">Service</th><th scope="col" data-i18n="portal.table.status">Status</th><th scope="col" data-i18n="portal.table.created">Created</th></tr></thead><tbody id="shipments-list"><tr><td colspan="7" style="text-align:center;padding:var(--spacing-xl);color:var(--color-gray-500)" data-i18n="portal.shipments.loading">Loading shipments...</td></tr></tbody></table></div>
+
+            <!-- New Shipment Form (hidden by default) -->
+            <div id="shipment-form-container" class="dashboard-card" style="display: none; margin-bottom: var(--spacing-xl);">
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.shipments.createTitle">Create New Shipment</h2>
+                <form id="shipment-form" data-validate-form>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: var(--spacing-md);">
+                        <div>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);" data-i18n="portal.shipments.originAddress">Origin Address</h3>
+                            <div class="form-group">
+                                <label for="origin-street" data-i18n="portal.shipments.streetAddress">Street Address</label>
+                                <input type="text" id="origin-street" required value="8780 NW 100th ST" aria-required="true">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
+                                <div class="form-group">
+                                    <label for="origin-city" data-i18n="portal.shipments.city">City</label>
+                                    <input type="text" id="origin-city" required value="Medley" aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="origin-state" data-i18n="portal.shipments.state">State</label>
+                                    <input type="text" id="origin-state" name="origin-state" required value="FL" maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" data-validate="state" aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="origin-zip" data-i18n="portal.shipments.zip">ZIP</label>
+                                    <input type="text" id="origin-zip" name="origin-zip" required value="33178" pattern="\d{5}(-\d{4})?" title="5 or 9 digit ZIP code" data-validate="zip" aria-required="true">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);" data-i18n="portal.shipments.destAddress">Destination Address</h3>
+                            <div class="form-group">
+                                <label for="dest-name" data-i18n="portal.shipments.recipientName">Recipient Name</label>
+                                <input type="text" id="dest-name" required placeholder="John Smith" data-i18n-placeholder="portal.shipments.recipientNamePh" aria-required="true">
+                            </div>
+                            <div class="form-group">
+                                <label for="dest-street" data-i18n="portal.shipments.streetAddress">Street Address</label>
+                                <input type="text" id="dest-street" required placeholder="123 Main St" data-i18n-placeholder="portal.shipments.streetAddressPh" aria-required="true">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
+                                <div class="form-group">
+                                    <label for="dest-city" data-i18n="portal.shipments.city">City</label>
+                                    <input type="text" id="dest-city" required placeholder="City" data-i18n-placeholder="portal.shipments.cityPh" aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="dest-state" data-i18n="portal.shipments.state">State</label>
+                                    <input type="text" id="dest-state" name="dest-state" required placeholder="ST" data-i18n-placeholder="portal.shipments.statePh" maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" data-validate="state" aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="dest-zip" data-i18n="portal.shipments.zip">ZIP</label>
+                                    <input type="text" id="dest-zip" name="dest-zip" required placeholder="12345" data-i18n-placeholder="portal.shipments.zipPh" pattern="\d{5}(-\d{4})?" title="5 or 9 digit ZIP code" data-validate="zip" aria-required="true">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);" data-i18n="portal.shipments.packageDetails">Package Details</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-sm);">
+                                <div class="form-group">
+                                    <label for="pkg-weight" data-i18n="portal.shipments.weight">Weight (lbs)</label>
+                                    <input type="number" id="pkg-weight" name="pkg-weight" required placeholder="0" min="0.1" step="0.1" data-validate="decimal" aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-length" data-i18n="portal.shipments.length">Length (in)</label>
+                                    <input type="number" id="pkg-length" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-width" data-i18n="portal.shipments.width">Width (in)</label>
+                                    <input type="number" id="pkg-width" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-height" data-i18n="portal.shipments.height">Height (in)</label>
+                                    <input type="number" id="pkg-height" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-qty" data-i18n="portal.shipments.quantity">Quantity</label>
+                                    <input type="number" id="pkg-qty" required value="1" min="1" aria-required="true">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="form-group">
+                                <label for="service-type" data-i18n="portal.shipments.serviceType">Service Type</label>
+                                <select id="service-type" required aria-required="true">
+                                    <option value="standard" data-i18n="portal.shipments.standard">Standard (3-5 days)</option>
+                                    <option value="express" data-i18n="portal.shipments.express">Express (1-2 days)</option>
+                                    <option value="overnight" data-i18n="portal.shipments.overnight">Overnight</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="notes" data-i18n="portal.shipments.notes">Notes (optional)</label>
+                                <textarea id="notes" placeholder="Special instructions..." data-i18n-placeholder="portal.shipments.notesPh"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+                        <button type="submit" class="btn btn-primary" data-i18n="portal.shipments.createBtn">Create Shipment</button>
+                        <button type="button" id="cancel-shipment" class="btn btn-outline" data-i18n="portal.shipments.cancelBtn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Filter -->
+            <div style="margin-bottom: var(--spacing-md);">
+                <select id="status-filter" style="padding: 0.5rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);">
+                    <option value="all" data-i18n="portal.shipments.filterAll">All Shipments</option>
+                    <option value="pending" data-i18n="portal.shipments.filterPending">Pending</option>
+                    <option value="picked_up" data-i18n="portal.shipments.filterPickedUp">Picked Up</option>
+                    <option value="in_transit" data-i18n="portal.shipments.filterInTransit">In Transit</option>
+                    <option value="delivered" data-i18n="portal.shipments.filterDelivered">Delivered</option>
+                </select>
+            </div>
+
+            <!-- Shipments Table -->
+            <div class="table-wrapper">
+                <table class="data-table" role="table" aria-label="Shipments list">
+                    <thead>
+                        <tr>
+                            <th scope="col" data-i18n="portal.table.tracking">Tracking #</th>
+                            <th scope="col" data-i18n="portal.table.recipient">Recipient</th>
+                            <th scope="col" data-i18n="portal.table.destination">Destination</th>
+                            <th scope="col" data-i18n="portal.table.service">Service</th>
+                            <th scope="col" data-i18n="portal.table.status">Status</th>
+                            <th scope="col" data-i18n="portal.table.created">Created</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shipments-list">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);" data-i18n="portal.shipments.loading">
+                                Loading shipments...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </main>
     </div>
-    <div id="success-overlay" class="success-overlay"><div class="success-card"><div class="success-icon">✅</div><div class="success-title">Shipment Created!</div><div class="success-tracking" id="success-tracking"></div><div class="success-detail" id="success-detail"></div><div class="success-actions"><a id="success-track-link" href="#" class="btn btn-primary" style="padding:10px 24px;text-decoration:none">Track Shipment</a><button id="success-close" class="btn btn-outline" style="padding:10px 24px">Done</button></div></div></div>
-    <div id="toast" class="toast"></div>
+
+    <!-- Chat Wizard Modal -->
+    <div id="chat-modal" class="chat-modal" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2 id="chat-modal-title"><span aria-hidden="true">📦</span> <span data-i18n="portal.shipments.chatTitle">New Shipment</span></h2>
+                <button class="chat-close" id="chat-close" aria-label="Close dialog">&times;</button>
+            </div>
+            <div class="chat-progress" id="chat-progress">
+                <div class="chat-progress-dot active"></div>
+                <div class="chat-progress-dot"></div>
+                <div class="chat-progress-dot"></div>
+                <div class="chat-progress-dot"></div>
+                <div class="chat-progress-dot"></div>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be injected here -->
+            </div>
+            <div class="chat-actions" id="chat-actions" style="display: none;">
+                <button class="btn btn-cancel" id="btn-cancel" data-i18n="portal.shipments.cancelBtn">Cancel</button>
+                <button class="btn btn-edit" id="btn-edit" data-i18n="portal.shipments.editBtn">Edit</button>
+                <button class="btn btn-confirm" id="btn-confirm" data-i18n="portal.shipments.confirmBtn">Confirm & Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- i18n -->
     <script src="../js/lang/es.js"></script>
     <script src="../js/i18n.js"></script>
+
+    <!-- Firebase SDK -->
     <script type="module">
-        import{initializeApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';import{getAuth,onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';import{getFirestore,collection,query,where,orderBy,getDocs,addDoc,doc,getDoc,setDoc}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        const firebaseConfig={apiKey:"AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",authDomain:"miamialliance3pl.firebaseapp.com",projectId:"miamialliance3pl",storageBucket:"miamialliance3pl.firebasestorage.app",messagingSenderId:"657614666588",appId:"1:657614666588:web:20e50484fe5d90b5aa5f99",measurementId:"G-QSRV99D8BX"};
-        const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);
-        const PRICING={dimensionalFactor:139,storagePerCubicFtDay:0.025,handlingFee:3.50,pickAndPack:1.25,palletStoragePerDay:0.75,blackWrapping:7.00,storageDays:30,minStorageCharge:5.00,shippingZones:{local:0.45,regional:0.65,national:0.85,none:0},serviceMult:{standard:1.0,express:1.8,overnight:3.0}};
-        const FALLBACK_ADMIN_EMAILS=['ceo@usglatam.com','yuri@megalopolisms.com','admin@miamialliance3pl.com'];
-        let currentUser=null,currentUserRole='customer',isStaff=false,currentStep=0;
-        const state={packageType:'box',quantity:1,blackWrapping:false,length:12,width:12,height:12,weight:25,shippingZone:'regional',serviceType:'standard',destName:'',destStreet:'',destCity:'',destState:'',destZip:'',notes:''};
-        onAuthStateChanged(auth,async(user)=>{if(!user){window.location.href='../login.html';return}currentUser=user;const userDoc=await getDoc(doc(db,'users',user.uid));if(userDoc.exists()){const ud=userDoc.data();document.getElementById('user-name').textContent='Welcome, '+ud.name;if(ud.role){currentUserRole=ud.role;isStaff=currentUserRole==='admin'||currentUserRole==='employee'}else{isStaff=FALLBACK_ADMIN_EMAILS.includes(user.email);currentUserRole=isStaff?'admin':'customer'}}else{isStaff=FALLBACK_ADMIN_EMAILS.includes(user.email);currentUserRole=isStaff?'admin':'customer'}loadShipments();if(window.ColumnPrefs){const lf=ColumnPrefs.firestoreLabels({doc,getDoc,setDoc,db},'shipments');new ColumnPrefs({table:document.querySelector('.data-table'),tableId:'shipments',canRename:user.email.toLowerCase()==='ceo@usglatam.com',loadGlobalLabels:lf.load,saveGlobalLabels:lf.save})}});
-        document.getElementById('logout-btn').addEventListener('click',async e=>{e.preventDefault();await signOut(auth);window.location.href='../login.html'});
-        function calculatePricing(){const{packageType:pt,quantity:q,length:l,width:w,height:h,weight:wt,shippingZone:sz,serviceType:st,blackWrapping:bw}=state;const dw=(l*w*h)/PRICING.dimensionalFactor;const cf=(l*w*h)/1728;let s=0,hd=0,pp=0,sh=0,wr=0;if(pt==='pallet'){s=PRICING.palletStoragePerDay*PRICING.storageDays*q;hd=15*q;pp=5*q;if(bw)wr=PRICING.blackWrapping*q}else if(pt==='container'){s=25*PRICING.storageDays*q;hd=150*q}else{s=Math.max(PRICING.storagePerCubicFtDay*PRICING.storageDays*cf*q,PRICING.minStorageCharge);hd=PRICING.handlingFee*q;pp=PRICING.pickAndPack*q}if(sz!=='none'){sh=(PRICING.shippingZones[sz]||0)*Math.max(wt,dw)*q*(PRICING.serviceMult[st]||1)}return{dimWeight:dw,cubicFt:cf,storage:s,handling:hd,pickPack:pp,shipping:sh,wrapping:wr,total:s+hd+pp+sh+wr}}
-        function updatePricingDisplay(){const p=calculatePricing();document.getElementById('price-pkg').textContent=state.quantity+'x '+cap(state.packageType);document.getElementById('price-dim').textContent=p.dimWeight.toFixed(1)+' lbs';document.getElementById('price-cubic').textContent=p.cubicFt.toFixed(1)+' ft³';document.getElementById('price-storage').textContent=fmt(p.storage);document.getElementById('price-handling').textContent=fmt(p.handling);document.getElementById('price-pickpack').textContent=fmt(p.pickPack);document.getElementById('price-shipping').textContent=fmt(p.shipping);const wr=document.getElementById('price-wrap-row');if(state.packageType==='pallet'&&state.blackWrapping){wr.style.display='flex';document.getElementById('price-wrap').textContent=fmt(p.wrapping)}else{wr.style.display='none'}document.getElementById('price-total').textContent=fmt(p.total);const dd=document.getElementById('dest-display');if(state.destName){dd.style.display='block';document.getElementById('dest-display-name').textContent=state.destName;document.getElementById('dest-display-addr').textContent=[state.destStreet,state.destCity,state.destState,state.destZip].filter(Boolean).join(', ')}else{dd.style.display='none'}}
-        function fmt(n){return'$'+n.toFixed(2)}function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
-        function goToStep(s){if(s<0||s>3)return;if(s>currentStep&&!validateStep(currentStep))return;currentStep=s;document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+s).classList.add('active');document.querySelectorAll('.step-item').forEach((it,i)=>{it.classList.remove('active','completed');if(i<s)it.classList.add('completed');if(i===s)it.classList.add('active')});if(s===3)buildReview();updatePricingDisplay()}
-        function validateStep(s){if(s===2){const n=document.getElementById('ship-dest-name').value.trim(),st=document.getElementById('ship-dest-street').value.trim(),c=document.getElementById('ship-dest-city').value.trim(),sa=document.getElementById('ship-dest-state').value.trim(),z=document.getElementById('ship-dest-zip').value.trim();if(!n||!st||!c||!sa||!z){showToast('Please fill in all destination fields',true);return false}if(!/^[A-Za-z]{2}$/.test(sa)){showToast('State must be a 2-letter code',true);return false}if(!/^\d{5}(-\d{4})?$/.test(z)){showToast('Invalid ZIP code',true);return false}state.destName=n;state.destStreet=st;state.destCity=c;state.destState=sa.toUpperCase();state.destZip=z;state.notes=document.getElementById('ship-notes').value.trim()}return true}
-        function buildReview(){const p=calculatePricing();document.getElementById('review-summary').innerHTML='<div style="display:grid;gap:12px"><div style="display:flex;justify-content:space-between"><span style="color:var(--color-gray-500)">Package</span><strong>'+state.quantity+'x '+cap(state.packageType)+'</strong></div><div style="display:flex;justify-content:space-between"><span style="color:var(--color-gray-500)">Dimensions</span><strong>'+state.length+'" x '+state.width+'" x '+state.height+'"</strong></div><div style="display:flex;justify-content:space-between"><span style="color:var(--color-gray-500)">Weight</span><strong>'+state.weight+' lbs</strong></div><div style="display:flex;justify-content:space-between"><span style="color:var(--color-gray-500)">Service</span><strong>'+cap(state.serviceType)+(state.serviceType==='standard'?' (3-5 days)':state.serviceType==='express'?' (1-2 days)':' (Next day)')+'</strong></div><div style="display:flex;justify-content:space-between"><span style="color:var(--color-gray-500)">Zone</span><strong>'+getZN(state.shippingZone)+'</strong></div>'+(state.blackWrapping?'<div style="display:flex;justify-content:space-between"><span style="color:var(--color-gray-500)">Wrapping</span><strong>Yes (+$7/pallet)</strong></div>':'')+'<div style="height:1px;background:var(--color-gray-200)"></div><div style="display:flex;justify-content:space-between"><span style="color:var(--color-gray-500)">From</span><strong>Miami Alliance 3PL</strong></div><div style="display:flex;justify-content:space-between"><span style="color:var(--color-gray-500)">To</span><strong>'+state.destName+'</strong></div><div style="font-size:.85rem;color:var(--color-gray-500);text-align:right">'+state.destStreet+', '+state.destCity+', '+state.destState+' '+state.destZip+'</div>'+(state.notes?'<div style="display:flex;justify-content:space-between"><span style="color:var(--color-gray-500)">Notes</span><strong style="max-width:200px;text-align:right">'+state.notes+'</strong></div>':'')+'<div style="height:1px;background:var(--color-gray-200)"></div><div style="display:flex;justify-content:space-between;font-size:1.1rem"><span style="font-weight:700">Estimated Total</span><span style="font-weight:700;color:var(--color-accent)">'+fmt(p.total)+'</span></div></div>'}
-        function getZN(z){return{local:'Local (FL)',regional:'Regional (SE)',national:'National',none:'No Shipping'}[z]||z}
-        document.getElementById('new-shipment-btn').addEventListener('click',()=>{const c=document.getElementById('shipment-creator');c.classList.toggle('active');if(c.classList.contains('active')){currentStep=0;goToStep(0);updatePricingDisplay();c.scrollIntoView({behavior:'smooth',block:'start'})}});
-        document.getElementById('btn-cancel').addEventListener('click',()=>document.getElementById('shipment-creator').classList.remove('active'));
-        document.getElementById('btn-next-0').addEventListener('click',()=>goToStep(1));document.getElementById('btn-next-1').addEventListener('click',()=>goToStep(2));document.getElementById('btn-next-2').addEventListener('click',()=>goToStep(3));
-        document.getElementById('btn-prev-1').addEventListener('click',()=>goToStep(0));document.getElementById('btn-prev-2').addEventListener('click',()=>goToStep(1));document.getElementById('btn-prev-3').addEventListener('click',()=>goToStep(2));
-        document.querySelectorAll('.step-item').forEach(it=>{it.addEventListener('click',()=>{const t=parseInt(it.dataset.step);if(t<=currentStep||it.classList.contains('completed'))goToStep(t)})});
-        document.getElementById('pkg-toggle').addEventListener('click',e=>{const b=e.target.closest('.pkg-option');if(!b)return;document.querySelectorAll('.pkg-option').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.packageType=b.dataset.type;document.getElementById('wrap-group').style.display=state.packageType==='pallet'?'block':'none';updatePricingDisplay()});
-        document.getElementById('qty-dec').addEventListener('click',()=>{const i=document.getElementById('ship-qty');const v=Math.max(1,parseInt(i.value)-1);i.value=v;state.quantity=v;updatePricingDisplay()});
-        document.getElementById('qty-inc').addEventListener('click',()=>{const i=document.getElementById('ship-qty');const v=parseInt(i.value)+1;i.value=v;state.quantity=v;updatePricingDisplay()});
-        document.getElementById('ship-qty').addEventListener('input',e=>{state.quantity=Math.max(1,parseInt(e.target.value)||1);updatePricingDisplay()});
-        document.getElementById('ship-wrap').addEventListener('change',e=>{state.blackWrapping=e.target.checked;document.getElementById('wrap-check').classList.toggle('checked',e.target.checked);updatePricingDisplay()});
-        ['ship-length','ship-width','ship-height'].forEach(id=>{document.getElementById(id).addEventListener('input',e=>{state[id.replace('ship-','')]=Math.max(1,parseInt(e.target.value)||1);updatePricingDisplay()})});
-        document.getElementById('ship-weight-slider').addEventListener('input',e=>{const v=parseInt(e.target.value);document.getElementById('ship-weight').value=v;state.weight=v;updatePricingDisplay()});
-        document.getElementById('ship-weight').addEventListener('input',e=>{const v=Math.max(1,parseInt(e.target.value)||1);state.weight=v;if(v<=500)document.getElementById('ship-weight-slider').value=v;updatePricingDisplay()});
-        document.getElementById('ship-zone').addEventListener('change',e=>{state.shippingZone=e.target.value;updatePricingDisplay()});
-        document.getElementById('service-cards').addEventListener('click',e=>{const c=e.target.closest('.service-card');if(!c)return;document.querySelectorAll('.service-card').forEach(x=>x.classList.remove('active'));c.classList.add('active');state.serviceType=c.dataset.service;updatePricingDisplay()});
-        ['ship-dest-name','ship-dest-street','ship-dest-city','ship-dest-state','ship-dest-zip'].forEach(id=>{document.getElementById(id).addEventListener('blur',e=>{if(id==='ship-dest-name')state.destName=e.target.value.trim();if(id==='ship-dest-street')state.destStreet=e.target.value.trim();if(id==='ship-dest-city')state.destCity=e.target.value.trim();if(id==='ship-dest-state')state.destState=e.target.value.trim().toUpperCase();if(id==='ship-dest-zip')state.destZip=e.target.value.trim();updatePricingDisplay()})});
-        document.getElementById('btn-create').addEventListener('click',async()=>{if(!currentUser){showToast('Please log in first',true);return}const btn=document.getElementById('btn-create');btn.classList.add('btn-loading');btn.disabled=true;btn.textContent='Creating...';const tn='MA3PL'+Date.now().toString().slice(-8);const pr=calculatePricing();const sd={user_id:currentUser.uid,tracking_number:tn,origin:{street:'8780 NW 100th ST',city:'Medley',state:'FL',zip:'33178'},destination:{name:state.destName,street:state.destStreet,city:state.destCity,state:state.destState,zip:state.destZip},package:{type:state.packageType,quantity:state.quantity,weight:state.weight,length:state.length,width:state.width,height:state.height,black_wrapping:state.blackWrapping},service_type:state.serviceType,shipping_zone:state.shippingZone,notes:state.notes,estimate:{storage:pr.storage,handling:pr.handling,pick_pack:pr.pickPack,shipping:pr.shipping,wrapping:pr.wrapping,total:pr.total},status:'pending',created_at:new Date().toISOString(),updated_at:new Date().toISOString()};try{const ref=await addDoc(collection(db,'shipments'),sd);try{const pd=await getDoc(doc(db,'settings','pricing'));const ps=pd.exists()?pd.data():{};await addDoc(collection(db,'billable_events'),{customer_id:currentUser.uid,event_type:'shipping',description:'Outbound Shipment - '+tn+' ('+state.quantity+'x '+cap(state.packageType)+')',quantity:state.quantity,unit:state.packageType==='pallet'?'pallets':state.packageType==='container'?'containers':'packages',rate:ps?.handling?.pickpack||5,shipment_id:ref.id,invoiced:false,estimate_total:pr.total,created_at:new Date().toISOString(),created_by:currentUser.uid})}catch(be){console.warn('Billing event failed:',be.message)}document.getElementById('success-tracking').textContent=tn;document.getElementById('success-detail').textContent=state.quantity+'x '+cap(state.packageType)+' → '+state.destName+', '+state.destCity+', '+state.destState+' '+state.destZip;document.getElementById('success-track-link').href='tracking.html?id='+tn;document.getElementById('success-overlay').classList.add('active');document.getElementById('shipment-creator').classList.remove('active');resetCreator();loadShipments()}catch(err){console.error(err);showToast('Error: '+err.message,true)}finally{btn.classList.remove('btn-loading');btn.disabled=false;btn.textContent='Create Shipment'}});
-        document.getElementById('success-close').addEventListener('click',()=>document.getElementById('success-overlay').classList.remove('active'));
-        document.getElementById('success-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('success-overlay'))document.getElementById('success-overlay').classList.remove('active')});
-        function resetCreator(){Object.assign(state,{packageType:'box',quantity:1,blackWrapping:false,length:12,width:12,height:12,weight:25,shippingZone:'regional',serviceType:'standard',destName:'',destStreet:'',destCity:'',destState:'',destZip:'',notes:''});document.getElementById('ship-qty').value=1;document.getElementById('ship-length').value=12;document.getElementById('ship-width').value=12;document.getElementById('ship-height').value=12;document.getElementById('ship-weight').value=25;document.getElementById('ship-weight-slider').value=25;document.getElementById('ship-zone').value='regional';document.getElementById('ship-wrap').checked=false;document.getElementById('wrap-check').classList.remove('checked');document.getElementById('wrap-group').style.display='none';document.getElementById('ship-dest-name').value='';document.getElementById('ship-dest-street').value='';document.getElementById('ship-dest-city').value='';document.getElementById('ship-dest-state').value='';document.getElementById('ship-dest-zip').value='';document.getElementById('ship-notes').value='';document.querySelectorAll('.pkg-option').forEach(b=>b.classList.remove('active'));document.querySelector('.pkg-option[data-type="box"]').classList.add('active');document.querySelectorAll('.service-card').forEach(c=>c.classList.remove('active'));document.querySelector('.service-card[data-service="standard"]').classList.add('active');currentStep=0;goToStep(0)}
-        function showToast(m,e=false){const t=document.getElementById('toast');t.textContent=m;t.className='toast'+(e?' error':'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
-        document.getElementById('status-filter').addEventListener('change',()=>loadShipments());
-        async function loadShipments(){const tb=document.getElementById('shipments-list');tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:var(--spacing-xl);color:var(--color-gray-500)">Loading...</td></tr>';try{const sf=document.getElementById('status-filter').value;let q;if(isStaff){q=sf==='all'?query(collection(db,'shipments'),orderBy('created_at','desc')):query(collection(db,'shipments'),where('status','==',sf),orderBy('created_at','desc'))}else{q=sf==='all'?query(collection(db,'shipments'),where('user_id','==',currentUser.uid),orderBy('created_at','desc')):query(collection(db,'shipments'),where('user_id','==',currentUser.uid),where('status','==',sf),orderBy('created_at','desc'))}const snap=await getDocs(q);if(snap.empty){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:var(--spacing-xl);color:var(--color-gray-500)">No shipments found</td></tr>';return}tb.innerHTML='';snap.forEach(d=>{const data=d.data();const r=document.createElement('tr');const pi=data.package?(data.package.quantity||1)+'x '+cap(data.package.type||'box'):'—';r.innerHTML='<td><a href="tracking.html?id='+data.tracking_number+'" style="color:var(--color-accent);font-weight:500">'+data.tracking_number+'</a></td><td>'+(data.destination?.name||'N/A')+'</td><td>'+(data.destination?.city||'N/A')+', '+(data.destination?.state||'')+'</td><td>'+pi+'</td><td style="text-transform:capitalize">'+(data.service_type||'—')+'</td><td><span class="badge badge-'+(data.status||'pending')+'">'+(data.status||'pending').replace('_',' ')+'</span></td><td>'+(data.created_at?new Date(data.created_at).toLocaleDateString():'—')+'</td>';tb.appendChild(r)})}catch(e){console.error(e);tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:var(--spacing-xl);color:var(--color-gray-500)">Error loading shipments</td></tr>'}}
-        updatePricingDisplay();
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-KTW0F25ZM1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Fallback admin emails (used if Firestore role not set)
+        const FALLBACK_ADMIN_EMAILS = [
+            'yuri.petrini.m5@gmail.com',
+            'admin@miamialliance3pl.com'
+        ];
+
+        let currentUser = null;
+        let currentUserRole = 'customer'; // Default role
+        let isStaff = false; // true for admin or employee
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+            currentUser = user;
+
+            // Get user role from Firestore
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                document.getElementById('user-name').textContent = 'Welcome, ' + userData.name;
+
+                // Check role from Firestore first
+                if (userData.role) {
+                    currentUserRole = userData.role;
+                    isStaff = (currentUserRole === 'admin' || currentUserRole === 'employee');
+                } else {
+                    // Fallback to email check if no role in Firestore
+                    isStaff = FALLBACK_ADMIN_EMAILS.includes(user.email);
+                    currentUserRole = isStaff ? 'admin' : 'customer';
+                }
+            } else {
+                // No user doc - check fallback emails
+                isStaff = FALLBACK_ADMIN_EMAILS.includes(user.email);
+                currentUserRole = isStaff ? 'admin' : 'customer';
+            }
+
+            loadShipments();
+
+            // Initialize column preferences
+            if (window.ColumnPrefs) {
+                var labelFns = ColumnPrefs.firestoreLabels({ doc, getDoc, setDoc, db }, 'shipments');
+                new ColumnPrefs({
+                    table: document.querySelector('.data-table'),
+                    tableId: 'shipments',
+                    canRename: user.email.toLowerCase() === 'ceo@usglatam.com',
+                    loadGlobalLabels: labelFns.load,
+                    saveGlobalLabels: labelFns.save
+                });
+            }
+        });
+
+        // Logout handler
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+
+        // Toggle new shipment form
+        document.getElementById('new-shipment-btn').addEventListener('click', () => {
+            document.getElementById('shipment-form-container').style.display = 'block';
+        });
+
+        document.getElementById('cancel-shipment').addEventListener('click', () => {
+            document.getElementById('shipment-form-container').style.display = 'none';
+            document.getElementById('shipment-form').reset();
+        });
+
+        // Status filter
+        document.getElementById('status-filter').addEventListener('change', () => {
+            loadShipments();
+        });
+
+        // Create shipment
+        document.getElementById('shipment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
+
+            const shipmentData = {
+                user_id: currentUser.uid,
+                tracking_number: trackingNumber,
+                origin: {
+                    street: document.getElementById('origin-street').value,
+                    city: document.getElementById('origin-city').value,
+                    state: document.getElementById('origin-state').value,
+                    zip: document.getElementById('origin-zip').value
+                },
+                destination: {
+                    name: document.getElementById('dest-name').value,
+                    street: document.getElementById('dest-street').value,
+                    city: document.getElementById('dest-city').value,
+                    state: document.getElementById('dest-state').value,
+                    zip: document.getElementById('dest-zip').value
+                },
+                package: {
+                    weight: parseFloat(document.getElementById('pkg-weight').value),
+                    length: parseFloat(document.getElementById('pkg-length').value) || 0,
+                    width: parseFloat(document.getElementById('pkg-width').value) || 0,
+                    height: parseFloat(document.getElementById('pkg-height').value) || 0,
+                    quantity: parseInt(document.getElementById('pkg-qty').value)
+                },
+                service_type: document.getElementById('service-type').value,
+                notes: document.getElementById('notes').value,
+                status: 'pending',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const shipmentRef = await addDoc(collection(db, 'shipments'), shipmentData);
+
+                // Log billable event for receiving/outbound
+                try {
+                    const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
+                    const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
+                    const pickpackRate = pricing?.handling?.pickpack || 5.00;
+                    const quantity = parseInt(document.getElementById('pkg-qty').value) || 1;
+
+                    await addDoc(collection(db, 'billable_events'), {
+                        customer_id: currentUser.uid,
+                        event_type: 'shipping',
+                        description: 'Outbound Shipment - ' + trackingNumber,
+                        quantity: quantity,
+                        unit: 'packages',
+                        rate: pickpackRate,
+                        shipment_id: shipmentRef.id,
+                        invoiced: false,
+                        created_at: new Date().toISOString(),
+                        created_by: currentUser.uid
+                    });
+                } catch (billingErr) {
+                    console.warn('Shipment created but billing event failed:', billingErr.message);
+                }
+
+                alert('Shipment created! Tracking #: ' + trackingNumber);
+                document.getElementById('shipment-form-container').style.display = 'none';
+                document.getElementById('shipment-form').reset();
+                loadShipments();
+            } catch (error) {
+                alert('Error creating shipment: ' + error.message);
+            }
+        });
+
+        async function loadShipments() {
+            const tbody = document.getElementById('shipments-list');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Loading...</td></tr>';
+
+            try {
+                const statusFilter = document.getElementById('status-filter').value;
+                let q;
+
+                // Staff (admin/employee) see all shipments, customers see only their own
+                if (isStaff) {
+                    // Staff: show all shipments
+                    if (statusFilter === 'all') {
+                        q = query(
+                            collection(db, 'shipments'),
+                            orderBy('created_at', 'desc')
+                        );
+                    } else {
+                        q = query(
+                            collection(db, 'shipments'),
+                            where('status', '==', statusFilter),
+                            orderBy('created_at', 'desc')
+                        );
+                    }
+                } else {
+                    // Customer: show only their shipments
+                    if (statusFilter === 'all') {
+                        q = query(
+                            collection(db, 'shipments'),
+                            where('user_id', '==', currentUser.uid),
+                            orderBy('created_at', 'desc')
+                        );
+                    } else {
+                        q = query(
+                            collection(db, 'shipments'),
+                            where('user_id', '==', currentUser.uid),
+                            where('status', '==', statusFilter),
+                            orderBy('created_at', 'desc')
+                        );
+                    }
+                }
+
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">No shipments found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
+                        <td>${data.destination?.name || 'N/A'}</td>
+                        <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
+                        <td style="text-transform: capitalize;">${data.service_type}</td>
+                        <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
+                        <td>${new Date(data.created_at).toLocaleDateString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading shipments:', error);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Error loading shipments</td></tr>';
+            }
+        }
+
+        // =====================================================
+        // CHAT WIZARD
+        // =====================================================
+
+        const chatModal = document.getElementById('chat-modal');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatProgress = document.getElementById('chat-progress');
+        const chatActions = document.getElementById('chat-actions');
+
+        let chatStep = 0;
+        let shipmentData = {
+            type: '',
+            typeLabel: '',
+            quantity: '',
+            destination: {
+                name: '',
+                street: '',
+                city: '',
+                state: '',
+                zip: ''
+            },
+            service: '',
+            serviceLabel: ''
+        };
+
+        // Open chat wizard
+        document.getElementById('new-shipment-chat-btn').addEventListener('click', () => {
+            chatModal.classList.add('active');
+            resetChat();
+            showStep(0);
+        });
+
+        // Close chat wizard
+        document.getElementById('chat-close').addEventListener('click', closeChat);
+        document.getElementById('btn-cancel').addEventListener('click', closeChat);
+
+        // Close on backdrop click
+        chatModal.addEventListener('click', (e) => {
+            if (e.target === chatModal) closeChat();
+        });
+
+        function closeChat() {
+            chatModal.classList.remove('active');
+        }
+
+        function resetChat() {
+            chatStep = 0;
+            shipmentData = {
+                type: '', typeLabel: '', quantity: '',
+                destination: { name: '', street: '', city: '', state: '', zip: '' },
+                service: '', serviceLabel: ''
+            };
+            chatMessages.innerHTML = '';
+            chatActions.style.display = 'none';
+            updateProgress(0);
+        }
+
+        function updateProgress(step) {
+            const dots = chatProgress.querySelectorAll('.chat-progress-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'completed');
+                if (i < step) dot.classList.add('completed');
+                if (i === step) dot.classList.add('active');
+            });
+        }
+
+        function showTyping() {
+            const typing = document.createElement('div');
+            typing.className = 'chat-typing';
+            typing.id = 'typing-indicator';
+            typing.innerHTML = '<div class="chat-typing-dot"></div><div class="chat-typing-dot"></div><div class="chat-typing-dot"></div>';
+            chatMessages.appendChild(typing);
+            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            return typing;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) typing.remove();
+        }
+
+        function addBotMessage(html) {
+            hideTyping();
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble chat-bubble-bot';
+            bubble.innerHTML = html;
+            chatMessages.appendChild(bubble);
+            // Smooth scroll to bottom
+            setTimeout(() => {
+                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            }, 50);
+            return bubble;
+        }
+
+        function addUserMessage(text) {
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble chat-bubble-user';
+            bubble.textContent = text;
+            chatMessages.appendChild(bubble);
+            // Smooth scroll to bottom
+            setTimeout(() => {
+                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            }, 50);
+        }
+
+        function showStepWithTyping(step) {
+            showTyping();
+            setTimeout(() => {
+                showStep(step);
+            }, 600); // Show typing for 600ms
+        }
+
+        function showStep(step) {
+            chatStep = step;
+            updateProgress(step);
+
+            if (step === 0) {
+                // Step 1: Shipment Type
+                const bubble = addBotMessage(`
+                    <span class="chat-icon">🤖</span> What type of shipment?
+                    <div class="chat-options-large">
+                        <div class="chat-option-card" data-type="box" data-label="Box">
+                            <span class="card-icon">📦</span>
+                            <span class="card-label">Box</span>
+                        </div>
+                        <div class="chat-option-card" data-type="pallet" data-label="Pallet">
+                            <span class="card-icon">🎁</span>
+                            <span class="card-label">Pallet</span>
+                        </div>
+                        <div class="chat-option-card" data-type="container" data-label="Container">
+                            <span class="card-icon">🚢</span>
+                            <span class="card-label">Container</span>
+                        </div>
+                    </div>
+                `);
+                bubble.querySelectorAll('.chat-option-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        shipmentData.type = card.dataset.type;
+                        shipmentData.typeLabel = card.dataset.label;
+                        addUserMessage(card.dataset.label);
+                        setTimeout(() => showStepWithTyping(1), 300);
+                    });
+                });
+
+            } else if (step === 1) {
+                // Step 2: Quantity
+                const typeLabel = shipmentData.typeLabel.toLowerCase() + (shipmentData.type !== 'container' ? 'es' : 's');
+                const bubble = addBotMessage(`
+                    <span class="chat-icon">🤖</span> How many ${typeLabel}?
+                    <div class="chat-options">
+                        <button class="chat-option-btn" data-qty="1">1</button>
+                        <button class="chat-option-btn" data-qty="2-5">2-5</button>
+                        <button class="chat-option-btn" data-qty="6-10">6-10</button>
+                        <button class="chat-option-btn" data-qty="10+">10+</button>
+                    </div>
+                `);
+                bubble.querySelectorAll('.chat-option-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        shipmentData.quantity = btn.dataset.qty;
+                        addUserMessage(btn.dataset.qty);
+                        setTimeout(() => showStepWithTyping(2), 300);
+                    });
+                });
+
+            } else if (step === 2) {
+                // Step 3: Destination
+                const bubble = addBotMessage(`
+                    <span class="chat-icon">🤖</span> Where is it going?
+                    <div class="chat-input-group">
+                        <input type="text" id="dest-name-chat" placeholder="Recipient Name" required>
+                        <input type="text" id="dest-street-chat" placeholder="Street Address" required>
+                        <div class="chat-input-row">
+                            <input type="text" id="dest-city-chat" placeholder="City" required>
+                            <input type="text" id="dest-state-chat" placeholder="State" maxlength="2" required>
+                            <input type="text" id="dest-zip-chat" placeholder="ZIP" required>
+                        </div>
+                        <button class="btn btn-primary btn-next" id="dest-next">Next →</button>
+                    </div>
+                `);
+                document.getElementById('dest-next').addEventListener('click', () => {
+                    const name = document.getElementById('dest-name-chat').value.trim();
+                    const street = document.getElementById('dest-street-chat').value.trim();
+                    const city = document.getElementById('dest-city-chat').value.trim();
+                    const state = document.getElementById('dest-state-chat').value.trim().toUpperCase();
+                    const zip = document.getElementById('dest-zip-chat').value.trim();
+
+                    if (!name || !street || !city || !state || !zip) {
+                        alert('Please fill in all fields');
+                        return;
+                    }
+
+                    shipmentData.destination = { name, street, city, state, zip };
+                    addUserMessage(`${name}, ${city}, ${state}`);
+                    setTimeout(() => showStepWithTyping(3), 300);
+                });
+
+            } else if (step === 3) {
+                // Step 4: Service Speed
+                const bubble = addBotMessage(`
+                    <span class="chat-icon">🤖</span> Delivery speed?
+                    <div class="chat-options">
+                        <button class="chat-option-btn" data-service="standard" data-label="Standard (3-5 days)">
+                            <span class="option-icon">🐢</span>
+                            <span class="option-label">Standard</span>
+                        </button>
+                        <button class="chat-option-btn" data-service="express" data-label="Express (1-2 days)">
+                            <span class="option-icon">🚀</span>
+                            <span class="option-label">Express</span>
+                        </button>
+                        <button class="chat-option-btn" data-service="overnight" data-label="Overnight">
+                            <span class="option-icon">⚡</span>
+                            <span class="option-label">Overnight</span>
+                        </button>
+                    </div>
+                `);
+                bubble.querySelectorAll('.chat-option-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        shipmentData.service = btn.dataset.service;
+                        shipmentData.serviceLabel = btn.dataset.label;
+                        addUserMessage(btn.dataset.label);
+                        setTimeout(() => showStepWithTyping(4), 300);
+                    });
+                });
+
+            } else if (step === 4) {
+                // Step 5: Summary
+                const d = shipmentData.destination;
+                addBotMessage(`
+                    <span class="chat-icon">🤖</span> Review your shipment:
+                    <div class="chat-summary">
+                        <div class="chat-summary-row">
+                            <span class="chat-summary-label">Type</span>
+                            <span class="chat-summary-value">${shipmentData.quantity} ${shipmentData.typeLabel}(s)</span>
+                        </div>
+                        <div class="chat-summary-row">
+                            <span class="chat-summary-label">To</span>
+                            <span class="chat-summary-value">${d.name}</span>
+                        </div>
+                        <div class="chat-summary-row">
+                            <span class="chat-summary-label">Address</span>
+                            <span class="chat-summary-value">${d.street}, ${d.city}, ${d.state} ${d.zip}</span>
+                        </div>
+                        <div class="chat-summary-row">
+                            <span class="chat-summary-label">Service</span>
+                            <span class="chat-summary-value">${shipmentData.serviceLabel}</span>
+                        </div>
+                    </div>
+                `);
+                chatActions.style.display = 'flex';
+            }
+        }
+
+        // Edit button - restart
+        document.getElementById('btn-edit').addEventListener('click', () => {
+            resetChat();
+            showStep(0);
+        });
+
+        // Confirm button - create shipment
+        document.getElementById('btn-confirm').addEventListener('click', async () => {
+            if (!currentUser) {
+                alert('Please log in first');
+                return;
+            }
+
+            const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
+            const d = shipmentData.destination;
+
+            const newShipment = {
+                user_id: currentUser.uid,
+                tracking_number: trackingNumber,
+                origin: {
+                    street: '8780 NW 100th ST',
+                    city: 'Medley',
+                    state: 'FL',
+                    zip: '33178'
+                },
+                destination: {
+                    name: d.name,
+                    street: d.street,
+                    city: d.city,
+                    state: d.state,
+                    zip: d.zip
+                },
+                package: {
+                    type: shipmentData.type,
+                    quantity: shipmentData.quantity,
+                    weight: 0,
+                    length: 0,
+                    width: 0,
+                    height: 0
+                },
+                service_type: shipmentData.service,
+                notes: `Created via chat wizard - ${shipmentData.quantity} ${shipmentData.typeLabel}(s)`,
+                status: 'pending',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
+
+                // Log billable event
+                try {
+                    const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
+                    const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
+                    const pickpackRate = pricing?.handling?.pickpack || 5.00;
+
+                    await addDoc(collection(db, 'billable_events'), {
+                        customer_id: currentUser.uid,
+                        event_type: 'shipping',
+                        description: 'Outbound Shipment - ' + trackingNumber,
+                        quantity: shipmentData.quantity || 1,
+                        unit: 'packages',
+                        rate: pickpackRate,
+                        shipment_id: shipmentRef.id,
+                        invoiced: false,
+                        created_at: new Date().toISOString(),
+                        created_by: currentUser.uid
+                    });
+                } catch (billingErr) {
+                    console.warn('Chat shipment created but billing event failed:', billingErr.message);
+                }
+
+                closeChat();
+                alert('Shipment created! Tracking #: ' + trackingNumber);
+                loadShipments();
+            } catch (error) {
+                alert('Error creating shipment: ' + error.message);
+            }
+        });
     </script>
     <script src="../js/column-prefs.js"></script>
     <script src="../js/main.js"></script>
+    <!-- Form Validation Module -->
+    <script src="../js/form-validation.js"></script>
 </body>
 </html>
