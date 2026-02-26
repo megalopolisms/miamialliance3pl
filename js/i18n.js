@@ -39,18 +39,28 @@
   };
 
   // ── Detect initial language ─────────────────────────────────────────
-  // 1. Respect stored preference (user clicked the toggle before)
-  // 2. Auto-detect browser language: Spanish speakers → Spanish
-  // 3. All other languages → English (default)
+  // Rule: check user preferred browser language first; only Spanish gets es.
+  // Every non-Spanish language falls back to English.
+  function getBrowserPreferredLang() {
+    var preferred = "";
+    if (navigator.languages && navigator.languages.length > 0) {
+      preferred = navigator.languages[0];
+    } else {
+      preferred = navigator.language || navigator.userLanguage || "";
+    }
+
+    preferred = String(preferred).toLowerCase();
+    if (preferred.indexOf("es") === 0) return "es";
+    return DEFAULT_LANG;
+  }
+
   function getInitialLang() {
-    var stored = localStorage.getItem(STORAGE_KEY);
+    var stored = null;
+    try {
+      stored = localStorage.getItem(STORAGE_KEY);
+    } catch (e) {}
     if (stored && SUPPORTED.indexOf(stored) !== -1) return stored;
-    // Auto-detect from browser language
-    var browserLang = (
-      navigator.language || navigator.userLanguage || ""
-    ).toLowerCase();
-    if (browserLang.indexOf("es") === 0) return "es";
-    return DEFAULT_LANG; // English for non-Spanish browsers
+    return getBrowserPreferredLang();
   }
 
   // ── Toggle dual-content blocks (.lang-en / .lang-es) ────────────────
@@ -221,7 +231,9 @@
   function setLanguage(lang) {
     if (SUPPORTED.indexOf(lang) === -1) return;
 
-    localStorage.setItem(STORAGE_KEY, lang);
+    try {
+      localStorage.setItem(STORAGE_KEY, lang);
+    } catch (e) {}
 
     // Update active button state
     var buttons = document.querySelectorAll(".lang-btn");

@@ -16,7 +16,7 @@ Google Analytics 4 (GA4) has been installed on all pages of miamialliance3pl.com
 - quote.html
 - login.html
 
-**Measurement ID:** `G-QSRV99D8BX`
+**Measurement ID:** `G-KTW0F25ZM1`
 
 ---
 
@@ -67,7 +67,7 @@ In Firebase Console:
 2. Click "Analytics" in left sidebar
 3. Click "Enable Google Analytics"
 4. Select or create GA4 property
-5. Link to existing measurement ID: G-QSRV99D8BX
+5. Link to existing measurement ID: G-KTW0F25ZM1
 
 ---
 
