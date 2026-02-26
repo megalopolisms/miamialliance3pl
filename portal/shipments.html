@@ -25,6 +25,586 @@
         gtag('config', 'G-KTW0F25ZM1');
     </script>
     <script src="../js/analytics.js"></script>
+
+    <!-- Shipment Wizard Styles -->
+    <style>
+        /* ================================================
+           SHIPMENT WIZARD — Quote-integrated UX
+           ================================================ */
+        .wizard-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .wizard-modal.active {
+            display: flex;
+        }
+        .wizard-container {
+            background: #fff;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 720px;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.25);
+            position: relative;
+        }
+
+        /* Header */
+        .wizard-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            padding: 20px 28px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wizard-header h2 {
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .wizard-header h2 span.accent { color: #14b8a6; }
+        .wizard-close {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .wizard-close:hover { background: rgba(255,255,255,0.25); }
+
+        /* Progress bar */
+        .wizard-progress {
+            display: flex;
+            align-items: center;
+            padding: 20px 28px 0;
+            gap: 4px;
+        }
+        .wizard-step-indicator {
+            flex: 1;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        .wizard-step-indicator.completed { background: #14b8a6; }
+        .wizard-step-indicator.active { background: #1e3a5f; }
+        .wizard-step-labels {
+            display: flex;
+            padding: 6px 28px 0;
+            gap: 4px;
+        }
+        .wizard-step-label {
+            flex: 1;
+            text-align: center;
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .wizard-step-label.active { color: #1e3a5f; font-weight: 600; }
+        .wizard-step-label.completed { color: #14b8a6; }
+
+        /* Content area */
+        .wizard-body {
+            padding: 24px 28px;
+        }
+        .wizard-step {
+            display: none;
+            animation: wizardFadeIn 0.3s ease;
+        }
+        .wizard-step.active { display: block; }
+        @keyframes wizardFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .wizard-step h3 {
+            font-size: 1.1rem;
+            color: #1e3a5f;
+            margin: 0 0 16px;
+            font-weight: 700;
+        }
+        .wizard-step p.step-desc {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin: -8px 0 16px;
+        }
+
+        /* Package type cards */
+        .pkg-type-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .pkg-type-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            background: #fff;
+        }
+        .pkg-type-card:hover {
+            border-color: #14b8a6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(20,184,166,0.1);
+        }
+        .pkg-type-card.selected {
+            border-color: #14b8a6;
+            background: linear-gradient(135deg, #f0fdfa 0%, #ecfdf5 100%);
+            box-shadow: 0 4px 16px rgba(20,184,166,0.15);
+        }
+        .pkg-type-card .pkg-icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+        .pkg-type-card .pkg-name {
+            font-weight: 700;
+            color: #1e3a5f;
+            font-size: 1rem;
+        }
+        .pkg-type-card .pkg-desc {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* Form controls */
+        .wiz-form-grid {
+            display: grid;
+            gap: 14px;
+        }
+        .wiz-form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .wiz-form-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+        .wiz-form-grid.cols-221 { grid-template-columns: 2fr 1fr 1fr; }
+        .wiz-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .wiz-form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        .wiz-form-group input,
+        .wiz-form-group select,
+        .wiz-form-group textarea {
+            padding: 10px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            color: #1e293b;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fff;
+        }
+        .wiz-form-group input:focus,
+        .wiz-form-group select:focus,
+        .wiz-form-group textarea:focus {
+            outline: none;
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 3px rgba(20,184,166,0.12);
+        }
+
+        /* Weight slider */
+        .wiz-weight-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .wiz-weight-wrapper input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            outline: none;
+            border: none;
+            padding: 0;
+        }
+        .wiz-weight-wrapper input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #14b8a6;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(20,184,166,0.3);
+        }
+        .wiz-weight-display {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 90px;
+        }
+        .wiz-weight-display input {
+            width: 60px;
+            text-align: center;
+            padding: 6px 4px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1e3a5f;
+        }
+        .wiz-weight-display input:focus {
+            outline: none;
+            border-color: #14b8a6;
+        }
+        .wiz-weight-display span {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        /* Quantity controls */
+        .wiz-qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .wiz-qty-btn {
+            width: 36px; height: 36px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            background: #fff;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .wiz-qty-btn:hover { border-color: #14b8a6; background: #f0fdfa; }
+        .wiz-qty-input {
+            width: 60px;
+            text-align: center;
+            padding: 8px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+        .wiz-qty-input:focus { outline: none; border-color: #14b8a6; }
+
+        /* Shipping zone cards */
+        .zone-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .zone-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+        .zone-card:hover { border-color: #14b8a6; transform: translateY(-1px); }
+        .zone-card.selected {
+            border-color: #14b8a6;
+            background: #f0fdfa;
+        }
+        .zone-card .zone-name {
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 0.9rem;
+        }
+        .zone-card .zone-rate {
+            font-size: 0.75rem;
+            color: #14b8a6;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        .zone-card .zone-desc {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+
+        /* Black wrapping toggle */
+        .wiz-toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 12px;
+        }
+        .wiz-toggle-row:hover { border-color: #14b8a6; }
+        .wiz-toggle-row.active { border-color: #14b8a6; background: #f0fdfa; }
+        .wiz-toggle-row input[type="checkbox"] {
+            width: 20px; height: 20px;
+            accent-color: #14b8a6;
+            cursor: pointer;
+        }
+        .wiz-toggle-row .toggle-label {
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 0.9rem;
+        }
+        .wiz-toggle-row .toggle-price {
+            margin-left: auto;
+            font-weight: 700;
+            color: #14b8a6;
+            font-size: 0.85rem;
+        }
+
+        /* Dropship section */
+        .wiz-dropship-section {
+            display: none;
+            margin-top: 16px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .wiz-dropship-section.active { display: block; }
+        .dropship-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .dropship-row:last-child { border-bottom: none; }
+        .dropship-row .ds-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #475569;
+            font-weight: 500;
+        }
+        .dropship-row .ds-price {
+            font-size: 0.75rem;
+            color: #14b8a6;
+            font-weight: 600;
+        }
+        .dropship-row .ds-qty {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .ds-qty-btn {
+            width: 28px; height: 28px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .ds-qty-btn:hover { border-color: #14b8a6; }
+        .ds-qty-input {
+            width: 44px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .ds-qty-input:focus { outline: none; border-color: #14b8a6; }
+
+        /* Live pricing panel */
+        .wiz-pricing-panel {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 14px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .wiz-pricing-panel h4 {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 0 0 12px;
+        }
+        .wiz-price-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 0.9rem;
+        }
+        .wiz-price-line .price-label { color: #475569; }
+        .wiz-price-line .price-value { font-weight: 600; color: #1e3a5f; }
+        .wiz-price-line.hidden { display: none; }
+        .wiz-price-divider {
+            border: none;
+            height: 1px;
+            background: #e2e8f0;
+            margin: 8px 0;
+        }
+        .wiz-price-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            border-radius: 10px;
+            margin-top: 8px;
+        }
+        .wiz-price-total .total-label {
+            font-weight: 700;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        .wiz-price-total .total-value {
+            font-weight: 800;
+            color: #14b8a6;
+            font-size: 1.3rem;
+        }
+
+        /* Review summary */
+        .wiz-review-section {
+            margin-bottom: 16px;
+        }
+        .wiz-review-section h4 {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 0 0 8px;
+            font-weight: 600;
+        }
+        .wiz-review-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 14px 16px;
+            border: 1px solid #e2e8f0;
+        }
+        .wiz-review-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.88rem;
+        }
+        .wiz-review-row .rev-label { color: #64748b; }
+        .wiz-review-row .rev-value { color: #1e3a5f; font-weight: 600; }
+
+        /* Footer buttons */
+        .wizard-footer {
+            padding: 16px 28px 24px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        .wiz-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .wiz-btn-back {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .wiz-btn-back:hover { background: #e2e8f0; }
+        .wiz-btn-next {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            color: #fff;
+            flex: 1;
+            max-width: 200px;
+        }
+        .wiz-btn-next:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(30,58,95,0.3); }
+        .wiz-btn-next:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .wiz-btn-confirm {
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            color: #fff;
+            flex: 1;
+        }
+        .wiz-btn-confirm:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(20,184,166,0.3); }
+
+        /* Success overlay */
+        .wizard-success {
+            display: none;
+            text-align: center;
+            padding: 40px 28px;
+        }
+        .wizard-success.active { display: block; }
+        .wizard-success .success-icon {
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 2rem;
+            color: #fff;
+            animation: wizardPop 0.4s ease;
+        }
+        @keyframes wizardPop {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        .wizard-success h3 {
+            color: #1e3a5f;
+            font-size: 1.3rem;
+            margin: 0 0 8px;
+        }
+        .wizard-success .tracking-num {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: #14b8a6;
+            background: #f0fdfa;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 8px 0 16px;
+            font-weight: 700;
+        }
+        .wizard-success p { color: #64748b; font-size: 0.9rem; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .wizard-container { border-radius: 16px; max-height: 95vh; }
+            .wizard-header { padding: 16px 20px; border-radius: 16px 16px 0 0; }
+            .wizard-body { padding: 18px 20px; }
+            .wizard-footer { padding: 12px 20px 20px; }
+            .wizard-progress { padding: 16px 20px 0; }
+            .wizard-step-labels { padding: 4px 20px 0; }
+            .pkg-type-grid { grid-template-columns: 1fr 1fr; }
+            .zone-grid { grid-template-columns: 1fr; }
+            .wiz-form-grid.cols-3 { grid-template-columns: 1fr; }
+            .wiz-form-grid.cols-221 { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -70,12 +650,12 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-sm);">
                 <h1 style="color: var(--color-gray-900);" data-i18n="portal.shipments.title">Shipments</h1>
                 <div style="display: flex; gap: var(--spacing-xs);">
-                    <button id="new-shipment-chat-btn" class="btn btn-primary" data-i18n="portal.shipments.newShipment">+ New Shipment</button>
+                    <button id="new-shipment-wizard-btn" class="btn btn-primary" data-i18n="portal.shipments.newShipment">+ New Shipment</button>
                     <button id="new-shipment-btn" class="btn btn-outline" data-i18n="portal.shipments.classicForm">Classic Form</button>
                 </div>
             </div>
 
-            <!-- New Shipment Form (hidden by default) -->
+            <!-- New Shipment Form (Classic - hidden by default) -->
             <div id="shipment-form-container" class="dashboard-card" style="display: none; margin-bottom: var(--spacing-xl);">
                 <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.shipments.createTitle">Create New Shipment</h2>
                 <form id="shipment-form" data-validate-form>
@@ -213,27 +793,351 @@
         </main>
     </div>
 
-    <!-- Chat Wizard Modal -->
-    <div id="chat-modal" class="chat-modal" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title">
-        <div class="chat-container">
-            <div class="chat-header">
-                <h2 id="chat-modal-title"><span aria-hidden="true">📦</span> <span data-i18n="portal.shipments.chatTitle">New Shipment</span></h2>
-                <button class="chat-close" id="chat-close" aria-label="Close dialog">&times;</button>
+    <!-- ============================================= -->
+    <!-- NEW SHIPMENT WIZARD (Quote Calculator UX)     -->
+    <!-- ============================================= -->
+    <div id="wizard-modal" class="wizard-modal" role="dialog" aria-modal="true" aria-labelledby="wizard-title">
+        <div class="wizard-container">
+            <!-- Header -->
+            <div class="wizard-header">
+                <h2 id="wizard-title">📦 New <span class="accent">Shipment</span></h2>
+                <button class="wizard-close" id="wizard-close" aria-label="Close">&times;</button>
             </div>
-            <div class="chat-progress" id="chat-progress">
-                <div class="chat-progress-dot active"></div>
-                <div class="chat-progress-dot"></div>
-                <div class="chat-progress-dot"></div>
-                <div class="chat-progress-dot"></div>
-                <div class="chat-progress-dot"></div>
+
+            <!-- Progress -->
+            <div class="wizard-progress" id="wizard-progress">
+                <div class="wizard-step-indicator active"></div>
+                <div class="wizard-step-indicator"></div>
+                <div class="wizard-step-indicator"></div>
+                <div class="wizard-step-indicator"></div>
+                <div class="wizard-step-indicator"></div>
             </div>
-            <div class="chat-messages" id="chat-messages">
-                <!-- Messages will be injected here -->
+            <div class="wizard-step-labels" id="wizard-step-labels">
+                <div class="wizard-step-label active">Package</div>
+                <div class="wizard-step-label">Details</div>
+                <div class="wizard-step-label">Shipping</div>
+                <div class="wizard-step-label">Address</div>
+                <div class="wizard-step-label">Review</div>
             </div>
-            <div class="chat-actions" id="chat-actions" style="display: none;">
-                <button class="btn btn-cancel" id="btn-cancel" data-i18n="portal.shipments.cancelBtn">Cancel</button>
-                <button class="btn btn-edit" id="btn-edit" data-i18n="portal.shipments.editBtn">Edit</button>
-                <button class="btn btn-confirm" id="btn-confirm" data-i18n="portal.shipments.confirmBtn">Confirm & Create</button>
+
+            <!-- Body -->
+            <div class="wizard-body" id="wizard-body">
+
+                <!-- STEP 0: Package Type -->
+                <div class="wizard-step active" data-step="0">
+                    <h3>What are you shipping?</h3>
+                    <p class="step-desc">Select your package type to get started</p>
+                    <div class="pkg-type-grid">
+                        <div class="pkg-type-card" data-type="box">
+                            <div class="pkg-icon">📦</div>
+                            <div class="pkg-name">Box</div>
+                            <div class="pkg-desc">Individual boxes & cartons</div>
+                        </div>
+                        <div class="pkg-type-card" data-type="pallet">
+                            <div class="pkg-icon">🏗️</div>
+                            <div class="pkg-name">Pallet</div>
+                            <div class="pkg-desc">Full pallets & skids</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 1: Dimensions, Weight, Quantity -->
+                <div class="wizard-step" data-step="1">
+                    <h3>Package Details</h3>
+                    <p class="step-desc">Enter dimensions and weight for accurate pricing</p>
+
+                    <div class="wiz-form-grid cols-3" style="margin-bottom: 16px;">
+                        <div class="wiz-form-group">
+                            <label>Length (in)</label>
+                            <input type="number" id="wiz-length" value="12" min="1" max="120">
+                        </div>
+                        <div class="wiz-form-group">
+                            <label>Width (in)</label>
+                            <input type="number" id="wiz-width" value="12" min="1" max="120">
+                        </div>
+                        <div class="wiz-form-group">
+                            <label>Height (in)</label>
+                            <input type="number" id="wiz-height" value="12" min="1" max="120">
+                        </div>
+                    </div>
+
+                    <div class="wiz-form-group" style="margin-bottom: 16px;">
+                        <label>Weight (lbs)</label>
+                        <div class="wiz-weight-wrapper">
+                            <input type="range" id="wiz-weight-slider" min="1" max="500" value="25">
+                            <div class="wiz-weight-display">
+                                <input type="number" id="wiz-weight-input" value="25" min="1" max="2000">
+                                <span>lbs</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wiz-form-group">
+                        <label>Quantity</label>
+                        <div class="wiz-qty-controls">
+                            <button type="button" class="wiz-qty-btn" id="wiz-qty-dec">-</button>
+                            <input type="number" class="wiz-qty-input" id="wiz-qty" value="1" min="1" max="1000">
+                            <button type="button" class="wiz-qty-btn" id="wiz-qty-inc">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Live pricing preview -->
+                    <div class="wiz-pricing-panel" id="wiz-live-pricing">
+                        <h4>Live Estimate</h4>
+                        <div class="wiz-price-line">
+                            <span class="price-label">DIM Weight</span>
+                            <span class="price-value" id="wiz-p-dimweight">12.4 lbs</span>
+                        </div>
+                        <div class="wiz-price-line">
+                            <span class="price-label">Volume</span>
+                            <span class="price-value" id="wiz-p-volume">1.0 ft³</span>
+                        </div>
+                        <hr class="wiz-price-divider">
+                        <div class="wiz-price-line">
+                            <span class="price-label">Storage (30 days)</span>
+                            <span class="price-value" id="wiz-p-storage">$5.00</span>
+                        </div>
+                        <div class="wiz-price-line">
+                            <span class="price-label">Handling</span>
+                            <span class="price-value" id="wiz-p-handling">$3.50</span>
+                        </div>
+                        <div class="wiz-price-line">
+                            <span class="price-label">Pick & Pack</span>
+                            <span class="price-value" id="wiz-p-pickpack">$1.25</span>
+                        </div>
+                        <div class="wiz-price-line" id="wiz-p-shipping-row">
+                            <span class="price-label">Est. Shipping</span>
+                            <span class="price-value" id="wiz-p-shipping">$0.00</span>
+                        </div>
+                        <div class="wiz-price-line hidden" id="wiz-p-wrapping-row">
+                            <span class="price-label">Black Wrapping</span>
+                            <span class="price-value" id="wiz-p-wrapping">$0.00</span>
+                        </div>
+                        <div class="wiz-price-line hidden" id="wiz-p-dropship-row">
+                            <span class="price-label">Drop Ship</span>
+                            <span class="price-value" id="wiz-p-dropship">$0.00</span>
+                        </div>
+                        <hr class="wiz-price-divider">
+                        <div class="wiz-price-total">
+                            <span class="total-label">TOTAL ESTIMATE</span>
+                            <span class="total-value" id="wiz-p-total">$9.75</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Shipping Zone -->
+                <div class="wizard-step" data-step="2">
+                    <h3>Shipping & Services</h3>
+                    <p class="step-desc">Choose your shipping zone and add-ons</p>
+
+                    <div class="zone-grid">
+                        <div class="zone-card" data-zone="local">
+                            <div class="zone-name">🌴 Local (Florida)</div>
+                            <div class="zone-rate">$0.45/lb</div>
+                            <div class="zone-desc">Within Florida</div>
+                        </div>
+                        <div class="zone-card selected" data-zone="regional">
+                            <div class="zone-name">🏖️ Regional (Southeast)</div>
+                            <div class="zone-rate">$0.65/lb</div>
+                            <div class="zone-desc">FL, GA, AL, SC, NC, TN</div>
+                        </div>
+                        <div class="zone-card" data-zone="national">
+                            <div class="zone-name">🇺🇸 National</div>
+                            <div class="zone-rate">$0.85/lb</div>
+                            <div class="zone-desc">Anywhere in the US</div>
+                        </div>
+                        <div class="zone-card" data-zone="none">
+                            <div class="zone-name">🏢 No Shipping</div>
+                            <div class="zone-rate">Customer pickup</div>
+                            <div class="zone-desc">Warehouse pickup only</div>
+                        </div>
+                        <div class="zone-card" data-zone="dropship" style="grid-column: 1 / -1;">
+                            <div class="zone-name">📬 Drop Ship (by unit)</div>
+                            <div class="zone-rate">Per-box pricing</div>
+                            <div class="zone-desc">Charged per box size: Envelope $1.50 | Small $3.00 | Medium $5.00 | Large $20.00</div>
+                        </div>
+                    </div>
+
+                    <!-- Dropship quantity controls -->
+                    <div class="wiz-dropship-section" id="wiz-dropship-section">
+                        <div class="dropship-row">
+                            <div class="ds-label">📧 Envelopes <span class="ds-price">$1.50/ea</span></div>
+                            <div class="ds-qty">
+                                <button type="button" class="ds-qty-btn" data-ds="envelope" data-act="dec">-</button>
+                                <input type="number" class="ds-qty-input" id="wiz-ds-envelope" value="0" min="0">
+                                <button type="button" class="ds-qty-btn" data-ds="envelope" data-act="inc">+</button>
+                            </div>
+                        </div>
+                        <div class="dropship-row">
+                            <div class="ds-label">📦 Small Box <span class="ds-price">$3.00/ea</span></div>
+                            <div class="ds-qty">
+                                <button type="button" class="ds-qty-btn" data-ds="small" data-act="dec">-</button>
+                                <input type="number" class="ds-qty-input" id="wiz-ds-small" value="0" min="0">
+                                <button type="button" class="ds-qty-btn" data-ds="small" data-act="inc">+</button>
+                            </div>
+                        </div>
+                        <div class="dropship-row">
+                            <div class="ds-label">📦 Medium Box <span class="ds-price">$5.00/ea</span></div>
+                            <div class="ds-qty">
+                                <button type="button" class="ds-qty-btn" data-ds="medium" data-act="dec">-</button>
+                                <input type="number" class="ds-qty-input" id="wiz-ds-medium" value="0" min="0">
+                                <button type="button" class="ds-qty-btn" data-ds="medium" data-act="inc">+</button>
+                            </div>
+                        </div>
+                        <div class="dropship-row">
+                            <div class="ds-label">📦 Large Box <span class="ds-price">$20.00/ea</span></div>
+                            <div class="ds-qty">
+                                <button type="button" class="ds-qty-btn" data-ds="large" data-act="dec">-</button>
+                                <input type="number" class="ds-qty-input" id="wiz-ds-large" value="0" min="0">
+                                <button type="button" class="ds-qty-btn" data-ds="large" data-act="inc">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Black wrapping (pallet only) -->
+                    <div class="wiz-toggle-row" id="wiz-wrapping-toggle" style="display:none;">
+                        <input type="checkbox" id="wiz-black-wrapping">
+                        <span class="toggle-label">Black Wrapping</span>
+                        <span class="toggle-price">+$7.00/pallet</span>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="wiz-form-group" style="margin-top: 16px;">
+                        <label>Special Instructions (optional)</label>
+                        <textarea id="wiz-notes" placeholder="Fragile items, stacking instructions, etc." rows="2" style="padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit;font-size:0.9rem;resize:vertical;"></textarea>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Destination Address -->
+                <div class="wizard-step" data-step="3">
+                    <h3>Where is it going?</h3>
+                    <p class="step-desc">Enter the delivery destination</p>
+
+                    <div class="wiz-form-grid" style="margin-bottom: 14px;">
+                        <div class="wiz-form-group">
+                            <label>Recipient Name *</label>
+                            <input type="text" id="wiz-dest-name" placeholder="John Smith" required>
+                        </div>
+                    </div>
+                    <div class="wiz-form-grid" style="margin-bottom: 14px;">
+                        <div class="wiz-form-group">
+                            <label>Street Address *</label>
+                            <input type="text" id="wiz-dest-street" placeholder="123 Main Street" required>
+                        </div>
+                    </div>
+                    <div class="wiz-form-grid cols-221">
+                        <div class="wiz-form-group">
+                            <label>City *</label>
+                            <input type="text" id="wiz-dest-city" placeholder="Miami" required>
+                        </div>
+                        <div class="wiz-form-group">
+                            <label>State *</label>
+                            <input type="text" id="wiz-dest-state" placeholder="FL" maxlength="2" required>
+                        </div>
+                        <div class="wiz-form-group">
+                            <label>ZIP *</label>
+                            <input type="text" id="wiz-dest-zip" placeholder="33101" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Review & Confirm -->
+                <div class="wizard-step" data-step="4">
+                    <h3>Review Your Shipment</h3>
+                    <p class="step-desc">Confirm details before creating</p>
+
+                    <div class="wiz-review-section">
+                        <h4>Package Info</h4>
+                        <div class="wiz-review-card">
+                            <div class="wiz-review-row">
+                                <span class="rev-label">Type</span>
+                                <span class="rev-value" id="rev-type">Box</span>
+                            </div>
+                            <div class="wiz-review-row">
+                                <span class="rev-label">Dimensions</span>
+                                <span class="rev-value" id="rev-dims">12" x 12" x 12"</span>
+                            </div>
+                            <div class="wiz-review-row">
+                                <span class="rev-label">Weight</span>
+                                <span class="rev-value" id="rev-weight">25 lbs</span>
+                            </div>
+                            <div class="wiz-review-row">
+                                <span class="rev-label">Quantity</span>
+                                <span class="rev-value" id="rev-qty">1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wiz-review-section">
+                        <h4>Destination</h4>
+                        <div class="wiz-review-card">
+                            <div class="wiz-review-row">
+                                <span class="rev-label">To</span>
+                                <span class="rev-value" id="rev-recipient">—</span>
+                            </div>
+                            <div class="wiz-review-row">
+                                <span class="rev-label">Address</span>
+                                <span class="rev-value" id="rev-address">—</span>
+                            </div>
+                            <div class="wiz-review-row">
+                                <span class="rev-label">Shipping Zone</span>
+                                <span class="rev-value" id="rev-zone">Regional</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full pricing breakdown -->
+                    <div class="wiz-pricing-panel">
+                        <h4>Cost Breakdown</h4>
+                        <div class="wiz-price-line">
+                            <span class="price-label">Storage (30 days)</span>
+                            <span class="price-value" id="rev-p-storage">$5.00</span>
+                        </div>
+                        <div class="wiz-price-line">
+                            <span class="price-label">Handling</span>
+                            <span class="price-value" id="rev-p-handling">$3.50</span>
+                        </div>
+                        <div class="wiz-price-line">
+                            <span class="price-label">Pick & Pack</span>
+                            <span class="price-value" id="rev-p-pickpack">$1.25</span>
+                        </div>
+                        <div class="wiz-price-line" id="rev-p-shipping-row">
+                            <span class="price-label">Est. Shipping</span>
+                            <span class="price-value" id="rev-p-shipping">$16.25</span>
+                        </div>
+                        <div class="wiz-price-line hidden" id="rev-p-wrapping-row">
+                            <span class="price-label">Black Wrapping</span>
+                            <span class="price-value" id="rev-p-wrapping">$7.00</span>
+                        </div>
+                        <div class="wiz-price-line hidden" id="rev-p-dropship-row">
+                            <span class="price-label">Drop Ship</span>
+                            <span class="price-value" id="rev-p-dropship">$0.00</span>
+                        </div>
+                        <hr class="wiz-price-divider">
+                        <div class="wiz-price-total">
+                            <span class="total-label">TOTAL ESTIMATE</span>
+                            <span class="total-value" id="rev-p-total">$26.00</span>
+                        </div>
+                        <p style="font-size:0.75rem;color:#94a3b8;margin:8px 0 0;text-align:center;">* Estimates based on standard rates. Final pricing may vary.</p>
+                    </div>
+                </div>
+
+                <!-- SUCCESS STATE -->
+                <div class="wizard-success" id="wizard-success">
+                    <div class="success-icon">✓</div>
+                    <h3>Shipment Created!</h3>
+                    <div class="tracking-num" id="success-tracking">MA3PL00000000</div>
+                    <p>Your shipment is now being processed. Track it anytime in your dashboard.</p>
+                    <button class="wiz-btn wiz-btn-next" style="margin:16px auto 0;max-width:160px;" id="wizard-done">Done</button>
+                </div>
+            </div>
+
+            <!-- Footer buttons -->
+            <div class="wizard-footer" id="wizard-footer">
+                <button type="button" class="wiz-btn wiz-btn-back" id="wiz-back" style="display:none;">← Back</button>
+                <div style="flex:1;"></div>
+                <button type="button" class="wiz-btn wiz-btn-next" id="wiz-next">Next →</button>
+                <button type="button" class="wiz-btn wiz-btn-confirm" id="wiz-confirm" style="display:none;">Confirm & Create Shipment</button>
             </div>
         </div>
     </div>
@@ -269,10 +1173,155 @@
         ];
 
         let currentUser = null;
-        let currentUserRole = 'customer'; // Default role
-        let isStaff = false; // true for admin or employee
+        let currentUserRole = 'customer';
+        let isStaff = false;
 
-        // Check authentication
+        // =====================================================
+        // PRICING — Same as public quote calculator
+        // =====================================================
+        const PRICING = {
+            dimensionalFactor: 139,
+            storagePerCubicFtDay: 0.025,
+            handlingFee: 3.5,
+            pickAndPack: 1.25,
+            palletStoragePerDay: 0.75,
+            palletHandling: 15.0,
+            palletPickPack: 5.0,
+            blackWrapping: 7.0,
+            storageDays: 30,
+            minStorage: 5.0,
+            shippingZones: {
+                local: 0.45,
+                regional: 0.65,
+                national: 0.85,
+                none: 0,
+                dropship: 0
+            },
+            dropShipRates: {
+                envelope: 1.5,
+                small: 3.0,
+                medium: 5.0,
+                large: 20.0
+            }
+        };
+
+        // =====================================================
+        // WIZARD STATE
+        // =====================================================
+        let wizStep = 0;
+        const wiz = {
+            packageType: 'box',
+            length: 12,
+            width: 12,
+            height: 12,
+            weight: 25,
+            quantity: 1,
+            shippingZone: 'regional',
+            blackWrapping: false,
+            dropShipQty: { envelope: 0, small: 0, medium: 0, large: 0 },
+            destination: { name: '', street: '', city: '', state: '', zip: '' },
+            notes: ''
+        };
+
+        // =====================================================
+        // CALCULATOR FUNCTIONS (mirrored from quote-calculator.js)
+        // =====================================================
+        function getCubicFt() {
+            return (wiz.length * wiz.width * wiz.height) / 1728;
+        }
+        function getDimWeight() {
+            return (wiz.length * wiz.width * wiz.height) / PRICING.dimensionalFactor;
+        }
+        function getBillableWeight() {
+            return Math.max(wiz.weight, getDimWeight());
+        }
+        function getDropShipTotal() {
+            let total = 0;
+            for (const [size, qty] of Object.entries(wiz.dropShipQty)) {
+                total += qty * PRICING.dropShipRates[size];
+            }
+            return total;
+        }
+        function calculateQuote() {
+            const cubicFt = getCubicFt();
+            const billableWeight = getBillableWeight();
+            let storage, handling, pickPack, shipping, wrapping = 0, dropship = 0;
+
+            if (wiz.packageType === 'pallet') {
+                storage = PRICING.palletStoragePerDay * PRICING.storageDays * wiz.quantity;
+                handling = PRICING.palletHandling * wiz.quantity;
+                pickPack = PRICING.palletPickPack * wiz.quantity;
+                if (wiz.shippingZone === 'none') { shipping = 0; }
+                else if (wiz.shippingZone === 'dropship') { shipping = 0; dropship = getDropShipTotal(); }
+                else { shipping = billableWeight * PRICING.shippingZones[wiz.shippingZone] * wiz.quantity; }
+                if (wiz.blackWrapping) { wrapping = PRICING.blackWrapping * wiz.quantity; }
+            } else {
+                storage = cubicFt * PRICING.storagePerCubicFtDay * PRICING.storageDays * wiz.quantity;
+                handling = PRICING.handlingFee * wiz.quantity;
+                pickPack = PRICING.pickAndPack * wiz.quantity;
+                if (wiz.shippingZone === 'none') { shipping = 0; }
+                else if (wiz.shippingZone === 'dropship') { shipping = 0; dropship = getDropShipTotal(); }
+                else { shipping = billableWeight * PRICING.shippingZones[wiz.shippingZone] * wiz.quantity; }
+            }
+            storage = Math.max(storage, PRICING.minStorage);
+            const total = storage + handling + pickPack + shipping + wrapping + dropship;
+            return { storage, handling, pickPack, shipping, wrapping, dropship, total, cubicFt, dimWeight: getDimWeight(), billableWeight };
+        }
+
+        function fmt(amount) {
+            return '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function getZoneLabel(zone) {
+            const labels = { local: 'Local (Florida)', regional: 'Regional (Southeast)', national: 'National', none: 'No Shipping', dropship: 'Drop Ship' };
+            return labels[zone] || zone;
+        }
+
+        // =====================================================
+        // PRICING DISPLAY UPDATE
+        // =====================================================
+        function updatePricingDisplay() {
+            const q = calculateQuote();
+            // Step 1 live pricing
+            const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            setTxt('wiz-p-dimweight', q.dimWeight.toFixed(1) + ' lbs');
+            setTxt('wiz-p-volume', q.cubicFt.toFixed(1) + ' ft³');
+            setTxt('wiz-p-storage', fmt(q.storage));
+            setTxt('wiz-p-handling', fmt(q.handling));
+            setTxt('wiz-p-pickpack', fmt(q.pickPack));
+            setTxt('wiz-p-shipping', fmt(q.shipping));
+            setTxt('wiz-p-wrapping', fmt(q.wrapping));
+            setTxt('wiz-p-dropship', fmt(q.dropship));
+            setTxt('wiz-p-total', fmt(q.total));
+
+            // Show/hide conditional rows
+            const shippingRow = document.getElementById('wiz-p-shipping-row');
+            if (shippingRow) shippingRow.classList.toggle('hidden', wiz.shippingZone === 'none' || wiz.shippingZone === 'dropship');
+            const wrappingRow = document.getElementById('wiz-p-wrapping-row');
+            if (wrappingRow) wrappingRow.classList.toggle('hidden', !(wiz.packageType === 'pallet' && wiz.blackWrapping));
+            const dropshipRow = document.getElementById('wiz-p-dropship-row');
+            if (dropshipRow) dropshipRow.classList.toggle('hidden', wiz.shippingZone !== 'dropship' || q.dropship === 0);
+
+            // Review page pricing
+            setTxt('rev-p-storage', fmt(q.storage));
+            setTxt('rev-p-handling', fmt(q.handling));
+            setTxt('rev-p-pickpack', fmt(q.pickPack));
+            setTxt('rev-p-shipping', fmt(q.shipping));
+            setTxt('rev-p-wrapping', fmt(q.wrapping));
+            setTxt('rev-p-dropship', fmt(q.dropship));
+            setTxt('rev-p-total', fmt(q.total));
+
+            const revShippingRow = document.getElementById('rev-p-shipping-row');
+            if (revShippingRow) revShippingRow.classList.toggle('hidden', wiz.shippingZone === 'none' || wiz.shippingZone === 'dropship');
+            const revWrappingRow = document.getElementById('rev-p-wrapping-row');
+            if (revWrappingRow) revWrappingRow.classList.toggle('hidden', !(wiz.packageType === 'pallet' && wiz.blackWrapping));
+            const revDropshipRow = document.getElementById('rev-p-dropship-row');
+            if (revDropshipRow) revDropshipRow.classList.toggle('hidden', wiz.shippingZone !== 'dropship' || q.dropship === 0);
+        }
+
+        // =====================================================
+        // AUTH CHECK
+        // =====================================================
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = '../login.html';
@@ -280,23 +1329,18 @@
             }
             currentUser = user;
 
-            // Get user role from Firestore
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             if (userDoc.exists()) {
                 const userData = userDoc.data();
                 document.getElementById('user-name').textContent = 'Welcome, ' + userData.name;
-
-                // Check role from Firestore first
                 if (userData.role) {
                     currentUserRole = userData.role;
                     isStaff = (currentUserRole === 'admin' || currentUserRole === 'employee');
                 } else {
-                    // Fallback to email check if no role in Firestore
                     isStaff = FALLBACK_ADMIN_EMAILS.includes(user.email);
                     currentUserRole = isStaff ? 'admin' : 'customer';
                 }
             } else {
-                // No user doc - check fallback emails
                 isStaff = FALLBACK_ADMIN_EMAILS.includes(user.email);
                 currentUserRole = isStaff ? 'admin' : 'customer';
             }
@@ -316,34 +1360,28 @@
             }
         });
 
-        // Logout handler
+        // Logout
         document.getElementById('logout-btn').addEventListener('click', async (e) => {
             e.preventDefault();
             await signOut(auth);
             window.location.href = '../login.html';
         });
 
-        // Toggle new shipment form
+        // =====================================================
+        // CLASSIC FORM (unchanged)
+        // =====================================================
         document.getElementById('new-shipment-btn').addEventListener('click', () => {
             document.getElementById('shipment-form-container').style.display = 'block';
         });
-
         document.getElementById('cancel-shipment').addEventListener('click', () => {
             document.getElementById('shipment-form-container').style.display = 'none';
             document.getElementById('shipment-form').reset();
         });
+        document.getElementById('status-filter').addEventListener('change', () => loadShipments());
 
-        // Status filter
-        document.getElementById('status-filter').addEventListener('change', () => {
-            loadShipments();
-        });
-
-        // Create shipment
         document.getElementById('shipment-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
-
             const shipmentData = {
                 user_id: currentUser.uid,
                 tracking_number: trackingNumber,
@@ -376,14 +1414,11 @@
 
             try {
                 const shipmentRef = await addDoc(collection(db, 'shipments'), shipmentData);
-
-                // Log billable event for receiving/outbound
                 try {
                     const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
                     const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
                     const pickpackRate = pricing?.handling?.pickpack || 5.00;
                     const quantity = parseInt(document.getElementById('pkg-qty').value) || 1;
-
                     await addDoc(collection(db, 'billable_events'), {
                         customer_id: currentUser.uid,
                         event_type: 'shipping',
@@ -397,9 +1432,16 @@
                         created_by: currentUser.uid
                     });
                 } catch (billingErr) {
-                    console.warn('Shipment created but billing event failed:', billingErr.message);
+                    console.warn('Billing event failed:', billingErr.message);
                 }
-
+                // Track event
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.track('shipment_created', {
+                        method: 'classic_form',
+                        tracking_number: trackingNumber,
+                        service_type: shipmentData.service_type
+                    });
+                }
                 alert('Shipment created! Tracking #: ' + trackingNumber);
                 document.getElementById('shipment-form-container').style.display = 'none';
                 document.getElementById('shipment-form').reset();
@@ -409,6 +1451,9 @@
             }
         });
 
+        // =====================================================
+        // LOAD SHIPMENTS TABLE
+        // =====================================================
         async function loadShipments() {
             const tbody = document.getElementById('shipments-list');
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Loading...</td></tr>';
@@ -416,47 +1461,24 @@
             try {
                 const statusFilter = document.getElementById('status-filter').value;
                 let q;
-
-                // Staff (admin/employee) see all shipments, customers see only their own
                 if (isStaff) {
-                    // Staff: show all shipments
                     if (statusFilter === 'all') {
-                        q = query(
-                            collection(db, 'shipments'),
-                            orderBy('created_at', 'desc')
-                        );
+                        q = query(collection(db, 'shipments'), orderBy('created_at', 'desc'));
                     } else {
-                        q = query(
-                            collection(db, 'shipments'),
-                            where('status', '==', statusFilter),
-                            orderBy('created_at', 'desc')
-                        );
+                        q = query(collection(db, 'shipments'), where('status', '==', statusFilter), orderBy('created_at', 'desc'));
                     }
                 } else {
-                    // Customer: show only their shipments
                     if (statusFilter === 'all') {
-                        q = query(
-                            collection(db, 'shipments'),
-                            where('user_id', '==', currentUser.uid),
-                            orderBy('created_at', 'desc')
-                        );
+                        q = query(collection(db, 'shipments'), where('user_id', '==', currentUser.uid), orderBy('created_at', 'desc'));
                     } else {
-                        q = query(
-                            collection(db, 'shipments'),
-                            where('user_id', '==', currentUser.uid),
-                            where('status', '==', statusFilter),
-                            orderBy('created_at', 'desc')
-                        );
+                        q = query(collection(db, 'shipments'), where('user_id', '==', currentUser.uid), where('status', '==', statusFilter), orderBy('created_at', 'desc'));
                     }
                 }
-
                 const snapshot = await getDocs(q);
-
                 if (snapshot.empty) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">No shipments found</td></tr>';
                     return;
                 }
-
                 tbody.innerHTML = '';
                 snapshot.forEach((doc) => {
                     const data = doc.data();
@@ -465,7 +1487,7 @@
                         <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
                         <td>${data.destination?.name || 'N/A'}</td>
                         <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
-                        <td style="text-transform: capitalize;">${data.service_type}</td>
+                        <td style="text-transform: capitalize;">${data.service_type || data.shipping_zone || ''}</td>
                         <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
                         <td>${new Date(data.created_at).toLocaleDateString()}</td>
                     `;
@@ -478,272 +1500,294 @@
         }
 
         // =====================================================
-        // CHAT WIZARD
+        // WIZARD LOGIC
         // =====================================================
+        const wizardModal = document.getElementById('wizard-modal');
+        const wizardBody = document.getElementById('wizard-body');
+        const wizardFooter = document.getElementById('wizard-footer');
+        const wizBack = document.getElementById('wiz-back');
+        const wizNext = document.getElementById('wiz-next');
+        const wizConfirm = document.getElementById('wiz-confirm');
 
-        const chatModal = document.getElementById('chat-modal');
-        const chatMessages = document.getElementById('chat-messages');
-        const chatProgress = document.getElementById('chat-progress');
-        const chatActions = document.getElementById('chat-actions');
-
-        let chatStep = 0;
-        let shipmentData = {
-            type: '',
-            typeLabel: '',
-            quantity: '',
-            destination: {
-                name: '',
-                street: '',
-                city: '',
-                state: '',
-                zip: ''
-            },
-            service: '',
-            serviceLabel: ''
-        };
-
-        // Open chat wizard
-        document.getElementById('new-shipment-chat-btn').addEventListener('click', () => {
-            chatModal.classList.add('active');
-            resetChat();
-            showStep(0);
+        // Open wizard
+        document.getElementById('new-shipment-wizard-btn').addEventListener('click', () => {
+            resetWizard();
+            wizardModal.classList.add('active');
+            // Track wizard open
+            if (window.MA3PLAnalytics) {
+                MA3PLAnalytics.track('shipment_wizard_opened', { page: 'shipments' });
+            }
         });
 
-        // Close chat wizard
-        document.getElementById('chat-close').addEventListener('click', closeChat);
-        document.getElementById('btn-cancel').addEventListener('click', closeChat);
+        // Close wizard
+        document.getElementById('wizard-close').addEventListener('click', closeWizard);
+        wizardModal.addEventListener('click', (e) => { if (e.target === wizardModal) closeWizard(); });
+        document.getElementById('wizard-done').addEventListener('click', () => { closeWizard(); loadShipments(); });
 
-        // Close on backdrop click
-        chatModal.addEventListener('click', (e) => {
-            if (e.target === chatModal) closeChat();
-        });
-
-        function closeChat() {
-            chatModal.classList.remove('active');
+        function closeWizard() {
+            wizardModal.classList.remove('active');
         }
 
-        function resetChat() {
-            chatStep = 0;
-            shipmentData = {
-                type: '', typeLabel: '', quantity: '',
-                destination: { name: '', street: '', city: '', state: '', zip: '' },
-                service: '', serviceLabel: ''
-            };
-            chatMessages.innerHTML = '';
-            chatActions.style.display = 'none';
-            updateProgress(0);
-        }
+        function resetWizard() {
+            wizStep = 0;
+            wiz.packageType = 'box';
+            wiz.length = 12; wiz.width = 12; wiz.height = 12;
+            wiz.weight = 25; wiz.quantity = 1;
+            wiz.shippingZone = 'regional';
+            wiz.blackWrapping = false;
+            wiz.dropShipQty = { envelope: 0, small: 0, medium: 0, large: 0 };
+            wiz.destination = { name: '', street: '', city: '', state: '', zip: '' };
+            wiz.notes = '';
 
-        function updateProgress(step) {
-            const dots = chatProgress.querySelectorAll('.chat-progress-dot');
-            dots.forEach((dot, i) => {
-                dot.classList.remove('active', 'completed');
-                if (i < step) dot.classList.add('completed');
-                if (i === step) dot.classList.add('active');
+            // Reset UI
+            document.querySelectorAll('.pkg-type-card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.zone-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector('.zone-card[data-zone="regional"]').classList.add('selected');
+            document.getElementById('wiz-black-wrapping').checked = false;
+            document.getElementById('wiz-wrapping-toggle').classList.remove('active');
+            document.getElementById('wiz-dropship-section').classList.remove('active');
+            document.getElementById('wizard-success').classList.remove('active');
+            wizardFooter.style.display = 'flex';
+
+            // Reset inputs
+            document.getElementById('wiz-length').value = 12;
+            document.getElementById('wiz-width').value = 12;
+            document.getElementById('wiz-height').value = 12;
+            document.getElementById('wiz-weight-slider').value = 25;
+            document.getElementById('wiz-weight-input').value = 25;
+            document.getElementById('wiz-qty').value = 1;
+            document.getElementById('wiz-dest-name').value = '';
+            document.getElementById('wiz-dest-street').value = '';
+            document.getElementById('wiz-dest-city').value = '';
+            document.getElementById('wiz-dest-state').value = '';
+            document.getElementById('wiz-dest-zip').value = '';
+            document.getElementById('wiz-notes').value = '';
+            ['envelope', 'small', 'medium', 'large'].forEach(s => {
+                document.getElementById('wiz-ds-' + s).value = 0;
             });
+
+            showWizardStep(0);
+            updatePricingDisplay();
         }
 
-        function showTyping() {
-            const typing = document.createElement('div');
-            typing.className = 'chat-typing';
-            typing.id = 'typing-indicator';
-            typing.innerHTML = '<div class="chat-typing-dot"></div><div class="chat-typing-dot"></div><div class="chat-typing-dot"></div>';
-            chatMessages.appendChild(typing);
-            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
-            return typing;
-        }
+        function showWizardStep(step) {
+            wizStep = step;
+            // Show/hide steps
+            document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+            const targetStep = document.querySelector(`.wizard-step[data-step="${step}"]`);
+            if (targetStep) targetStep.classList.add('active');
 
-        function hideTyping() {
-            const typing = document.getElementById('typing-indicator');
-            if (typing) typing.remove();
-        }
+            // Progress indicators
+            const indicators = document.querySelectorAll('.wizard-step-indicator');
+            const labels = document.querySelectorAll('.wizard-step-label');
+            indicators.forEach((ind, i) => {
+                ind.classList.remove('active', 'completed');
+                if (i < step) ind.classList.add('completed');
+                if (i === step) ind.classList.add('active');
+            });
+            labels.forEach((lbl, i) => {
+                lbl.classList.remove('active', 'completed');
+                if (i < step) lbl.classList.add('completed');
+                if (i === step) lbl.classList.add('active');
+            });
 
-        function addBotMessage(html) {
-            hideTyping();
-            const bubble = document.createElement('div');
-            bubble.className = 'chat-bubble chat-bubble-bot';
-            bubble.innerHTML = html;
-            chatMessages.appendChild(bubble);
-            // Smooth scroll to bottom
-            setTimeout(() => {
-                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
-            }, 50);
-            return bubble;
-        }
+            // Footer buttons
+            wizBack.style.display = step > 0 ? 'block' : 'none';
+            wizNext.style.display = step < 4 ? 'block' : 'none';
+            wizConfirm.style.display = step === 4 ? 'block' : 'none';
 
-        function addUserMessage(text) {
-            const bubble = document.createElement('div');
-            bubble.className = 'chat-bubble chat-bubble-user';
-            bubble.textContent = text;
-            chatMessages.appendChild(bubble);
-            // Smooth scroll to bottom
-            setTimeout(() => {
-                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
-            }, 50);
-        }
+            // Handle pallet-specific UI
+            const wrappingToggle = document.getElementById('wiz-wrapping-toggle');
+            if (wrappingToggle) wrappingToggle.style.display = wiz.packageType === 'pallet' ? 'flex' : 'none';
 
-        function showStepWithTyping(step) {
-            showTyping();
-            setTimeout(() => {
-                showStep(step);
-            }, 600); // Show typing for 600ms
-        }
-
-        function showStep(step) {
-            chatStep = step;
-            updateProgress(step);
-
-            if (step === 0) {
-                // Step 1: Shipment Type
-                const bubble = addBotMessage(`
-                    <span class="chat-icon">🤖</span> What type of shipment?
-                    <div class="chat-options-large">
-                        <div class="chat-option-card" data-type="box" data-label="Box">
-                            <span class="card-icon">📦</span>
-                            <span class="card-label">Box</span>
-                        </div>
-                        <div class="chat-option-card" data-type="pallet" data-label="Pallet">
-                            <span class="card-icon">🎁</span>
-                            <span class="card-label">Pallet</span>
-                        </div>
-                        <div class="chat-option-card" data-type="container" data-label="Container">
-                            <span class="card-icon">🚢</span>
-                            <span class="card-label">Container</span>
-                        </div>
-                    </div>
-                `);
-                bubble.querySelectorAll('.chat-option-card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        shipmentData.type = card.dataset.type;
-                        shipmentData.typeLabel = card.dataset.label;
-                        addUserMessage(card.dataset.label);
-                        setTimeout(() => showStepWithTyping(1), 300);
-                    });
-                });
-
-            } else if (step === 1) {
-                // Step 2: Quantity
-                const typeLabel = shipmentData.typeLabel.toLowerCase() + (shipmentData.type !== 'container' ? 'es' : 's');
-                const bubble = addBotMessage(`
-                    <span class="chat-icon">🤖</span> How many ${typeLabel}?
-                    <div class="chat-options">
-                        <button class="chat-option-btn" data-qty="1">1</button>
-                        <button class="chat-option-btn" data-qty="2-5">2-5</button>
-                        <button class="chat-option-btn" data-qty="6-10">6-10</button>
-                        <button class="chat-option-btn" data-qty="10+">10+</button>
-                    </div>
-                `);
-                bubble.querySelectorAll('.chat-option-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        shipmentData.quantity = btn.dataset.qty;
-                        addUserMessage(btn.dataset.qty);
-                        setTimeout(() => showStepWithTyping(2), 300);
-                    });
-                });
-
-            } else if (step === 2) {
-                // Step 3: Destination
-                const bubble = addBotMessage(`
-                    <span class="chat-icon">🤖</span> Where is it going?
-                    <div class="chat-input-group">
-                        <input type="text" id="dest-name-chat" placeholder="Recipient Name" required>
-                        <input type="text" id="dest-street-chat" placeholder="Street Address" required>
-                        <div class="chat-input-row">
-                            <input type="text" id="dest-city-chat" placeholder="City" required>
-                            <input type="text" id="dest-state-chat" placeholder="State" maxlength="2" required>
-                            <input type="text" id="dest-zip-chat" placeholder="ZIP" required>
-                        </div>
-                        <button class="btn btn-primary btn-next" id="dest-next">Next →</button>
-                    </div>
-                `);
-                document.getElementById('dest-next').addEventListener('click', () => {
-                    const name = document.getElementById('dest-name-chat').value.trim();
-                    const street = document.getElementById('dest-street-chat').value.trim();
-                    const city = document.getElementById('dest-city-chat').value.trim();
-                    const state = document.getElementById('dest-state-chat').value.trim().toUpperCase();
-                    const zip = document.getElementById('dest-zip-chat').value.trim();
-
-                    if (!name || !street || !city || !state || !zip) {
-                        alert('Please fill in all fields');
-                        return;
+            // Set defaults based on package type
+            if (step === 1) {
+                if (wiz.packageType === 'pallet') {
+                    if (wiz.length === 12 && wiz.width === 12 && wiz.height === 12) {
+                        wiz.length = 48; wiz.width = 40; wiz.height = 48; wiz.weight = 500;
+                        document.getElementById('wiz-length').value = 48;
+                        document.getElementById('wiz-width').value = 40;
+                        document.getElementById('wiz-height').value = 48;
+                        document.getElementById('wiz-weight-slider').value = 500;
+                        document.getElementById('wiz-weight-input').value = 500;
                     }
+                }
+                updatePricingDisplay();
+            }
 
-                    shipmentData.destination = { name, street, city, state, zip };
-                    addUserMessage(`${name}, ${city}, ${state}`);
-                    setTimeout(() => showStepWithTyping(3), 300);
-                });
+            // Populate review step
+            if (step === 4) {
+                populateReview();
+                updatePricingDisplay();
+            }
 
-            } else if (step === 3) {
-                // Step 4: Service Speed
-                const bubble = addBotMessage(`
-                    <span class="chat-icon">🤖</span> Delivery speed?
-                    <div class="chat-options">
-                        <button class="chat-option-btn" data-service="standard" data-label="Standard (3-5 days)">
-                            <span class="option-icon">🐢</span>
-                            <span class="option-label">Standard</span>
-                        </button>
-                        <button class="chat-option-btn" data-service="express" data-label="Express (1-2 days)">
-                            <span class="option-icon">🚀</span>
-                            <span class="option-label">Express</span>
-                        </button>
-                        <button class="chat-option-btn" data-service="overnight" data-label="Overnight">
-                            <span class="option-icon">⚡</span>
-                            <span class="option-label">Overnight</span>
-                        </button>
-                    </div>
-                `);
-                bubble.querySelectorAll('.chat-option-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        shipmentData.service = btn.dataset.service;
-                        shipmentData.serviceLabel = btn.dataset.label;
-                        addUserMessage(btn.dataset.label);
-                        setTimeout(() => showStepWithTyping(4), 300);
-                    });
-                });
-
-            } else if (step === 4) {
-                // Step 5: Summary
-                const d = shipmentData.destination;
-                addBotMessage(`
-                    <span class="chat-icon">🤖</span> Review your shipment:
-                    <div class="chat-summary">
-                        <div class="chat-summary-row">
-                            <span class="chat-summary-label">Type</span>
-                            <span class="chat-summary-value">${shipmentData.quantity} ${shipmentData.typeLabel}(s)</span>
-                        </div>
-                        <div class="chat-summary-row">
-                            <span class="chat-summary-label">To</span>
-                            <span class="chat-summary-value">${d.name}</span>
-                        </div>
-                        <div class="chat-summary-row">
-                            <span class="chat-summary-label">Address</span>
-                            <span class="chat-summary-value">${d.street}, ${d.city}, ${d.state} ${d.zip}</span>
-                        </div>
-                        <div class="chat-summary-row">
-                            <span class="chat-summary-label">Service</span>
-                            <span class="chat-summary-value">${shipmentData.serviceLabel}</span>
-                        </div>
-                    </div>
-                `);
-                chatActions.style.display = 'flex';
+            // Track step
+            if (window.MA3PLAnalytics) {
+                const stepNames = ['package_type', 'package_details', 'shipping_zone', 'destination', 'review'];
+                MA3PLAnalytics.track('shipment_wizard_step', { step: step, step_name: stepNames[step] });
             }
         }
 
-        // Edit button - restart
-        document.getElementById('btn-edit').addEventListener('click', () => {
-            resetChat();
-            showStep(0);
+        function populateReview() {
+            document.getElementById('rev-type').textContent = wiz.packageType === 'pallet' ? 'Pallet' : 'Box';
+            document.getElementById('rev-dims').textContent = `${wiz.length}" x ${wiz.width}" x ${wiz.height}"`;
+            document.getElementById('rev-weight').textContent = wiz.weight + ' lbs';
+            document.getElementById('rev-qty').textContent = wiz.quantity;
+            document.getElementById('rev-recipient').textContent = wiz.destination.name || '—';
+            document.getElementById('rev-address').textContent =
+                wiz.destination.street ? `${wiz.destination.street}, ${wiz.destination.city}, ${wiz.destination.state} ${wiz.destination.zip}` : '—';
+            document.getElementById('rev-zone').textContent = getZoneLabel(wiz.shippingZone);
+        }
+
+        // Navigation
+        wizBack.addEventListener('click', () => {
+            if (wizStep > 0) showWizardStep(wizStep - 1);
         });
 
-        // Confirm button - create shipment
-        document.getElementById('btn-confirm').addEventListener('click', async () => {
-            if (!currentUser) {
-                alert('Please log in first');
-                return;
+        wizNext.addEventListener('click', () => {
+            // Validation per step
+            if (wizStep === 0) {
+                if (!wiz.packageType) { alert('Please select a package type'); return; }
+            } else if (wizStep === 1) {
+                wiz.length = parseInt(document.getElementById('wiz-length').value) || 12;
+                wiz.width = parseInt(document.getElementById('wiz-width').value) || 12;
+                wiz.height = parseInt(document.getElementById('wiz-height').value) || 12;
+                wiz.weight = parseInt(document.getElementById('wiz-weight-input').value) || 25;
+                wiz.quantity = parseInt(document.getElementById('wiz-qty').value) || 1;
+            } else if (wizStep === 2) {
+                wiz.notes = document.getElementById('wiz-notes').value;
+            } else if (wizStep === 3) {
+                const name = document.getElementById('wiz-dest-name').value.trim();
+                const street = document.getElementById('wiz-dest-street').value.trim();
+                const city = document.getElementById('wiz-dest-city').value.trim();
+                const state = document.getElementById('wiz-dest-state').value.trim().toUpperCase();
+                const zip = document.getElementById('wiz-dest-zip').value.trim();
+                if (!name || !street || !city || !state || !zip) {
+                    alert('Please fill in all destination fields');
+                    return;
+                }
+                wiz.destination = { name, street, city, state, zip };
             }
+            if (wizStep < 4) showWizardStep(wizStep + 1);
+        });
+
+        // =====================================================
+        // PACKAGE TYPE SELECTION
+        // =====================================================
+        document.querySelectorAll('.pkg-type-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.pkg-type-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                wiz.packageType = card.dataset.type;
+
+                // Track selection
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.track('shipment_package_selected', { type: wiz.packageType });
+                }
+            });
+        });
+
+        // =====================================================
+        // DIMENSION, WEIGHT, QUANTITY INPUTS
+        // =====================================================
+        ['wiz-length', 'wiz-width', 'wiz-height'].forEach(id => {
+            document.getElementById(id).addEventListener('input', (e) => {
+                const field = id.replace('wiz-', '');
+                wiz[field] = parseInt(e.target.value) || 1;
+                updatePricingDisplay();
+            });
+        });
+
+        // Weight slider <-> input sync
+        document.getElementById('wiz-weight-slider').addEventListener('input', (e) => {
+            wiz.weight = parseInt(e.target.value);
+            document.getElementById('wiz-weight-input').value = wiz.weight;
+            updatePricingDisplay();
+        });
+        document.getElementById('wiz-weight-input').addEventListener('input', (e) => {
+            wiz.weight = Math.max(1, Math.min(2000, parseInt(e.target.value) || 1));
+            document.getElementById('wiz-weight-slider').value = Math.min(500, wiz.weight);
+            updatePricingDisplay();
+        });
+
+        // Quantity +/-
+        document.getElementById('wiz-qty-dec').addEventListener('click', () => {
+            wiz.quantity = Math.max(1, wiz.quantity - 1);
+            document.getElementById('wiz-qty').value = wiz.quantity;
+            updatePricingDisplay();
+        });
+        document.getElementById('wiz-qty-inc').addEventListener('click', () => {
+            wiz.quantity = Math.min(1000, wiz.quantity + 1);
+            document.getElementById('wiz-qty').value = wiz.quantity;
+            updatePricingDisplay();
+        });
+        document.getElementById('wiz-qty').addEventListener('input', (e) => {
+            wiz.quantity = Math.max(1, Math.min(1000, parseInt(e.target.value) || 1));
+            updatePricingDisplay();
+        });
+
+        // =====================================================
+        // SHIPPING ZONE SELECTION
+        // =====================================================
+        document.querySelectorAll('.zone-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.zone-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                wiz.shippingZone = card.dataset.zone;
+
+                // Show/hide dropship section
+                const dsSection = document.getElementById('wiz-dropship-section');
+                dsSection.classList.toggle('active', wiz.shippingZone === 'dropship');
+
+                updatePricingDisplay();
+
+                // Track
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.track('shipment_zone_selected', { zone: wiz.shippingZone });
+                }
+            });
+        });
+
+        // Dropship quantity controls
+        document.querySelectorAll('.ds-qty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const size = btn.dataset.ds;
+                const act = btn.dataset.act;
+                if (act === 'inc') wiz.dropShipQty[size] = Math.min(9999, wiz.dropShipQty[size] + 1);
+                else wiz.dropShipQty[size] = Math.max(0, wiz.dropShipQty[size] - 1);
+                document.getElementById('wiz-ds-' + size).value = wiz.dropShipQty[size];
+                updatePricingDisplay();
+            });
+        });
+        ['envelope', 'small', 'medium', 'large'].forEach(size => {
+            document.getElementById('wiz-ds-' + size).addEventListener('input', (e) => {
+                wiz.dropShipQty[size] = Math.max(0, parseInt(e.target.value) || 0);
+                updatePricingDisplay();
+            });
+        });
+
+        // Black wrapping toggle
+        const wrappingToggle = document.getElementById('wiz-wrapping-toggle');
+        const wrappingCheckbox = document.getElementById('wiz-black-wrapping');
+        wrappingToggle.addEventListener('click', (e) => {
+            if (e.target !== wrappingCheckbox) wrappingCheckbox.checked = !wrappingCheckbox.checked;
+            wiz.blackWrapping = wrappingCheckbox.checked;
+            wrappingToggle.classList.toggle('active', wiz.blackWrapping);
+            updatePricingDisplay();
+        });
+
+        // =====================================================
+        // CONFIRM & CREATE SHIPMENT
+        // =====================================================
+        wizConfirm.addEventListener('click', async () => {
+            if (!currentUser) { alert('Please log in first'); return; }
+
+            wizConfirm.disabled = true;
+            wizConfirm.textContent = 'Creating...';
 
             const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
-            const d = shipmentData.destination;
+            const quoteResult = calculateQuote();
+            const d = wiz.destination;
 
             const newShipment = {
                 user_id: currentUser.uid,
@@ -754,23 +1798,32 @@
                     state: 'FL',
                     zip: '33178'
                 },
-                destination: {
-                    name: d.name,
-                    street: d.street,
-                    city: d.city,
-                    state: d.state,
-                    zip: d.zip
-                },
+                destination: { name: d.name, street: d.street, city: d.city, state: d.state, zip: d.zip },
                 package: {
-                    type: shipmentData.type,
-                    quantity: shipmentData.quantity,
-                    weight: 0,
-                    length: 0,
-                    width: 0,
-                    height: 0
+                    type: wiz.packageType,
+                    length: wiz.length,
+                    width: wiz.width,
+                    height: wiz.height,
+                    weight: wiz.weight,
+                    quantity: wiz.quantity,
+                    dim_weight: quoteResult.dimWeight,
+                    billable_weight: quoteResult.billableWeight,
+                    cubic_ft: quoteResult.cubicFt
                 },
-                service_type: shipmentData.service,
-                notes: `Created via chat wizard - ${shipmentData.quantity} ${shipmentData.typeLabel}(s)`,
+                shipping_zone: wiz.shippingZone,
+                black_wrapping: wiz.blackWrapping,
+                dropship_qty: wiz.shippingZone === 'dropship' ? { ...wiz.dropShipQty } : null,
+                quote_estimate: {
+                    storage: quoteResult.storage,
+                    handling: quoteResult.handling,
+                    pick_pack: quoteResult.pickPack,
+                    shipping: quoteResult.shipping,
+                    wrapping: quoteResult.wrapping,
+                    dropship: quoteResult.dropship,
+                    total: quoteResult.total,
+                    storage_days: PRICING.storageDays
+                },
+                notes: wiz.notes || `Wizard shipment: ${wiz.quantity} ${wiz.packageType}(s), Zone: ${getZoneLabel(wiz.shippingZone)}`,
                 status: 'pending',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
@@ -779,35 +1832,151 @@
             try {
                 const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
 
-                // Log billable event
+                // Log billable events (detailed breakdown)
                 try {
-                    const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
-                    const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
-                    const pickpackRate = pricing?.handling?.pickpack || 5.00;
+                    const events = [];
 
-                    await addDoc(collection(db, 'billable_events'), {
+                    // Storage event
+                    events.push({
                         customer_id: currentUser.uid,
-                        event_type: 'shipping',
-                        description: 'Outbound Shipment - ' + trackingNumber,
-                        quantity: shipmentData.quantity || 1,
-                        unit: 'packages',
-                        rate: pickpackRate,
+                        event_type: 'storage',
+                        description: `Storage (${PRICING.storageDays}d) - ${trackingNumber}`,
+                        quantity: wiz.quantity,
+                        unit: wiz.packageType === 'pallet' ? 'pallets' : 'units',
+                        rate: wiz.packageType === 'pallet' ? PRICING.palletStoragePerDay : PRICING.storagePerCubicFtDay,
+                        amount: quoteResult.storage,
                         shipment_id: shipmentRef.id,
                         invoiced: false,
                         created_at: new Date().toISOString(),
                         created_by: currentUser.uid
                     });
+
+                    // Handling event
+                    events.push({
+                        customer_id: currentUser.uid,
+                        event_type: 'handling',
+                        description: `Handling - ${trackingNumber}`,
+                        quantity: wiz.quantity,
+                        unit: wiz.packageType === 'pallet' ? 'pallets' : 'units',
+                        rate: wiz.packageType === 'pallet' ? PRICING.palletHandling : PRICING.handlingFee,
+                        amount: quoteResult.handling,
+                        shipment_id: shipmentRef.id,
+                        invoiced: false,
+                        created_at: new Date().toISOString(),
+                        created_by: currentUser.uid
+                    });
+
+                    // Pick & pack event
+                    events.push({
+                        customer_id: currentUser.uid,
+                        event_type: 'pick_pack',
+                        description: `Pick & Pack - ${trackingNumber}`,
+                        quantity: wiz.quantity,
+                        unit: wiz.packageType === 'pallet' ? 'pallets' : 'items',
+                        rate: wiz.packageType === 'pallet' ? PRICING.palletPickPack : PRICING.pickAndPack,
+                        amount: quoteResult.pickPack,
+                        shipment_id: shipmentRef.id,
+                        invoiced: false,
+                        created_at: new Date().toISOString(),
+                        created_by: currentUser.uid
+                    });
+
+                    // Shipping event
+                    if (quoteResult.shipping > 0) {
+                        events.push({
+                            customer_id: currentUser.uid,
+                            event_type: 'shipping',
+                            description: `Shipping (${getZoneLabel(wiz.shippingZone)}) - ${trackingNumber}`,
+                            quantity: wiz.quantity,
+                            unit: 'packages',
+                            rate: PRICING.shippingZones[wiz.shippingZone],
+                            amount: quoteResult.shipping,
+                            shipment_id: shipmentRef.id,
+                            invoiced: false,
+                            created_at: new Date().toISOString(),
+                            created_by: currentUser.uid
+                        });
+                    }
+
+                    // Black wrapping event
+                    if (quoteResult.wrapping > 0) {
+                        events.push({
+                            customer_id: currentUser.uid,
+                            event_type: 'wrapping',
+                            description: `Black Wrapping - ${trackingNumber}`,
+                            quantity: wiz.quantity,
+                            unit: 'pallets',
+                            rate: PRICING.blackWrapping,
+                            amount: quoteResult.wrapping,
+                            shipment_id: shipmentRef.id,
+                            invoiced: false,
+                            created_at: new Date().toISOString(),
+                            created_by: currentUser.uid
+                        });
+                    }
+
+                    // Dropship event
+                    if (quoteResult.dropship > 0) {
+                        events.push({
+                            customer_id: currentUser.uid,
+                            event_type: 'dropship',
+                            description: `Drop Ship - ${trackingNumber}`,
+                            quantity: 1,
+                            unit: 'shipment',
+                            rate: quoteResult.dropship,
+                            amount: quoteResult.dropship,
+                            shipment_id: shipmentRef.id,
+                            invoiced: false,
+                            created_at: new Date().toISOString(),
+                            created_by: currentUser.uid
+                        });
+                    }
+
+                    // Write all billing events
+                    for (const ev of events) {
+                        await addDoc(collection(db, 'billable_events'), ev);
+                    }
                 } catch (billingErr) {
-                    console.warn('Chat shipment created but billing event failed:', billingErr.message);
+                    console.warn('Billing events failed:', billingErr.message);
                 }
 
-                closeChat();
-                alert('Shipment created! Tracking #: ' + trackingNumber);
-                loadShipments();
+                // GA4 tracking
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.track('shipment_created', {
+                        method: 'wizard',
+                        tracking_number: trackingNumber,
+                        package_type: wiz.packageType,
+                        quantity: wiz.quantity,
+                        shipping_zone: wiz.shippingZone,
+                        has_wrapping: wiz.blackWrapping,
+                        currency: 'USD',
+                        value: quoteResult.total
+                    });
+                    MA3PLAnalytics.track('purchase', {
+                        transaction_id: trackingNumber,
+                        currency: 'USD',
+                        value: quoteResult.total,
+                        items: [{
+                            item_name: wiz.packageType + ' shipment',
+                            quantity: wiz.quantity,
+                            price: quoteResult.total
+                        }]
+                    });
+                }
+
+                // Show success
+                document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+                document.getElementById('success-tracking').textContent = trackingNumber;
+                document.getElementById('wizard-success').classList.add('active');
+                wizardFooter.style.display = 'none';
+
             } catch (error) {
                 alert('Error creating shipment: ' + error.message);
+                wizConfirm.disabled = false;
+                wizConfirm.textContent = 'Confirm & Create Shipment';
             }
         });
+
     </script>
     <script src="../js/column-prefs.js"></script>
     <script src="../js/main.js"></script>
