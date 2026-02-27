@@ -892,6 +892,11 @@
             emptyState.style.display = 'none';
             tableWrap.style.display = '';
 
+            const esc = str => {
+                if (str === null || str === undefined) return '';
+                return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+            };
+
             tbody.innerHTML = filtered.map(req => {
                 const shortId = req.id.substring(0, 8).toUpperCase();
                 const typeIcon = req.service_type === 'pickup' ? '🚛' : '📦';
@@ -906,13 +911,13 @@
                 return `
                     <tr class="${isNew ? 'new-row' : ''}">
                         <td><strong>#${shortId}</strong></td>
-                        <td>${customer}</td>
+                        <td>${esc(customer)}</td>
                         <td>${typeIcon} ${typeLabel}</td>
                         <td>${req.pallet_count}</td>
-                        <td>${date}</td>
-                        <td>${addr}</td>
+                        <td>${esc(date)}</td>
+                        <td>${esc(addr)}</td>
                         <td><strong>$${total.toFixed(2)}</strong></td>
-                        <td><span class="status-badge status-${status}">${status.replace('_', ' ')}</span></td>
+                        <td><span class="status-badge status-${esc(status)}">${esc(status.replace('_', ' '))}</span></td>
                         <td>
                             <button class="action-btn action-btn-view" onclick="openDetail('${req.id}')">👁 View</button>
                         </td>

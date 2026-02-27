@@ -721,6 +721,12 @@
             }
         }
 
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
         // Render contracts table
         function renderContractsTable(contracts) {
             const tbody = document.getElementById('contracts-tbody');
@@ -737,12 +743,12 @@
                 const statusLabel = (c.status || 'draft').charAt(0).toUpperCase() + (c.status || 'draft').slice(1);
 
                 return `<tr>
-                    <td><strong>${c.contractNumber || 'N/A'}</strong></td>
-                    <td>${c.clientName || 'Unknown'}</td>
+                    <td><strong>${escapeHTML(c.contractNumber || 'N/A')}</strong></td>
+                    <td>${escapeHTML(c.clientName || 'Unknown')}</td>
                     <td>${startDate}</td>
                     <td>${endDate}</td>
-                    <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
-                    <td>$${c.monthlyMin || '0'}</td>
+                    <td><span class="status-pill ${escapeHTML(statusClass)}">${escapeHTML(statusLabel)}</span></td>
+                    <td>$${escapeHTML(String(c.monthlyMin || '0'))}</td>
                     <td>
                         <button class="action-btn" onclick="window.open('../contract-template.html', '_blank')">View Template</button>
                         <button class="action-btn" onclick="deleteContract('${c.id}')">Delete</button>
@@ -800,7 +806,7 @@
                 startDate: startDate ? Timestamp.fromDate(new Date(startDate)) : null,
                 endDate: endDate,
                 termMonths: termMonths,
-                monthlyMin: document.getElementById('new-monthly-min').value || '500',
+                monthlyMin: parseFloat(document.getElementById('new-monthly-min').value) || 500,
                 status: document.getElementById('new-status').value,
                 notes: document.getElementById('new-notes').value,
                 createdAt: Timestamp.now(),

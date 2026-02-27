@@ -309,7 +309,8 @@ class QuoteCalculator {
           let dropship = 0;
 
           if (this.packageType === "pallet") {
-            storage = PRICING.palletStoragePerDay * this.storageDays * this.quantity;
+            storage =
+              PRICING.palletStoragePerDay * this.storageDays * this.quantity;
             handling = PRICING.palletHandling * this.quantity;
             pickPack = PRICING.palletPickPack * this.quantity;
             if (this.shippingZone === "dropship") {
@@ -846,7 +847,7 @@ class QuoteCalculator {
     // Remove after 4 seconds
     setTimeout(() => {
       toast.classList.remove("show");
-      setTimeout(() => toast.remove(), 300);
+      setTimeout(() => toast.remove(), 500);
     }, 4000);
   }
 }

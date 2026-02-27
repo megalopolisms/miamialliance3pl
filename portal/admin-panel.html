@@ -1722,27 +1722,33 @@
             }
         };
 
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
         window.viewShipmentDetail = function(shipmentId) {
             const s = allShipments.find(s => s.id === shipmentId);
             if (!s) return;
             const user = usersMap[s.user_id] || {};
             const html = `
                 <div style="display: grid; gap: var(--spacing-md);">
-                    <div><strong>Tracking #:</strong> ${s.tracking_number || 'N/A'}</div>
-                    <div><strong>Customer:</strong> ${user.company_name || user.name || user.email || 'Unknown'}</div>
-                    <div><strong>Status:</strong> <span class="badge badge-${s.status}">${(s.status || 'pending').replace(/_/g, ' ')}</span></div>
-                    <div><strong>Origin:</strong> ${s.origin ? `${s.origin.address || ''}, ${s.origin.city || ''}, ${s.origin.state || ''} ${s.origin.zip || ''}` : 'N/A'}</div>
-                    <div><strong>Destination:</strong> ${s.destination ? `${s.destination.address || ''}, ${s.destination.city || ''}, ${s.destination.state || ''} ${s.destination.zip || ''}` : 'N/A'}</div>
-                    <div><strong>Pallets:</strong> ${s.pallets || 'N/A'}</div>
-                    <div><strong>Weight:</strong> ${s.weight ? s.weight + ' lbs' : 'N/A'}</div>
+                    <div><strong>Tracking #:</strong> ${escapeHTML(s.tracking_number || 'N/A')}</div>
+                    <div><strong>Customer:</strong> ${escapeHTML(user.company_name || user.name || user.email || 'Unknown')}</div>
+                    <div><strong>Status:</strong> <span class="badge badge-${escapeHTML(s.status)}">${escapeHTML((s.status || 'pending').replace(/_/g, ' '))}</span></div>
+                    <div><strong>Origin:</strong> ${s.origin ? `${escapeHTML(s.origin.address || '')}, ${escapeHTML(s.origin.city || '')}, ${escapeHTML(s.origin.state || '')} ${escapeHTML(s.origin.zip || '')}` : 'N/A'}</div>
+                    <div><strong>Destination:</strong> ${s.destination ? `${escapeHTML(s.destination.address || '')}, ${escapeHTML(s.destination.city || '')}, ${escapeHTML(s.destination.state || '')} ${escapeHTML(s.destination.zip || '')}` : 'N/A'}</div>
+                    <div><strong>Pallets:</strong> ${escapeHTML(s.pallets || 'N/A')}</div>
+                    <div><strong>Weight:</strong> ${s.weight ? escapeHTML(s.weight) + ' lbs' : 'N/A'}</div>
                     <div><strong>Est. Cost:</strong> ${s.estimated_cost ? '$' + parseFloat(s.estimated_cost).toFixed(2) : 'N/A'}</div>
-                    <div><strong>Services:</strong> ${s.services ? (Array.isArray(s.services) ? s.services.join(', ') : s.services) : 'N/A'}</div>
-                    <div><strong>Notes:</strong> ${s.notes || s.special_instructions || 'None'}</div>
+                    <div><strong>Services:</strong> ${s.services ? (Array.isArray(s.services) ? escapeHTML(s.services.join(', ')) : escapeHTML(s.services)) : 'N/A'}</div>
+                    <div><strong>Notes:</strong> ${escapeHTML(s.notes || s.special_instructions || 'None')}</div>
                     <div><strong>Created:</strong> ${s.created_at ? new Date(s.created_at).toLocaleString() : 'N/A'}</div>
-                    ${s.packing_list ? `<div><strong>Packing List:</strong> <span style="color: var(--color-accent); font-weight: 600;">📋 ${s.packing_list.filename || 'Uploaded'}</span> <span style="color: var(--color-gray-500); font-size: 0.8rem;">(${s.packing_list.file_size ? formatFileSize(s.packing_list.file_size) : ''})</span></div>` : (s.packing_list_url ? `<div><strong>Packing List:</strong> <a href="${s.packing_list_url}" target="_blank" style="color: var(--color-accent);">View Document</a></div>` : '')}
-                    ${s.commercial_invoice ? `<div><strong>Invoice:</strong> <span style="color: var(--color-accent); font-weight: 600;">🧾 ${s.commercial_invoice.filename || 'Uploaded'}</span> <span style="color: var(--color-gray-500); font-size: 0.8rem;">(${s.commercial_invoice.file_size ? formatFileSize(s.commercial_invoice.file_size) : ''})</span></div>` : (s.invoice_url ? `<div><strong>Invoice:</strong> <a href="${s.invoice_url}" target="_blank" style="color: var(--color-accent);">View Document</a></div>` : '')}
+                    ${s.packing_list ? `<div><strong>Packing List:</strong> <span style="color: var(--color-accent); font-weight: 600;">📋 ${escapeHTML(s.packing_list.filename || 'Uploaded')}</span> <span style="color: var(--color-gray-500); font-size: 0.8rem;">(${s.packing_list.file_size ? formatFileSize(s.packing_list.file_size) : ''})</span></div>` : (s.packing_list_url ? `<div><strong>Packing List:</strong> <a href="${escapeHTML(s.packing_list_url)}" target="_blank" style="color: var(--color-accent);">View Document</a></div>` : '')}
+                    ${s.commercial_invoice ? `<div><strong>Invoice:</strong> <span style="color: var(--color-accent); font-weight: 600;">🧾 ${escapeHTML(s.commercial_invoice.filename || 'Uploaded')}</span> <span style="color: var(--color-gray-500); font-size: 0.8rem;">(${s.commercial_invoice.file_size ? formatFileSize(s.commercial_invoice.file_size) : ''})</span></div>` : (s.invoice_url ? `<div><strong>Invoice:</strong> <a href="${escapeHTML(s.invoice_url)}" target="_blank" style="color: var(--color-accent);">View Document</a></div>` : '')}
                 </div>`;
-            openModal('Shipment ' + (s.tracking_number || s.id.slice(0, 8)), html);
+            openModal('Shipment ' + escapeHTML(s.tracking_number || s.id.slice(0, 8)), html);
         };
 
         // ===== RENDER PICKUPS =====

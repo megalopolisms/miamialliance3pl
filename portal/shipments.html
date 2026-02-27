@@ -102,6 +102,16 @@
             border-right: 1px solid var(--color-gray-200, #e5e7eb);
             padding: var(--spacing-lg, 24px);
         }
+        @media (max-width: 992px) {
+            .calc-modal-body .quote-tool {
+                grid-template-columns: 1fr;
+            }
+            .calc-modal-body .quote-controls {
+                max-height: none;
+                border-right: none;
+                border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+            }
+        }
 
         /* 3D Canvas Panel (RIGHT side — same as quote.html) */
         .calc-canvas-wrapper {
