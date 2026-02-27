@@ -388,6 +388,8 @@ ul {
   top: calc(70px + var(--banner-height, 0px));
   left: 0;
   right: 0;
+  max-height: calc(100vh - 70px - var(--banner-height, 0px));
+  overflow-y: auto;
   background-color: var(--color-white);
   padding: var(--spacing-md);
   display: flex;
@@ -455,6 +457,8 @@ ul {
     opacity: 1;
     visibility: visible;
     background: transparent;
+    max-height: none;
+    overflow-y: visible;
   }
 
   .nav-menu .btn.btn-outline {
@@ -1437,6 +1441,7 @@ ul {
   /* Nav menu improvements */
   .nav-menu {
     padding: var(--spacing-lg);
+    padding-bottom: calc(var(--spacing-lg) + var(--spacing-md));
   }
 
   .nav-link {
