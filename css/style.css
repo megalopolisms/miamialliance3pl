@@ -419,6 +419,26 @@ ul {
   color: var(--color-accent);
 }
 
+/* Customer Portal button — mobile dropdown CTA */
+.nav-menu .btn.btn-outline {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  background-color: var(--color-accent);
+  color: var(--color-white);
+  border-color: var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.5rem;
+  margin-top: var(--spacing-xs);
+  font-weight: 700;
+  text-align: center;
+}
+
+.nav-menu .btn.btn-outline:hover {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
 @media (min-width: 768px) {
   .nav-toggle {
     display: none;
@@ -437,8 +457,21 @@ ul {
     background: transparent;
   }
 
-  .nav-menu .btn-outline {
+  .nav-menu .btn.btn-outline {
+    display: inline-flex;
+    width: auto;
+    background-color: transparent;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
     padding: 0.5rem 1rem;
+    margin-top: 0;
+    font-weight: 600;
+  }
+
+  .nav-menu .btn.btn-outline:hover {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border-color: var(--color-primary);
   }
 }
 
