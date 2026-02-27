@@ -1323,10 +1323,17 @@
             set('sc-r-dropship', fmt(q.dropship));
             set('sc-r-total', fmt(q.total));
 
+            // Show/hide wrapping row (pallet + option selected) — same as quote.html
             const wrappingRow = document.getElementById('sc-r-wrapping-row');
             if (wrappingRow) wrappingRow.style.display = (sc.packageType === 'pallet' && sc.blackWrapping) ? 'flex' : 'none';
+
+            // Show/hide drop ship row — same as quote.html
             const dropshipRow = document.getElementById('sc-r-dropship-row');
             if (dropshipRow) dropshipRow.style.display = (sc.shippingZone === 'dropship' && q.dropship > 0) ? 'flex' : 'none';
+
+            // Show/hide shipping row (hide when no shipping or dropship) — same as quote.html
+            const shippingRow = document.getElementById('sc-r-shipping-row');
+            if (shippingRow) shippingRow.style.display = (sc.shippingZone === 'none' || sc.shippingZone === 'dropship') ? 'none' : 'flex';
 
             // Sync 3D viewer (same as quote.html)
             if (viewer3D && viewer3D.active) {
