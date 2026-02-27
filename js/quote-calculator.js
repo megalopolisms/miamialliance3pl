@@ -4,27 +4,33 @@
  * Includes PDF quote generation with company branding
  */
 
-const PRICING = {
-  dimensionalFactor: 139, // DIM factor for domestic shipping
-  storagePerCubicFtDay: 0.025, // $/cubic ft/day
-  handlingFee: 3.5, // $ per unit
-  pickAndPack: 1.25, // $ per item
-  palletStoragePerDay: 0.75, // $/pallet/day
-  blackWrapping: 7.0, // $ per pallet - added by Master Jorge
-  shippingZones: {
-    local: 0.45, // $/lb - Florida
-    regional: 0.65, // $/lb - Southeast
-    national: 0.85, // $/lb - National
-    none: 0, // No shipping required
-    dropship: 0, // Drop ship - charged by unit box size
-  },
-  dropShipRates: {
-    envelope: 1.5, // $/unit - Envelopes
-    small: 3.0, // $/unit - Small Box
-    medium: 5.0, // $/unit - Medium Box
-    large: 20.0, // $/unit - Large Box
-  },
-};
+const PRICING = window.MA3PLQuoteEngine
+  ? window.MA3PLQuoteEngine.PRICING
+  : {
+      dimensionalFactor: 139,
+      storagePerCubicFtDay: 0.025,
+      handlingFee: 3.5,
+      pickAndPack: 1.25,
+      palletStoragePerDay: 0.75,
+      palletHandling: 15.0,
+      palletPickPack: 5.0,
+      blackWrapping: 7.0,
+      storageDays: 30,
+      minStorage: 5.0,
+      shippingZones: {
+        local: 0.45,
+        regional: 0.65,
+        national: 0.85,
+        none: 0,
+        dropship: 0,
+      },
+      dropShipRates: {
+        envelope: 1.5,
+        small: 3.0,
+        medium: 5.0,
+        large: 20.0,
+      },
+    };
 
 const COMPANY_INFO = {
   name: "MIAMI ALLIANCE 3PL",
@@ -157,10 +163,11 @@ class QuoteCalculator {
 
     // Quantity controls
     const qtyInput = document.getElementById("quantity-input");
-    const qtyBtns = document.querySelectorAll(".qty-btn");
+    const qtyBtns = document.querySelectorAll(".quantity-controls .qty-btn");
 
     qtyBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
         if (btn.dataset.action === "increase") {
           this.quantity = Math.min(1000, this.quantity + 1);
         } else {
@@ -251,92 +258,117 @@ class QuoteCalculator {
   }
 
   getCubicFeet() {
+    if (window.MA3PLQuoteEngine) {
+      return window.MA3PLQuoteEngine.getCubicFeet(this.dimensions);
+    }
     const { length, width, height } = this.dimensions;
-    return (length * width * height) / 1728; // cubic inches to cubic feet
+    return (length * width * height) / 1728;
   }
 
   getDimensionalWeight() {
+    if (window.MA3PLQuoteEngine) {
+      return window.MA3PLQuoteEngine.getDimensionalWeight(this.dimensions);
+    }
     const { length, width, height } = this.dimensions;
     return (length * width * height) / PRICING.dimensionalFactor;
   }
 
   getBillableWeight() {
+    if (window.MA3PLQuoteEngine) {
+      return window.MA3PLQuoteEngine.getBillableWeight(
+        this.weight,
+        this.dimensions,
+      );
+    }
     return Math.max(this.weight, this.getDimensionalWeight());
   }
 
   calculate() {
-    const cubicFt = this.getCubicFeet();
-    const dimWeight = this.getDimensionalWeight();
-    const billableWeight = this.getBillableWeight();
+    const estimateInput = {
+      packageType: this.packageType,
+      dimensions: this.dimensions,
+      weight: this.weight,
+      quantity: this.quantity,
+      shippingZone: this.shippingZone,
+      storageDays: this.storageDays,
+      blackWrapping: this.blackWrapping,
+      dropShipQty: this.dropShipQty,
+    };
 
-    let storage,
-      handling,
-      pickPack,
-      shipping,
-      wrapping = 0,
-      dropship = 0;
+    const result = window.MA3PLQuoteEngine
+      ? window.MA3PLQuoteEngine.calculateEstimate(estimateInput)
+      : (() => {
+          const cubicFt = this.getCubicFeet();
+          const dimWeight = this.getDimensionalWeight();
+          const billableWeight = this.getBillableWeight();
+          let storage = 0;
+          let handling = 0;
+          let pickPack = 0;
+          let shipping = 0;
+          let wrapping = 0;
+          let dropship = 0;
 
-    if (this.packageType === "pallet") {
-      // Pallet pricing
-      storage = PRICING.palletStoragePerDay * this.storageDays * this.quantity;
-      handling = 15.0 * this.quantity; // Higher handling for pallets
-      pickPack = 5.0 * this.quantity; // Higher pick/pack for pallets
-      // Shipping based on zone type
-      if (this.shippingZone === "none") {
-        shipping = 0;
-      } else if (this.shippingZone === "dropship") {
-        shipping = 0;
-        dropship = this.calculateDropShipTotal();
-      } else {
-        shipping =
-          billableWeight *
-          PRICING.shippingZones[this.shippingZone] *
-          this.quantity;
-      }
-      // Black wrapping option - $7/pallet (added by Master Jorge)
-      if (this.blackWrapping) {
-        wrapping = PRICING.blackWrapping * this.quantity;
-      }
-    } else {
-      // Box pricing
-      storage =
-        cubicFt *
-        PRICING.storagePerCubicFtDay *
-        this.storageDays *
-        this.quantity;
-      handling = PRICING.handlingFee * this.quantity;
-      pickPack = PRICING.pickAndPack * this.quantity;
-      // Shipping based on zone type
-      if (this.shippingZone === "none") {
-        shipping = 0;
-      } else if (this.shippingZone === "dropship") {
-        shipping = 0;
-        dropship = this.calculateDropShipTotal();
-      } else {
-        shipping =
-          billableWeight *
-          PRICING.shippingZones[this.shippingZone] *
-          this.quantity;
-      }
-    }
+          if (this.packageType === "pallet") {
+            storage = PRICING.palletStoragePerDay * this.storageDays * this.quantity;
+            handling = PRICING.palletHandling * this.quantity;
+            pickPack = PRICING.palletPickPack * this.quantity;
+            if (this.shippingZone === "dropship") {
+              dropship = this.calculateDropShipTotal();
+            } else if (this.shippingZone !== "none") {
+              shipping =
+                billableWeight *
+                PRICING.shippingZones[this.shippingZone] *
+                this.quantity;
+            }
+            if (this.blackWrapping) {
+              wrapping = PRICING.blackWrapping * this.quantity;
+            }
+          } else {
+            storage =
+              cubicFt *
+              PRICING.storagePerCubicFtDay *
+              this.storageDays *
+              this.quantity;
+            handling = PRICING.handlingFee * this.quantity;
+            pickPack = PRICING.pickAndPack * this.quantity;
+            if (this.shippingZone === "dropship") {
+              dropship = this.calculateDropShipTotal();
+            } else if (this.shippingZone !== "none") {
+              shipping =
+                billableWeight *
+                PRICING.shippingZones[this.shippingZone] *
+                this.quantity;
+            }
+          }
 
-    // Minimum storage charge
-    storage = Math.max(storage, 5.0);
-
-    const total =
-      storage + handling + pickPack + shipping + wrapping + dropship;
+          storage = Math.max(storage, PRICING.minStorage || 5.0);
+          const total =
+            storage + handling + pickPack + shipping + wrapping + dropship;
+          return {
+            cubicFt,
+            dimWeight,
+            billableWeight,
+            storage,
+            handling,
+            pickPack,
+            shipping,
+            wrapping,
+            dropship,
+            total,
+          };
+        })();
 
     // Update UI
     this.updateDisplay({
-      dimWeight: dimWeight.toFixed(1),
-      cubicFt: cubicFt.toFixed(1),
-      storage: storage,
-      handling: handling,
-      pickPack: pickPack,
-      shipping: shipping,
-      wrapping: wrapping,
-      dropship: dropship,
-      total: total,
+      dimWeight: result.dimWeight.toFixed(1),
+      cubicFt: result.cubicFt.toFixed(1),
+      storage: result.storage,
+      handling: result.handling,
+      pickPack: result.pickPack,
+      shipping: result.shipping,
+      wrapping: result.wrapping,
+      dropship: result.dropship,
+      total: result.total,
     });
 
     // Track quote calculation (debounced)
@@ -346,13 +378,21 @@ class QuoteCalculator {
           this.packageType,
           `${this.dimensions.length}x${this.dimensions.width}x${this.dimensions.height}`,
           this.quantity,
-          total,
+          result.total,
         );
         this._calcDebounce = null;
       }, 2000);
     }
 
-    return { storage, handling, pickPack, shipping, wrapping, dropship, total };
+    return {
+      storage: result.storage,
+      handling: result.handling,
+      pickPack: result.pickPack,
+      shipping: result.shipping,
+      wrapping: result.wrapping,
+      dropship: result.dropship,
+      total: result.total,
+    };
   }
 
   updateDisplay(values) {
