@@ -294,7 +294,10 @@
             border-radius: var(--radius-md);
             padding: 20px;
             margin-bottom: 24px;
+        }
+        .price-display .price-header {
             text-align: center;
+            margin-bottom: 12px;
         }
         .price-display .price-label {
             font-size: 0.85rem;
@@ -309,9 +312,43 @@
             color: #0f766e;
             margin: 4px 0;
         }
-        .price-display .price-breakdown {
-            font-size: 0.82rem;
+        .price-breakdown-table {
+            width: 100%;
+            border-top: 1px dashed #99f6e4;
+            padding-top: 12px;
+            margin-top: 4px;
+        }
+        .price-breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.88rem;
+            color: #475569;
+        }
+        .price-breakdown-row.total-row {
+            border-top: 2px solid #0d9488;
+            margin-top: 6px;
+            padding-top: 8px;
+            font-weight: 700;
+            color: #0f766e;
+            font-size: 1rem;
+        }
+        .price-breakdown-row .breakdown-label {
             color: #64748b;
+        }
+        .price-breakdown-row .breakdown-value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .price-breakdown-row.total-row .breakdown-value {
+            color: #0f766e;
+        }
+        .price-rate-info {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
         }
 
         /* Form Groups */
@@ -649,6 +686,9 @@
                 <a href="billing.html" class="portal-nav-item">
                     <span aria-hidden="true">💵</span> <span>Billing</span>
                 </a>
+                <a href="contracts.html" class="portal-nav-item">
+                    <span aria-hidden="true">📄</span> <span>Contracts</span>
+                </a>
                 <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true">Staff</div>
                     <a href="customers.html" class="portal-nav-item">
@@ -660,7 +700,9 @@
                 </div>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true">Admin</div>
-                    <a href="admin-pickups.html" class="portal-nav-item">
+                    <a href="admin-panel.html" class="portal-nav-item">
+                        <span>🛡️</span> <span>Admin Control Panel</span>
+                    </a>                    <a href="admin-pickups.html" class="portal-nav-item">
                         <span aria-hidden="true">🚛</span> <span>All Pickup Requests</span>
                     </a>
                     <a href="admin-billing.html" class="portal-nav-item"><span>📝</span> <span>Activity Billing</span></a>
@@ -780,9 +822,25 @@
 
                         <!-- Price Display -->
                         <div class="price-display">
-                            <div class="price-label">Estimated Cost</div>
-                            <div class="price-amount" id="price-amount">$120.00</div>
-                            <div class="price-breakdown" id="price-breakdown">Base rate: $120.00 for 1 pallet</div>
+                            <div class="price-header">
+                                <div class="price-label">Estimated Cost</div>
+                                <div class="price-amount" id="price-amount">$120.00</div>
+                            </div>
+                            <div class="price-breakdown-table" id="price-breakdown">
+                                <div class="price-breakdown-row">
+                                    <span class="breakdown-label">Base rate (1st pallet)</span>
+                                    <span class="breakdown-value" id="breakdown-base">$120.00</span>
+                                </div>
+                                <div class="price-breakdown-row" id="breakdown-extra-row" style="display: none;">
+                                    <span class="breakdown-label" id="breakdown-extra-label">Additional pallets (0 x $30.00)</span>
+                                    <span class="breakdown-value" id="breakdown-extra-value">$0.00</span>
+                                </div>
+                                <div class="price-breakdown-row total-row">
+                                    <span class="breakdown-label">Total</span>
+                                    <span class="breakdown-value" id="breakdown-total">$120.00</span>
+                                </div>
+                            </div>
+                            <div class="price-rate-info">Rate: $120 for 1st pallet + $30 per additional pallet (max 8)</div>
                         </div>
 
                         <div class="step-actions">
@@ -975,6 +1033,18 @@
                             </div>
                         </div>
 
+                        <div class="summary-card">
+                            <h4>Cost Breakdown</h4>
+                            <div class="summary-row">
+                                <span class="label">Base rate (1st pallet)</span>
+                                <span class="value" id="sum-base">$120.00</span>
+                            </div>
+                            <div class="summary-row" id="sum-extra-row" style="display: none;">
+                                <span class="label" id="sum-extra-label">Additional pallets</span>
+                                <span class="value" id="sum-extra-value">$0.00</span>
+                            </div>
+                        </div>
+
                         <div class="summary-total">
                             <div class="total-label">Total Estimated Cost</div>
                             <div class="total-amount" id="sum-total">$120.00</div>
@@ -1010,7 +1080,8 @@
         // Pricing defaults (can be overridden by admin settings)
         let PRICING = {
             basePallet: 120,    // $120 for 1 pallet
-            extraPallet: 30     // $30 per additional pallet (up to 8)
+            extraPallet: 30,    // $30 per additional pallet
+            maxPallets: 8       // max pallets per request (admin-configurable)
         };
 
         // Make functions globally available
@@ -1092,10 +1163,22 @@
                 if (settings) {
                     PRICING.basePallet = settings.basePallet || 120;
                     PRICING.extraPallet = settings.extraPallet || 30;
+                    PRICING.maxPallets = settings.maxPallets || 8;
                 }
             } catch (e) {
                 console.log('[Pickups] Using default pricing');
             }
+
+            // Apply max pallets to slider and label
+            const slider = document.getElementById('pallet-slider');
+            if (slider) {
+                slider.max = PRICING.maxPallets;
+            }
+            const palletLabel = document.querySelector('.pallet-selector label');
+            if (palletLabel) {
+                palletLabel.textContent = `Number of Pallets (1-${PRICING.maxPallets})`;
+            }
+
             updatePrice();
         }
 
@@ -1107,17 +1190,27 @@
 
         function updatePrice() {
             const total = calculatePrice(palletCount);
-            const priceEl = document.getElementById('price-amount');
-            const breakdownEl = document.getElementById('price-breakdown');
+            const extraCount = Math.max(0, palletCount - 1);
+            const extraCost = extraCount * PRICING.extraPallet;
 
-            priceEl.textContent = `$${total.toFixed(2)}`;
+            // Update main price amount
+            document.getElementById('price-amount').textContent = `$${total.toFixed(2)}`;
 
-            if (palletCount === 1) {
-                breakdownEl.textContent = `Base rate: $${PRICING.basePallet.toFixed(2)} for 1 pallet`;
+            // Update breakdown: base rate
+            document.getElementById('breakdown-base').textContent = `$${PRICING.basePallet.toFixed(2)}`;
+
+            // Update breakdown: additional pallets row
+            const extraRow = document.getElementById('breakdown-extra-row');
+            if (extraCount > 0) {
+                extraRow.style.display = '';
+                document.getElementById('breakdown-extra-label').textContent = `Additional pallets (${extraCount} x $${PRICING.extraPallet.toFixed(2)})`;
+                document.getElementById('breakdown-extra-value').textContent = `$${extraCost.toFixed(2)}`;
             } else {
-                const extra = (palletCount - 1) * PRICING.extraPallet;
-                breakdownEl.textContent = `$${PRICING.basePallet.toFixed(2)} (1st pallet) + $${extra.toFixed(2)} (${palletCount - 1} extra × $${PRICING.extraPallet.toFixed(2)})`;
+                extraRow.style.display = 'none';
             }
+
+            // Update breakdown: total
+            document.getElementById('breakdown-total').textContent = `$${total.toFixed(2)}`;
         }
 
         // ============================================================
@@ -1143,19 +1236,21 @@
         // PALLET COUNT
         // ============================================================
         function adjustPallets(delta) {
-            const newCount = Math.max(1, Math.min(8, palletCount + delta));
+            const max = PRICING.maxPallets || 8;
+            const newCount = Math.max(1, Math.min(max, palletCount + delta));
             updatePallets(newCount);
         }
 
         function updatePallets(count) {
+            const max = PRICING.maxPallets || 8;
             palletCount = parseInt(count) || 1;
-            palletCount = Math.max(1, Math.min(8, palletCount));
+            palletCount = Math.max(1, Math.min(max, palletCount));
 
             document.getElementById('pallet-count').textContent = palletCount;
             document.getElementById('pallet-slider').value = palletCount;
 
             // Update slider fill
-            const pct = ((palletCount - 1) / 7) * 100;
+            const pct = ((palletCount - 1) / Math.max(1, max - 1)) * 100;
             document.getElementById('pallet-slider').style.setProperty('--pallet-pct', pct + '%');
 
             updatePrice();
@@ -1314,7 +1409,22 @@
 
             document.getElementById('sum-file').textContent = uploadedFile ? `${uploadedFile.name} (${formatFileSize(uploadedFile.size)})` : 'No file uploaded';
 
+            // Pricing breakdown in summary
             const total = calculatePrice(palletCount);
+            const extraCount = Math.max(0, palletCount - 1);
+            const extraCost = extraCount * PRICING.extraPallet;
+
+            document.getElementById('sum-base').textContent = `$${PRICING.basePallet.toFixed(2)}`;
+
+            const sumExtraRow = document.getElementById('sum-extra-row');
+            if (extraCount > 0) {
+                sumExtraRow.style.display = '';
+                document.getElementById('sum-extra-label').textContent = `Additional pallets (${extraCount} x $${PRICING.extraPallet.toFixed(2)})`;
+                document.getElementById('sum-extra-value').textContent = `$${extraCost.toFixed(2)}`;
+            } else {
+                sumExtraRow.style.display = 'none';
+            }
+
             document.getElementById('sum-total').textContent = `$${total.toFixed(2)}`;
         }
 
@@ -1528,5 +1638,7 @@
     <script type="module">
         import '../js/portal.js';
     </script>
+    <script src="../js/lang/es.js"></script>
+    <script src="../js/i18n.js"></script>
 </body>
 </html>
