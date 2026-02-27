@@ -352,6 +352,8 @@
                 </a>
                 <a href="tracking.html" class="portal-nav-item"><span>🔍</span> <span>Tracking</span></a>
                 <a href="inventory.html" class="portal-nav-item"><span>📦</span> <span>Inventory</span></a>
+                <a href="billing.html" class="portal-nav-item"><span>💵</span> <span>Billing</span></a>
+                <a href="contracts.html" class="portal-nav-item"><span>📄</span> <span>Contracts</span></a>
                 <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Staff</div>
                     <a href="customers.html" class="portal-nav-item"><span>👥</span> <span>All Customers</span></a>
@@ -359,7 +361,9 @@
                 </div>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;">Admin</div>
-                    <a href="admin-pickups.html" class="portal-nav-item">
+                    <a href="admin-panel.html" class="portal-nav-item">
+                        <span>🛡️</span> <span>Admin Control Panel</span>
+                    </a>                    <a href="admin-pickups.html" class="portal-nav-item">
                         <span aria-hidden="true">🚛</span> <span>All Pickup Requests</span>
                     </a>
                     <a href="admin-billing.html" class="portal-nav-item active"><span>📝</span> <span>Activity Billing</span></a>
@@ -407,10 +411,10 @@
 
             <!-- Tabs -->
             <div class="tabs">
-                <button class="tab active" onclick="showTab('entry')">Log Activity</button>
-                <button class="tab" onclick="showTab('history')">Activity History</button>
-                <button class="tab" onclick="showTab('reconcile')">Quote vs Actual</button>
-                <button class="tab" onclick="showTab('generate')">Generate Invoice</button>
+                <button class="tab active" onclick="showTab('entry', this)">Log Activity</button>
+                <button class="tab" onclick="showTab('history', this)">Activity History</button>
+                <button class="tab" onclick="showTab('reconcile', this)">Quote vs Actual</button>
+                <button class="tab" onclick="showTab('generate', this)">Generate Invoice</button>
             </div>
 
             <!-- ═══════════════════════════════════════════════ -->
@@ -418,13 +422,15 @@
             <!-- ═══════════════════════════════════════════════ -->
             <div id="tab-entry" class="tab-content">
                 <div class="section-card">
-                    <h3>Quick Select Activity Type</h3>
+                    <h3>Quick Select Billing Item</h3>
                     <div class="quick-types" id="quick-types">
-                        <button class="quick-type" data-type="receiving" data-unit="pallets" data-rate-key="handling.receiving">📥 Receiving</button>
                         <button class="quick-type" data-type="storage" data-unit="pallet-days" data-rate-key="storage.palletDaily">🏭 Storage</button>
+                        <button class="quick-type" data-type="handling" data-unit="orders" data-rate-key="handling.receiving">📥 Handling</button>
                         <button class="quick-type" data-type="pick_pack" data-unit="orders" data-rate-key="handling.pickpack">📋 Pick & Pack</button>
-                        <button class="quick-type" data-type="shipping" data-unit="shipments" data-rate-key="handling.loading">🚚 Shipping</button>
-                        <button class="quick-type" data-type="wrapping" data-unit="pallets" data-rate-key="additional.wrapping">⬛ Black Wrapping</button>
+                        <button class="quick-type" data-type="shipping" data-unit="shipments" data-rate-key="">🚚 Shipping</button>
+                        <button class="quick-type" data-type="wrapping" data-unit="pallets" data-rate-key="handling.wrapping">⬛ Black Wrapping</button>
+                        <button class="quick-type" data-type="dropship" data-unit="units" data-rate-key="">📬 Drop Ship</button>
+                        <button class="quick-type" data-type="receiving" data-unit="pallets" data-rate-key="handling.receiving">📥 Receiving</button>
                         <button class="quick-type" data-type="labeling" data-unit="items" data-rate-key="handling.labeling">🏷️ Labeling</button>
                         <button class="quick-type" data-type="palletizing" data-unit="pallets" data-rate-key="handling.palletizing">📦 Palletizing</button>
                         <button class="quick-type" data-type="unloading" data-unit="hours" data-rate-key="handling.unloading">⬇️ Unloading</button>
@@ -452,14 +458,16 @@
                                 <input type="date" id="entry-date" required>
                             </div>
                             <div class="form-group">
-                                <label for="entry-type">Activity Type *</label>
+                                <label for="entry-type">Billing Item *</label>
                                 <select id="entry-type" required onchange="onActivityTypeChange()">
-                                    <option value="">Select type...</option>
-                                    <option value="receiving">📥 Receiving / Intake</option>
+                                    <option value="">Select item...</option>
                                     <option value="storage">🏭 Storage (Pallet-Days)</option>
+                                    <option value="handling">📥 Handling</option>
                                     <option value="pick_pack">📋 Pick & Pack</option>
                                     <option value="shipping">🚚 Shipping / Outbound</option>
                                     <option value="wrapping">⬛ Black Wrapping</option>
+                                    <option value="dropship">📬 Drop Ship (Units)</option>
+                                    <option value="receiving">📥 Receiving / Intake</option>
                                     <option value="labeling">🏷️ Labeling</option>
                                     <option value="palletizing">📦 Palletizing</option>
                                     <option value="unloading">⬇️ Unloading</option>
@@ -571,9 +579,11 @@
                             <option value="">All Types</option>
                             <option value="receiving">Receiving</option>
                             <option value="storage">Storage</option>
+                            <option value="handling">Handling</option>
                             <option value="pick_pack">Pick & Pack</option>
                             <option value="shipping">Shipping</option>
                             <option value="wrapping">Wrapping</option>
+                            <option value="dropship">Drop Ship</option>
                             <option value="labeling">Labeling</option>
                             <option value="palletizing">Palletizing</option>
                             <option value="unloading">Unloading</option>
@@ -691,7 +701,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
@@ -710,49 +720,37 @@
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         // ──────────────────────────────────────────────
-        // ACTIVITY TYPES & DEFAULT RATES
+        // BILLING ITEM CATALOG
+        // Quote-calculator items are first-class, with operational items
+        // mapped back to quote categories for reconciliation.
         // ──────────────────────────────────────────────
-        const ACTIVITY_TYPES = {
-            receiving:         { label: 'Receiving / Intake',    defaultUnit: 'pallets',     icon: '📥' },
-            storage:           { label: 'Storage',               defaultUnit: 'pallet-days', icon: '🏭' },
-            pick_pack:         { label: 'Pick & Pack',           defaultUnit: 'orders',      icon: '📋' },
-            shipping:          { label: 'Shipping / Outbound',   defaultUnit: 'shipments',   icon: '🚚' },
-            wrapping:          { label: 'Black Wrapping',        defaultUnit: 'pallets',     icon: '⬛' },
-            labeling:          { label: 'Labeling',              defaultUnit: 'items',       icon: '🏷️' },
-            palletizing:       { label: 'Palletizing',           defaultUnit: 'pallets',     icon: '📦' },
-            unloading:         { label: 'Unloading',             defaultUnit: 'hours',       icon: '⬇️' },
-            loading:           { label: 'Loading',               defaultUnit: 'hours',       icon: '⬆️' },
-            kitting:           { label: 'Kitting / Assembly',    defaultUnit: 'kits',        icon: '🔧' },
-            returns:           { label: 'Returns Processing',    defaultUnit: 'items',       icon: '🔄' },
-            rush:              { label: 'Rush Handling',         defaultUnit: 'orders',      icon: '⚡' },
-            pickup_delivery:   { label: 'Pickup / Delivery',     defaultUnit: 'trips',       icon: '🚛' },
-            container_drayage: { label: 'Container Drayage',     defaultUnit: 'containers',  icon: '🚢' },
-            custom:            { label: 'Custom Service',        defaultUnit: 'units',       icon: '✏️' }
+        const BILLING_ITEMS = {
+            storage:           { label: 'Storage',              defaultUnit: 'pallet-days', icon: '🏭', ratePath: 'storage.palletDaily', fallbackRate: 0.75, quoteKey: 'storage', calculatorItem: true },
+            handling:          { label: 'Handling',             defaultUnit: 'orders',      icon: '📥', ratePath: 'handling.receiving', fallbackRate: 15.00, quoteKey: 'handling', calculatorItem: true },
+            pick_pack:         { label: 'Pick & Pack',          defaultUnit: 'orders',      icon: '📋', ratePath: 'handling.pickpack', fallbackRate: 8.00, quoteKey: 'pick_pack', calculatorItem: true },
+            shipping:          { label: 'Shipping / Outbound',  defaultUnit: 'shipments',   icon: '🚚', ratePath: null,                 fallbackRate: 45.00, quoteKey: 'shipping', calculatorItem: true },
+            wrapping:          { label: 'Black Wrapping',       defaultUnit: 'pallets',     icon: '⬛', ratePath: 'handling.wrapping', fallbackRate: 7.00, quoteKey: 'wrapping', calculatorItem: true },
+            dropship:          { label: 'Drop Ship (Units)',    defaultUnit: 'units',       icon: '📬', ratePath: null,                 fallbackRate: 0.00, quoteKey: 'dropship', calculatorItem: true },
+            receiving:         { label: 'Receiving / Intake',   defaultUnit: 'pallets',     icon: '📥', ratePath: 'handling.receiving', fallbackRate: 15.00, quoteKey: 'handling', calculatorItem: false },
+            labeling:          { label: 'Labeling',             defaultUnit: 'items',       icon: '🏷️', ratePath: 'handling.labeling', fallbackRate: 0.15, quoteKey: 'handling', calculatorItem: false },
+            palletizing:       { label: 'Palletizing',          defaultUnit: 'pallets',     icon: '📦', ratePath: 'handling.palletizing', fallbackRate: 10.00, quoteKey: 'handling', calculatorItem: false },
+            unloading:         { label: 'Unloading',            defaultUnit: 'hours',       icon: '⬇️', ratePath: 'handling.unloading', fallbackRate: 45.00, quoteKey: 'handling', calculatorItem: false },
+            loading:           { label: 'Loading',              defaultUnit: 'hours',       icon: '⬆️', ratePath: 'handling.loading', fallbackRate: 45.00, quoteKey: 'handling', calculatorItem: false },
+            kitting:           { label: 'Kitting / Assembly',   defaultUnit: 'kits',        icon: '🔧', ratePath: 'additional.kitting', fallbackRate: 5.00, quoteKey: 'extra', calculatorItem: false },
+            returns:           { label: 'Returns Processing',   defaultUnit: 'items',       icon: '🔄', ratePath: 'additional.returns', fallbackRate: 2.00, quoteKey: 'extra', calculatorItem: false },
+            rush:              { label: 'Rush Handling',        defaultUnit: 'orders',      icon: '⚡', ratePath: 'additional.rush', fallbackRate: 25.00, quoteKey: 'extra', calculatorItem: false },
+            pickup_delivery:   { label: 'Pickup / Delivery',    defaultUnit: 'trips',       icon: '🚛', ratePath: null,                 fallbackRate: 120.00, quoteKey: 'extra', calculatorItem: false },
+            container_drayage: { label: 'Container Drayage',    defaultUnit: 'containers',  icon: '🚢', ratePath: null,                 fallbackRate: 250.00, quoteKey: 'extra', calculatorItem: false },
+            custom:            { label: 'Custom Service',       defaultUnit: 'units',       icon: '✏️', ratePath: null,                 fallbackRate: 0.00, quoteKey: 'extra', calculatorItem: false }
         };
 
-        // Maps activity types to pricing settings paths
-        const RATE_MAP = {
-            receiving:         { path: 'handling.receiving',    fallback: 15.00 },
-            storage:           { path: 'storage.palletDaily',   fallback: 0.75 },
-            pick_pack:         { path: 'handling.pickpack',     fallback: 8.00 },
-            shipping:          { path: 'handling.loading',      fallback: 45.00 },
-            wrapping:          { path: 'additional.wrapping',   fallback: 7.00 },
-            labeling:          { path: 'handling.labeling',     fallback: 0.15 },
-            palletizing:       { path: 'handling.palletizing',  fallback: 10.00 },
-            unloading:         { path: 'handling.unloading',    fallback: 45.00 },
-            loading:           { path: 'handling.loading',      fallback: 45.00 },
-            kitting:           { path: 'additional.kitting',    fallback: 5.00 },
-            returns:           { path: 'additional.returns',    fallback: 2.00 },
-            rush:              { path: 'additional.rush',       fallback: 25.00 },
-            pickup_delivery:   { path: null,                    fallback: 120.00 },
-            container_drayage: { path: null,                    fallback: 250.00 },
-            custom:            { path: null,                    fallback: 0 }
-        };
+        const QUOTE_KEYS = ['storage', 'handling', 'pick_pack', 'shipping', 'wrapping', 'dropship'];
 
         let customers = [];
         let pricingData = {};
         let currentUser = null;
         let currentUserData = {};
+        let customerRateIndex = new Map();
 
         // ──────────────────────────────────────────────
         // UTILITIES
@@ -769,14 +767,141 @@
             return path.split('.').reduce((o, k) => (o || {})[k], obj);
         }
 
-        function getRateForType(activityType) {
-            const mapping = RATE_MAP[activityType];
-            if (!mapping) return 0;
-            if (mapping.path) {
-                const val = getNestedValue(pricingData, mapping.path);
-                return val !== undefined && val !== null ? Number(val) : mapping.fallback;
+        function normalizeServiceKey(value) {
+            return String(value || '')
+                .trim()
+                .toLowerCase()
+                .replace(/&/g, 'and')
+                .replace(/[^a-z0-9]+/g, '_')
+                .replace(/^_+|_+$/g, '');
+        }
+
+        function mapServiceToItem(serviceValue) {
+            const key = normalizeServiceKey(serviceValue);
+            const directMap = {
+                storage: 'storage',
+                pallet_storage_daily: 'storage',
+                pallet_storage: 'storage',
+                receiving: 'receiving',
+                handling: 'handling',
+                pick_and_pack: 'pick_pack',
+                pick_pack: 'pick_pack',
+                shipping: 'shipping',
+                outbound_shipping: 'shipping',
+                wrapping: 'wrapping',
+                black_wrapping: 'wrapping',
+                drop_ship: 'dropship',
+                dropship: 'dropship',
+                labeling: 'labeling',
+                palletizing: 'palletizing',
+                unloading: 'unloading',
+                loading: 'loading',
+                kitting: 'kitting',
+                returns_processing: 'returns',
+                returns: 'returns',
+                rush_handling: 'rush',
+                pickup_delivery: 'pickup_delivery',
+                container_drayage: 'container_drayage',
+                custom_service: 'custom'
+            };
+
+            if (directMap[key]) return directMap[key];
+            if (key.includes('pick') && key.includes('pack')) return 'pick_pack';
+            if (key.includes('drop') && key.includes('ship')) return 'dropship';
+            if (key.includes('wrap')) return 'wrapping';
+            if (key.includes('receiv')) return 'receiving';
+            if (key.includes('storag')) return 'storage';
+            return null;
+        }
+
+        function buildCustomerRateIndex() {
+            customerRateIndex = new Map();
+            const rates = Array.isArray(pricingData?.customerRates) ? pricingData.customerRates : [];
+
+            rates.forEach((row) => {
+                const customerId = row?.customerId;
+                const itemKey = mapServiceToItem(row?.service);
+                const rate = Number(row?.rate);
+
+                if (!customerId || !itemKey || !Number.isFinite(rate)) return;
+
+                let customerMap = customerRateIndex.get(customerId);
+                if (!customerMap) {
+                    customerMap = new Map();
+                    customerRateIndex.set(customerId, customerMap);
+                }
+
+                const entry = {
+                    rate,
+                    unit: String(row?.unit || '').trim(),
+                    sourceService: row?.service || itemKey
+                };
+
+                customerMap.set(itemKey, entry);
+
+                // Also provide fallback override on the quote category when relevant.
+                const quoteKey = BILLING_ITEMS[itemKey]?.quoteKey;
+                if (quoteKey && quoteKey !== 'extra' && !customerMap.has(quoteKey)) {
+                    customerMap.set(quoteKey, entry);
+                }
+            });
+        }
+
+        function resolveCustomerRate(customerId, activityType) {
+            if (!customerId || !activityType) return null;
+            const customerMap = customerRateIndex.get(customerId);
+            if (!customerMap) return null;
+
+            if (customerMap.has(activityType)) {
+                return customerMap.get(activityType);
             }
-            return mapping.fallback;
+
+            const quoteKey = getQuoteCategory(activityType);
+            if (quoteKey && quoteKey !== 'extra' && customerMap.has(quoteKey)) {
+                return customerMap.get(quoteKey);
+            }
+
+            return null;
+        }
+
+        function getRateMeta(activityType, customerId) {
+            const item = BILLING_ITEMS[activityType];
+            if (!item) {
+                return { rate: 0, source: 'unknown', path: null, customerRate: null };
+            }
+
+            const customerRate = resolveCustomerRate(customerId, activityType);
+            if (customerRate) {
+                return {
+                    rate: Number(customerRate.rate) || 0,
+                    source: 'customer',
+                    path: null,
+                    customerRate
+                };
+            }
+
+            if (item.ratePath) {
+                const value = getNestedValue(pricingData, item.ratePath);
+                if (value !== undefined && value !== null && Number.isFinite(Number(value))) {
+                    return {
+                        rate: Number(value),
+                        source: 'pricing',
+                        path: item.ratePath,
+                        customerRate: null
+                    };
+                }
+            }
+
+            return {
+                rate: Number(item.fallbackRate) || 0,
+                source: 'fallback',
+                path: item.ratePath || null,
+                customerRate: null
+            };
+        }
+
+        function getRateForType(activityType, customerId) {
+            return getRateMeta(activityType, customerId).rate;
         }
 
         function formatCurrency(n) {
@@ -784,11 +909,29 @@
         }
 
         function getActivityLabel(type) {
-            return ACTIVITY_TYPES[type]?.label || type;
+            return BILLING_ITEMS[type]?.label || type;
         }
 
         function getActivityIcon(type) {
-            return ACTIVITY_TYPES[type]?.icon || '📝';
+            return BILLING_ITEMS[type]?.icon || '📝';
+        }
+
+        function getQuoteCategory(activityType) {
+            const quoteKey = BILLING_ITEMS[activityType]?.quoteKey;
+            return quoteKey || 'extra';
+        }
+
+        function getQuoteCategoryLabel(quoteKey) {
+            const map = {
+                storage: 'Storage',
+                handling: 'Handling',
+                pick_pack: 'Pick & Pack',
+                shipping: 'Shipping',
+                wrapping: 'Black Wrapping',
+                dropship: 'Drop Ship',
+                extra: 'Extra / Unquoted'
+            };
+            return map[quoteKey] || quoteKey;
         }
 
         function todayStr() {
@@ -808,11 +951,16 @@
         // ──────────────────────────────────────────────
         // TAB SWITCHING
         // ──────────────────────────────────────────────
-        window.showTab = function(tab) {
+        window.showTab = function(tab, tabButton) {
             document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tab).style.display = 'block';
-            event.target.classList.add('active');
+            if (tabButton) {
+                tabButton.classList.add('active');
+            } else {
+                const fallbackBtn = document.querySelector(`.tab[onclick*="showTab('${tab}'"]`);
+                if (fallbackBtn) fallbackBtn.classList.add('active');
+            }
 
             if (tab === 'history') loadHistory();
             if (tab === 'reconcile') {}
@@ -858,6 +1006,10 @@
             await loadTodayActivities();
             await loadStats();
             setupQuickTypes();
+            document.getElementById('entry-customer').addEventListener('change', () => {
+                const type = document.getElementById('entry-type').value;
+                if (type) applyDefaultRate(type);
+            });
         });
 
         // ──────────────────────────────────────────────
@@ -891,6 +1043,7 @@
         async function loadPricing() {
             const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
             pricingData = pricingDoc.exists() ? pricingDoc.data() : {};
+            buildCustomerRateIndex();
         }
 
         // ──────────────────────────────────────────────
@@ -901,15 +1054,8 @@
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
                     const type = btn.dataset.type;
-                    const unit = btn.dataset.unit;
-
                     document.getElementById('entry-type').value = type;
-                    document.getElementById('entry-unit').value = unit;
-
-                    const rate = getRateForType(type);
-                    document.getElementById('entry-rate').value = rate;
-                    document.getElementById('rate-hint').textContent =
-                        `Default: ${formatCurrency(rate)}/${unit} (editable)`;
+                    applyDefaultRate(type);
 
                     // Highlight selected
                     document.querySelectorAll('.quick-type').forEach(b => b.classList.remove('selected'));
@@ -923,6 +1069,30 @@
             });
         }
 
+        function applyDefaultRate(activityType) {
+            const info = BILLING_ITEMS[activityType];
+            if (!info) return;
+
+            const customerId = document.getElementById('entry-customer').value || null;
+            const rateMeta = getRateMeta(activityType, customerId);
+
+            if (info.defaultUnit) {
+                document.getElementById('entry-unit').value = info.defaultUnit;
+            }
+            document.getElementById('entry-rate').value = rateMeta.rate;
+
+            const sourceLabel = rateMeta.source === 'customer'
+                ? `customer override (${rateMeta.customerRate?.sourceService || activityType})`
+                : (rateMeta.source === 'pricing'
+                    ? `pricing settings${rateMeta.path ? ' (' + rateMeta.path + ')' : ''}`
+                    : 'fallback default');
+
+            document.getElementById('rate-hint').textContent =
+                `Default from ${sourceLabel}: ${formatCurrency(rateMeta.rate)}/${info.defaultUnit}`;
+
+            updateCalcPreview();
+        }
+
         // ──────────────────────────────────────────────
         // ACTIVITY TYPE CHANGE
         // ──────────────────────────────────────────────
@@ -930,22 +1100,12 @@
             const type = document.getElementById('entry-type').value;
             if (!type) return;
 
-            const info = ACTIVITY_TYPES[type];
-            if (info) {
-                document.getElementById('entry-unit').value = info.defaultUnit;
-            }
-
-            const rate = getRateForType(type);
-            document.getElementById('entry-rate').value = rate;
-            document.getElementById('rate-hint').textContent =
-                `Default: ${formatCurrency(rate)}/${info?.defaultUnit || 'unit'} (editable)`;
+            applyDefaultRate(type);
 
             // Update quick type highlights
             document.querySelectorAll('.quick-type').forEach(b => {
                 b.classList.toggle('selected', b.dataset.type === type);
             });
-
-            updateCalcPreview();
         };
 
         // ──────────────────────────────────────────────
@@ -971,22 +1131,36 @@
             const activityType = document.getElementById('entry-type').value;
             const quantity = parseFloat(document.getElementById('entry-quantity').value) || 0;
             const rate = parseFloat(document.getElementById('entry-rate').value) || 0;
+            const unit = document.getElementById('entry-unit').value;
 
             if (!customerId || !activityType || quantity <= 0) {
                 showToast('Please fill all required fields', 'error');
                 return false;
             }
 
+            const quoteCategory = getQuoteCategory(activityType);
+            const rateMeta = getRateMeta(activityType, customerId);
+            const manualRateOverride = Math.abs(rate - (Number(rateMeta.rate) || 0)) > 0.0001;
+            const item = BILLING_ITEMS[activityType] || {};
+
             const activity = {
                 customer_id: customerId,
                 customer_name: customer?.company_name || customer?.name || customer?.email || 'Unknown',
                 date: document.getElementById('entry-date').value,
                 activity_type: activityType,
+                billing_item_id: activityType,
+                billing_item_label: getActivityLabel(activityType),
+                quote_category: quoteCategory,
+                calculator_item: Boolean(item.calculatorItem),
                 description: getActivityLabel(activityType),
                 quantity: quantity,
-                unit: document.getElementById('entry-unit').value,
+                unit: unit,
                 rate: rate,
                 amount: quantity * rate,
+                rate_source: manualRateOverride ? 'manual_override' : rateMeta.source,
+                pricing_rate_path: rateMeta.path || null,
+                pricing_rate_default: Number(rateMeta.rate) || 0,
+                customer_rate_applied: rateMeta.source === 'customer',
                 reference: document.getElementById('entry-reference').value.trim(),
                 notes: document.getElementById('entry-notes').value.trim(),
                 logged_by: currentUser.uid,
@@ -1038,7 +1212,7 @@
             document.getElementById('activity-form').reset();
             document.getElementById('entry-date').value = todayStr();
             document.querySelectorAll('.quick-type').forEach(b => b.classList.remove('selected'));
-            document.getElementById('rate-hint').textContent = 'Rate auto-filled from pricing settings';
+            document.getElementById('rate-hint').textContent = 'Rate auto-filled from customer override / pricing settings';
             document.getElementById('calc-amount').textContent = '$0.00';
             document.getElementById('calc-formula').textContent = '';
         };
@@ -1067,12 +1241,13 @@
                 } else {
                     snap.forEach(d => {
                         const a = d.data();
+                        const itemType = a.billing_item_id || a.activity_type;
                         todayTotal += a.amount || 0;
                         todayCount++;
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${a.customer_name}</td>
-                            <td>${getActivityIcon(a.activity_type)} ${getActivityLabel(a.activity_type)}</td>
+                            <td>${getActivityIcon(itemType)} ${getActivityLabel(itemType)}</td>
                             <td>${a.quantity}</td>
                             <td>${a.unit}</td>
                             <td>${formatCurrency(a.rate)}</td>
@@ -1183,15 +1358,16 @@
                 } else {
                     snap.forEach(d => {
                         const a = d.data();
+                        const itemType = a.billing_item_id || a.activity_type;
                         total += a.amount || 0;
                         count++;
-                        typeTotals[a.activity_type] = (typeTotals[a.activity_type] || 0) + (a.amount || 0);
+                        typeTotals[itemType] = (typeTotals[itemType] || 0) + (a.amount || 0);
 
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${a.date}</td>
                             <td>${a.customer_name}</td>
-                            <td>${getActivityIcon(a.activity_type)} ${getActivityLabel(a.activity_type)}</td>
+                            <td>${getActivityIcon(itemType)} ${getActivityLabel(itemType)}</td>
                             <td>${a.quantity}</td>
                             <td>${a.unit}</td>
                             <td>${formatCurrency(a.rate)}</td>
@@ -1249,18 +1425,24 @@
                 const shipmentsSnap = await getDocs(shipmentsQ);
 
                 let quotedTotals = {
-                    storage: 0, handling: 0, pick_pack: 0, shipping: 0,
-                    wrapping: 0, total: 0
+                    storage: 0,
+                    handling: 0,
+                    pick_pack: 0,
+                    shipping: 0,
+                    wrapping: 0,
+                    dropship: 0,
+                    total: 0
                 };
                 shipmentsSnap.forEach(d => {
                     const s = d.data();
-                    const charges = s.charges || s.quote_breakdown || {};
-                    quotedTotals.storage += charges.storage || 0;
-                    quotedTotals.handling += charges.handling || 0;
-                    quotedTotals.pick_pack += charges.pickPack || charges.pick_pack || 0;
-                    quotedTotals.shipping += charges.shipping || 0;
-                    quotedTotals.wrapping += charges.wrapping || 0;
-                    quotedTotals.total += charges.total || s.total_charges || 0;
+                    const charges = s.quote_estimate || s.charges || s.quote_breakdown || {};
+                    quotedTotals.storage += Number(charges.storage) || 0;
+                    quotedTotals.handling += Number(charges.handling) || 0;
+                    quotedTotals.pick_pack += Number(charges.pickPack ?? charges.pick_pack) || 0;
+                    quotedTotals.shipping += Number(charges.shipping) || 0;
+                    quotedTotals.wrapping += Number(charges.wrapping) || 0;
+                    quotedTotals.dropship += Number(charges.dropship) || 0;
+                    quotedTotals.total += Number(charges.total ?? s.total_charges) || 0;
                 });
 
                 // 2. Get actual activities logged this month
@@ -1272,55 +1454,42 @@
                 );
                 const activitiesSnap = await getDocs(activitiesQ);
 
-                let actualTotals = {};
-                let actualGrandTotal = 0;
+                const actualByCategory = {
+                    storage: 0,
+                    handling: 0,
+                    pick_pack: 0,
+                    shipping: 0,
+                    wrapping: 0,
+                    dropship: 0,
+                    extra: 0
+                };
+                const extraItemTotals = {};
                 activitiesSnap.forEach(d => {
                     const a = d.data();
-                    actualTotals[a.activity_type] = (actualTotals[a.activity_type] || 0) + (a.amount || 0);
-                    actualGrandTotal += a.amount || 0;
+                    const itemType = a.billing_item_id || a.activity_type || 'custom';
+                    const quoteCategory = a.quote_category || getQuoteCategory(itemType);
+                    const amount = Number(a.amount) || 0;
+                    if (QUOTE_KEYS.includes(quoteCategory)) {
+                        actualByCategory[quoteCategory] = (actualByCategory[quoteCategory] || 0) + amount;
+                    } else {
+                        actualByCategory.extra += amount;
+                        extraItemTotals[itemType] = (extraItemTotals[itemType] || 0) + amount;
+                    }
                 });
 
                 // 3. Render reconciliation
                 const content = document.getElementById('recon-content');
-                const allTypes = new Set([
-                    ...Object.keys(quotedTotals).filter(k => k !== 'total'),
-                    ...Object.keys(actualTotals)
-                ]);
-
                 let rows = '';
                 let totalQuoted = 0;
                 let totalActual = 0;
 
-                // Map shipment charge types to activity types
-                const chargeToActivity = {
-                    storage: ['storage'],
-                    handling: ['receiving', 'unloading', 'loading', 'palletizing'],
-                    pick_pack: ['pick_pack'],
-                    shipping: ['shipping'],
-                    wrapping: ['wrapping']
-                };
+                QUOTE_KEYS.forEach((key) => {
+                    const quoted = Number(quotedTotals[key]) || 0;
+                    const actual = Number(actualByCategory[key]) || 0;
+                    if (quoted === 0 && actual === 0) return;
 
-                // Build reconciliation rows
-                const reconCategories = [
-                    { label: 'Storage', quoted: quotedTotals.storage, actTypes: ['storage'] },
-                    { label: 'Receiving / Handling', quoted: quotedTotals.handling, actTypes: ['receiving', 'unloading', 'loading', 'palletizing'] },
-                    { label: 'Pick & Pack', quoted: quotedTotals.pick_pack, actTypes: ['pick_pack'] },
-                    { label: 'Shipping / Outbound', quoted: quotedTotals.shipping, actTypes: ['shipping'] },
-                    { label: 'Black Wrapping', quoted: quotedTotals.wrapping, actTypes: ['wrapping'] },
-                    { label: 'Labeling', quoted: 0, actTypes: ['labeling'] },
-                    { label: 'Kitting', quoted: 0, actTypes: ['kitting'] },
-                    { label: 'Returns', quoted: 0, actTypes: ['returns'] },
-                    { label: 'Rush Handling', quoted: 0, actTypes: ['rush'] },
-                    { label: 'Pickup / Delivery', quoted: 0, actTypes: ['pickup_delivery'] },
-                    { label: 'Other', quoted: 0, actTypes: ['container_drayage', 'custom'] },
-                ];
-
-                reconCategories.forEach(cat => {
-                    const actual = cat.actTypes.reduce((sum, t) => sum + (actualTotals[t] || 0), 0);
-                    if (cat.quoted === 0 && actual === 0) return; // skip empty rows
-
-                    const variance = actual - cat.quoted;
-                    totalQuoted += cat.quoted;
+                    const variance = actual - quoted;
+                    totalQuoted += quoted;
                     totalActual += actual;
 
                     let varianceClass = 'variance-zero';
@@ -1335,13 +1504,28 @@
 
                     rows += `
                         <div class="recon-row">
-                            <div>${cat.label}</div>
-                            <div>${formatCurrency(cat.quoted)}</div>
+                            <div>${getQuoteCategoryLabel(key)}</div>
+                            <div>${formatCurrency(quoted)}</div>
                             <div>${formatCurrency(actual)}</div>
                             <div class="${varianceClass}">${varianceStr}</div>
                         </div>
                     `;
                 });
+
+                Object.entries(extraItemTotals)
+                    .sort((a, b) => b[1] - a[1])
+                    .forEach(([itemType, actual]) => {
+                        if (!actual) return;
+                        totalActual += actual;
+                        rows += `
+                            <div class="recon-row">
+                                <div>${getActivityIcon(itemType)} ${getActivityLabel(itemType)} <span style="font-size: 0.75rem; color: var(--color-gray-500);">(unquoted)</span></div>
+                                <div>${formatCurrency(0)}</div>
+                                <div>${formatCurrency(actual)}</div>
+                                <div class="variance-positive">+${formatCurrency(actual)}</div>
+                            </div>
+                        `;
+                    });
 
                 const grandVariance = totalActual - totalQuoted;
                 let grandVarianceClass = 'variance-zero';
@@ -1423,24 +1607,27 @@
                     previewActivities.push({ id: d.id, ...d.data() });
                 });
 
-                // Group by activity type for invoice line items
+                // Group by billing item + rate for invoice line items
                 const grouped = {};
                 previewActivities.forEach(a => {
-                    const key = a.activity_type + '|' + a.rate;
+                    const itemType = a.billing_item_id || a.activity_type || 'custom';
+                    const quoteCategory = a.quote_category || getQuoteCategory(itemType);
+                    const key = [itemType, a.unit, Number(a.rate || 0).toFixed(4)].join('|');
                     if (!grouped[key]) {
                         grouped[key] = {
-                            activity_type: a.activity_type,
-                            description: getActivityLabel(a.activity_type),
+                            billing_item_id: itemType,
+                            quote_category: quoteCategory,
+                            description: getActivityLabel(itemType),
                             unit: a.unit,
-                            rate: a.rate,
+                            rate: Number(a.rate) || 0,
                             quantity: 0,
                             amount: 0,
                             entries: 0,
                             ids: []
                         };
                     }
-                    grouped[key].quantity += a.quantity;
-                    grouped[key].amount += a.amount;
+                    grouped[key].quantity += Number(a.quantity) || 0;
+                    grouped[key].amount += Number(a.amount) || 0;
                     grouped[key].entries++;
                     grouped[key].ids.push(a.id);
                 });
@@ -1456,12 +1643,12 @@
 
                 let tableRows = lineItems.map(li => `
                     <tr>
-                        <td>${getActivityIcon(li.activity_type)} ${li.description}</td>
+                        <td>${getActivityIcon(li.billing_item_id)} ${li.description}</td>
                         <td>${li.quantity.toFixed(2)}</td>
                         <td>${li.unit}</td>
                         <td>${formatCurrency(li.rate)}</td>
                         <td><strong>${formatCurrency(li.amount)}</strong></td>
-                        <td style="color: var(--color-gray-400);">${li.entries} entries</td>
+                        <td style="color: var(--color-gray-400);">${li.entries} entries &bull; ${getQuoteCategoryLabel(li.quote_category)}</td>
                     </tr>
                 `).join('');
 
@@ -1523,19 +1710,22 @@
             // Group activities into line items
             const grouped = {};
             previewActivities.forEach(a => {
-                const key = a.activity_type + '|' + a.rate;
+                const itemType = a.billing_item_id || a.activity_type || 'custom';
+                const quoteCategory = a.quote_category || getQuoteCategory(itemType);
+                const key = [itemType, a.unit, Number(a.rate || 0).toFixed(4)].join('|');
                 if (!grouped[key]) {
                     grouped[key] = {
-                        category: a.activity_type,
-                        description: getActivityLabel(a.activity_type),
+                        category: quoteCategory,
+                        billing_item_id: itemType,
+                        description: getActivityLabel(itemType),
                         unit: a.unit,
-                        rate: a.rate,
+                        rate: Number(a.rate) || 0,
                         quantity: 0,
                         amount: 0
                     };
                 }
-                grouped[key].quantity += a.quantity;
-                grouped[key].amount += a.amount;
+                grouped[key].quantity += Number(a.quantity) || 0;
+                grouped[key].amount += Number(a.amount) || 0;
             });
 
             const lineItems = Object.values(grouped);

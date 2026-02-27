@@ -78,6 +78,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Quote Requests — submitted from public quote calculator and contact forms
+    match /quote_requests/{requestId} {
+      allow read: if isStaff();
+      allow create: if true; // Public submissions (no auth required)
+      allow update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
     // BOL Documents — uploaded Bills of Lading and Shipping Labels
     match /bol_documents/{docId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
