@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Shipments | Miami Alliance 3PL Portal</title>
     <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0f172a">
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
@@ -2847,7 +2848,8 @@
         function handleDocFile(docType, file, dropzoneId, previewId, nameId, sizeId, iconId) {
             // Max 5MB per document
             if (file.size > 5 * 1024 * 1024) {
-                alert('File too large. Maximum size is 5MB.');
+                if (window.MA3PL?.toast) window.MA3PL.toast.warning('File too large. Maximum size is 5MB.');
+                else { var t = document.createElement('div'); t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); t.style.cssText='position:fixed;bottom:24px;right:24px;padding:16px 24px;border-radius:12px;font-weight:500;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.15);background:#f59e0b;color:white;'; t.textContent='File too large. Maximum size is 5MB.'; document.body.appendChild(t); setTimeout(function(){t.remove();},4000); }
                 return;
             }
 

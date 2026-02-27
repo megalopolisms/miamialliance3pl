@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Admin Control Panel | Miami Alliance 3PL</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
@@ -1439,7 +1439,7 @@
                 allPickups = [];
                 snap.forEach(d => allPickups.push({ id: d.id, ...d.data() }));
             } catch (e) {
-                console.log('Pickup requests collection may not exist yet');
+                // Pickup requests collection may not exist yet
                 allPickups = [];
             }
             renderPickups();
@@ -1453,7 +1453,7 @@
                 allQuotes = [];
                 snap.forEach(d => allQuotes.push({ id: d.id, ...d.data() }));
             } catch (e) {
-                console.log('Quote requests collection may not exist yet');
+                // Quote requests collection may not exist yet
                 allQuotes = [];
             }
             renderQuotes();
@@ -1467,7 +1467,7 @@
                 allDocuments = [];
                 snap.forEach(d => allDocuments.push({ id: d.id, ...d.data() }));
             } catch (e) {
-                console.log('BOL documents collection may not exist yet');
+                // BOL documents collection may not exist yet
                 allDocuments = [];
             }
 
@@ -1490,7 +1490,7 @@
                     });
                 });
             } catch (e) {
-                console.log('shipment_documents collection may not exist yet');
+                // Shipment documents collection may not exist yet
             }
 
             // Also try to load from shipments with attached documents (inline metadata)
@@ -1576,7 +1576,7 @@
                     }
                 });
             } catch (e) {
-                console.log('Error loading shipment documents:', e);
+                // Error loading shipment documents
             }
 
             renderDocuments();
@@ -2475,7 +2475,7 @@
                     snap.forEach(d => allDailyTasks.push({ id: d.id, ...d.data() }));
                     allDailyTasks.sort((a, b) => (b.task_date || '').localeCompare(a.task_date || ''));
                 } catch (e2) {
-                    console.log('Daily tasks collection may not exist yet');
+                    // Daily tasks collection may not exist yet
                     allDailyTasks = [];
                 }
             }

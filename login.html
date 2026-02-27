@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Customer Portal Login | Miami Alliance 3PL</title>
     <meta name="description" content="Log in to the Miami Alliance 3PL customer portal to manage shipments, track orders, and view inventory.">
     <meta name="author" content="Miami Alliance 3PL">
@@ -55,11 +55,11 @@
         <form id="login-form" style="display: block;">
             <div class="form-group">
                 <label for="login-email" data-i18n="login.email">Email Address</label>
-                <input type="email" id="login-email" name="email" required placeholder="your@email.com" data-i18n-placeholder="login.email.ph">
+                <input type="email" id="login-email" name="email" required placeholder="your@email.com" data-i18n-placeholder="login.email.ph" autocomplete="email">
             </div>
             <div class="form-group">
                 <label for="login-password" data-i18n="login.password">Password</label>
-                <input type="password" id="login-password" name="password" required placeholder="Your password" data-i18n-placeholder="login.password.ph">
+                <input type="password" id="login-password" name="password" required placeholder="Your password" data-i18n-placeholder="login.password.ph" autocomplete="current-password">
             </div>
             <button type="submit" class="btn btn-primary" data-i18n="login.signin">Sign In</button>
         </form>
@@ -68,27 +68,27 @@
         <form id="signup-form" style="display: none;">
             <div class="form-group">
                 <label for="signup-name" data-i18n="login.signup.name">Full Name</label>
-                <input type="text" id="signup-name" name="name" required placeholder="John Smith" data-i18n-placeholder="login.signup.name.ph">
+                <input type="text" id="signup-name" name="name" required placeholder="John Smith" data-i18n-placeholder="login.signup.name.ph" autocomplete="name">
             </div>
             <div class="form-group">
                 <label for="signup-company" data-i18n="login.signup.company">Company Name</label>
-                <input type="text" id="signup-company" name="company" required placeholder="Your Company" data-i18n-placeholder="login.signup.company.ph">
+                <input type="text" id="signup-company" name="company" required placeholder="Your Company" data-i18n-placeholder="login.signup.company.ph" autocomplete="organization">
             </div>
             <div class="form-group">
                 <label for="signup-email" data-i18n="login.signup.email">Email Address</label>
-                <input type="email" id="signup-email" name="email" required placeholder="your@email.com" data-i18n-placeholder="login.signup.email.ph">
+                <input type="email" id="signup-email" name="email" required placeholder="your@email.com" data-i18n-placeholder="login.signup.email.ph" autocomplete="email">
             </div>
             <div class="form-group">
                 <label for="signup-phone" data-i18n="login.signup.phone">Phone Number</label>
-                <input type="tel" id="signup-phone" name="phone" placeholder="(786) 873-8819">
+                <input type="tel" id="signup-phone" name="phone" placeholder="(786) 873-8819" autocomplete="tel">
             </div>
             <div class="form-group">
                 <label for="signup-password" data-i18n="login.signup.password">Password</label>
-                <input type="password" id="signup-password" name="password" required placeholder="Create a password" minlength="8" data-i18n-placeholder="login.signup.password.ph">
+                <input type="password" id="signup-password" name="password" required placeholder="Create a password" minlength="8" data-i18n-placeholder="login.signup.password.ph" autocomplete="new-password">
             </div>
             <div class="form-group">
                 <label for="signup-confirm" data-i18n="login.signup.confirm">Confirm Password</label>
-                <input type="password" id="signup-confirm" name="confirm" required placeholder="Confirm your password" data-i18n-placeholder="login.signup.confirm.ph">
+                <input type="password" id="signup-confirm" name="confirm" required placeholder="Confirm your password" data-i18n-placeholder="login.signup.confirm.ph" autocomplete="new-password">
             </div>
 
             <!-- Terms of Service Agreement Checkbox -->
@@ -98,9 +98,9 @@
                            style="width: auto; min-width: 18px; height: 18px; margin-top: 3px; cursor: pointer; accent-color: var(--color-accent);">
                     <label for="agree-terms" style="margin-bottom: 0; cursor: pointer; font-size: var(--font-size-sm); line-height: 1.5; color: var(--color-gray-600);">
                         I have read and agree to the
-                        <a href="terms.html" target="_blank" style="color: var(--color-accent); font-weight: 600; text-decoration: underline;">Terms of Service &amp; Client Agreement</a>
+                        <a href="terms.html" target="_blank" rel="noopener" style="color: var(--color-accent); font-weight: 600; text-decoration: underline;">Terms of Service &amp; Client Agreement</a>
                         and
-                        <a href="privacy.html" target="_blank" style="color: var(--color-accent); font-weight: 600; text-decoration: underline;">Privacy Policy</a>.
+                        <a href="privacy.html" target="_blank" rel="noopener" style="color: var(--color-accent); font-weight: 600; text-decoration: underline;">Privacy Policy</a>.
                         I understand this constitutes a binding agreement under Florida law.
                     </label>
                 </div>
@@ -117,7 +117,7 @@
             <p style="margin-bottom: var(--spacing-md); color: var(--color-gray-600); font-size: var(--font-size-sm);" data-i18n="login.reset.desc">Enter your email address and we'll send you a link to reset your password.</p>
             <div class="form-group">
                 <label for="reset-email" data-i18n="login.reset.email">Email Address</label>
-                <input type="email" id="reset-email" name="email" required placeholder="your@email.com" data-i18n-placeholder="login.reset.email.ph">
+                <input type="email" id="reset-email" name="email" required placeholder="your@email.com" data-i18n-placeholder="login.reset.email.ph" autocomplete="email">
             </div>
             <button type="submit" class="btn btn-primary" data-i18n="login.reset.submit">Send Reset Link</button>
         </form>
@@ -160,16 +160,16 @@
                 &bull; Florida law governs; Miami-Dade County venue<br>
                 &bull; Warehouse lien applies per FL Statute &sect; 677.209<br>
                 &bull; 30-day notice for termination<br>
-                <a href="terms.html" target="_blank" style="color: #10b981; font-weight: 600;">Read full Terms of Service &rarr;</a>
+                <a href="terms.html" target="_blank" rel="noopener" style="color: #10b981; font-weight: 600;">Read full Terms of Service &rarr;</a>
             </div>
             <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px;">
                 <input type="checkbox" id="modal-agree-terms"
                        style="width: auto; min-width: 18px; height: 18px; margin-top: 3px; cursor: pointer; accent-color: #10b981;">
                 <label for="modal-agree-terms" style="cursor: pointer; font-size: 0.85rem; line-height: 1.5; color: #555;">
                     I have read and agree to the
-                    <a href="terms.html" target="_blank" style="color: #10b981; font-weight: 600;">Terms of Service</a>
+                    <a href="terms.html" target="_blank" rel="noopener" style="color: #10b981; font-weight: 600;">Terms of Service</a>
                     and
-                    <a href="privacy.html" target="_blank" style="color: #10b981; font-weight: 600;">Privacy Policy</a>.
+                    <a href="privacy.html" target="_blank" rel="noopener" style="color: #10b981; font-weight: 600;">Privacy Policy</a>.
                 </label>
             </div>
             <p id="modal-terms-error" style="display: none; color: #ef4444; font-size: 0.75rem; margin-bottom: 12px; margin-left: 28px;">
@@ -188,6 +188,31 @@
 
     <script src="js/lang/es.js"></script>
     <script src="js/i18n.js"></script>
+
+    <!-- Toast notification helper -->
+    <script>
+        function showLoginToast(message, type) {
+            var existing = document.querySelector('.login-toast');
+            if (existing) existing.remove();
+            var toast = document.createElement('div');
+            toast.className = 'login-toast';
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            var bg = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6';
+            toast.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-12px);background:' + bg + ';color:white;padding:14px 24px;border-radius:12px;font-weight:500;z-index:10000;box-shadow:0 8px 24px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.3s,transform 0.3s;max-width:90%;text-align:center;font-size:0.9rem;';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            requestAnimationFrame(function() {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+            });
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(-12px)';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 5000);
+        }
+    </script>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -228,7 +253,7 @@
                     return { role: inviteData.role, name: inviteData.name };
                 }
             } catch (e) {
-                console.log('Error checking invite:', e);
+                // Invite check failed (non-fatal)
             }
             return null;
         }
@@ -287,7 +312,7 @@
                 const result = await signInWithPopup(auth, googleProvider);
                 const user = result.user;
 
-                console.log('Google login success:', user.email);
+                // Google login success
 
                 const isFallbackAdmin = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
 
@@ -333,7 +358,7 @@
                 window.location.href = 'portal/dashboard.html';
             } catch (error) {
                 console.error('Google sign-in error:', error);
-                alert('Google sign-in failed: ' + error.message);
+                showLoginToast('Google sign-in failed. Please try again.', 'error');
             }
         });
 
@@ -400,7 +425,7 @@
                 }
                 window.location.href = 'portal/dashboard.html';
             } catch (error) {
-                alert('Login failed: ' + error.message);
+                showLoginToast('Login failed. Please check your credentials.', 'error');
             }
         });
 
@@ -415,7 +440,7 @@
             const confirm = document.getElementById('signup-confirm').value;
 
             if (password !== confirm) {
-                alert('Passwords do not match');
+                showLoginToast('Passwords do not match.', 'error');
                 return;
             }
 
@@ -456,7 +481,7 @@
 
                 window.location.href = 'portal/dashboard.html';
             } catch (error) {
-                alert('Signup failed: ' + error.message);
+                showLoginToast('Signup failed. ' + error.message, 'error');
             }
         });
 
@@ -467,7 +492,7 @@
 
             try {
                 await sendPasswordResetEmail(auth, email);
-                alert('Password reset email sent! Check your inbox.');
+                showLoginToast('Password reset email sent! Check your inbox.', 'success');
                 // Show login form
                 loginForm.style.display = 'block';
                 signupForm.style.display = 'none';
@@ -476,7 +501,7 @@
                 signupFooter.style.display = 'none';
                 resetFooter.style.display = 'none';
             } catch (error) {
-                alert('Error: ' + error.message);
+                showLoginToast('Error: ' + error.message, 'error');
             }
         });
     </script>

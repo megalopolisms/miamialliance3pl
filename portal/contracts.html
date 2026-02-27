@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Contracts | Miami Alliance 3PL Portal</title>
     <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0f172a">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -607,6 +608,24 @@
     <script src="../js/lang/es.js"></script>
     <script src="../js/i18n.js"></script>
 
+    <!-- Toast helper for accessible notifications -->
+    <script>
+        function showPortalToast(message, type) {
+            var toast = document.createElement('div');
+            toast.setAttribute('role', 'status');
+            toast.setAttribute('aria-live', 'polite');
+            toast.style.cssText = 'position:fixed;bottom:24px;right:24px;padding:16px 24px;border-radius:12px;font-weight:500;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.15);opacity:0;transform:translateY(12px);transition:opacity 0.3s,transform 0.3s;max-width:400px;color:white;font-family:Inter,sans-serif;';
+            if (type === 'error') toast.style.background = '#ef4444';
+            else if (type === 'success') toast.style.background = '#10b981';
+            else if (type === 'warning') toast.style.background = '#f59e0b';
+            else toast.style.background = '#3b82f6';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            requestAnimationFrame(function() { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; });
+            setTimeout(function() { toast.style.opacity = '0'; toast.style.transform = 'translateY(12px)'; setTimeout(function() { toast.remove(); }, 300); }, 4000);
+        }
+    </script>
+
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -785,7 +804,7 @@
             const clientId = clientSelect.value;
 
             if (!clientId) {
-                alert('Please select a client.');
+                showPortalToast('Please select a client.', 'warning');
                 return;
             }
 
@@ -815,12 +834,12 @@
 
             try {
                 await addDoc(collection(db, 'contracts'), contractData);
-                alert('Contract created successfully!');
+                showPortalToast('Contract created successfully!', 'success');
                 closeNewContractModal();
                 loadAllContracts();
             } catch (e) {
                 console.error('Error creating contract:', e);
-                alert('Error creating contract: ' + e.message);
+                showPortalToast('Error creating contract: ' + e.message, 'error');
             }
         };
 
@@ -832,7 +851,7 @@
                 loadAllContracts();
             } catch (e) {
                 console.error('Error deleting contract:', e);
-                alert('Error: ' + e.message);
+                showPortalToast('Error deleting contract: ' + e.message, 'error');
             }
         };
 
@@ -843,7 +862,7 @@
             const email = document.getElementById('req-email').value;
 
             if (!company || !contact || !email) {
-                alert('Please fill in all required fields (Company, Contact, Email).');
+                showPortalToast('Please fill in all required fields (Company, Contact, Email).', 'warning');
                 return;
             }
 
@@ -862,11 +881,11 @@
 
             try {
                 await addDoc(collection(db, 'contract_requests'), requestData);
-                alert('Contract request submitted! Our team will contact you within 1-2 business days.');
+                showPortalToast('Contract request submitted! Our team will contact you within 1-2 business days.', 'success');
                 closeRequestModal();
             } catch (e) {
                 console.error('Error submitting request:', e);
-                alert('Error submitting request: ' + e.message);
+                showPortalToast('Error submitting request: ' + e.message, 'error');
             }
         };
 

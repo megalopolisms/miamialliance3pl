@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Dashboard | Miami Alliance 3PL Portal</title>
     <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0f172a">
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
@@ -492,7 +493,7 @@
                     if (userData.role) userRole = userData.role;
                 }
             } catch (e) {
-                console.log('Could not fetch user doc:', e);
+                // User doc fetch failed (non-fatal)
             }
 
             // Fallback: Check hardcoded admin emails if no Firestore role
@@ -610,7 +611,7 @@
                     const pickupEl = document.getElementById('total-pickups');
                     if (pickupEl) pickupEl.textContent = pickupsSnap.size;
                 } catch (e) {
-                    console.log('[Dashboard] Pickup requests collection may not exist yet');
+                    // Pickup requests collection may not exist yet
                 }
 
             } catch (error) {
