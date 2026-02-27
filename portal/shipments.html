@@ -25,6 +25,331 @@
         gtag('config', 'G-KTW0F25ZM1');
     </script>
     <script src="../js/analytics.js"></script>
+
+    <!-- Calculator Modal Styles -->
+    <style>
+        /* ================================================
+           SHIPMENT CALCULATOR — EXACT MATCH with quote.html
+           Includes 3D viewer, same layout, same UX
+           ================================================ */
+        .calc-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 24px;
+            overflow-y: auto;
+        }
+        .calc-overlay.active {
+            display: flex;
+        }
+        .calc-modal {
+            background: #fff;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 1200px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.25);
+            overflow: hidden;
+            margin: auto;
+        }
+        .calc-modal-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            padding: 20px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .calc-modal-header h2 {
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .calc-modal-header h2 .accent { color: #14b8a6; }
+        .calc-modal-close {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .calc-modal-close:hover { background: rgba(255,255,255,0.25); }
+
+        /* Override quote-tool styles inside modal — match quote.html layout */
+        .calc-modal-body .quote-tool {
+            box-shadow: none;
+            border-radius: 0;
+            max-width: 100%;
+            display: grid;
+            grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+            gap: 0;
+            background: var(--color-white, #fff);
+            overflow: hidden;
+        }
+        .calc-modal-body .quote-controls {
+            max-height: 80vh;
+            overflow-y: auto;
+            border-right: 1px solid var(--color-gray-200, #e5e7eb);
+            padding: var(--spacing-lg, 24px);
+        }
+
+        /* 3D Canvas Panel (RIGHT side — same as quote.html) */
+        .calc-canvas-wrapper {
+            position: relative;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 500px;
+            min-width: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        #shipment-3d-canvas {
+            width: 100%;
+            flex: 1;
+            min-height: 450px;
+            overflow: hidden;
+        }
+        .calc-canvas-controls {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.5);
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        .calc-canvas-controls button {
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 10px;
+            transition: background 0.2s;
+        }
+        .calc-canvas-controls button:hover { background: #14b8a6; }
+        .calc-canvas-hint {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        /* Destination form */
+        .dest-section-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dest-form-grid {
+            display: grid;
+            gap: 10px;
+        }
+        .dest-form-grid.cols-3 {
+            grid-template-columns: 2fr 1fr 1fr;
+        }
+        .dest-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .dest-form-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        .dest-form-group input,
+        .dest-form-group textarea {
+            padding: 10px 12px;
+            border: 2px solid var(--color-gray-200, #e5e7eb);
+            border-radius: var(--radius-md, 8px);
+            font-size: 0.9rem;
+            font-family: inherit;
+            color: #1e293b;
+            transition: border-color 0.2s;
+        }
+        .dest-form-group input:focus,
+        .dest-form-group textarea:focus {
+            outline: none;
+            border-color: var(--color-accent, #f59e0b);
+        }
+
+        /* Create shipment button */
+        .btn-create-shipment {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md, 8px);
+            font-size: 1.05rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: var(--spacing-md, 16px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-create-shipment:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(20,184,166,0.3);
+        }
+        .btn-create-shipment:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* PDF download button (same style as quote.html) */
+        .btn-download-pdf {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md, 8px);
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-download-pdf:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(30,58,95,0.3);
+        }
+
+        /* Validation error */
+        .calc-error {
+            display: none;
+            padding: 10px 16px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: var(--radius-md, 8px);
+            color: #b91c1c;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: var(--spacing-sm, 8px);
+        }
+        .calc-error.active { display: block; }
+
+        /* Success state */
+        .calc-success {
+            display: none;
+            text-align: center;
+            padding: 60px 28px;
+        }
+        .calc-success.active { display: block; }
+        .calc-success .success-icon {
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 2rem;
+            color: #fff;
+            animation: calcPop 0.4s ease;
+        }
+        @keyframes calcPop {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        .calc-success h3 {
+            color: #1e3a5f;
+            font-size: 1.3rem;
+            margin: 0 0 8px;
+        }
+        .calc-success .tracking-num {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: #14b8a6;
+            background: #f0fdfa;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 8px 0 16px;
+            font-weight: 700;
+        }
+        .calc-success p { color: #64748b; font-size: 0.9rem; }
+
+        /* PDF toast notification */
+        .pdf-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: linear-gradient(135deg, #1e3a5f, #0f172a);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            z-index: 99999;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 360px;
+        }
+        .pdf-toast.show { transform: translateX(0); }
+        .pdf-toast .toast-icon {
+            font-size: 1.4rem;
+        }
+        .pdf-toast .toast-text strong {
+            display: block;
+            color: #14b8a6;
+        }
+        .pdf-toast .toast-text span {
+            font-size: 0.82rem;
+            opacity: 0.7;
+        }
+
+        /* Responsive overrides for modal */
+        @media (max-width: 1023px) {
+            .calc-overlay { padding: 12px; }
+            .calc-modal { max-width: 100%; }
+            .calc-modal-body .quote-tool {
+                grid-template-columns: 1fr;
+            }
+            .calc-modal-body .quote-controls {
+                max-height: none;
+                overflow-y: visible;
+                border-right: none;
+                border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+            }
+            .calc-canvas-wrapper {
+                min-height: 350px;
+            }
+        }
+        @media (max-width: 640px) {
+            .dest-form-grid.cols-3 { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -70,111 +395,8 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-sm);">
                 <h1 style="color: var(--color-gray-900);" data-i18n="portal.shipments.title">Shipments</h1>
                 <div style="display: flex; gap: var(--spacing-xs);">
-                    <button id="new-shipment-chat-btn" class="btn btn-primary" data-i18n="portal.shipments.newShipment">+ New Shipment</button>
-                    <button id="new-shipment-btn" class="btn btn-outline" data-i18n="portal.shipments.classicForm">Classic Form</button>
+                    <button id="new-shipment-calc-btn" class="btn btn-primary" data-i18n="portal.shipments.newShipment">+ New Shipment</button>
                 </div>
-            </div>
-
-            <!-- New Shipment Form (hidden by default) -->
-            <div id="shipment-form-container" class="dashboard-card" style="display: none; margin-bottom: var(--spacing-xl);">
-                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.shipments.createTitle">Create New Shipment</h2>
-                <form id="shipment-form" data-validate-form>
-                    <div style="display: grid; grid-template-columns: 1fr; gap: var(--spacing-md);">
-                        <div>
-                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);" data-i18n="portal.shipments.originAddress">Origin Address</h3>
-                            <div class="form-group">
-                                <label for="origin-street" data-i18n="portal.shipments.streetAddress">Street Address</label>
-                                <input type="text" id="origin-street" required value="8780 NW 100th ST" aria-required="true">
-                            </div>
-                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
-                                <div class="form-group">
-                                    <label for="origin-city" data-i18n="portal.shipments.city">City</label>
-                                    <input type="text" id="origin-city" required value="Medley" aria-required="true">
-                                </div>
-                                <div class="form-group">
-                                    <label for="origin-state" data-i18n="portal.shipments.state">State</label>
-                                    <input type="text" id="origin-state" name="origin-state" required value="FL" maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" data-validate="state" aria-required="true">
-                                </div>
-                                <div class="form-group">
-                                    <label for="origin-zip" data-i18n="portal.shipments.zip">ZIP</label>
-                                    <input type="text" id="origin-zip" name="origin-zip" required value="33178" pattern="\d{5}(-\d{4})?" title="5 or 9 digit ZIP code" data-validate="zip" aria-required="true">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);" data-i18n="portal.shipments.destAddress">Destination Address</h3>
-                            <div class="form-group">
-                                <label for="dest-name" data-i18n="portal.shipments.recipientName">Recipient Name</label>
-                                <input type="text" id="dest-name" required placeholder="John Smith" data-i18n-placeholder="portal.shipments.recipientNamePh" aria-required="true">
-                            </div>
-                            <div class="form-group">
-                                <label for="dest-street" data-i18n="portal.shipments.streetAddress">Street Address</label>
-                                <input type="text" id="dest-street" required placeholder="123 Main St" data-i18n-placeholder="portal.shipments.streetAddressPh" aria-required="true">
-                            </div>
-                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
-                                <div class="form-group">
-                                    <label for="dest-city" data-i18n="portal.shipments.city">City</label>
-                                    <input type="text" id="dest-city" required placeholder="City" data-i18n-placeholder="portal.shipments.cityPh" aria-required="true">
-                                </div>
-                                <div class="form-group">
-                                    <label for="dest-state" data-i18n="portal.shipments.state">State</label>
-                                    <input type="text" id="dest-state" name="dest-state" required placeholder="ST" data-i18n-placeholder="portal.shipments.statePh" maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" data-validate="state" aria-required="true">
-                                </div>
-                                <div class="form-group">
-                                    <label for="dest-zip" data-i18n="portal.shipments.zip">ZIP</label>
-                                    <input type="text" id="dest-zip" name="dest-zip" required placeholder="12345" data-i18n-placeholder="portal.shipments.zipPh" pattern="\d{5}(-\d{4})?" title="5 or 9 digit ZIP code" data-validate="zip" aria-required="true">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);" data-i18n="portal.shipments.packageDetails">Package Details</h3>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-sm);">
-                                <div class="form-group">
-                                    <label for="pkg-weight" data-i18n="portal.shipments.weight">Weight (lbs)</label>
-                                    <input type="number" id="pkg-weight" name="pkg-weight" required placeholder="0" min="0.1" step="0.1" data-validate="decimal" aria-required="true">
-                                </div>
-                                <div class="form-group">
-                                    <label for="pkg-length" data-i18n="portal.shipments.length">Length (in)</label>
-                                    <input type="number" id="pkg-length" placeholder="0" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label for="pkg-width" data-i18n="portal.shipments.width">Width (in)</label>
-                                    <input type="number" id="pkg-width" placeholder="0" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label for="pkg-height" data-i18n="portal.shipments.height">Height (in)</label>
-                                    <input type="number" id="pkg-height" placeholder="0" min="0">
-                                </div>
-                                <div class="form-group">
-                                    <label for="pkg-qty" data-i18n="portal.shipments.quantity">Quantity</label>
-                                    <input type="number" id="pkg-qty" required value="1" min="1" aria-required="true">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="form-group">
-                                <label for="service-type" data-i18n="portal.shipments.serviceType">Service Type</label>
-                                <select id="service-type" required aria-required="true">
-                                    <option value="standard" data-i18n="portal.shipments.standard">Standard (3-5 days)</option>
-                                    <option value="express" data-i18n="portal.shipments.express">Express (1-2 days)</option>
-                                    <option value="overnight" data-i18n="portal.shipments.overnight">Overnight</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="notes" data-i18n="portal.shipments.notes">Notes (optional)</label>
-                                <textarea id="notes" placeholder="Special instructions..." data-i18n-placeholder="portal.shipments.notesPh"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
-                        <button type="submit" class="btn btn-primary" data-i18n="portal.shipments.createBtn">Create Shipment</button>
-                        <button type="button" id="cancel-shipment" class="btn btn-outline" data-i18n="portal.shipments.cancelBtn">Cancel</button>
-                    </div>
-                </form>
             </div>
 
             <!-- Filter -->
@@ -213,27 +435,285 @@
         </main>
     </div>
 
-    <!-- Chat Wizard Modal -->
-    <div id="chat-modal" class="chat-modal" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title">
-        <div class="chat-container">
-            <div class="chat-header">
-                <h2 id="chat-modal-title"><span aria-hidden="true">📦</span> <span data-i18n="portal.shipments.chatTitle">New Shipment</span></h2>
-                <button class="chat-close" id="chat-close" aria-label="Close dialog">&times;</button>
+    <!-- ============================================================ -->
+    <!-- NEW SHIPMENT — EXACT SAME UX AS quote.html                   -->
+    <!-- LEFT: Controls + Results + Destination + Create              -->
+    <!-- RIGHT: 3D Canvas (Three.js)                                  -->
+    <!-- ============================================================ -->
+    <div id="calc-overlay" class="calc-overlay" role="dialog" aria-modal="true" aria-labelledby="calc-title">
+        <div class="calc-modal">
+            <!-- Header -->
+            <div class="calc-modal-header">
+                <h2 id="calc-title">📦 New <span class="accent">Shipment</span></h2>
+                <button class="calc-modal-close" id="calc-close" aria-label="Close">&times;</button>
             </div>
-            <div class="chat-progress" id="chat-progress">
-                <div class="chat-progress-dot active"></div>
-                <div class="chat-progress-dot"></div>
-                <div class="chat-progress-dot"></div>
-                <div class="chat-progress-dot"></div>
-                <div class="chat-progress-dot"></div>
-            </div>
-            <div class="chat-messages" id="chat-messages">
-                <!-- Messages will be injected here -->
-            </div>
-            <div class="chat-actions" id="chat-actions" style="display: none;">
-                <button class="btn btn-cancel" id="btn-cancel" data-i18n="portal.shipments.cancelBtn">Cancel</button>
-                <button class="btn btn-edit" id="btn-edit" data-i18n="portal.shipments.editBtn">Edit</button>
-                <button class="btn btn-confirm" id="btn-confirm" data-i18n="portal.shipments.confirmBtn">Confirm & Create</button>
+
+            <!-- Body: Same layout as quote.html (Controls LEFT | 3D Canvas RIGHT) -->
+            <div class="calc-modal-body" id="calc-body">
+                <div class="quote-tool">
+
+                    <!-- ====== LEFT PANEL: Controls + Results (same as quote.html) ====== -->
+                    <div class="quote-controls">
+
+                        <!-- Package Type -->
+                        <div class="quote-control-group">
+                            <label class="quote-label" data-i18n="quote.package.label">Package Type</label>
+                            <div class="package-toggle">
+                                <button type="button" class="package-option active" data-type="box">
+                                    <span class="package-icon">📦</span>
+                                    <span class="package-name" data-i18n="quote.package.box">Box</span>
+                                </button>
+                                <button type="button" class="package-option" data-type="pallet">
+                                    <span class="package-icon">🏗️</span>
+                                    <span class="package-name" data-i18n="quote.package.pallet">Pallet</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Dimensions -->
+                        <div class="quote-control-group">
+                            <label class="quote-label" data-i18n="quote.dimensions.label">Dimensions (inches)</label>
+                            <div class="dimension-row">
+                                <div class="dimension-input-group">
+                                    <input type="number" id="sc-length" class="dimension-input" value="12" min="1" max="120">
+                                    <span class="dimension-label" data-i18n="quote.dimensions.length">Length</span>
+                                </div>
+                                <div class="dimension-input-group">
+                                    <input type="number" id="sc-width" class="dimension-input" value="12" min="1" max="120">
+                                    <span class="dimension-label" data-i18n="quote.dimensions.width">Width</span>
+                                </div>
+                                <div class="dimension-input-group">
+                                    <input type="number" id="sc-height" class="dimension-input" value="12" min="1" max="120">
+                                    <span class="dimension-label" data-i18n="quote.dimensions.height">Height</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weight -->
+                        <div class="quote-control-group">
+                            <label class="quote-label" data-i18n="quote.weight.label">Weight (lbs)</label>
+                            <div class="weight-input-wrapper">
+                                <input type="range" id="sc-weight-slider" min="1" max="500" value="25" class="weight-slider">
+                                <div class="weight-display">
+                                    <input type="number" id="sc-weight-input" value="25" min="1" max="2000" class="weight-number">
+                                    <span class="weight-unit">lbs</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="quote-control-group">
+                            <label class="quote-label" data-i18n="quote.quantity.label">Quantity</label>
+                            <div class="quantity-controls">
+                                <button type="button" class="qty-btn" id="sc-qty-dec">-</button>
+                                <input type="number" id="sc-qty" value="1" min="1" max="1000" class="quantity-input">
+                                <button type="button" class="qty-btn" id="sc-qty-inc">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Shipping Zone -->
+                        <div class="quote-control-group">
+                            <label class="quote-label" data-i18n="quote.zone.label">Shipping Zone</label>
+                            <select id="sc-zone" class="zone-select">
+                                <option value="local" data-i18n="quote.zone.local">Local (FL)</option>
+                                <option value="regional" selected data-i18n="quote.zone.regional">Regional (Southeast)</option>
+                                <option value="national" data-i18n="quote.zone.national">National</option>
+                                <option value="none" data-i18n="quote.zone.none">No Shipping Required</option>
+                                <option value="dropship" data-i18n="quote.zone.dropship">Shipping by Units (Drop Ship)</option>
+                            </select>
+                        </div>
+
+                        <!-- Drop Ship Unit Pricing -->
+                        <div class="quote-control-group" id="sc-dropship-group" style="display: none;">
+                            <label class="quote-label" data-i18n="quote.dropship.label">Drop Ship — Units by Box Size</label>
+                            <div class="dropship-grid">
+                                <div class="dropship-item">
+                                    <label class="dropship-label">
+                                        <span class="dropship-icon">📧</span>
+                                        <span data-i18n="quote.dropship.envelope">Envelopes</span>
+                                        <span class="dropship-price">$1.50/ea</span>
+                                    </label>
+                                    <div class="dropship-qty">
+                                        <button type="button" class="qty-btn dropship-btn" data-box="envelope" data-action="decrease">-</button>
+                                        <input type="number" id="sc-ds-envelope" class="dropship-input" value="0" min="0" max="9999">
+                                        <button type="button" class="qty-btn dropship-btn" data-box="envelope" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="dropship-item">
+                                    <label class="dropship-label">
+                                        <span class="dropship-icon">📦</span>
+                                        <span data-i18n="quote.dropship.small">Small Box</span>
+                                        <span class="dropship-price">$3.00/ea</span>
+                                    </label>
+                                    <div class="dropship-qty">
+                                        <button type="button" class="qty-btn dropship-btn" data-box="small" data-action="decrease">-</button>
+                                        <input type="number" id="sc-ds-small" class="dropship-input" value="0" min="0" max="9999">
+                                        <button type="button" class="qty-btn dropship-btn" data-box="small" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="dropship-item">
+                                    <label class="dropship-label">
+                                        <span class="dropship-icon">📦</span>
+                                        <span data-i18n="quote.dropship.medium">Medium Box</span>
+                                        <span class="dropship-price">$5.00/ea</span>
+                                    </label>
+                                    <div class="dropship-qty">
+                                        <button type="button" class="qty-btn dropship-btn" data-box="medium" data-action="decrease">-</button>
+                                        <input type="number" id="sc-ds-medium" class="dropship-input" value="0" min="0" max="9999">
+                                        <button type="button" class="qty-btn dropship-btn" data-box="medium" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="dropship-item">
+                                    <label class="dropship-label">
+                                        <span class="dropship-icon">📦</span>
+                                        <span data-i18n="quote.dropship.large">Large Box</span>
+                                        <span class="dropship-price">$20.00/ea</span>
+                                    </label>
+                                    <div class="dropship-qty">
+                                        <button type="button" class="qty-btn dropship-btn" data-box="large" data-action="decrease">-</button>
+                                        <input type="number" id="sc-ds-large" class="dropship-input" value="0" min="0" max="9999">
+                                        <button type="button" class="qty-btn dropship-btn" data-box="large" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Black Wrapping (Pallet Only) -->
+                        <div class="quote-control-group" id="sc-wrapping-group" style="display: none;">
+                            <label class="quote-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="sc-wrapping" style="width: 18px; height: 18px; cursor: pointer;">
+                                <span data-i18n="quote.wrapping">Black Wrapping (+$7/pallet)</span>
+                            </label>
+                        </div>
+
+                        <!-- ====== PRICING RESULTS (same position as quote.html — inside left panel) ====== -->
+                        <div class="quote-results" style="margin-top: var(--spacing-md, 16px);">
+                            <h3 class="quote-results-title" data-i18n="quote.results.title">Estimated Quote</h3>
+
+                            <div class="quote-line">
+                                <span data-i18n="quote.results.dimweight">Dimensional Weight</span>
+                                <span id="sc-r-dimweight">12.4 lbs</span>
+                            </div>
+                            <div class="quote-line">
+                                <span data-i18n="quote.results.cubicft">Cubic Feet</span>
+                                <span id="sc-r-cubicft">1.0 ft³</span>
+                            </div>
+
+                            <div class="quote-divider"></div>
+
+                            <div class="quote-line">
+                                <span data-i18n="quote.results.storage">Storage (30 days)</span>
+                                <span id="sc-r-storage">$5.00</span>
+                            </div>
+                            <div class="quote-line">
+                                <span data-i18n="quote.results.handling">Handling Fee</span>
+                                <span id="sc-r-handling">$3.50</span>
+                            </div>
+                            <div class="quote-line">
+                                <span data-i18n="quote.results.pickpack">Pick & Pack</span>
+                                <span id="sc-r-pickpack">$1.25</span>
+                            </div>
+                            <div class="quote-line" id="sc-r-shipping-row">
+                                <span data-i18n="quote.results.shipping">Est. Shipping</span>
+                                <span id="sc-r-shipping">$16.25</span>
+                            </div>
+                            <div class="quote-line" id="sc-r-wrapping-row" style="display: none;">
+                                <span data-i18n="quote.results.wrapping">Black Wrapping</span>
+                                <span id="sc-r-wrapping">$7.00</span>
+                            </div>
+                            <div class="quote-line" id="sc-r-dropship-row" style="display: none;">
+                                <span data-i18n="quote.results.dropship">Drop Ship (by unit)</span>
+                                <span id="sc-r-dropship">$0.00</span>
+                            </div>
+
+                            <div class="quote-divider"></div>
+
+                            <div class="quote-line quote-total">
+                                <span data-i18n="quote.results.total">TOTAL ESTIMATE</span>
+                                <span id="sc-r-total">$26.00</span>
+                            </div>
+
+                            <p class="quote-disclaimer" data-i18n="quote.results.disclaimer">* Estimates based on standard rates. Final pricing may vary.</p>
+                        </div>
+
+                        <!-- PDF Download Button (same as quote.html) -->
+                        <button type="button" class="btn-download-pdf" id="sc-download-pdf">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Download PDF Quote
+                        </button>
+
+                        <!-- DESTINATION ADDRESS (shipment-specific addition) -->
+                        <div class="quote-control-group" style="border-top: 2px solid var(--color-gray-200, #e5e7eb); padding-top: var(--spacing-md, 16px); margin-top: var(--spacing-md, 16px);">
+                            <div class="dest-section-title">📍 Destination Address</div>
+                            <div class="dest-form-grid" style="margin-bottom: 10px;">
+                                <div class="dest-form-group">
+                                    <label>Recipient Name *</label>
+                                    <input type="text" id="sc-dest-name" placeholder="John Smith">
+                                </div>
+                            </div>
+                            <div class="dest-form-grid" style="margin-bottom: 10px;">
+                                <div class="dest-form-group">
+                                    <label>Street Address *</label>
+                                    <input type="text" id="sc-dest-street" placeholder="123 Main Street">
+                                </div>
+                            </div>
+                            <div class="dest-form-grid cols-3">
+                                <div class="dest-form-group">
+                                    <label>City *</label>
+                                    <input type="text" id="sc-dest-city" placeholder="Miami">
+                                </div>
+                                <div class="dest-form-group">
+                                    <label>State *</label>
+                                    <input type="text" id="sc-dest-state" placeholder="FL" maxlength="2">
+                                </div>
+                                <div class="dest-form-group">
+                                    <label>ZIP *</label>
+                                    <input type="text" id="sc-dest-zip" placeholder="33101">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="quote-control-group">
+                            <label class="quote-label">Special Instructions (Optional)</label>
+                            <div class="dest-form-group">
+                                <textarea id="sc-notes" placeholder="Fragile items, stacking instructions, etc." rows="2" style="resize:vertical;"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Error + Create Shipment Button -->
+                        <div class="calc-error" id="sc-error" role="alert" aria-live="polite"></div>
+
+                        <button type="button" class="btn-create-shipment" id="sc-create-btn">
+                            ✓ Create Shipment
+                        </button>
+
+                    </div>
+
+                    <!-- ====== RIGHT PANEL: 3D Canvas (SAME as quote.html) ====== -->
+                    <div class="calc-canvas-wrapper">
+                        <div id="shipment-3d-canvas">
+                            <div id="sc-loading-indicator" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#1e3a5f;">
+                                <div style="width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#14b8a6;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;"></div>
+                                <span>Loading 3D View...</span>
+                            </div>
+                        </div>
+                        <div class="calc-canvas-controls">
+                            <button id="sc-reset-view-btn">Reset View</button>
+                            <span class="calc-canvas-hint">Drag to rotate &bull; Scroll to zoom</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Success State (replaces the calculator) -->
+                <div class="calc-success" id="calc-success">
+                    <div class="success-icon">✓</div>
+                    <h3>Shipment Created!</h3>
+                    <div class="tracking-num" id="success-tracking">MA3PL00000000</div>
+                    <p>Your shipment is now being processed. Track it anytime in your dashboard.</p>
+                    <button type="button" class="btn btn-primary" style="margin:16px auto 0;padding:12px 32px;" id="calc-done">Done</button>
+                </div>
             </div>
         </div>
     </div>
@@ -241,12 +721,29 @@
     <!-- i18n -->
     <script src="../js/lang/es.js"></script>
     <script src="../js/i18n.js"></script>
+    <script src="../js/quote-pricing-engine.js"></script>
 
-    <!-- Firebase SDK -->
+    <!-- Three.js Import Map (same as quote.html) -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <!-- jsPDF Library for PDF Generation (same as quote.html) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Firebase SDK + Calculator Logic + 3D Viewer -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
@@ -262,17 +759,1264 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Fallback admin emails (used if Firestore role not set)
+        // Fallback admin emails
         const FALLBACK_ADMIN_EMAILS = [
             'yuri.petrini.m5@gmail.com',
             'admin@miamialliance3pl.com'
         ];
 
         let currentUser = null;
-        let currentUserRole = 'customer'; // Default role
-        let isStaff = false; // true for admin or employee
+        let currentUserRole = 'customer';
+        let isStaff = false;
 
-        // Check authentication
+        // =====================================================
+        // 3D VIEWER (exact copy from quote.html Quote3DViewer)
+        // =====================================================
+        class Shipment3DViewer {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                if (!this.container) return;
+
+                this.packageType = 'box';
+                this.dimensions = { width: 12, height: 12, depth: 12 };
+                this.mesh = null;
+                this.autoRotate = true;
+                this.idleTimer = null;
+                this.initialCameraPos = new THREE.Vector3(40, 30, 40);
+                this.active = false;
+
+                // Don't init until modal opens
+            }
+
+            start() {
+                if (this.active) {
+                    this.onResize();
+                    return;
+                }
+                this.active = true;
+                this.init();
+                this.animate();
+            }
+
+            dispose() {
+                this.active = false;
+                if (this.renderer) {
+                    this.renderer.dispose();
+                    this.renderer.domElement.remove();
+                }
+                if (this.controls) {
+                    this.controls.dispose();
+                }
+                clearTimeout(this.idleTimer);
+            }
+
+            init() {
+                const width = this.container.clientWidth || 600;
+                const height = this.container.clientHeight || 500;
+
+                // Scene
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0xf1f5f9);
+
+                // Camera
+                this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+                this.camera.position.copy(this.initialCameraPos);
+                this.camera.lookAt(0, 5, 0);
+
+                // Renderer
+                this.renderer = new THREE.WebGLRenderer({
+                    antialias: true,
+                    alpha: true,
+                    powerPreference: 'high-performance'
+                });
+                this.renderer.setSize(width, height);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                this.renderer.toneMappingExposure = 1.2;
+                this.container.appendChild(this.renderer.domElement);
+
+                // Hide loading
+                const loader = document.getElementById('sc-loading-indicator');
+                if (loader) loader.style.display = 'none';
+
+                // OrbitControls with auto-rotate
+                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                this.controls.dampingFactor = 0.08;
+                this.controls.minDistance = 15;
+                this.controls.maxDistance = 120;
+                this.controls.maxPolarAngle = Math.PI / 2.1;
+                this.controls.autoRotate = true;
+                this.controls.autoRotateSpeed = 0.5;
+                this.controls.target.set(0, 5, 0);
+
+                this.controls.addEventListener('start', () => {
+                    this.controls.autoRotate = false;
+                    clearTimeout(this.idleTimer);
+                });
+                this.controls.addEventListener('end', () => {
+                    this.idleTimer = setTimeout(() => {
+                        this.controls.autoRotate = true;
+                    }, 3000);
+                });
+
+                // Lighting (same as quote.html)
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                this.scene.add(ambientLight);
+
+                const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+                mainLight.position.set(30, 50, 30);
+                mainLight.castShadow = true;
+                mainLight.shadow.mapSize.width = 2048;
+                mainLight.shadow.mapSize.height = 2048;
+                mainLight.shadow.camera.near = 0.5;
+                mainLight.shadow.camera.far = 200;
+                mainLight.shadow.camera.left = -50;
+                mainLight.shadow.camera.right = 50;
+                mainLight.shadow.camera.top = 50;
+                mainLight.shadow.camera.bottom = -50;
+                mainLight.shadow.bias = -0.0001;
+                this.scene.add(mainLight);
+
+                const fillLight = new THREE.DirectionalLight(0x88ccff, 0.3);
+                fillLight.position.set(-20, 30, -20);
+                this.scene.add(fillLight);
+
+                const rimLight = new THREE.DirectionalLight(0xffffee, 0.4);
+                rimLight.position.set(0, 10, -40);
+                this.scene.add(rimLight);
+
+                // Floor and reference
+                this.createFloor();
+                this.createScaleReference();
+
+                // Initial package
+                this.createBox();
+
+                // Reset view button
+                document.getElementById('sc-reset-view-btn')?.addEventListener('click', () => this.resetView());
+
+                // Handle resize
+                this._resizeHandler = () => this.onResize();
+                window.addEventListener('resize', this._resizeHandler);
+            }
+
+            resetView() {
+                const start = this.camera.position.clone();
+                const end = this.initialCameraPos.clone();
+                const duration = 500;
+                const startTime = Date.now();
+
+                const animateReset = () => {
+                    const elapsed = Date.now() - startTime;
+                    const t = Math.min(elapsed / duration, 1);
+                    const eased = 1 - Math.pow(1 - t, 3);
+
+                    this.camera.position.lerpVectors(start, end, eased);
+                    this.controls.target.set(0, 5, 0);
+
+                    if (t < 1) requestAnimationFrame(animateReset);
+                };
+                animateReset();
+                this.controls.autoRotate = true;
+            }
+
+            createFloor() {
+                const gridHelper = new THREE.GridHelper(80, 8, 0x14b8a6, 0xe2e8f0);
+                gridHelper.position.y = 0;
+                gridHelper.material.opacity = 0.5;
+                gridHelper.material.transparent = true;
+                this.scene.add(gridHelper);
+
+                const floorGeometry = new THREE.PlaneGeometry(100, 100);
+                const floorMaterial = new THREE.ShadowMaterial({ opacity: 0.15 });
+                const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+                floor.rotation.x = -Math.PI / 2;
+                floor.receiveShadow = true;
+                this.scene.add(floor);
+
+                const discGeom = new THREE.CircleGeometry(45, 64);
+                const discMat = new THREE.MeshBasicMaterial({
+                    color: 0xe2e8f0,
+                    transparent: true,
+                    opacity: 0.3
+                });
+                const disc = new THREE.Mesh(discGeom, discMat);
+                disc.rotation.x = -Math.PI / 2;
+                disc.position.y = 0.01;
+                this.scene.add(disc);
+            }
+
+            createScaleReference() {
+                const humanHeight = 17;
+                const humanGroup = new THREE.Group();
+                humanGroup.userData.isReference = true;
+
+                const bodyMat = new THREE.MeshStandardMaterial({
+                    color: 0x64748b,
+                    transparent: true,
+                    opacity: 0.6,
+                    roughness: 0.8
+                });
+
+                const torsoGeom = new THREE.CylinderGeometry(1.2, 1, 7, 16);
+                const torso = new THREE.Mesh(torsoGeom, bodyMat);
+                torso.position.y = 8;
+                humanGroup.add(torso);
+
+                const headGeom = new THREE.SphereGeometry(1.3, 16, 16);
+                const head = new THREE.Mesh(headGeom, bodyMat);
+                head.position.y = 13.5;
+                humanGroup.add(head);
+
+                const legGeom = new THREE.CylinderGeometry(0.5, 0.4, 6, 12);
+                const leftLeg = new THREE.Mesh(legGeom, bodyMat);
+                leftLeg.position.set(-0.6, 3, 0);
+                humanGroup.add(leftLeg);
+
+                const rightLeg = new THREE.Mesh(legGeom, bodyMat);
+                rightLeg.position.set(0.6, 3, 0);
+                humanGroup.add(rightLeg);
+
+                humanGroup.position.set(-20, 0, 0);
+                humanGroup.castShadow = true;
+                this.scene.add(humanGroup);
+
+                this.createLabel("5'8\"", { x: -20, y: humanHeight + 2, z: 0 }, true);
+            }
+
+            createBox() {
+                this.clearPackage();
+
+                const { width, height, depth } = this.dimensions;
+                const w = width / 4;
+                const h = height / 4;
+                const d = depth / 4;
+
+                const radius = Math.min(w, h, d) * 0.05;
+                const geometry = new RoundedBoxGeometry(w, h, d, 4, radius);
+
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0xd4a574,
+                    roughness: 0.85,
+                    metalness: 0.05
+                });
+
+                this.mesh = new THREE.Mesh(geometry, material);
+                this.mesh.position.y = h / 2;
+                this.mesh.castShadow = true;
+                this.mesh.receiveShadow = true;
+                this.scene.add(this.mesh);
+
+                this.addBoxTape(w, h, d);
+
+                const edges = new THREE.EdgesGeometry(geometry);
+                const lineMat = new THREE.LineBasicMaterial({ color: 0xb8956e, linewidth: 1 });
+                const wireframe = new THREE.LineSegments(edges, lineMat);
+                wireframe.position.copy(this.mesh.position);
+                wireframe.userData.isTape = true;
+                this.scene.add(wireframe);
+
+                this.updateLabels();
+            }
+
+            clearPackage() {
+                if (this.mesh) {
+                    this.scene.remove(this.mesh);
+                    if (this.mesh.geometry) this.mesh.geometry.dispose();
+                    if (this.mesh.material) this.mesh.material.dispose();
+                }
+
+                this.scene.children
+                    .filter(c => c.userData.isTape || c.userData.isPallet)
+                    .forEach(c => {
+                        this.scene.remove(c);
+                        if (c.geometry) c.geometry.dispose();
+                        if (c.material) c.material.dispose();
+                    });
+            }
+
+            addBoxTape(w, h, d) {
+                const tapeMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x8b7355,
+                    roughness: 0.6
+                });
+
+                const tapeWidth = Math.min(w * 0.12, 1.5);
+
+                const tapeGeom = new THREE.BoxGeometry(tapeWidth, 0.08, d + 0.1);
+                const topTape = new THREE.Mesh(tapeGeom, tapeMaterial);
+                topTape.position.set(0, h + 0.04, 0);
+                topTape.userData.isTape = true;
+                this.scene.add(topTape);
+
+                const crossTapeGeom = new THREE.BoxGeometry(w + 0.1, 0.08, tapeWidth);
+                const crossTape = new THREE.Mesh(crossTapeGeom, tapeMaterial);
+                crossTape.position.set(0, h + 0.05, 0);
+                crossTape.userData.isTape = true;
+                this.scene.add(crossTape);
+            }
+
+            createPallet() {
+                this.clearPackage();
+
+                const { width, height, depth } = this.dimensions;
+                const w = width / 4;
+                const h = height / 4;
+                const d = depth / 4;
+
+                const woodMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x9a7b5b,
+                    roughness: 0.95,
+                    metalness: 0
+                });
+
+                const palletGroup = new THREE.Group();
+                palletGroup.userData.isPallet = true;
+
+                const palletW = 12;
+                const palletD = 10;
+
+                for (let i = 0; i < 7; i++) {
+                    const boardGeom = new THREE.BoxGeometry(palletW, 0.25, 1.2);
+                    const board = new THREE.Mesh(boardGeom, woodMaterial);
+                    board.position.set(0, 0.75, -palletD / 2 + 0.7 + i * 1.5);
+                    board.castShadow = true;
+                    board.receiveShadow = true;
+                    palletGroup.add(board);
+                }
+
+                for (let x = -1; x <= 1; x++) {
+                    for (let z = -1; z <= 1; z++) {
+                        const blockGeom = new THREE.BoxGeometry(1.2, 0.5, 1.2);
+                        const block = new THREE.Mesh(blockGeom, woodMaterial);
+                        block.position.set(x * 4.5, 0.25, z * 3.5);
+                        block.castShadow = true;
+                        palletGroup.add(block);
+                    }
+                }
+
+                this.scene.add(palletGroup);
+
+                const boxMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xd4a574,
+                    roughness: 0.85,
+                    metalness: 0.05
+                });
+
+                const boxW = Math.min(w, palletW - 1);
+                const boxH = Math.max(h - 1, 2);
+                const boxD = Math.min(d, palletD - 1);
+
+                const boxGeom = new RoundedBoxGeometry(boxW, boxH, boxD, 3, 0.15);
+                this.mesh = new THREE.Mesh(boxGeom, boxMaterial);
+                this.mesh.position.y = 0.9 + boxH / 2;
+                this.mesh.castShadow = true;
+                this.mesh.receiveShadow = true;
+                this.scene.add(this.mesh);
+
+                const wrapMaterial = new THREE.MeshPhysicalMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.25,
+                    roughness: 0.1,
+                    metalness: 0,
+                    side: THREE.DoubleSide
+                });
+                const wrapGeom = new THREE.BoxGeometry(boxW + 0.2, boxH - 0.5, boxD + 0.2);
+                const wrap = new THREE.Mesh(wrapGeom, wrapMaterial);
+                wrap.position.y = 0.9 + boxH / 2;
+                wrap.userData.isPallet = true;
+                this.scene.add(wrap);
+
+                this.updateLabels();
+            }
+
+            updateDimensions(length, width, height) {
+                this.dimensions = { width: length, height: height, depth: width };
+
+                if (this.packageType === 'box') {
+                    this.createBox();
+                } else {
+                    this.createPallet();
+                }
+            }
+
+            setPackageType(type) {
+                this.packageType = type;
+                if (type === 'pallet') {
+                    this.createPallet();
+                } else {
+                    this.createBox();
+                }
+            }
+
+            updateLabels() {
+                this.scene.children
+                    .filter(c => c.userData.isLabel && !c.userData.isReference)
+                    .forEach(c => {
+                        this.scene.remove(c);
+                        if (c.material && c.material.map) c.material.map.dispose();
+                    });
+
+                const { width, height, depth } = this.dimensions;
+                const w = width / 4;
+                const h = height / 4;
+                const d = depth / 4;
+
+                this.createLabel(`${width}"`, { x: 0, y: -1.5, z: d / 2 + 4 });
+                this.createLabel(`${depth}"`, { x: w / 2 + 4, y: -1.5, z: 0 });
+                this.createLabel(`${height}"`, { x: w / 2 + 4, y: h / 2, z: d / 2 + 2 });
+            }
+
+            createLabel(text, position, isReference = false) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 160;
+                canvas.height = 80;
+
+                ctx.fillStyle = 'rgba(30, 58, 95, 0.9)';
+                ctx.beginPath();
+                ctx.roundRect(10, 15, 140, 50, 25);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 28px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, 80, 40);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.minFilter = THREE.LinearFilter;
+                const material = new THREE.SpriteMaterial({ map: texture });
+                const sprite = new THREE.Sprite(material);
+                sprite.position.set(position.x, position.y, position.z);
+                sprite.scale.set(5, 2.5, 1);
+                sprite.userData.isLabel = true;
+                sprite.userData.isReference = isReference;
+                this.scene.add(sprite);
+            }
+
+            onResize() {
+                if (!this.renderer || !this.camera) return;
+                const width = this.container.clientWidth || 600;
+                const height = this.container.clientHeight || 500;
+
+                this.camera.aspect = width / height;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(width, height);
+            }
+
+            animate() {
+                if (!this.active) return;
+                requestAnimationFrame(() => this.animate());
+                this.controls.update();
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        // =====================================================
+        // SHARED PRICING ENGINE
+        // =====================================================
+        const QuoteEngine = window.MA3PLQuoteEngine || null;
+        const PRICING = QuoteEngine
+            ? QuoteEngine.PRICING
+            : {
+                dimensionalFactor: 139,
+                storagePerCubicFtDay: 0.025,
+                handlingFee: 3.5,
+                pickAndPack: 1.25,
+                palletStoragePerDay: 0.75,
+                palletHandling: 15.0,
+                palletPickPack: 5.0,
+                blackWrapping: 7.0,
+                storageDays: 30,
+                minStorage: 5.0,
+                shippingZones: { local: 0.45, regional: 0.65, national: 0.85, none: 0, dropship: 0 },
+                dropShipRates: { envelope: 1.5, small: 3.0, medium: 5.0, large: 20.0 }
+            };
+
+        // =====================================================
+        // CALCULATOR STATE (mirrors quote.html state)
+        // =====================================================
+        const sc = {
+            packageType: 'box',
+            length: 12, width: 12, height: 12,
+            weight: 25,
+            quantity: 1,
+            shippingZone: 'regional',
+            blackWrapping: false,
+            dropShipQty: { envelope: 0, small: 0, medium: 0, large: 0 },
+            destination: { name: '', street: '', city: '', state: '', zip: '' },
+            notes: ''
+        };
+
+        // =====================================================
+        // PRICING CALCULATION (uses shared engine)
+        // =====================================================
+        function calculateQuote() {
+            if (QuoteEngine) {
+                return QuoteEngine.calculateEstimate({
+                    packageType: sc.packageType,
+                    dimensions: { length: sc.length, width: sc.width, height: sc.height },
+                    weight: sc.weight,
+                    quantity: sc.quantity,
+                    shippingZone: sc.shippingZone,
+                    storageDays: PRICING.storageDays,
+                    blackWrapping: sc.blackWrapping,
+                    dropShipQty: sc.dropShipQty
+                });
+            }
+            // Inline fallback (same algorithm as quote-pricing-engine.js)
+            const cubicFt = (sc.length * sc.width * sc.height) / 1728;
+            const dimWeight = (sc.length * sc.width * sc.height) / PRICING.dimensionalFactor;
+            const billableWeight = Math.max(sc.weight, dimWeight);
+            let storage, handling, pickPack;
+            if (sc.packageType === 'pallet') {
+                storage = PRICING.palletStoragePerDay * PRICING.storageDays * sc.quantity;
+                handling = PRICING.palletHandling * sc.quantity;
+                pickPack = PRICING.palletPickPack * sc.quantity;
+            } else {
+                storage = cubicFt * PRICING.storagePerCubicFtDay * PRICING.storageDays * sc.quantity;
+                handling = PRICING.handlingFee * sc.quantity;
+                pickPack = PRICING.pickAndPack * sc.quantity;
+            }
+            storage = Math.max(storage, PRICING.minStorage);
+            let shipping = (sc.shippingZone === 'none' || sc.shippingZone === 'dropship')
+                ? 0 : billableWeight * PRICING.shippingZones[sc.shippingZone] * sc.quantity;
+            let wrapping = (sc.packageType === 'pallet' && sc.blackWrapping) ? PRICING.blackWrapping * sc.quantity : 0;
+            let dropship = 0;
+            if (sc.shippingZone === 'dropship') {
+                for (const [size, qty] of Object.entries(sc.dropShipQty)) {
+                    dropship += qty * PRICING.dropShipRates[size];
+                }
+            }
+            const total = storage + handling + pickPack + shipping + wrapping + dropship;
+            return { storage, handling, pickPack, shipping, wrapping, dropship, total, cubicFt, dimWeight, billableWeight };
+        }
+
+        function fmt(amount) {
+            return '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function getZoneLabel(zone) {
+            if (QuoteEngine) return QuoteEngine.getZoneLabel(zone);
+            const labels = { local: 'Local (Florida)', regional: 'Regional (Southeast)', national: 'National', none: 'No Shipping', dropship: 'Drop Ship' };
+            return labels[zone] || zone;
+        }
+
+        // =====================================================
+        // PRICING DISPLAY UPDATE + 3D VIEWER SYNC
+        // =====================================================
+        function updatePricing() {
+            const q = calculateQuote();
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            set('sc-r-dimweight', q.dimWeight.toFixed(1) + ' lbs');
+            set('sc-r-cubicft', q.cubicFt.toFixed(1) + ' ft³');
+            set('sc-r-storage', fmt(q.storage));
+            set('sc-r-handling', fmt(q.handling));
+            set('sc-r-pickpack', fmt(q.pickPack));
+            set('sc-r-shipping', fmt(q.shipping));
+            set('sc-r-wrapping', fmt(q.wrapping));
+            set('sc-r-dropship', fmt(q.dropship));
+            set('sc-r-total', fmt(q.total));
+
+            // Show/hide wrapping row (pallet + option selected) — same as quote.html
+            const wrappingRow = document.getElementById('sc-r-wrapping-row');
+            if (wrappingRow) wrappingRow.style.display = (sc.packageType === 'pallet' && sc.blackWrapping) ? 'flex' : 'none';
+
+            // Show/hide drop ship row — same as quote.html
+            const dropshipRow = document.getElementById('sc-r-dropship-row');
+            if (dropshipRow) dropshipRow.style.display = (sc.shippingZone === 'dropship' && q.dropship > 0) ? 'flex' : 'none';
+
+            // Show/hide shipping row (hide when no shipping or dropship) — same as quote.html
+            const shippingRow = document.getElementById('sc-r-shipping-row');
+            if (shippingRow) shippingRow.style.display = (sc.shippingZone === 'none' || sc.shippingZone === 'dropship') ? 'none' : 'flex';
+
+            // Sync 3D viewer (same as quote.html)
+            if (viewer3D && viewer3D.active) {
+                viewer3D.updateDimensions(sc.length, sc.width, sc.height);
+            }
+        }
+
+        function trackCalcEvent(eventName, params = {}) {
+            if (!window.MA3PLAnalytics) return;
+            MA3PLAnalytics.track(eventName, { page: 'shipments', ...params });
+        }
+
+        // =====================================================
+        // 3D VIEWER INSTANCE
+        // =====================================================
+        const viewer3D = new Shipment3DViewer('shipment-3d-canvas');
+
+        // =====================================================
+        // PDF GENERATION (same as quote.html)
+        // =====================================================
+        function generatePDF() {
+            const jsPDF = window.jspdf?.jsPDF;
+            if (!jsPDF) {
+                console.error('jsPDF not loaded');
+                return;
+            }
+
+            const q = calculateQuote();
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageW = doc.internal.pageSize.getWidth();
+            const quoteNum = 'MA3PL-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+            const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Header
+            doc.setFillColor(15, 23, 42);
+            doc.rect(0, 0, pageW, 55, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(28);
+            doc.setFont('helvetica', 'bold');
+            doc.text('MIAMI ALLIANCE', 20, 30);
+            doc.setTextColor(20, 184, 166);
+            doc.text(' 3PL', 20 + doc.getTextWidth('MIAMI ALLIANCE'), 30);
+            doc.setTextColor(148, 163, 184);
+            doc.setFontSize(9);
+            doc.text('WAREHOUSING  |  FULFILLMENT  |  LOGISTICS', 20, 42);
+
+            // Teal accent
+            doc.setFillColor(20, 184, 166);
+            doc.rect(0, 55, pageW, 3, 'F');
+
+            // Quote badge
+            doc.setFillColor(20, 184, 166);
+            doc.roundedRect(pageW - 60, 10, 50, 18, 3, 3, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('INSTANT QUOTE', pageW - 35, 21, { align: 'center' });
+
+            // Quote info bar
+            doc.setFillColor(248, 250, 252);
+            doc.rect(0, 58, pageW, 20, 'F');
+            doc.setTextColor(100, 116, 139);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Quote #: ${quoteNum}`, 20, 70);
+            doc.text(`Date: ${today}`, pageW / 2 - 15, 70);
+            doc.text('Valid for 30 days', pageW - 50, 70);
+
+            // Package details (left)
+            let y = 90;
+            doc.setFillColor(30, 58, 95);
+            doc.roundedRect(20, y, 80, 8, 2, 2, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PACKAGE DETAILS', 25, y + 5.5);
+            y += 14;
+
+            const pkgDetails = [
+                ['Type', sc.packageType === 'pallet' ? 'Pallet' : 'Box'],
+                ['Dimensions', `${sc.length}" x ${sc.width}" x ${sc.height}"`],
+                ['Weight', `${sc.weight} lbs`],
+                ['DIM Weight', `${q.dimWeight.toFixed(1)} lbs`],
+                ['Billable Weight', `${q.billableWeight.toFixed(1)} lbs`],
+                ['Volume', `${q.cubicFt.toFixed(2)} cu ft`],
+                ['Quantity', `${sc.quantity}`],
+                ['Zone', getZoneLabel(sc.shippingZone)]
+            ];
+
+            doc.setFontSize(8);
+            pkgDetails.forEach(([label, value], i) => {
+                if (i % 2 === 0) {
+                    doc.setFillColor(248, 250, 252);
+                    doc.rect(20, y - 3, 80, 9, 'F');
+                }
+                doc.setTextColor(100, 116, 139);
+                doc.setFont('helvetica', 'normal');
+                doc.text(label, 25, y + 3);
+                doc.setTextColor(30, 41, 59);
+                doc.setFont('helvetica', 'bold');
+                doc.text(value, 95, y + 3, { align: 'right' });
+                y += 9;
+            });
+
+            // Pricing breakdown (right)
+            let py = 90;
+            doc.setFillColor(20, 184, 166);
+            doc.roundedRect(110, py, 80, 8, 2, 2, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PRICING BREAKDOWN', 115, py + 5.5);
+            py += 14;
+
+            const priceLines = [
+                ['Storage (30 days)', fmt(q.storage)],
+                ['Handling Fee', fmt(q.handling)],
+                ['Pick & Pack', fmt(q.pickPack)]
+            ];
+            if (q.shipping > 0) priceLines.push(['Est. Shipping', fmt(q.shipping)]);
+            if (q.wrapping > 0) priceLines.push(['Black Wrapping', fmt(q.wrapping)]);
+            if (q.dropship > 0) priceLines.push(['Drop Ship', fmt(q.dropship)]);
+
+            doc.setFontSize(8);
+            priceLines.forEach(([label, value], i) => {
+                if (i % 2 === 0) {
+                    doc.setFillColor(248, 250, 252);
+                    doc.rect(110, py - 3, 80, 9, 'F');
+                }
+                doc.setTextColor(100, 116, 139);
+                doc.setFont('helvetica', 'normal');
+                doc.text(label, 115, py + 3);
+                doc.setTextColor(30, 41, 59);
+                doc.setFont('helvetica', 'bold');
+                doc.text(value, 185, py + 3, { align: 'right' });
+                py += 9;
+            });
+
+            // Total
+            py += 4;
+            doc.setFillColor(30, 58, 95);
+            doc.roundedRect(110, py, 80, 12, 2, 2, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.text('TOTAL ESTIMATE', 115, py + 7.5);
+            doc.setTextColor(20, 184, 166);
+            doc.setFontSize(16);
+            doc.text(fmt(q.total), 185, py + 8, { align: 'right' });
+
+            // Rate details
+            const rateY = 200;
+            doc.setFontSize(7);
+            doc.setTextColor(148, 163, 184);
+            doc.setFont('helvetica', 'normal');
+            const rateText = sc.packageType === 'pallet'
+                ? `Pallet: $0.75/day | Handling: $15.00/unit | Pick & Pack: $5.00/unit${sc.blackWrapping ? ' | Wrapping: $7.00/pallet' : ''}`
+                : `Box: $0.025/cu ft/day | Handling: $3.50/unit | Pick & Pack: $1.25/unit`;
+            doc.text(rateText, pageW / 2, rateY, { align: 'center' });
+
+            // Notes
+            const notesY = 210;
+            doc.setFillColor(255, 251, 235);
+            doc.setDrawColor(234, 179, 8);
+            doc.roundedRect(20, notesY, pageW - 40, 25, 3, 3, 'FD');
+            doc.setTextColor(146, 64, 14);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Important Notes:', 25, notesY + 7);
+            doc.setFont('helvetica', 'normal');
+            doc.text('• Prices are estimates. Final pricing confirmed upon receiving goods.', 25, notesY + 14);
+            doc.text('• Volume discounts available for 10+ pallets. Contact us for details.', 25, notesY + 20);
+
+            // CTA
+            const ctaY = 245;
+            doc.setFillColor(15, 23, 42);
+            doc.roundedRect(20, ctaY, pageW - 40, 20, 3, 3, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Ready to get started?', pageW / 2, ctaY + 9, { align: 'center' });
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(148, 163, 184);
+            doc.text('Contact us at info@miamialliance3pl.com or visit miamialliance3pl.com', pageW / 2, ctaY + 16, { align: 'center' });
+
+            // Footer
+            doc.setTextColor(148, 163, 184);
+            doc.setFontSize(7);
+            doc.text('8780 NW 100th ST, Medley, FL 33178 | miamialliance3pl.com', pageW / 2, 280, { align: 'center' });
+
+            const filename = `MiamiAlliance3PL_Quote_${quoteNum}.pdf`;
+            doc.save(filename);
+
+            // Toast notification
+            showPDFToast(quoteNum);
+
+            trackCalcEvent('shipment_pdf_downloaded', { quote_number: quoteNum, total: q.total });
+        }
+
+        function showPDFToast(quoteNum) {
+            const existing = document.querySelector('.pdf-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'pdf-toast';
+            toast.innerHTML = `
+                <span class="toast-icon">📄</span>
+                <div class="toast-text">
+                    <strong>Quote Downloaded!</strong>
+                    <span>${quoteNum}</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+
+        // =====================================================
+        // CALCULATOR MODAL OPEN / CLOSE / RESET
+        // =====================================================
+        const overlay = document.getElementById('calc-overlay');
+        const calcBody = document.getElementById('calc-body');
+        let calcOpenedAt = 0;
+
+        function openCalculator() {
+            resetCalculator();
+            overlay.classList.add('active');
+            calcOpenedAt = Date.now();
+            trackCalcEvent('shipment_calculator_opened');
+
+            // Initialize 3D viewer when modal opens
+            requestAnimationFrame(() => {
+                viewer3D.start();
+                viewer3D.setPackageType(sc.packageType);
+                viewer3D.updateDimensions(sc.length, sc.width, sc.height);
+            });
+        }
+
+        function closeCalculator(reason = 'manual') {
+            const elapsed = calcOpenedAt ? Math.round((Date.now() - calcOpenedAt) / 1000) : 0;
+            trackCalcEvent('shipment_calculator_closed', { reason, elapsed_seconds: elapsed });
+            overlay.classList.remove('active');
+            clearError();
+        }
+
+        function resetCalculator() {
+            sc.packageType = 'box';
+            sc.length = 12; sc.width = 12; sc.height = 12;
+            sc.weight = 25; sc.quantity = 1;
+            sc.shippingZone = 'regional';
+            sc.blackWrapping = false;
+            sc.dropShipQty = { envelope: 0, small: 0, medium: 0, large: 0 };
+            sc.destination = { name: '', street: '', city: '', state: '', zip: '' };
+            sc.notes = '';
+
+            // Reset UI inputs
+            document.querySelectorAll('#calc-overlay .package-option').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === 'box');
+            });
+            document.getElementById('sc-length').value = 12;
+            document.getElementById('sc-width').value = 12;
+            document.getElementById('sc-height').value = 12;
+            document.getElementById('sc-weight-slider').value = 25;
+            document.getElementById('sc-weight-input').value = 25;
+            document.getElementById('sc-qty').value = 1;
+            document.getElementById('sc-zone').value = 'regional';
+            document.getElementById('sc-wrapping').checked = false;
+            document.getElementById('sc-wrapping-group').style.display = 'none';
+            document.getElementById('sc-dropship-group').style.display = 'none';
+            ['envelope', 'small', 'medium', 'large'].forEach(s => {
+                document.getElementById('sc-ds-' + s).value = 0;
+            });
+            document.getElementById('sc-dest-name').value = '';
+            document.getElementById('sc-dest-street').value = '';
+            document.getElementById('sc-dest-city').value = '';
+            document.getElementById('sc-dest-state').value = '';
+            document.getElementById('sc-dest-zip').value = '';
+            document.getElementById('sc-notes').value = '';
+
+            // Reset success state
+            document.getElementById('calc-success').classList.remove('active');
+            document.querySelector('#calc-body .quote-tool').style.display = '';
+
+            // Reset create button
+            const createBtn = document.getElementById('sc-create-btn');
+            createBtn.disabled = false;
+            createBtn.innerHTML = '✓ Create Shipment';
+
+            clearError();
+            updatePricing();
+        }
+
+        function showError(message) {
+            const el = document.getElementById('sc-error');
+            el.textContent = message;
+            el.classList.add('active');
+        }
+
+        function clearError() {
+            const el = document.getElementById('sc-error');
+            el.textContent = '';
+            el.classList.remove('active');
+        }
+
+        // =====================================================
+        // EVENT HANDLERS — Package Type (+ 3D sync)
+        // =====================================================
+        document.querySelectorAll('#calc-overlay .package-option').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#calc-overlay .package-option').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                sc.packageType = btn.dataset.type;
+
+                // Show/hide black wrapping
+                document.getElementById('sc-wrapping-group').style.display = sc.packageType === 'pallet' ? 'block' : 'none';
+                if (sc.packageType !== 'pallet') {
+                    sc.blackWrapping = false;
+                    document.getElementById('sc-wrapping').checked = false;
+                }
+
+                // Match quote.html behavior: switching package type resets to canonical defaults.
+                if (sc.packageType === 'pallet') {
+                    sc.length = 48; sc.width = 40; sc.height = 48; sc.weight = 500;
+                    document.getElementById('sc-length').value = 48;
+                    document.getElementById('sc-width').value = 40;
+                    document.getElementById('sc-height').value = 48;
+                    document.getElementById('sc-weight-slider').value = 500;
+                    document.getElementById('sc-weight-input').value = 500;
+                } else {
+                    sc.length = 12; sc.width = 12; sc.height = 12; sc.weight = 25;
+                    document.getElementById('sc-length').value = 12;
+                    document.getElementById('sc-width').value = 12;
+                    document.getElementById('sc-height').value = 12;
+                    document.getElementById('sc-weight-slider').value = 25;
+                    document.getElementById('sc-weight-input').value = 25;
+                }
+
+                // Sync 3D viewer
+                if (viewer3D && viewer3D.active) {
+                    viewer3D.setPackageType(sc.packageType);
+                    viewer3D.updateDimensions(sc.length, sc.width, sc.height);
+                }
+
+                clearError();
+                updatePricing();
+                trackCalcEvent('shipment_package_selected', { type: sc.packageType });
+            });
+        });
+
+        // =====================================================
+        // EVENT HANDLERS — Dimensions (+ 3D sync)
+        // =====================================================
+        ['sc-length', 'sc-width', 'sc-height'].forEach(id => {
+            document.getElementById(id).addEventListener('input', (e) => {
+                const field = id.replace('sc-', '');
+                sc[field] = Math.max(1, Math.min(120, parseInt(e.target.value) || 1));
+                clearError();
+                updatePricing();
+            });
+        });
+
+        // =====================================================
+        // EVENT HANDLERS — Weight
+        // =====================================================
+        document.getElementById('sc-weight-slider').addEventListener('input', (e) => {
+            sc.weight = parseInt(e.target.value);
+            document.getElementById('sc-weight-input').value = sc.weight;
+            clearError();
+            updatePricing();
+        });
+        document.getElementById('sc-weight-input').addEventListener('input', (e) => {
+            sc.weight = Math.max(1, Math.min(2000, parseInt(e.target.value) || 1));
+            document.getElementById('sc-weight-slider').value = Math.min(500, sc.weight);
+            clearError();
+            updatePricing();
+        });
+
+        // =====================================================
+        // EVENT HANDLERS — Quantity
+        // =====================================================
+        document.getElementById('sc-qty-dec').addEventListener('click', () => {
+            sc.quantity = Math.max(1, sc.quantity - 1);
+            document.getElementById('sc-qty').value = sc.quantity;
+            clearError();
+            updatePricing();
+        });
+        document.getElementById('sc-qty-inc').addEventListener('click', () => {
+            sc.quantity = Math.min(1000, sc.quantity + 1);
+            document.getElementById('sc-qty').value = sc.quantity;
+            clearError();
+            updatePricing();
+        });
+        document.getElementById('sc-qty').addEventListener('input', (e) => {
+            sc.quantity = Math.max(1, Math.min(1000, parseInt(e.target.value) || 1));
+            clearError();
+            updatePricing();
+        });
+
+        // =====================================================
+        // EVENT HANDLERS — Shipping Zone
+        // =====================================================
+        document.getElementById('sc-zone').addEventListener('change', (e) => {
+            sc.shippingZone = e.target.value;
+            document.getElementById('sc-dropship-group').style.display = sc.shippingZone === 'dropship' ? 'block' : 'none';
+            if (sc.shippingZone !== 'dropship') {
+                sc.dropShipQty = { envelope: 0, small: 0, medium: 0, large: 0 };
+                ['envelope', 'small', 'medium', 'large'].forEach(size => {
+                    document.getElementById('sc-ds-' + size).value = 0;
+                });
+            }
+            clearError();
+            updatePricing();
+            trackCalcEvent('shipment_zone_selected', { zone: sc.shippingZone });
+        });
+
+        // =====================================================
+        // EVENT HANDLERS — Dropship
+        // =====================================================
+        document.querySelectorAll('#calc-overlay .dropship-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const size = btn.dataset.box;
+                const action = btn.dataset.action;
+                if (action === 'increase') sc.dropShipQty[size] = Math.min(9999, sc.dropShipQty[size] + 1);
+                else sc.dropShipQty[size] = Math.max(0, sc.dropShipQty[size] - 1);
+                document.getElementById('sc-ds-' + size).value = sc.dropShipQty[size];
+                updatePricing();
+            });
+        });
+        ['envelope', 'small', 'medium', 'large'].forEach(size => {
+            document.getElementById('sc-ds-' + size).addEventListener('input', (e) => {
+                sc.dropShipQty[size] = Math.max(0, parseInt(e.target.value) || 0);
+                updatePricing();
+            });
+        });
+
+        // =====================================================
+        // EVENT HANDLERS — Black Wrapping
+        // =====================================================
+        document.getElementById('sc-wrapping').addEventListener('change', (e) => {
+            sc.blackWrapping = e.target.checked;
+            updatePricing();
+        });
+
+        // =====================================================
+        // PDF DOWNLOAD BUTTON
+        // =====================================================
+        document.getElementById('sc-download-pdf').addEventListener('click', () => generatePDF());
+
+        // =====================================================
+        // MODAL OPEN / CLOSE BINDINGS
+        // =====================================================
+        document.getElementById('new-shipment-calc-btn').addEventListener('click', () => openCalculator());
+        document.getElementById('calc-close').addEventListener('click', () => closeCalculator('close_button'));
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeCalculator('backdrop'); });
+        document.getElementById('calc-done').addEventListener('click', () => { closeCalculator('success_done'); loadShipments(); });
+        const openNewShipment = new URLSearchParams(window.location.search).get('new');
+        if (openNewShipment === '1' || openNewShipment === 'true') {
+            openCalculator();
+        }
+
+        // Keyboard: Escape to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && overlay.classList.contains('active')) closeCalculator('escape');
+        });
+
+        // =====================================================
+        // VALIDATE & CREATE SHIPMENT
+        // =====================================================
+        function validateForm() {
+            const name = document.getElementById('sc-dest-name').value.trim();
+            const street = document.getElementById('sc-dest-street').value.trim();
+            const city = document.getElementById('sc-dest-city').value.trim();
+            const state = document.getElementById('sc-dest-state').value.trim().toUpperCase();
+            const zip = document.getElementById('sc-dest-zip').value.trim();
+
+            if (sc.length < 1 || sc.length > 120) { showError('Length must be between 1 and 120 inches.'); return false; }
+            if (sc.width < 1 || sc.width > 120) { showError('Width must be between 1 and 120 inches.'); return false; }
+            if (sc.height < 1 || sc.height > 120) { showError('Height must be between 1 and 120 inches.'); return false; }
+            if (sc.weight < 1 || sc.weight > 2000) { showError('Weight must be between 1 and 2000 lbs.'); return false; }
+            if (sc.quantity < 1 || sc.quantity > 1000) { showError('Quantity must be between 1 and 1000.'); return false; }
+            if (!name) { showError('Recipient name is required.'); document.getElementById('sc-dest-name').focus(); return false; }
+            if (!street) { showError('Street address is required.'); document.getElementById('sc-dest-street').focus(); return false; }
+            if (!city) { showError('City is required.'); document.getElementById('sc-dest-city').focus(); return false; }
+            if (!/^[A-Z]{2}$/.test(state)) { showError('State must be a 2-letter code (e.g. FL).'); document.getElementById('sc-dest-state').focus(); return false; }
+            if (!/^\d{5}(-\d{4})?$/.test(zip)) { showError('ZIP must be 5 digits (or ZIP+4).'); document.getElementById('sc-dest-zip').focus(); return false; }
+
+            sc.destination = { name, street, city, state, zip };
+            sc.notes = document.getElementById('sc-notes').value.trim();
+            return true;
+        }
+
+        document.getElementById('sc-create-btn').addEventListener('click', async () => {
+            if (!currentUser) { showError('Please log in first.'); return; }
+            if (!validateForm()) return;
+            clearError();
+
+            const createBtn = document.getElementById('sc-create-btn');
+            createBtn.disabled = true;
+            createBtn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Creating...';
+
+            const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
+            const quoteResult = calculateQuote();
+            const d = sc.destination;
+
+            trackCalcEvent('shipment_submit_attempt', {
+                package_type: sc.packageType,
+                quantity: sc.quantity,
+                shipping_zone: sc.shippingZone,
+                value: quoteResult.total
+            });
+
+            const newShipment = {
+                user_id: currentUser.uid,
+                tracking_number: trackingNumber,
+                origin: { street: '8780 NW 100th ST', city: 'Medley', state: 'FL', zip: '33178' },
+                destination: { name: d.name, street: d.street, city: d.city, state: d.state, zip: d.zip },
+                package: {
+                    type: sc.packageType,
+                    length: sc.length, width: sc.width, height: sc.height,
+                    weight: sc.weight, quantity: sc.quantity,
+                    dim_weight: quoteResult.dimWeight,
+                    billable_weight: quoteResult.billableWeight,
+                    cubic_ft: quoteResult.cubicFt
+                },
+                shipping_zone: sc.shippingZone,
+                black_wrapping: sc.blackWrapping,
+                dropship_qty: sc.shippingZone === 'dropship' ? { ...sc.dropShipQty } : null,
+                quote_estimate: {
+                    storage: quoteResult.storage,
+                    handling: quoteResult.handling,
+                    pick_pack: quoteResult.pickPack,
+                    shipping: quoteResult.shipping,
+                    wrapping: quoteResult.wrapping,
+                    dropship: quoteResult.dropship,
+                    total: quoteResult.total,
+                    storage_days: PRICING.storageDays
+                },
+                notes: sc.notes || `Shipment: ${sc.quantity} ${sc.packageType}(s), Zone: ${getZoneLabel(sc.shippingZone)}`,
+                status: 'pending',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
+
+                // Log detailed billable events
+                try {
+                    const events = [];
+                    events.push({
+                        customer_id: currentUser.uid,
+                        event_type: 'storage',
+                        description: `Storage (${PRICING.storageDays}d) - ${trackingNumber}`,
+                        quantity: sc.quantity,
+                        unit: sc.packageType === 'pallet' ? 'pallets' : 'units',
+                        rate: sc.packageType === 'pallet' ? PRICING.palletStoragePerDay : PRICING.storagePerCubicFtDay,
+                        amount: quoteResult.storage,
+                        shipment_id: shipmentRef.id,
+                        invoiced: false,
+                        created_at: new Date().toISOString(),
+                        created_by: currentUser.uid
+                    });
+                    events.push({
+                        customer_id: currentUser.uid,
+                        event_type: 'handling',
+                        description: `Handling - ${trackingNumber}`,
+                        quantity: sc.quantity,
+                        unit: sc.packageType === 'pallet' ? 'pallets' : 'units',
+                        rate: sc.packageType === 'pallet' ? PRICING.palletHandling : PRICING.handlingFee,
+                        amount: quoteResult.handling,
+                        shipment_id: shipmentRef.id,
+                        invoiced: false,
+                        created_at: new Date().toISOString(),
+                        created_by: currentUser.uid
+                    });
+                    events.push({
+                        customer_id: currentUser.uid,
+                        event_type: 'pick_pack',
+                        description: `Pick & Pack - ${trackingNumber}`,
+                        quantity: sc.quantity,
+                        unit: sc.packageType === 'pallet' ? 'pallets' : 'items',
+                        rate: sc.packageType === 'pallet' ? PRICING.palletPickPack : PRICING.pickAndPack,
+                        amount: quoteResult.pickPack,
+                        shipment_id: shipmentRef.id,
+                        invoiced: false,
+                        created_at: new Date().toISOString(),
+                        created_by: currentUser.uid
+                    });
+                    if (quoteResult.shipping > 0) {
+                        events.push({
+                            customer_id: currentUser.uid,
+                            event_type: 'shipping',
+                            description: `Shipping (${getZoneLabel(sc.shippingZone)}) - ${trackingNumber}`,
+                            quantity: sc.quantity,
+                            unit: 'packages',
+                            rate: PRICING.shippingZones[sc.shippingZone],
+                            amount: quoteResult.shipping,
+                            shipment_id: shipmentRef.id,
+                            invoiced: false,
+                            created_at: new Date().toISOString(),
+                            created_by: currentUser.uid
+                        });
+                    }
+                    if (quoteResult.wrapping > 0) {
+                        events.push({
+                            customer_id: currentUser.uid,
+                            event_type: 'wrapping',
+                            description: `Black Wrapping - ${trackingNumber}`,
+                            quantity: sc.quantity,
+                            unit: 'pallets',
+                            rate: PRICING.blackWrapping,
+                            amount: quoteResult.wrapping,
+                            shipment_id: shipmentRef.id,
+                            invoiced: false,
+                            created_at: new Date().toISOString(),
+                            created_by: currentUser.uid
+                        });
+                    }
+                    if (quoteResult.dropship > 0) {
+                        events.push({
+                            customer_id: currentUser.uid,
+                            event_type: 'dropship',
+                            description: `Drop Ship - ${trackingNumber}`,
+                            quantity: 1,
+                            unit: 'shipment',
+                            rate: quoteResult.dropship,
+                            amount: quoteResult.dropship,
+                            shipment_id: shipmentRef.id,
+                            invoiced: false,
+                            created_at: new Date().toISOString(),
+                            created_by: currentUser.uid
+                        });
+                    }
+                    for (const ev of events) {
+                        await addDoc(collection(db, 'billable_events'), ev);
+                    }
+                    trackCalcEvent('shipment_billable_events_created', { events_count: events.length, value: quoteResult.total });
+                } catch (billingErr) {
+                    console.warn('Billing events failed:', billingErr.message);
+                }
+
+                // GA4 tracking
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.track('shipment_created', {
+                        method: 'calculator',
+                        tracking_number: trackingNumber,
+                        package_type: sc.packageType,
+                        quantity: sc.quantity,
+                        shipping_zone: sc.shippingZone,
+                        has_wrapping: sc.blackWrapping,
+                        currency: 'USD',
+                        value: quoteResult.total
+                    });
+                    MA3PLAnalytics.track('purchase', {
+                        transaction_id: trackingNumber,
+                        currency: 'USD',
+                        value: quoteResult.total,
+                        items: [{ item_name: sc.packageType + ' shipment', quantity: sc.quantity, price: quoteResult.total }]
+                    });
+                }
+
+                // Show success
+                document.querySelector('#calc-body .quote-tool').style.display = 'none';
+                document.getElementById('success-tracking').textContent = trackingNumber;
+                document.getElementById('calc-success').classList.add('active');
+
+                trackCalcEvent('shipment_created_success', { tracking_number: trackingNumber, value: quoteResult.total });
+
+            } catch (error) {
+                showError('Error creating shipment: ' + error.message);
+                trackCalcEvent('shipment_create_failed', { error: error.message });
+                createBtn.disabled = false;
+                createBtn.innerHTML = '✓ Create Shipment';
+            }
+        });
+
+        // =====================================================
+        // AUTH CHECK
+        // =====================================================
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = '../login.html';
@@ -280,23 +2024,18 @@
             }
             currentUser = user;
 
-            // Get user role from Firestore
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             if (userDoc.exists()) {
                 const userData = userDoc.data();
                 document.getElementById('user-name').textContent = 'Welcome, ' + userData.name;
-
-                // Check role from Firestore first
                 if (userData.role) {
                     currentUserRole = userData.role;
                     isStaff = (currentUserRole === 'admin' || currentUserRole === 'employee');
                 } else {
-                    // Fallback to email check if no role in Firestore
                     isStaff = FALLBACK_ADMIN_EMAILS.includes(user.email);
                     currentUserRole = isStaff ? 'admin' : 'customer';
                 }
             } else {
-                // No user doc - check fallback emails
                 isStaff = FALLBACK_ADMIN_EMAILS.includes(user.email);
                 currentUserRole = isStaff ? 'admin' : 'customer';
             }
@@ -316,99 +2055,17 @@
             }
         });
 
-        // Logout handler
+        // Logout
         document.getElementById('logout-btn').addEventListener('click', async (e) => {
             e.preventDefault();
             await signOut(auth);
             window.location.href = '../login.html';
         });
+        document.getElementById('status-filter').addEventListener('change', () => loadShipments());
 
-        // Toggle new shipment form
-        document.getElementById('new-shipment-btn').addEventListener('click', () => {
-            document.getElementById('shipment-form-container').style.display = 'block';
-        });
-
-        document.getElementById('cancel-shipment').addEventListener('click', () => {
-            document.getElementById('shipment-form-container').style.display = 'none';
-            document.getElementById('shipment-form').reset();
-        });
-
-        // Status filter
-        document.getElementById('status-filter').addEventListener('change', () => {
-            loadShipments();
-        });
-
-        // Create shipment
-        document.getElementById('shipment-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
-
-            const shipmentData = {
-                user_id: currentUser.uid,
-                tracking_number: trackingNumber,
-                origin: {
-                    street: document.getElementById('origin-street').value,
-                    city: document.getElementById('origin-city').value,
-                    state: document.getElementById('origin-state').value,
-                    zip: document.getElementById('origin-zip').value
-                },
-                destination: {
-                    name: document.getElementById('dest-name').value,
-                    street: document.getElementById('dest-street').value,
-                    city: document.getElementById('dest-city').value,
-                    state: document.getElementById('dest-state').value,
-                    zip: document.getElementById('dest-zip').value
-                },
-                package: {
-                    weight: parseFloat(document.getElementById('pkg-weight').value),
-                    length: parseFloat(document.getElementById('pkg-length').value) || 0,
-                    width: parseFloat(document.getElementById('pkg-width').value) || 0,
-                    height: parseFloat(document.getElementById('pkg-height').value) || 0,
-                    quantity: parseInt(document.getElementById('pkg-qty').value)
-                },
-                service_type: document.getElementById('service-type').value,
-                notes: document.getElementById('notes').value,
-                status: 'pending',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            };
-
-            try {
-                const shipmentRef = await addDoc(collection(db, 'shipments'), shipmentData);
-
-                // Log billable event for receiving/outbound
-                try {
-                    const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
-                    const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
-                    const pickpackRate = pricing?.handling?.pickpack || 5.00;
-                    const quantity = parseInt(document.getElementById('pkg-qty').value) || 1;
-
-                    await addDoc(collection(db, 'billable_events'), {
-                        customer_id: currentUser.uid,
-                        event_type: 'shipping',
-                        description: 'Outbound Shipment - ' + trackingNumber,
-                        quantity: quantity,
-                        unit: 'packages',
-                        rate: pickpackRate,
-                        shipment_id: shipmentRef.id,
-                        invoiced: false,
-                        created_at: new Date().toISOString(),
-                        created_by: currentUser.uid
-                    });
-                } catch (billingErr) {
-                    console.warn('Shipment created but billing event failed:', billingErr.message);
-                }
-
-                alert('Shipment created! Tracking #: ' + trackingNumber);
-                document.getElementById('shipment-form-container').style.display = 'none';
-                document.getElementById('shipment-form').reset();
-                loadShipments();
-            } catch (error) {
-                alert('Error creating shipment: ' + error.message);
-            }
-        });
-
+        // =====================================================
+        // LOAD SHIPMENTS TABLE
+        // =====================================================
         async function loadShipments() {
             const tbody = document.getElementById('shipments-list');
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Loading...</td></tr>';
@@ -416,56 +2073,33 @@
             try {
                 const statusFilter = document.getElementById('status-filter').value;
                 let q;
-
-                // Staff (admin/employee) see all shipments, customers see only their own
                 if (isStaff) {
-                    // Staff: show all shipments
                     if (statusFilter === 'all') {
-                        q = query(
-                            collection(db, 'shipments'),
-                            orderBy('created_at', 'desc')
-                        );
+                        q = query(collection(db, 'shipments'), orderBy('created_at', 'desc'));
                     } else {
-                        q = query(
-                            collection(db, 'shipments'),
-                            where('status', '==', statusFilter),
-                            orderBy('created_at', 'desc')
-                        );
+                        q = query(collection(db, 'shipments'), where('status', '==', statusFilter), orderBy('created_at', 'desc'));
                     }
                 } else {
-                    // Customer: show only their shipments
                     if (statusFilter === 'all') {
-                        q = query(
-                            collection(db, 'shipments'),
-                            where('user_id', '==', currentUser.uid),
-                            orderBy('created_at', 'desc')
-                        );
+                        q = query(collection(db, 'shipments'), where('user_id', '==', currentUser.uid), orderBy('created_at', 'desc'));
                     } else {
-                        q = query(
-                            collection(db, 'shipments'),
-                            where('user_id', '==', currentUser.uid),
-                            where('status', '==', statusFilter),
-                            orderBy('created_at', 'desc')
-                        );
+                        q = query(collection(db, 'shipments'), where('user_id', '==', currentUser.uid), where('status', '==', statusFilter), orderBy('created_at', 'desc'));
                     }
                 }
-
                 const snapshot = await getDocs(q);
-
                 if (snapshot.empty) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">No shipments found</td></tr>';
                     return;
                 }
-
                 tbody.innerHTML = '';
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
                         <td>${data.destination?.name || 'N/A'}</td>
                         <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
-                        <td style="text-transform: capitalize;">${data.service_type}</td>
+                        <td style="text-transform: capitalize;">${data.service_type || data.shipping_zone || ''}</td>
                         <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
                         <td>${new Date(data.created_at).toLocaleDateString()}</td>
                     `;
@@ -477,338 +2111,8 @@
             }
         }
 
-        // =====================================================
-        // CHAT WIZARD
-        // =====================================================
-
-        const chatModal = document.getElementById('chat-modal');
-        const chatMessages = document.getElementById('chat-messages');
-        const chatProgress = document.getElementById('chat-progress');
-        const chatActions = document.getElementById('chat-actions');
-
-        let chatStep = 0;
-        let shipmentData = {
-            type: '',
-            typeLabel: '',
-            quantity: '',
-            destination: {
-                name: '',
-                street: '',
-                city: '',
-                state: '',
-                zip: ''
-            },
-            service: '',
-            serviceLabel: ''
-        };
-
-        // Open chat wizard
-        document.getElementById('new-shipment-chat-btn').addEventListener('click', () => {
-            chatModal.classList.add('active');
-            resetChat();
-            showStep(0);
-        });
-
-        // Close chat wizard
-        document.getElementById('chat-close').addEventListener('click', closeChat);
-        document.getElementById('btn-cancel').addEventListener('click', closeChat);
-
-        // Close on backdrop click
-        chatModal.addEventListener('click', (e) => {
-            if (e.target === chatModal) closeChat();
-        });
-
-        function closeChat() {
-            chatModal.classList.remove('active');
-        }
-
-        function resetChat() {
-            chatStep = 0;
-            shipmentData = {
-                type: '', typeLabel: '', quantity: '',
-                destination: { name: '', street: '', city: '', state: '', zip: '' },
-                service: '', serviceLabel: ''
-            };
-            chatMessages.innerHTML = '';
-            chatActions.style.display = 'none';
-            updateProgress(0);
-        }
-
-        function updateProgress(step) {
-            const dots = chatProgress.querySelectorAll('.chat-progress-dot');
-            dots.forEach((dot, i) => {
-                dot.classList.remove('active', 'completed');
-                if (i < step) dot.classList.add('completed');
-                if (i === step) dot.classList.add('active');
-            });
-        }
-
-        function showTyping() {
-            const typing = document.createElement('div');
-            typing.className = 'chat-typing';
-            typing.id = 'typing-indicator';
-            typing.innerHTML = '<div class="chat-typing-dot"></div><div class="chat-typing-dot"></div><div class="chat-typing-dot"></div>';
-            chatMessages.appendChild(typing);
-            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
-            return typing;
-        }
-
-        function hideTyping() {
-            const typing = document.getElementById('typing-indicator');
-            if (typing) typing.remove();
-        }
-
-        function addBotMessage(html) {
-            hideTyping();
-            const bubble = document.createElement('div');
-            bubble.className = 'chat-bubble chat-bubble-bot';
-            bubble.innerHTML = html;
-            chatMessages.appendChild(bubble);
-            // Smooth scroll to bottom
-            setTimeout(() => {
-                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
-            }, 50);
-            return bubble;
-        }
-
-        function addUserMessage(text) {
-            const bubble = document.createElement('div');
-            bubble.className = 'chat-bubble chat-bubble-user';
-            bubble.textContent = text;
-            chatMessages.appendChild(bubble);
-            // Smooth scroll to bottom
-            setTimeout(() => {
-                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
-            }, 50);
-        }
-
-        function showStepWithTyping(step) {
-            showTyping();
-            setTimeout(() => {
-                showStep(step);
-            }, 600); // Show typing for 600ms
-        }
-
-        function showStep(step) {
-            chatStep = step;
-            updateProgress(step);
-
-            if (step === 0) {
-                // Step 1: Shipment Type
-                const bubble = addBotMessage(`
-                    <span class="chat-icon">🤖</span> What type of shipment?
-                    <div class="chat-options-large">
-                        <div class="chat-option-card" data-type="box" data-label="Box">
-                            <span class="card-icon">📦</span>
-                            <span class="card-label">Box</span>
-                        </div>
-                        <div class="chat-option-card" data-type="pallet" data-label="Pallet">
-                            <span class="card-icon">🎁</span>
-                            <span class="card-label">Pallet</span>
-                        </div>
-                        <div class="chat-option-card" data-type="container" data-label="Container">
-                            <span class="card-icon">🚢</span>
-                            <span class="card-label">Container</span>
-                        </div>
-                    </div>
-                `);
-                bubble.querySelectorAll('.chat-option-card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        shipmentData.type = card.dataset.type;
-                        shipmentData.typeLabel = card.dataset.label;
-                        addUserMessage(card.dataset.label);
-                        setTimeout(() => showStepWithTyping(1), 300);
-                    });
-                });
-
-            } else if (step === 1) {
-                // Step 2: Quantity
-                const typeLabel = shipmentData.typeLabel.toLowerCase() + (shipmentData.type !== 'container' ? 'es' : 's');
-                const bubble = addBotMessage(`
-                    <span class="chat-icon">🤖</span> How many ${typeLabel}?
-                    <div class="chat-options">
-                        <button class="chat-option-btn" data-qty="1">1</button>
-                        <button class="chat-option-btn" data-qty="2-5">2-5</button>
-                        <button class="chat-option-btn" data-qty="6-10">6-10</button>
-                        <button class="chat-option-btn" data-qty="10+">10+</button>
-                    </div>
-                `);
-                bubble.querySelectorAll('.chat-option-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        shipmentData.quantity = btn.dataset.qty;
-                        addUserMessage(btn.dataset.qty);
-                        setTimeout(() => showStepWithTyping(2), 300);
-                    });
-                });
-
-            } else if (step === 2) {
-                // Step 3: Destination
-                const bubble = addBotMessage(`
-                    <span class="chat-icon">🤖</span> Where is it going?
-                    <div class="chat-input-group">
-                        <input type="text" id="dest-name-chat" placeholder="Recipient Name" required>
-                        <input type="text" id="dest-street-chat" placeholder="Street Address" required>
-                        <div class="chat-input-row">
-                            <input type="text" id="dest-city-chat" placeholder="City" required>
-                            <input type="text" id="dest-state-chat" placeholder="State" maxlength="2" required>
-                            <input type="text" id="dest-zip-chat" placeholder="ZIP" required>
-                        </div>
-                        <button class="btn btn-primary btn-next" id="dest-next">Next →</button>
-                    </div>
-                `);
-                document.getElementById('dest-next').addEventListener('click', () => {
-                    const name = document.getElementById('dest-name-chat').value.trim();
-                    const street = document.getElementById('dest-street-chat').value.trim();
-                    const city = document.getElementById('dest-city-chat').value.trim();
-                    const state = document.getElementById('dest-state-chat').value.trim().toUpperCase();
-                    const zip = document.getElementById('dest-zip-chat').value.trim();
-
-                    if (!name || !street || !city || !state || !zip) {
-                        alert('Please fill in all fields');
-                        return;
-                    }
-
-                    shipmentData.destination = { name, street, city, state, zip };
-                    addUserMessage(`${name}, ${city}, ${state}`);
-                    setTimeout(() => showStepWithTyping(3), 300);
-                });
-
-            } else if (step === 3) {
-                // Step 4: Service Speed
-                const bubble = addBotMessage(`
-                    <span class="chat-icon">🤖</span> Delivery speed?
-                    <div class="chat-options">
-                        <button class="chat-option-btn" data-service="standard" data-label="Standard (3-5 days)">
-                            <span class="option-icon">🐢</span>
-                            <span class="option-label">Standard</span>
-                        </button>
-                        <button class="chat-option-btn" data-service="express" data-label="Express (1-2 days)">
-                            <span class="option-icon">🚀</span>
-                            <span class="option-label">Express</span>
-                        </button>
-                        <button class="chat-option-btn" data-service="overnight" data-label="Overnight">
-                            <span class="option-icon">⚡</span>
-                            <span class="option-label">Overnight</span>
-                        </button>
-                    </div>
-                `);
-                bubble.querySelectorAll('.chat-option-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        shipmentData.service = btn.dataset.service;
-                        shipmentData.serviceLabel = btn.dataset.label;
-                        addUserMessage(btn.dataset.label);
-                        setTimeout(() => showStepWithTyping(4), 300);
-                    });
-                });
-
-            } else if (step === 4) {
-                // Step 5: Summary
-                const d = shipmentData.destination;
-                addBotMessage(`
-                    <span class="chat-icon">🤖</span> Review your shipment:
-                    <div class="chat-summary">
-                        <div class="chat-summary-row">
-                            <span class="chat-summary-label">Type</span>
-                            <span class="chat-summary-value">${shipmentData.quantity} ${shipmentData.typeLabel}(s)</span>
-                        </div>
-                        <div class="chat-summary-row">
-                            <span class="chat-summary-label">To</span>
-                            <span class="chat-summary-value">${d.name}</span>
-                        </div>
-                        <div class="chat-summary-row">
-                            <span class="chat-summary-label">Address</span>
-                            <span class="chat-summary-value">${d.street}, ${d.city}, ${d.state} ${d.zip}</span>
-                        </div>
-                        <div class="chat-summary-row">
-                            <span class="chat-summary-label">Service</span>
-                            <span class="chat-summary-value">${shipmentData.serviceLabel}</span>
-                        </div>
-                    </div>
-                `);
-                chatActions.style.display = 'flex';
-            }
-        }
-
-        // Edit button - restart
-        document.getElementById('btn-edit').addEventListener('click', () => {
-            resetChat();
-            showStep(0);
-        });
-
-        // Confirm button - create shipment
-        document.getElementById('btn-confirm').addEventListener('click', async () => {
-            if (!currentUser) {
-                alert('Please log in first');
-                return;
-            }
-
-            const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
-            const d = shipmentData.destination;
-
-            const newShipment = {
-                user_id: currentUser.uid,
-                tracking_number: trackingNumber,
-                origin: {
-                    street: '8780 NW 100th ST',
-                    city: 'Medley',
-                    state: 'FL',
-                    zip: '33178'
-                },
-                destination: {
-                    name: d.name,
-                    street: d.street,
-                    city: d.city,
-                    state: d.state,
-                    zip: d.zip
-                },
-                package: {
-                    type: shipmentData.type,
-                    quantity: shipmentData.quantity,
-                    weight: 0,
-                    length: 0,
-                    width: 0,
-                    height: 0
-                },
-                service_type: shipmentData.service,
-                notes: `Created via chat wizard - ${shipmentData.quantity} ${shipmentData.typeLabel}(s)`,
-                status: 'pending',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            };
-
-            try {
-                const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
-
-                // Log billable event
-                try {
-                    const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
-                    const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
-                    const pickpackRate = pricing?.handling?.pickpack || 5.00;
-
-                    await addDoc(collection(db, 'billable_events'), {
-                        customer_id: currentUser.uid,
-                        event_type: 'shipping',
-                        description: 'Outbound Shipment - ' + trackingNumber,
-                        quantity: shipmentData.quantity || 1,
-                        unit: 'packages',
-                        rate: pickpackRate,
-                        shipment_id: shipmentRef.id,
-                        invoiced: false,
-                        created_at: new Date().toISOString(),
-                        created_by: currentUser.uid
-                    });
-                } catch (billingErr) {
-                    console.warn('Chat shipment created but billing event failed:', billingErr.message);
-                }
-
-                closeChat();
-                alert('Shipment created! Tracking #: ' + trackingNumber);
-                loadShipments();
-            } catch (error) {
-                alert('Error creating shipment: ' + error.message);
-            }
-        });
     </script>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
     <script src="../js/column-prefs.js"></script>
     <script src="../js/main.js"></script>
     <!-- Form Validation Module -->
