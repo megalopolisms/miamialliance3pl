@@ -86,6 +86,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Activity Log — daily warehouse task entries for activity-based billing
+    match /activity_log/{entryId} {
+      allow read: if isAuthenticated() && (resource.data.customer_id == request.auth.uid || isStaff());
+      allow create: if isStaff();
+      allow update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
     // Cargo Items — individual pallet/box tracking with unique IDs
     match /cargo_items/{itemId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());

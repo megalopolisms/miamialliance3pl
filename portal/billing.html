@@ -244,6 +244,7 @@
                     <a href="admin-pickups.html" class="portal-nav-item">
                         <span aria-hidden="true">🚛</span> <span>All Pickup Requests</span>
                     </a>
+                    <a href="admin-billing.html" class="portal-nav-item"><span>📝</span> <span>Activity Billing</span></a>
                     <a href="invoices.html" class="portal-nav-item"><span>💵</span> <span data-i18n="portal.sidebar.allInvoices">All Invoices</span></a>
                     <a href="storage-log.html" class="portal-nav-item"><span>📊</span> <span data-i18n="portal.sidebar.storagelog">Storage Log</span></a>
                     <a href="pricing.html" class="portal-nav-item"><span>💰</span> <span data-i18n="portal.sidebar.pricing">Pricing</span></a>
@@ -275,6 +276,17 @@
                 <h2 class="section-title" data-i18n="portal.billing.outstandingInvoices">Outstanding Invoices</h2>
                 <div id="outstanding-invoices">
                     <div class="empty-state" data-i18n="portal.billing.loading">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Recent Activity (Transparency for Customer) -->
+            <div style="margin-top: var(--spacing-xl);">
+                <h2 class="section-title">📝 Recent Activity</h2>
+                <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+                    Detailed breakdown of warehouse services performed for your account this month.
+                </p>
+                <div id="activity-detail">
+                    <div class="empty-state">Loading activity...</div>
                 </div>
             </div>
 
@@ -387,6 +399,7 @@
             }
 
             await loadInvoices();
+            await loadCustomerActivity();
 
             // Check for payment success/cancel in URL
             const urlParams = new URLSearchParams(window.location.search);
@@ -619,6 +632,71 @@
             win.document.close();
             win.print();
         };
+
+        // ── Activity Detail for Customer Transparency ──
+        const ACTIVITY_LABELS = {
+            receiving: '📥 Receiving', storage: '🏭 Storage', pick_pack: '📋 Pick & Pack',
+            shipping: '🚚 Shipping', wrapping: '⬛ Wrapping', labeling: '🏷️ Labeling',
+            palletizing: '📦 Palletizing', unloading: '⬇️ Unloading', loading: '⬆️ Loading',
+            kitting: '🔧 Kitting', returns: '🔄 Returns', rush: '⚡ Rush',
+            pickup_delivery: '🚛 Pickup/Delivery', container_drayage: '🚢 Drayage', custom: '✏️ Custom'
+        };
+
+        async function loadCustomerActivity() {
+            const container = document.getElementById('activity-detail');
+            try {
+                const now = new Date();
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+
+                const q = query(
+                    collection(db, 'activity_log'),
+                    where('customer_id', '==', currentUserId),
+                    where('date', '>=', monthStart),
+                    where('date', '<=', monthEnd),
+                    orderBy('date', 'desc')
+                );
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    container.innerHTML = '<div class="empty-state">No activity recorded this month.</div>';
+                    return;
+                }
+
+                let total = 0;
+                let rows = '';
+                snap.forEach(d => {
+                    const a = d.data();
+                    total += a.amount || 0;
+                    rows += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--color-gray-100);">
+                            <div>
+                                <strong>${ACTIVITY_LABELS[a.activity_type] || a.activity_type}</strong>
+                                <span style="color: var(--color-gray-400); font-size: 0.8rem; margin-left: 8px;">${a.date}</span>
+                                ${a.reference ? `<span style="color: var(--color-gray-400); font-size: 0.8rem;"> &bull; Ref: ${a.reference}</span>` : ''}
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="color: var(--color-gray-500); font-size: 0.85rem;">${a.quantity} ${a.unit} @ $${a.rate?.toFixed(2)}</span>
+                                <strong style="margin-left: 12px;">$${a.amount?.toFixed(2)}</strong>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = `
+                    <div style="background: white; border: 1px solid var(--color-gray-200); border-radius: var(--radius-lg); overflow: hidden;">
+                        ${rows}
+                        <div style="display: flex; justify-content: space-between; padding: 16px; background: var(--color-gray-50); font-weight: 700; font-size: var(--font-size-lg);">
+                            <span>Month-to-Date Total</span>
+                            <span>$${total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Activity load error:', err);
+                container.innerHTML = '<div class="empty-state">Unable to load activity data.</div>';
+            }
+        }
 
         window.openPaymentModal = function() {
             // Open first outstanding invoice for payment

@@ -217,6 +217,7 @@
                     <a href="admin-pickups.html" class="portal-nav-item">
                         <span aria-hidden="true">🚛</span> <span>All Pickup Requests</span>
                     </a>
+                    <a href="admin-billing.html" class="portal-nav-item"><span>📝</span> <span>Activity Billing</span></a>
                     <a href="invoices.html" class="portal-nav-item">
                         <span aria-hidden="true">💵</span> <span data-i18n="portal.sidebar.invoices">Invoices</span>
                     </a>
@@ -268,6 +269,11 @@
                         <div class="count" id="total-inventory">0</div>
                         <div class="label" id="label-inventory" data-i18n="portal.dashboard.inventoryItems">Inventory Items</div>
                     </div>
+                    <div class="admin-card" onclick="location.href='admin-pickups.html'">
+                        <div class="icon">🚛</div>
+                        <div class="count" id="total-pickups">0</div>
+                        <div class="label" data-i18n="portal.dashboard.pickupRequests">Pickup Requests</div>
+                    </div>
                     <div class="admin-card" onclick="location.href='#pending'">
                         <div class="icon" id="icon-pending">⏳</div>
                         <div class="count" id="total-pending">0</div>
@@ -301,6 +307,7 @@
                 <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.dashboard.quickActions">Quick Actions</h2>
                 <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
                     <a href="shipments.html?new=1" class="btn btn-primary" data-i18n="portal.dashboard.createShipment">+ Create Shipment</a>
+                    <a href="pickups.html?new=1" class="btn btn-primary" style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);" data-i18n="portal.dashboard.newPickup">🚛 New Pickup / Delivery</a>
                     <a href="tracking.html" class="btn btn-outline" data-i18n="portal.dashboard.trackPackage">Track Package</a>
                     <a href="inventory.html" class="btn btn-outline" data-i18n="portal.dashboard.viewInventory">View Inventory</a>
                 </div>
@@ -591,6 +598,15 @@
                 const pendingQuery = query(collection(db, 'shipments'), where('status', '==', 'pending'));
                 const pendingSnap = await getDocs(pendingQuery);
                 document.getElementById('total-pending').textContent = pendingSnap.size;
+
+                // Pickup requests count
+                try {
+                    const pickupsSnap = await getDocs(collection(db, 'pickup_requests'));
+                    const pickupEl = document.getElementById('total-pickups');
+                    if (pickupEl) pickupEl.textContent = pickupsSnap.size;
+                } catch (e) {
+                    console.log('[Dashboard] Pickup requests collection may not exist yet');
+                }
 
             } catch (error) {
                 console.error('Error loading admin stats:', error);
