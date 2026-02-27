@@ -70,6 +70,30 @@ service cloud.firestore {
       allow write: if isStaff();
     }
 
+    // Pickup/Delivery Requests
+    match /pickup_requests/{requestId} {
+      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
+      allow create: if isAuthenticated();
+      allow update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // BOL Documents — uploaded Bills of Lading and Shipping Labels
+    match /bol_documents/{docId} {
+      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
+      allow create: if isAuthenticated();
+      allow update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // Cargo Items — individual pallet/box tracking with unique IDs
+    match /cargo_items/{itemId} {
+      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
+      allow create: if isAuthenticated();
+      allow update: if isStaff() || resource.data.user_id == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
     // Column labels — ONLY Jorge can rename columns
     match /settings/column_labels {
       allow read: if isStaff();
