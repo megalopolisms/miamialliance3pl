@@ -249,6 +249,9 @@
     </script>
 </head>
 <body>
+    <!-- Skip to content link for keyboard navigation -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <!-- Scroll Progress Bar -->
     <div class="scroll-progress" aria-hidden="true"></div>
 
@@ -263,29 +266,29 @@
 
     <!-- Navigation -->
     <header class="header">
-        <nav class="nav container">
+        <nav class="nav container" role="navigation" aria-label="Main navigation">
             <a href="index.html" class="logo">
-                <img src="assets/logo.jpg" alt="Miami Alliance 3PL" class="nav-logo-img">
+                <img src="assets/logo.jpg" alt="Miami Alliance 3PL - Home" class="nav-logo-img" width="40" height="40">
                 <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
             </a>
-            <button class="nav-toggle" aria-label="Toggle navigation">
+            <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav-menu">
                 <span></span>
                 <span></span>
                 <span></span>
             </button>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link active" data-i18n="nav.home">Home</a></li>
-                <li><a href="services.html" class="nav-link" data-i18n="nav.services">Services</a></li>
-                <li><a href="quote.html" class="nav-link" data-i18n="nav.quote">Instant Quote</a></li>
-                <li><a href="blog.html" class="nav-link" data-i18n="nav.blog">Blog</a></li>
-                <li><a href="about.html" class="nav-link" data-i18n="nav.about">About</a></li>
-                <li><a href="contact.html" class="nav-link" data-i18n="nav.contact">Contact</a></li>
-                <li><a href="login.html" class="nav-link btn btn-outline" data-i18n="nav.portal">Customer Portal</a></li>
+            <ul class="nav-menu" id="main-nav-menu" role="menubar">
+                <li role="none"><a href="index.html" class="nav-link active" role="menuitem" aria-current="page" data-i18n="nav.home">Home</a></li>
+                <li role="none"><a href="services.html" class="nav-link" role="menuitem" data-i18n="nav.services">Services</a></li>
+                <li role="none"><a href="quote.html" class="nav-link" role="menuitem" data-i18n="nav.quote">Instant Quote</a></li>
+                <li role="none"><a href="blog.html" class="nav-link" role="menuitem" data-i18n="nav.blog">Blog</a></li>
+                <li role="none"><a href="about.html" class="nav-link" role="menuitem" data-i18n="nav.about">About</a></li>
+                <li role="none"><a href="contact.html" class="nav-link" role="menuitem" data-i18n="nav.contact">Contact</a></li>
+                <li role="none"><a href="login.html" class="nav-link btn btn-outline" role="menuitem" data-i18n="nav.portal">Customer Portal</a></li>
             </ul>
         </nav>
     </header>
 
-    <main>
+    <main id="main-content">
         <!-- ===== HERO SECTION ===== -->
         <section class="hero hero-modern" id="home">
             <!-- Floating Background Shapes -->
@@ -758,15 +761,15 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer" role="contentinfo">
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
                     <div class="logo">
-                        <img src="assets/logo.jpg" alt="Miami Alliance 3PL" class="nav-logo-img" style="height: 48px;">
+                        <img src="assets/logo.jpg" alt="Miami Alliance 3PL" class="nav-logo-img" style="height: 48px;" width="48" height="48" loading="lazy">
                         <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
                     </div>
-                    <p>Your trusted logistics partner in Miami. Warehousing, fulfillment, and shipping services for businesses of all sizes.</p>
+                    <p data-i18n="footer.tagline">Your trusted logistics partner in Miami. Warehousing, fulfillment, and shipping services for businesses of all sizes.</p>
                 </div>
                 <div class="footer-links">
                     <h4 data-i18n="footer.quicklinks">Quick Links</h4>

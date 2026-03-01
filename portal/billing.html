@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Billing | Miami Alliance 3PL</title>
     <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0f172a">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -228,9 +229,13 @@
             <nav>
                 <a href="dashboard.html" class="portal-nav-item"><span>📊</span> <span data-i18n="portal.sidebar.dashboard">Dashboard</span></a>
                 <a href="shipments.html" class="portal-nav-item"><span>🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span></a>
+                <a href="pickups.html" class="portal-nav-item">
+                    <span aria-hidden="true">🏗️</span> <span>Pickup & Delivery</span>
+                </a>
                 <a href="tracking.html" class="portal-nav-item"><span>🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span></a>
                 <a href="inventory.html" class="portal-nav-item"><span>📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span></a>
                 <a href="billing.html" class="portal-nav-item active"><span>💵</span> <span data-i18n="portal.sidebar.billing">Billing</span></a>
+                <a href="contracts.html" class="portal-nav-item"><span>📄</span> <span>Contracts</span></a>
                 <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" data-i18n="portal.sidebar.staffLabel">Staff</div>
                     <a href="customers.html" class="portal-nav-item"><span>👥</span> <span data-i18n="portal.sidebar.customers">All Customers</span></a>
@@ -238,6 +243,12 @@
                 </div>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" data-i18n="portal.sidebar.adminLabel">Admin</div>
+                    <a href="admin-panel.html" class="portal-nav-item">
+                        <span>🛡️</span> <span>Admin Control Panel</span>
+                    </a>                    <a href="admin-pickups.html" class="portal-nav-item">
+                        <span aria-hidden="true">🚛</span> <span>All Pickup Requests</span>
+                    </a>
+                    <a href="admin-billing.html" class="portal-nav-item"><span>📝</span> <span>Activity Billing</span></a>
                     <a href="invoices.html" class="portal-nav-item"><span>💵</span> <span data-i18n="portal.sidebar.allInvoices">All Invoices</span></a>
                     <a href="storage-log.html" class="portal-nav-item"><span>📊</span> <span data-i18n="portal.sidebar.storagelog">Storage Log</span></a>
                     <a href="pricing.html" class="portal-nav-item"><span>💰</span> <span data-i18n="portal.sidebar.pricing">Pricing</span></a>
@@ -269,6 +280,17 @@
                 <h2 class="section-title" data-i18n="portal.billing.outstandingInvoices">Outstanding Invoices</h2>
                 <div id="outstanding-invoices">
                     <div class="empty-state" data-i18n="portal.billing.loading">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Recent Activity (Transparency for Customer) -->
+            <div style="margin-top: var(--spacing-xl);">
+                <h2 class="section-title">📝 Recent Activity</h2>
+                <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+                    Detailed breakdown of warehouse services performed for your account this month.
+                </p>
+                <div id="activity-detail">
+                    <div class="empty-state">Loading activity...</div>
                 </div>
             </div>
 
@@ -338,6 +360,12 @@
         const db = getFirestore(app);
         const functions = getFunctions(app);
 
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         let currentUserId = null;
@@ -381,6 +409,7 @@
             }
 
             await loadInvoices();
+            await loadCustomerActivity();
 
             // Check for payment success/cancel in URL
             const urlParams = new URLSearchParams(window.location.search);
@@ -430,17 +459,17 @@
                 outstandingContainer.innerHTML = outstanding.map(inv => `
                     <div class="invoice-card">
                         <div class="invoice-info">
-                            <h3>${inv.invoice_number}</h3>
-                            <p>${inv.billing_period_start} to ${inv.billing_period_end}</p>
-                            <span class="badge badge-${inv.status}">${inv.status.toUpperCase()}</span>
+                            <h3>${escapeHTML(inv.invoice_number)}</h3>
+                            <p>${escapeHTML(inv.billing_period_start)} to ${escapeHTML(inv.billing_period_end)}</p>
+                            <span class="badge badge-${escapeHTML(inv.status)}">${escapeHTML(inv.status.toUpperCase())}</span>
                         </div>
                         <div class="invoice-amount">
                             <div class="amount">$${inv.total?.toFixed(2)}</div>
-                            <p>Due: ${inv.due_date}</p>
+                            <p>Due: ${escapeHTML(inv.due_date)}</p>
                         </div>
                         <div>
-                            <button class="btn-view" onclick="viewInvoice('${inv.id}')">View</button>
-                            <button class="btn-pay" onclick="viewInvoice('${inv.id}', true)">Pay</button>
+                            <button class="btn-view" onclick="viewInvoice('${escapeHTML(inv.id)}')">View</button>
+                            <button class="btn-pay" onclick="viewInvoice('${escapeHTML(inv.id)}', true)">Pay</button>
                         </div>
                     </div>
                 `).join('');
@@ -454,15 +483,15 @@
                 paidContainer.innerHTML = paid.map(inv => `
                     <div class="invoice-card">
                         <div class="invoice-info">
-                            <h3>${inv.invoice_number}</h3>
-                            <p>Paid on ${inv.paid_at?.split('T')[0] || 'N/A'}</p>
+                            <h3>${escapeHTML(inv.invoice_number)}</h3>
+                            <p>Paid on ${escapeHTML(inv.paid_at?.split('T')[0] || 'N/A')}</p>
                             <span class="badge badge-paid">PAID</span>
                         </div>
                         <div class="invoice-amount">
                             <div class="amount">$${inv.total?.toFixed(2)}</div>
                         </div>
                         <div>
-                            <button class="btn-view" onclick="viewInvoice('${inv.id}')">View</button>
+                            <button class="btn-view" onclick="viewInvoice('${escapeHTML(inv.id)}')">View</button>
                         </div>
                     </div>
                 `).join('');
@@ -499,13 +528,13 @@
                     </div>
                     <div style="text-align: right;">
                         <h1 style="font-size: 2rem; color: var(--color-gray-800);">INVOICE</h1>
-                        <p><strong>${inv.invoice_number}</strong></p>
-                        <p>Date: ${inv.created_at?.split('T')[0]}</p>
-                        <p>Due: ${inv.due_date}</p>
+                        <p><strong>${escapeHTML(inv.invoice_number)}</strong></p>
+                        <p>Date: ${escapeHTML(inv.created_at?.split('T')[0])}</p>
+                        <p>Due: ${escapeHTML(inv.due_date)}</p>
                     </div>
                 </div>
                 <div style="margin-bottom: var(--spacing-lg);">
-                    <strong>Billing Period:</strong> ${inv.billing_period_start} to ${inv.billing_period_end}
+                    <strong>Billing Period:</strong> ${escapeHTML(inv.billing_period_start)} to ${escapeHTML(inv.billing_period_end)}
                 </div>
                 <table class="line-items-table">
                     <thead>
@@ -520,9 +549,9 @@
                     <tbody>
                         ${inv.line_items?.map(item => `
                             <tr>
-                                <td>${item.description}</td>
-                                <td>${item.quantity}</td>
-                                <td>${item.unit}</td>
+                                <td>${escapeHTML(item.description)}</td>
+                                <td>${escapeHTML(String(item.quantity))}</td>
+                                <td>${escapeHTML(item.unit)}</td>
                                 <td>$${item.rate?.toFixed(2)}</td>
                                 <td>$${item.amount?.toFixed(2)}</td>
                             </tr>
@@ -553,13 +582,13 @@
 
         window.processPayment = async function() {
             if (!selectedPaymentMethod) {
-                alert('Please select a payment method');
+                showToast('Please select a payment method', 'warning');
                 return;
             }
 
             if (selectedPaymentMethod === 'stripe') {
                 if (!stripeSettings?.enabled) {
-                    alert('Online payments are not enabled. Please contact us to complete your payment.');
+                    showToast('Online payments are not enabled. Please contact us to complete your payment.', 'warning');
                     return;
                 }
 
@@ -585,12 +614,12 @@
                     }
                 } catch (error) {
                     console.error('Payment error:', error);
-                    alert('Error processing payment: ' + (error.message || 'Please try again.'));
+                    showToast('Error processing payment: ' + (error.message || 'Please try again.'), 'error');
                     btn.textContent = originalText;
                     btn.disabled = false;
                 }
             } else if (selectedPaymentMethod === 'ach') {
-                alert('Please use the following bank details for wire transfer:\n\nBank: [Your Bank]\nRouting: [Routing Number]\nAccount: [Account Number]\nReference: ' + currentInvoice.invoice_number);
+                showToast('Bank transfer details: Reference ' + currentInvoice.invoice_number + '. See invoice footer for bank details.', 'info');
             }
         };
 
@@ -614,6 +643,71 @@
             win.print();
         };
 
+        // ── Activity Detail for Customer Transparency ──
+        const ACTIVITY_LABELS = {
+            receiving: '📥 Receiving', storage: '🏭 Storage', pick_pack: '📋 Pick & Pack',
+            shipping: '🚚 Shipping', wrapping: '⬛ Wrapping', labeling: '🏷️ Labeling',
+            palletizing: '📦 Palletizing', unloading: '⬇️ Unloading', loading: '⬆️ Loading',
+            kitting: '🔧 Kitting', returns: '🔄 Returns', rush: '⚡ Rush',
+            pickup_delivery: '🚛 Pickup/Delivery', container_drayage: '🚢 Drayage', custom: '✏️ Custom'
+        };
+
+        async function loadCustomerActivity() {
+            const container = document.getElementById('activity-detail');
+            try {
+                const now = new Date();
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+
+                const q = query(
+                    collection(db, 'activity_log'),
+                    where('customer_id', '==', currentUserId),
+                    where('date', '>=', monthStart),
+                    where('date', '<=', monthEnd),
+                    orderBy('date', 'desc')
+                );
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    container.innerHTML = '<div class="empty-state">No activity recorded this month.</div>';
+                    return;
+                }
+
+                let total = 0;
+                let rows = '';
+                snap.forEach(d => {
+                    const a = d.data();
+                    total += a.amount || 0;
+                    rows += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--color-gray-100);">
+                            <div>
+                                <strong>${ACTIVITY_LABELS[a.activity_type] || escapeHTML(a.activity_type)}</strong>
+                                <span style="color: var(--color-gray-400); font-size: 0.8rem; margin-left: 8px;">${escapeHTML(a.date)}</span>
+                                ${a.reference ? `<span style="color: var(--color-gray-400); font-size: 0.8rem;"> &bull; Ref: ${escapeHTML(a.reference)}</span>` : ''}
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="color: var(--color-gray-500); font-size: 0.85rem;">${escapeHTML(String(a.quantity))} ${escapeHTML(a.unit)} @ $${a.rate?.toFixed(2)}</span>
+                                <strong style="margin-left: 12px;">$${a.amount?.toFixed(2)}</strong>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = `
+                    <div style="background: white; border: 1px solid var(--color-gray-200); border-radius: var(--radius-lg); overflow: hidden;">
+                        ${rows}
+                        <div style="display: flex; justify-content: space-between; padding: 16px; background: var(--color-gray-50); font-weight: 700; font-size: var(--font-size-lg);">
+                            <span>Month-to-Date Total</span>
+                            <span>$${total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Activity load error:', err);
+                container.innerHTML = '<div class="empty-state">Unable to load activity data.</div>';
+            }
+        }
+
         window.openPaymentModal = function() {
             // Open first outstanding invoice for payment
             const firstCard = document.querySelector('#outstanding-invoices .invoice-card');
@@ -630,23 +724,17 @@
 
         function showToast(message, type) {
             const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                padding: 16px 24px;
-                border-radius: 8px;
-                color: white;
-                font-weight: 500;
-                z-index: 9999;
-                animation: slideIn 0.3s ease;
-            `;
+            toast.setAttribute('role', 'status');
+            toast.setAttribute('aria-live', 'polite');
+            toast.style.cssText = 'position:fixed;bottom:24px;right:24px;padding:16px 24px;border-radius:12px;font-weight:500;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.15);opacity:0;transform:translateY(12px);transition:opacity 0.3s,transform 0.3s;max-width:400px;color:white;';
             if (type === 'success') toast.style.background = '#22c55e';
             else if (type === 'error') toast.style.background = '#ef4444';
+            else if (type === 'warning') toast.style.background = '#f59e0b';
             else toast.style.background = '#3b82f6';
             toast.textContent = message;
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
+            requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; });
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(12px)'; setTimeout(() => toast.remove(), 300); }, 4000);
         }
     </script>
 </body>

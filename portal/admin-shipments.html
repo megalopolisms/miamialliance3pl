@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>All Shipments | Miami Alliance 3PL Admin</title>
     <meta name="robots" content="noindex, nofollow">
 
@@ -340,6 +340,216 @@
             justify-content: flex-end;
             margin-top: var(--spacing-lg);
         }
+        /* ================================================
+           DOCUMENTS SECTION — Admin Shipment Cards
+           ================================================ */
+        .shipment-docs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            border-top: 1px dashed var(--color-gray-200);
+        }
+        .doc-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid;
+        }
+        .doc-badge.bol {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1e40af;
+        }
+        .doc-badge.bol:hover {
+            background: #dbeafe;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.15);
+        }
+        .doc-badge.packing-list {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+        .doc-badge.packing-list:hover {
+            background: #dcfce7;
+            box-shadow: 0 2px 8px rgba(22, 101, 52, 0.15);
+        }
+        .doc-badge.invoice {
+            background: #fefce8;
+            border-color: #fde68a;
+            color: #854d0e;
+        }
+        .doc-badge.invoice:hover {
+            background: #fef9c3;
+            box-shadow: 0 2px 8px rgba(133, 77, 14, 0.15);
+        }
+        .doc-badge .doc-badge-icon {
+            font-size: 1rem;
+        }
+        .doc-badge .doc-badge-size {
+            font-size: 0.68rem;
+            color: inherit;
+            opacity: 0.7;
+            font-weight: 400;
+        }
+        .no-docs {
+            font-size: 0.78rem;
+            color: var(--color-gray-400);
+            font-style: italic;
+            padding: 4px 0;
+        }
+        .docs-section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-gray-500);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Document Viewer Modal */
+        .doc-viewer-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(6px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+        .doc-viewer-overlay.active {
+            display: flex;
+        }
+        .doc-viewer-modal {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+        }
+        .doc-viewer-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+        .doc-viewer-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .doc-viewer-header .doc-type-pill {
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+        .doc-type-pill.bol { background: #3b82f6; }
+        .doc-type-pill.packing-list { background: #22c55e; }
+        .doc-type-pill.invoice { background: #eab308; color: #1e293b; }
+        .doc-viewer-close {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .doc-viewer-close:hover { background: rgba(255,255,255,0.25); }
+        .doc-viewer-body {
+            flex: 1;
+            overflow: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+        .doc-viewer-body img {
+            max-width: 100%;
+            max-height: 60vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .doc-viewer-body iframe {
+            width: 100%;
+            height: 60vh;
+            border: none;
+            border-radius: 8px;
+        }
+        .doc-viewer-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        .doc-info-item {
+            font-size: 0.8rem;
+        }
+        .doc-info-item .label {
+            color: #64748b;
+            font-weight: 500;
+        }
+        .doc-info-item .value {
+            color: #1e293b;
+            font-weight: 700;
+        }
+        .doc-viewer-no-preview {
+            text-align: center;
+            color: #64748b;
+            padding: 40px 20px;
+        }
+        .doc-viewer-no-preview .icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+        .doc-download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s;
+        }
+        .doc-download-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -374,14 +584,25 @@
                 <a href="shipments.html" class="portal-nav-item" data-i18n-html="portal.sidebar.shipments">
                     <span>🚚</span> Shipments
                 </a>
+                <a href="pickups.html" class="portal-nav-item">
+                    <span aria-hidden="true">🏗️</span> <span>Pickup & Delivery</span>
+                </a>
                 <a href="tracking.html" class="portal-nav-item" data-i18n-html="portal.sidebar.tracking">
                     <span>🔍</span> Tracking
                 </a>
                 <a href="inventory.html" class="portal-nav-item" data-i18n-html="portal.sidebar.inventory">
                     <span>📦</span> Inventory
                 </a>
+                <a href="billing.html" class="portal-nav-item"><span>💵</span> <span>Billing</span></a>
+                <a href="contracts.html" class="portal-nav-item"><span>📄</span> <span>Contracts</span></a>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" data-i18n="portal.sidebar.adminLabel">Admin</div>
+                    <a href="admin-panel.html" class="portal-nav-item">
+                        <span>🛡️</span> <span>Admin Control Panel</span>
+                    </a>                    <a href="admin-pickups.html" class="portal-nav-item">
+                        <span aria-hidden="true">🚛</span> <span>All Pickup Requests</span>
+                    </a>
+                    <a href="admin-billing.html" class="portal-nav-item"><span>📝</span> <span>Activity Billing</span></a>
                     <a href="pricing.html" class="portal-nav-item" data-i18n-html="portal.sidebar.pricing">
                         <span>💰</span> Pricing
                     </a>
@@ -481,6 +702,19 @@
                     <button type="submit" class="btn btn-primary" data-i18n="portal.admin.modal.save">Save Changes</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Document Viewer Modal -->
+    <div class="doc-viewer-overlay" id="doc-viewer-overlay">
+        <div class="doc-viewer-modal">
+            <div class="doc-viewer-header">
+                <h3 id="doc-viewer-title">📄 Document Viewer</h3>
+                <button class="doc-viewer-close" onclick="closeDocViewer()">&times;</button>
+            </div>
+            <div class="doc-viewer-body" id="doc-viewer-body">
+                <!-- Content loaded dynamically -->
+            </div>
         </div>
     </div>
 
@@ -665,22 +899,39 @@
                     </div>
 
                     <div class="package-info">
-                        📦 ${shipment.packages?.length || shipment.package?.quantity || 0} package(s)
+                        📦 ${shipment.packages?.length || shipment.package ? (shipment.package.quantity || 0) : 0} package(s)
                         • Created: ${shipment.created_at ? new Date(shipment.created_at).toLocaleDateString() : 'N/A'}
                         ${shipment.admin_notes ? `• 📝 Notes: ${shipment.admin_notes}` : ''}
                     </div>
 
-                    ${shipment.bol_document ? `
-                    <div class="package-info" style="margin-top: 8px; border-left: 3px solid #14b8a6; padding-left: 12px;">
-                        📋 <strong>${shipment.bol_document.type === 'bol' ? 'Bill of Lading' : shipment.bol_document.type === 'shipping_label' ? 'Shipping Label' : 'Document'}</strong>
-                        — ${shipment.bol_document.file_name || 'Uploaded file'}
-                        ${shipment.carrier_name ? `• Carrier: <strong>${shipment.carrier_name}</strong>` : ''}
-                        ${shipment.carrier_tracking ? `• Tracking: <code style="background:#f0fdfa;padding:1px 5px;border-radius:3px;color:#14b8a6;">${shipment.carrier_tracking}</code>` : ''}
-                        ${shipment.bol_number ? `• BOL#: ${shipment.bol_number}` : ''}
-                        ${shipment.pro_number ? `• PRO#: ${shipment.pro_number}` : ''}
-                        ${shipment.bol_document.file_url ? `<br><a href="${shipment.bol_document.file_url}" target="_blank" style="color:#14b8a6;font-size:0.8rem;">📥 View Document</a>` : ''}
+                    <!-- Documents Section -->
+                    <div>
+                        <div class="docs-section-label">📎 Documents</div>
+                        <div class="shipment-docs">
+                            ${shipment.bol_document ? `
+                                <span class="doc-badge bol" onclick="viewDocument('${shipment.id}', 'bol')" title="View BOL">
+                                    <span class="doc-badge-icon">📄</span>
+                                    BOL
+                                    <span class="doc-badge-size">${formatDocSize(shipment.bol_document.file_size)}</span>
+                                </span>
+                            ` : ''}
+                            ${shipment.packing_list ? `
+                                <span class="doc-badge packing-list" onclick="viewDocument('${shipment.id}', 'packing_list')" title="View Packing List">
+                                    <span class="doc-badge-icon">📋</span>
+                                    Packing List
+                                    <span class="doc-badge-size">${formatDocSize(shipment.packing_list.file_size)}</span>
+                                </span>
+                            ` : ''}
+                            ${shipment.commercial_invoice ? `
+                                <span class="doc-badge invoice" onclick="viewDocument('${shipment.id}', 'commercial_invoice')" title="View Invoice">
+                                    <span class="doc-badge-icon">🧾</span>
+                                    Invoice
+                                    <span class="doc-badge-size">${formatDocSize(shipment.commercial_invoice.file_size)}</span>
+                                </span>
+                            ` : ''}
+                            ${!shipment.bol_document && !shipment.packing_list && !shipment.commercial_invoice ? '<span class="no-docs">No documents uploaded</span>' : ''}
+                        </div>
                     </div>
-                    ` : ''}
 
                     <div class="shipment-actions">
                         <label style="font-weight: 500; margin-right: 8px;">Status:</label>
@@ -715,6 +966,170 @@
             };
             return statusMap[status] || status.replace('_', ' ');
         }
+
+        // =====================================================
+        // DOCUMENT VIEWER — Admin can view all uploaded docs
+        // =====================================================
+        function formatDocSize(bytes) {
+            if (!bytes) return '—';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+        window.formatDocSize = formatDocSize;
+
+        const docTypeLabels = {
+            'bol': { label: 'Bill of Lading', icon: '📄', cssClass: 'bol' },
+            'packing_list': { label: 'Packing List', icon: '📋', cssClass: 'packing-list' },
+            'commercial_invoice': { label: 'Commercial Invoice', icon: '🧾', cssClass: 'invoice' }
+        };
+
+        // View document in modal
+        window.viewDocument = async function(shipmentId, docType) {
+            const shipment = allShipments.find(s => s.id === shipmentId);
+            if (!shipment) return;
+
+            const meta = docTypeLabels[docType] || { label: docType, icon: '📎', cssClass: '' };
+            let docData = null;
+            let fileData = null;
+
+            // Get document metadata from shipment record
+            if (docType === 'bol') {
+                docData = shipment.bol_document;
+            } else if (docType === 'packing_list') {
+                docData = shipment.packing_list;
+            } else if (docType === 'commercial_invoice') {
+                docData = shipment.commercial_invoice;
+            }
+
+            if (!docData) {
+                showToast('Document metadata not found.', 'warning');
+                return;
+            }
+
+            // Try to load file data from Firestore collections
+            try {
+                let docsQuery;
+                if (docType === 'bol') {
+                    docsQuery = query(
+                        collection(db, 'bol_documents'),
+                        where('shipment_id', '==', shipmentId)
+                    );
+                } else {
+                    docsQuery = query(
+                        collection(db, 'shipment_documents'),
+                        where('shipment_id', '==', shipmentId),
+                        where('doc_type', '==', docType)
+                    );
+                }
+                const snap = await getDocs(docsQuery);
+                if (!snap.empty) {
+                    fileData = snap.docs[0].data().file_data || null;
+                }
+            } catch (e) {
+                console.warn('Could not load file data:', e.message);
+            }
+
+            // Build viewer header
+            const title = document.getElementById('doc-viewer-title');
+            title.innerHTML = `${meta.icon} ${meta.label} <span class="doc-type-pill ${meta.cssClass}">${meta.label}</span>`;
+
+            // Build viewer body
+            const body = document.getElementById('doc-viewer-body');
+            let previewHtml = '';
+
+            if (fileData) {
+                const isImage = docData.file_type?.startsWith('image/');
+                const isPdf = docData.file_type === 'application/pdf';
+
+                if (isImage) {
+                    previewHtml = `<img src="${fileData}" alt="${docData.filename}" />`;
+                } else if (isPdf) {
+                    previewHtml = `<iframe src="${fileData}" title="${docData.filename}"></iframe>`;
+                } else {
+                    previewHtml = `
+                        <div class="doc-viewer-no-preview">
+                            <div class="icon">${meta.icon}</div>
+                            <p><strong>${docData.filename}</strong></p>
+                            <p>Preview not available for this file type.</p>
+                            <button class="doc-download-btn" onclick="downloadDoc('${fileData}', '${docData.filename}')">
+                                ⬇️ Download File
+                            </button>
+                        </div>
+                    `;
+                }
+
+                // Download button for all viewable types too
+                if (isImage || isPdf) {
+                    previewHtml += `
+                        <button class="doc-download-btn" onclick="downloadDoc('${fileData}', '${docData.filename}')">
+                            ⬇️ Download ${docData.filename}
+                        </button>
+                    `;
+                }
+            } else {
+                previewHtml = `
+                    <div class="doc-viewer-no-preview">
+                        <div class="icon">${meta.icon}</div>
+                        <p><strong>${docData.filename}</strong></p>
+                        <p>File data not stored (file was larger than 1MB). Metadata only.</p>
+                    </div>
+                `;
+            }
+
+            // Document metadata info
+            previewHtml += `
+                <div class="doc-viewer-info">
+                    <div class="doc-info-item">
+                        <span class="label">Filename: </span>
+                        <span class="value">${docData.filename || '—'}</span>
+                    </div>
+                    <div class="doc-info-item">
+                        <span class="label">Type: </span>
+                        <span class="value">${docData.file_type || '—'}</span>
+                    </div>
+                    <div class="doc-info-item">
+                        <span class="label">Size: </span>
+                        <span class="value">${formatDocSize(docData.file_size)}</span>
+                    </div>
+                    <div class="doc-info-item">
+                        <span class="label">Uploaded: </span>
+                        <span class="value">${docData.uploaded_at ? new Date(docData.uploaded_at).toLocaleString() : '—'}</span>
+                    </div>
+                    ${docData.bol_number ? `<div class="doc-info-item"><span class="label">BOL #: </span><span class="value">${docData.bol_number}</span></div>` : ''}
+                    ${docData.carrier ? `<div class="doc-info-item"><span class="label">Carrier: </span><span class="value">${docData.carrier}</span></div>` : ''}
+                    ${docData.po_number ? `<div class="doc-info-item"><span class="label">PO #: </span><span class="value">${docData.po_number}</span></div>` : ''}
+                    ${docData.external_tracking ? `<div class="doc-info-item"><span class="label">Tracking: </span><span class="value">${docData.external_tracking}</span></div>` : ''}
+                </div>
+            `;
+
+            body.innerHTML = previewHtml;
+
+            // Show modal
+            document.getElementById('doc-viewer-overlay').classList.add('active');
+        };
+
+        window.closeDocViewer = function() {
+            document.getElementById('doc-viewer-overlay').classList.remove('active');
+            document.getElementById('doc-viewer-body').innerHTML = '';
+        };
+
+        // Close doc viewer on overlay click
+        document.getElementById('doc-viewer-overlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('doc-viewer-overlay')) {
+                closeDocViewer();
+            }
+        });
+
+        // Download document helper
+        window.downloadDoc = function(dataUrl, filename) {
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = filename || 'document';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
 
         // Toast notification function
         function showToast(message, type = 'success') {

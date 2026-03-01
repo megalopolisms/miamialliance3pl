@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Invoice | Miami Alliance 3PL</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -697,10 +697,31 @@
 
     <script src="../js/lang/es.js"></script>
     <script src="../js/i18n.js"></script>
+    <script>
+        function showInvoiceToast(message, type) {
+            var toast = document.createElement('div');
+            toast.setAttribute('role', 'status');
+            toast.setAttribute('aria-live', 'polite');
+            toast.style.cssText = 'position:fixed;bottom:24px;right:24px;padding:16px 24px;border-radius:12px;font-weight:500;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.15);opacity:0;transform:translateY(12px);transition:opacity 0.3s,transform 0.3s;max-width:400px;color:white;font-family:Inter,sans-serif;';
+            if (type === 'error') toast.style.background = '#ef4444';
+            else if (type === 'success') toast.style.background = '#10b981';
+            else toast.style.background = '#3b82f6';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            requestAnimationFrame(function() { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; });
+            setTimeout(function() { toast.style.opacity = '0'; toast.style.transform = 'translateY(12px)'; setTimeout(function() { toast.remove(); }, 300); }, 4000);
+        }
+    </script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
 
         const firebaseConfig = {
             apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
@@ -735,7 +756,7 @@
             try {
                 const docSnap = await getDoc(doc(db, 'invoices', id));
                 if (!docSnap.exists()) {
-                    alert('Invoice not found');
+                    showInvoiceToast('Invoice not found', 'error');
                     return;
                 }
 
@@ -748,7 +769,7 @@
 
                 // Customer info
                 document.getElementById('customer-name').textContent = inv.customer_name || 'Customer';
-                document.getElementById('customer-details').innerHTML = inv.customer_email || '';
+                document.getElementById('customer-details').textContent = inv.customer_email || '';
                 document.getElementById('billing-period').textContent =
                     `${formatDate(inv.billing_period_start)} - ${formatDate(inv.billing_period_end)}`;
 
@@ -772,10 +793,10 @@
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td>
-                                <div class="item-description">${item.description}</div>
-                                <div class="item-details">${item.category || ''}</div>
+                                <div class="item-description">${escapeHTML(item.description)}</div>
+                                <div class="item-details">${escapeHTML(item.category || '')}</div>
                             </td>
-                            <td>${item.quantity} ${item.unit}</td>
+                            <td>${escapeHTML(String(item.quantity))} ${escapeHTML(item.unit)}</td>
                             <td>${formatCurrency(item.rate)}</td>
                             <td>${formatCurrency(item.amount)}</td>
                         `;
@@ -808,7 +829,7 @@
 
             } catch (err) {
                 console.error('Error loading invoice:', err);
-                alert('Error loading invoice: ' + err.message);
+                showInvoiceToast('Error loading invoice: ' + err.message, 'error');
             }
         }
 

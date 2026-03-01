@@ -30,9 +30,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Mobile browsers can change visual viewport without triggering window resize
   if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", scheduleBannerHeightUpdate, {
-      passive: true,
-    });
+    window.visualViewport.addEventListener(
+      "resize",
+      scheduleBannerHeightUpdate,
+      {
+        passive: true,
+      },
+    );
   }
 
   // Recalculate when banner content wraps/un-wraps (font load, viewport changes)
@@ -54,12 +58,15 @@ document.addEventListener("DOMContentLoaded", function () {
     navToggle.addEventListener("click", function () {
       navMenu.classList.toggle("active");
       navToggle.classList.toggle("active");
+      var expanded = navToggle.getAttribute("aria-expanded") === "true";
+      navToggle.setAttribute("aria-expanded", String(!expanded));
     });
 
     navMenu.querySelectorAll(".nav-link").forEach((link) => {
       link.addEventListener("click", function () {
         navMenu.classList.remove("active");
         navToggle.classList.remove("active");
+        navToggle.setAttribute("aria-expanded", "false");
       });
     });
 
@@ -67,6 +74,17 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
         navMenu.classList.remove("active");
         navToggle.classList.remove("active");
+        navToggle.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // Close mobile nav on Escape key
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && navMenu.classList.contains("active")) {
+        navMenu.classList.remove("active");
+        navToggle.classList.remove("active");
+        navToggle.setAttribute("aria-expanded", "false");
+        navToggle.focus();
       }
     });
   }
@@ -283,6 +301,8 @@ document.addEventListener("DOMContentLoaded", function () {
   if (sidebarToggle && portalSidebar) {
     sidebarToggle.addEventListener("click", function () {
       portalSidebar.classList.toggle("active");
+      var expanded = sidebarToggle.getAttribute("aria-expanded") === "true";
+      sidebarToggle.setAttribute("aria-expanded", String(!expanded));
     });
   }
 
@@ -443,7 +463,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // =========================================================================
   document.querySelectorAll(".footer-bottom p").forEach(function (p) {
     const year = new Date().getFullYear();
-    p.innerHTML = p.innerHTML.replace(/\d{4}/, year);
+    // Use textContent-safe approach: only replace 4-digit year in the text
+    if (p.textContent && /\d{4}/.test(p.textContent)) {
+      p.textContent = p.textContent.replace(/\d{4}/, year);
+    }
   });
 
   // =========================================================================

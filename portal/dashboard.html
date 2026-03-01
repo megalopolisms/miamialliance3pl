@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Dashboard | Miami Alliance 3PL Portal</title>
     <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0f172a">
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
@@ -191,6 +192,9 @@
                 <a href="shipments.html" class="portal-nav-item">
                     <span aria-hidden="true">🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span>
                 </a>
+                <a href="pickups.html" class="portal-nav-item">
+                    <span aria-hidden="true">🏗️</span> <span>Pickup & Delivery</span>
+                </a>
                 <a href="tracking.html" class="portal-nav-item">
                     <span aria-hidden="true">🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span>
                 </a>
@@ -199,6 +203,9 @@
                 </a>
                 <a href="billing.html" class="portal-nav-item">
                     <span aria-hidden="true">💵</span> <span data-i18n="portal.sidebar.billing">Billing</span>
+                </a>
+                <a href="contracts.html" class="portal-nav-item">
+                    <span aria-hidden="true">📄</span> <span>Contracts</span>
                 </a>
                 <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true" data-i18n="portal.sidebar.staffLabel">Staff</div>
@@ -211,6 +218,12 @@
                 </div>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true" data-i18n="portal.sidebar.adminLabel">Admin</div>
+                    <a href="admin-panel.html" class="portal-nav-item">
+                        <span>🛡️</span> <span>Admin Control Panel</span>
+                    </a>                    <a href="admin-pickups.html" class="portal-nav-item">
+                        <span aria-hidden="true">🚛</span> <span>All Pickup Requests</span>
+                    </a>
+                    <a href="admin-billing.html" class="portal-nav-item"><span>📝</span> <span>Activity Billing</span></a>
                     <a href="invoices.html" class="portal-nav-item">
                         <span aria-hidden="true">💵</span> <span data-i18n="portal.sidebar.invoices">Invoices</span>
                     </a>
@@ -262,6 +275,11 @@
                         <div class="count" id="total-inventory">0</div>
                         <div class="label" id="label-inventory" data-i18n="portal.dashboard.inventoryItems">Inventory Items</div>
                     </div>
+                    <div class="admin-card" onclick="location.href='admin-pickups.html'">
+                        <div class="icon">🚛</div>
+                        <div class="count" id="total-pickups">0</div>
+                        <div class="label" data-i18n="portal.dashboard.pickupRequests">Pickup Requests</div>
+                    </div>
                     <div class="admin-card" onclick="location.href='#pending'">
                         <div class="icon" id="icon-pending">⏳</div>
                         <div class="count" id="total-pending">0</div>
@@ -295,6 +313,7 @@
                 <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.dashboard.quickActions">Quick Actions</h2>
                 <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
                     <a href="shipments.html?new=1" class="btn btn-primary" data-i18n="portal.dashboard.createShipment">+ Create Shipment</a>
+                    <a href="pickups.html?new=1" class="btn btn-primary" style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);" data-i18n="portal.dashboard.newPickup">🚛 New Pickup / Delivery</a>
                     <a href="tracking.html" class="btn btn-outline" data-i18n="portal.dashboard.trackPackage">Track Package</a>
                     <a href="inventory.html" class="btn btn-outline" data-i18n="portal.dashboard.viewInventory">View Inventory</a>
                 </div>
@@ -474,7 +493,7 @@
                     if (userData.role) userRole = userData.role;
                 }
             } catch (e) {
-                console.log('Could not fetch user doc:', e);
+                // User doc fetch failed (non-fatal)
             }
 
             // Fallback: Check hardcoded admin emails if no Firestore role
@@ -585,6 +604,15 @@
                 const pendingQuery = query(collection(db, 'shipments'), where('status', '==', 'pending'));
                 const pendingSnap = await getDocs(pendingQuery);
                 document.getElementById('total-pending').textContent = pendingSnap.size;
+
+                // Pickup requests count
+                try {
+                    const pickupsSnap = await getDocs(collection(db, 'pickup_requests'));
+                    const pickupEl = document.getElementById('total-pickups');
+                    if (pickupEl) pickupEl.textContent = pickupsSnap.size;
+                } catch (e) {
+                    // Pickup requests collection may not exist yet
+                }
 
             } catch (error) {
                 console.error('Error loading admin stats:', error);

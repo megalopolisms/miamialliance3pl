@@ -74,17 +74,19 @@
     </script>
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <!-- Scroll Progress Bar -->
     <div class="scroll-progress" aria-hidden="true"></div>
 
     <!-- Navigation -->
     <header class="header">
-        <nav class="nav container">
+        <nav class="nav container" role="navigation" aria-label="Main navigation">
             <a href="index.html" class="logo">
-                <img src="assets/logo.jpg" alt="Miami Alliance 3PL" class="nav-logo-img">
+                <img src="assets/logo.jpg" alt="Miami Alliance 3PL - Home" class="nav-logo-img" width="40" height="40">
                 <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
             </a>
-            <button class="nav-toggle" aria-label="Toggle navigation">
+            <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -101,7 +103,7 @@
         </nav>
     </header>
 
-    <main>
+    <main id="main-content">
         <!-- Page Header -->
         <section class="page-header" style="position: relative; overflow: hidden;">
             <div class="hero-shapes">
@@ -237,10 +239,10 @@
             <div class="footer-grid">
                 <div class="footer-brand">
                     <div class="logo">
-                        <img src="assets/logo.jpg" alt="Miami Alliance 3PL" class="nav-logo-img" style="height: 48px;">
+                        <img src="assets/logo.jpg" alt="Miami Alliance 3PL" class="nav-logo-img" style="height: 48px;" width="48" height="48" loading="lazy">
                         <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
                     </div>
-                    <p>Your trusted logistics partner in Miami. Warehousing, fulfillment, and shipping services for businesses of all sizes.</p>
+                    <p data-i18n="footer.tagline">Your trusted logistics partner in Miami. Warehousing, fulfillment, and shipping services for businesses of all sizes.</p>
                 </div>
                 <div class="footer-links">
                     <h4 data-i18n="footer.quicklinks">Quick Links</h4>
@@ -259,6 +261,7 @@
                         <li><a href="services.html#receiving" data-i18n="footer.receiving">Receiving & QC</a></li>
                         <li><a href="services.html#warehousing" data-i18n="footer.warehousing">Warehousing</a></li>
                         <li><a href="services.html#fulfillment" data-i18n="footer.fulfillment">Fulfillment</a></li>
+                        <li><a href="services.html#import" data-i18n="footer.import">Import/Export</a></li>
                         <li><a href="services.html#inventory" data-i18n="footer.inventory">Inventory Management</a></li>
                     </ul>
                 </div>
