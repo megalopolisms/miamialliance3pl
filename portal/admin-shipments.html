@@ -665,10 +665,22 @@
                     </div>
 
                     <div class="package-info">
-                        📦 ${shipment.packages?.length || 0} package(s)
+                        📦 ${shipment.packages?.length || shipment.package?.quantity || 0} package(s)
                         • Created: ${shipment.created_at ? new Date(shipment.created_at).toLocaleDateString() : 'N/A'}
                         ${shipment.admin_notes ? `• 📝 Notes: ${shipment.admin_notes}` : ''}
                     </div>
+
+                    ${shipment.bol_document ? `
+                    <div class="package-info" style="margin-top: 8px; border-left: 3px solid #14b8a6; padding-left: 12px;">
+                        📋 <strong>${shipment.bol_document.type === 'bol' ? 'Bill of Lading' : shipment.bol_document.type === 'shipping_label' ? 'Shipping Label' : 'Document'}</strong>
+                        — ${shipment.bol_document.file_name || 'Uploaded file'}
+                        ${shipment.carrier_name ? `• Carrier: <strong>${shipment.carrier_name}</strong>` : ''}
+                        ${shipment.carrier_tracking ? `• Tracking: <code style="background:#f0fdfa;padding:1px 5px;border-radius:3px;color:#14b8a6;">${shipment.carrier_tracking}</code>` : ''}
+                        ${shipment.bol_number ? `• BOL#: ${shipment.bol_number}` : ''}
+                        ${shipment.pro_number ? `• PRO#: ${shipment.pro_number}` : ''}
+                        ${shipment.bol_document.file_url ? `<br><a href="${shipment.bol_document.file_url}" target="_blank" style="color:#14b8a6;font-size:0.8rem;">📥 View Document</a>` : ''}
+                    </div>
+                    ` : ''}
 
                     <div class="shipment-actions">
                         <label style="font-weight: 500; margin-right: 8px;">Status:</label>

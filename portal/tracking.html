@@ -110,6 +110,15 @@
                     </div>
                 </div>
 
+                <!-- BOL / Document Info (shown if document is attached) -->
+                <div id="document-info" style="display: none; margin-bottom: var(--spacing-lg);">
+                    <div class="dashboard-card" style="border-left: 4px solid #14b8a6;">
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">📋 Attached Document</h3>
+                        <div id="document-details" style="color: var(--color-gray-900);"></div>
+                        <a id="document-download" href="#" target="_blank" style="display:none; margin-top: var(--spacing-sm); color: var(--color-accent); font-weight: 500; font-size: var(--font-size-sm);">📥 View / Download Document</a>
+                    </div>
+                </div>
+
                 <!-- Timeline -->
                 <div class="dashboard-card">
                     <h3 style="font-size: var(--font-size-lg); color: var(--color-gray-900); margin-bottom: var(--spacing-md);" data-i18n="portal.tracking.history">Tracking History</h3>
@@ -299,7 +308,42 @@
                 Quantity: ${data.package.quantity}
             `;
 
-            document.getElementById('result-service').textContent = data.service_type;
+            document.getElementById('result-service').textContent = data.service_type || data.shipping_zone || '';
+
+            // Show BOL / Document info if present
+            const docInfoEl = document.getElementById('document-info');
+            const docDetailsEl = document.getElementById('document-details');
+            const docDownloadEl = document.getElementById('document-download');
+
+            if (data.bol_document) {
+                docInfoEl.style.display = 'block';
+                let docHTML = '';
+                const bd = data.bol_document;
+                const pdata = bd.parsed_data || {};
+
+                const docTypeLabel = bd.type === 'bol' ? 'Bill of Lading' : bd.type === 'shipping_label' ? 'Shipping Label' : 'Document';
+                docHTML += '<strong>Type:</strong> ' + docTypeLabel + '<br>';
+                docHTML += '<strong>File:</strong> ' + (bd.file_name || 'Unknown') + ' (' + formatDocSize(bd.file_size) + ')<br>';
+
+                if (data.carrier_name) docHTML += '<strong>Carrier:</strong> ' + data.carrier_name + '<br>';
+                if (data.carrier_tracking) docHTML += '<strong>Carrier Tracking:</strong> <code style="background:#f0fdfa;padding:2px 6px;border-radius:4px;color:#14b8a6;">' + data.carrier_tracking + '</code><br>';
+                if (data.bol_number) docHTML += '<strong>BOL #:</strong> ' + data.bol_number + '<br>';
+                if (data.pro_number) docHTML += '<strong>PRO #:</strong> ' + data.pro_number + '<br>';
+                if (pdata.weight) docHTML += '<strong>Weight (from doc):</strong> ' + pdata.weight + '<br>';
+                if (pdata.pieces) docHTML += '<strong>Pieces (from doc):</strong> ' + pdata.pieces + '<br>';
+                if (pdata.ship_from) docHTML += '<strong>Ship From (from doc):</strong> ' + pdata.ship_from + '<br>';
+
+                docDetailsEl.innerHTML = docHTML;
+
+                if (bd.file_url) {
+                    docDownloadEl.style.display = 'inline-block';
+                    docDownloadEl.href = bd.file_url;
+                } else {
+                    docDownloadEl.style.display = 'none';
+                }
+            } else {
+                docInfoEl.style.display = 'none';
+            }
 
             // Generate timeline
             const timeline = document.getElementById('tracking-timeline');
@@ -346,6 +390,39 @@
 
                 timeline.appendChild(item);
             });
+
+            // Show custom tracking events (document uploads, status changes, etc.)
+            if (data.tracking_events && Array.isArray(data.tracking_events)) {
+                const eventsHeader = document.createElement('div');
+                eventsHeader.style.cssText = 'margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);';
+                eventsHeader.innerHTML = '<h4 style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">Activity Log</h4>';
+                timeline.appendChild(eventsHeader);
+
+                data.tracking_events.forEach(evt => {
+                    const evtItem = document.createElement('div');
+                    evtItem.style.cssText = 'position: relative; padding-bottom: 10px; margin-left: -24px;';
+                    const evtIcon = evt.event === 'document_uploaded' ? '📋' : evt.event === 'shipment_created' ? '✨' : evt.event === 'status_updated' ? '🔄' : '📌';
+                    evtItem.innerHTML = `
+                        <div style="position: absolute; left: 0; width: 8px; height: 8px; border-radius: 50%; background: #14b8a6; transform: translateX(-3px); margin-top: 4px;"></div>
+                        <div style="margin-left: 24px;">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <span style="font-size: 0.85rem;">${evtIcon}</span>
+                                <span style="font-size: var(--font-size-sm); color: var(--color-gray-900);">${evt.details || evt.event}</span>
+                            </div>
+                            <p style="font-size: 0.72rem; color: var(--color-gray-400); margin-top: 1px;">${new Date(evt.timestamp).toLocaleString()}</p>
+                            ${evt.file_name ? '<p style="font-size: 0.72rem; color: var(--color-gray-500);">File: ' + evt.file_name + '</p>' : ''}
+                        </div>
+                    `;
+                    timeline.appendChild(evtItem);
+                });
+            }
+        }
+
+        function formatDocSize(bytes) {
+            if (!bytes) return '';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
     </script>
     <script src="../js/main.js"></script>

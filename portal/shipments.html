@@ -329,6 +329,115 @@
             opacity: 0.7;
         }
 
+        /* ================================================
+           BOL / SHIPPING LABEL UPLOAD STEP
+           ================================================ */
+        .bol-upload-section {
+            border-top: 2px solid var(--color-gray-200, #e5e7eb);
+            padding-top: var(--spacing-md, 16px);
+            margin-top: var(--spacing-md, 16px);
+        }
+        .bol-section-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0 0 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .bol-upload-zone {
+            border: 2px dashed var(--color-gray-300, #d1d5db);
+            border-radius: 12px;
+            padding: 20px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafbfc;
+            position: relative;
+        }
+        .bol-upload-zone:hover,
+        .bol-upload-zone.drag-over {
+            border-color: #14b8a6;
+            background: #f0fdfa;
+        }
+        .bol-upload-zone .upload-icon { font-size: 2rem; margin-bottom: 6px; }
+        .bol-upload-zone .upload-text { font-size: 0.85rem; color: #64748b; }
+        .bol-upload-zone .upload-text strong { color: #14b8a6; cursor: pointer; }
+        .bol-upload-zone .upload-formats { font-size: 0.72rem; color: #94a3b8; margin-top: 4px; }
+        .bol-upload-zone input[type="file"] { display: none; }
+
+        .bol-file-preview {
+            display: none;
+            border: 1px solid var(--color-gray-200, #e5e7eb);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 10px;
+            background: #fff;
+        }
+        .bol-file-preview.active { display: block; }
+        .bol-file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bol-file-info { display: flex; align-items: center; gap: 8px; }
+        .bol-file-icon { font-size: 1.5rem; }
+        .bol-file-name { font-weight: 600; font-size: 0.85rem; color: #1e293b; }
+        .bol-file-size { font-size: 0.72rem; color: #94a3b8; }
+        .bol-remove-btn {
+            background: none; border: none; color: #ef4444; cursor: pointer;
+            font-size: 1.1rem; padding: 4px; border-radius: 50%; transition: background 0.2s;
+        }
+        .bol-remove-btn:hover { background: #fef2f2; }
+
+        .bol-ocr-progress { display: none; margin-top: 10px; }
+        .bol-ocr-progress.active { display: block; }
+        .bol-progress-bar {
+            height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-bottom: 6px;
+        }
+        .bol-progress-fill {
+            height: 100%; background: linear-gradient(90deg, #14b8a6, #0d9488);
+            border-radius: 3px; width: 0%; transition: width 0.3s;
+        }
+        .bol-ocr-status {
+            font-size: 0.75rem; color: #64748b; display: flex; align-items: center; gap: 6px;
+        }
+        .bol-ocr-spinner {
+            width: 14px; height: 14px; border: 2px solid #e5e7eb; border-top-color: #14b8a6;
+            border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block;
+        }
+
+        .bol-parsed-results { display: none; margin-top: 10px; border: 1px solid #d1fae5; border-radius: 10px; overflow: hidden; }
+        .bol-parsed-results.active { display: block; }
+        .bol-parsed-header {
+            background: #ecfdf5; padding: 8px 12px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .bol-parsed-header span { font-size: 0.78rem; font-weight: 700; color: #065f46; }
+        .bol-autofill-btn {
+            background: #14b8a6; color: white; border: none; padding: 4px 12px;
+            border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .bol-autofill-btn:hover { background: #0d9488; }
+        .bol-parsed-body { padding: 10px 12px; background: #fff; }
+        .bol-parsed-row {
+            display: flex; justify-content: space-between; padding: 4px 0;
+            font-size: 0.8rem; border-bottom: 1px solid #f1f5f9;
+        }
+        .bol-parsed-row:last-child { border-bottom: none; }
+        .bol-parsed-label { color: #64748b; font-weight: 500; }
+        .bol-parsed-value { color: #1e293b; font-weight: 600; text-align: right; max-width: 60%; word-break: break-word; }
+        .doc-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;
+        }
+        .doc-badge-bol { background: #dbeafe; color: #1e40af; }
+        .doc-badge-label { background: #fef3c7; color: #92400e; }
+        .doc-badge-doc { background: #e0e7ff; color: #3730a3; }
+
         /* Responsive overrides for modal */
         @media (max-width: 1023px) {
             .calc-overlay { padding: 12px; }
@@ -419,13 +528,14 @@
                             <th scope="col" data-i18n="portal.table.recipient">Recipient</th>
                             <th scope="col" data-i18n="portal.table.destination">Destination</th>
                             <th scope="col" data-i18n="portal.table.service">Service</th>
+                            <th scope="col">Documents</th>
                             <th scope="col" data-i18n="portal.table.status">Status</th>
                             <th scope="col" data-i18n="portal.table.created">Created</th>
                         </tr>
                     </thead>
                     <tbody id="shipments-list">
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);" data-i18n="portal.shipments.loading">
+                            <td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);" data-i18n="portal.shipments.loading">
                                 Loading shipments...
                             </td>
                         </tr>
@@ -681,6 +791,63 @@
                             </div>
                         </div>
 
+                        <!-- ====== BOL / SHIPPING LABEL UPLOAD STEP ====== -->
+                        <div class="quote-control-group bol-upload-section">
+                            <div class="bol-section-title">📋 Upload BOL or Shipping Label</div>
+                            <p style="font-size: 0.78rem; color: #64748b; margin-bottom: 10px;">
+                                Upload a Bill of Lading or shipping label to auto-extract tracking info and link it to this shipment.
+                            </p>
+
+                            <!-- Drop Zone -->
+                            <div class="bol-upload-zone" id="bol-upload-zone">
+                                <div class="upload-icon">📤</div>
+                                <div class="upload-text">
+                                    Drag & drop your file here, or <strong id="bol-browse-trigger">browse</strong>
+                                </div>
+                                <div class="upload-formats">Accepts: JPG, PNG, PDF (max 10 MB)</div>
+                                <input type="file" id="bol-file-input" accept="image/jpeg,image/png,application/pdf">
+                            </div>
+
+                            <!-- File Preview -->
+                            <div class="bol-file-preview" id="bol-file-preview">
+                                <div class="bol-file-header">
+                                    <div class="bol-file-info">
+                                        <span class="bol-file-icon" id="bol-file-icon">📄</span>
+                                        <div>
+                                            <div class="bol-file-name" id="bol-file-name">document.pdf</div>
+                                            <div class="bol-file-size" id="bol-file-size">1.2 MB</div>
+                                        </div>
+                                    </div>
+                                    <button class="bol-remove-btn" id="bol-remove-btn" title="Remove file">&times;</button>
+                                </div>
+                                <div id="bol-thumbnail-container" style="display:none; margin-top:8px; border-radius:8px; overflow:hidden; max-height:200px;">
+                                    <img id="bol-thumbnail" style="width:100%; height:auto; object-fit:contain; max-height:200px;" alt="Uploaded document preview">
+                                </div>
+                            </div>
+
+                            <!-- OCR Progress -->
+                            <div class="bol-ocr-progress" id="bol-ocr-progress">
+                                <div class="bol-progress-bar">
+                                    <div class="bol-progress-fill" id="bol-progress-fill"></div>
+                                </div>
+                                <div class="bol-ocr-status">
+                                    <span class="bol-ocr-spinner"></span>
+                                    <span id="bol-ocr-status-text">Scanning document...</span>
+                                </div>
+                            </div>
+
+                            <!-- Parsed Results -->
+                            <div class="bol-parsed-results" id="bol-parsed-results">
+                                <div class="bol-parsed-header">
+                                    <span>✅ Document Scanned</span>
+                                    <button class="bol-autofill-btn" id="bol-autofill-btn">Auto-fill Fields</button>
+                                </div>
+                                <div class="bol-parsed-body" id="bol-parsed-body">
+                                    <!-- Parsed rows inserted dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Error + Create Shipment Button -->
                         <div class="calc-error" id="sc-error" role="alert" aria-live="polite"></div>
 
@@ -736,11 +903,23 @@
     <!-- jsPDF Library for PDF Generation (same as quote.html) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+    <!-- Tesseract.js for OCR (BOL / Shipping Label scanning) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <!-- PDF.js for rendering PDF pages to canvas (for OCR) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+
     <!-- Firebase SDK + Calculator Logic + 3D Viewer -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -758,6 +937,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         // Fallback admin emails
         const FALLBACK_ADMIN_EMAILS = [
@@ -1253,6 +1433,11 @@
             notes: ''
         };
 
+        // BOL / Shipping Label upload state
+        let bolFile = null;
+        let bolParsedData = null;
+        let bolFileDataURL = null;
+
         // =====================================================
         // PRICING CALCULATION (uses shared engine)
         // =====================================================
@@ -1617,6 +1802,9 @@
             document.getElementById('sc-dest-zip').value = '';
             document.getElementById('sc-notes').value = '';
 
+            // Reset BOL upload state
+            removeBOLFile();
+
             // Reset success state
             document.getElementById('calc-success').classList.remove('active');
             document.querySelector('#calc-body .quote-tool').style.display = '';
@@ -1782,6 +1970,326 @@
         });
 
         // =====================================================
+        // BOL / SHIPPING LABEL UPLOAD + OCR SYSTEM
+        // =====================================================
+        const bolUploadZone = document.getElementById('bol-upload-zone');
+        const bolFileInput = document.getElementById('bol-file-input');
+        const bolBrowseTrigger = document.getElementById('bol-browse-trigger');
+        const bolFilePreview = document.getElementById('bol-file-preview');
+        const bolOCRProgress = document.getElementById('bol-ocr-progress');
+        const bolParsedResults = document.getElementById('bol-parsed-results');
+
+        bolBrowseTrigger.addEventListener('click', (e) => { e.stopPropagation(); bolFileInput.click(); });
+        bolUploadZone.addEventListener('click', () => bolFileInput.click());
+        bolUploadZone.addEventListener('dragover', (e) => { e.preventDefault(); bolUploadZone.classList.add('drag-over'); });
+        bolUploadZone.addEventListener('dragleave', () => { bolUploadZone.classList.remove('drag-over'); });
+        bolUploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            bolUploadZone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) handleBOLFile(e.dataTransfer.files[0]);
+        });
+        bolFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleBOLFile(e.target.files[0]);
+        });
+        document.getElementById('bol-remove-btn').addEventListener('click', () => removeBOLFile());
+        document.getElementById('bol-autofill-btn').addEventListener('click', () => autofillFromParsed());
+
+        function removeBOLFile() {
+            bolFile = null;
+            bolParsedData = null;
+            bolFileDataURL = null;
+            bolFileInput.value = '';
+            bolFilePreview.classList.remove('active');
+            bolOCRProgress.classList.remove('active');
+            bolParsedResults.classList.remove('active');
+            document.getElementById('bol-thumbnail-container').style.display = 'none';
+            bolUploadZone.style.display = '';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        async function handleBOLFile(file) {
+            const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+            if (!validTypes.includes(file.type)) { showError('Invalid file type. Please upload JPG, PNG, or PDF.'); return; }
+            if (file.size > 10 * 1024 * 1024) { showError('File too large. Maximum size is 10 MB.'); return; }
+            clearError();
+            bolFile = file;
+
+            const isImage = file.type.startsWith('image/');
+            document.getElementById('bol-file-icon').textContent = isImage ? '🖼️' : '📄';
+            document.getElementById('bol-file-name').textContent = file.name;
+            document.getElementById('bol-file-size').textContent = formatFileSize(file.size);
+            bolFilePreview.classList.add('active');
+            bolUploadZone.style.display = 'none';
+
+            if (isImage) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    bolFileDataURL = ev.target.result;
+                    document.getElementById('bol-thumbnail').src = ev.target.result;
+                    document.getElementById('bol-thumbnail-container').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('bol-thumbnail-container').style.display = 'none';
+            }
+
+            await runOCR(file);
+        }
+
+        async function runOCR(file) {
+            bolOCRProgress.classList.add('active');
+            bolParsedResults.classList.remove('active');
+            const progressFill = document.getElementById('bol-progress-fill');
+            const statusText = document.getElementById('bol-ocr-status-text');
+
+            try {
+                statusText.textContent = 'Initializing scanner...';
+                progressFill.style.width = '10%';
+                let imageSource;
+
+                if (file.type === 'application/pdf') {
+                    statusText.textContent = 'Rendering PDF page...';
+                    progressFill.style.width = '20%';
+                    imageSource = await pdfToCanvas(file);
+                    if (!imageSource) {
+                        statusText.textContent = 'PDF rendering unavailable — attaching file only.';
+                        bolParsedData = { document_type: 'unknown', note: 'PDF could not be rendered for OCR' };
+                        setTimeout(() => { bolOCRProgress.classList.remove('active'); showParsedResults(bolParsedData); }, 600);
+                        return;
+                    }
+                } else {
+                    imageSource = file;
+                }
+
+                statusText.textContent = 'Scanning document with OCR...';
+                progressFill.style.width = '30%';
+
+                const result = await Tesseract.recognize(imageSource, 'eng', {
+                    logger: (m) => {
+                        if (m.status === 'recognizing text') {
+                            const pct = Math.round(30 + m.progress * 60);
+                            progressFill.style.width = pct + '%';
+                            statusText.textContent = 'Scanning... ' + Math.round(m.progress * 100) + '%';
+                        }
+                    }
+                });
+
+                progressFill.style.width = '95%';
+                statusText.textContent = 'Parsing extracted text...';
+
+                const ocrText = result.data.text;
+                const confidence = result.data.confidence;
+                bolParsedData = parseBOLText(ocrText, confidence);
+                progressFill.style.width = '100%';
+
+                setTimeout(() => { bolOCRProgress.classList.remove('active'); showParsedResults(bolParsedData); }, 500);
+                trackCalcEvent('bol_scanned', { file_type: file.type, confidence, document_type: bolParsedData.document_type });
+            } catch (error) {
+                console.error('OCR Error:', error);
+                progressFill.style.width = '100%';
+                statusText.textContent = 'Scan complete (limited results)';
+                bolParsedData = { document_type: 'unknown', error: error.message };
+                setTimeout(() => { bolOCRProgress.classList.remove('active'); showParsedResults(bolParsedData); }, 500);
+            }
+        }
+
+        async function pdfToCanvas(file) {
+            if (!window.pdfjsLib) return null;
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const page = await pdf.getPage(1);
+                const scale = 2;
+                const viewport = page.getViewport({ scale });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                return canvas;
+            } catch (e) {
+                console.warn('PDF rendering failed:', e);
+                return null;
+            }
+        }
+
+        function parseBOLText(text, confidence) {
+            const result = { document_type: 'unknown', confidence: confidence, raw_text_preview: text.substring(0, 500) };
+
+            // Detect document type
+            if (/BILL\s*OF\s*LADING|B\/?O\/?L|BOL\s*#|STRAIGHT\s*BILL/i.test(text)) {
+                result.document_type = 'bol';
+            } else if (/SHIPPING\s*LABEL|SHIP\s*TO|TRACKING\s*(NUMBER|#|NO)/i.test(text)) {
+                result.document_type = 'shipping_label';
+            } else if (/FEDEX|UPS|USPS|DHL|CARRIER/i.test(text)) {
+                result.document_type = 'shipping_label';
+            }
+
+            // Carrier detection
+            const carriers = [
+                { p: /FEDEX|FED\s*EX/i, n: 'FedEx' }, { p: /\bUPS\b/i, n: 'UPS' },
+                { p: /USPS|UNITED\s*STATES\s*POSTAL/i, n: 'USPS' }, { p: /\bDHL\b/i, n: 'DHL' },
+                { p: /AMAZON/i, n: 'Amazon' }, { p: /OLD\s*DOMINION|ODFL/i, n: 'Old Dominion' },
+                { p: /XPO\s*LOGISTICS|XPO/i, n: 'XPO Logistics' }, { p: /SAIA/i, n: 'SAIA' },
+                { p: /ESTES/i, n: 'Estes Express' }, { p: /YRC|YELLOW/i, n: 'YRC Freight' },
+                { p: /R\+?L\s*CARRIERS/i, n: 'R+L Carriers' }, { p: /ABF\s*FREIGHT/i, n: 'ABF Freight' },
+                { p: /SOUTHEASTERN\s*FREIGHT/i, n: 'Southeastern Freight' }
+            ];
+            for (const c of carriers) { if (c.p.test(text)) { result.carrier = c.n; break; } }
+
+            // Tracking number (near "tracking" keyword)
+            const trackingMatch = text.match(/TRACKING\s*(?:NUMBER|#|NO\.?)?\s*:?\s*([A-Z0-9]{8,34})/i);
+            if (trackingMatch) result.carrier_tracking = trackingMatch[1];
+
+            // UPS tracking format
+            const upsMatch = text.match(/\b(1Z[A-Z0-9]{16})\b/i);
+            if (upsMatch && !result.carrier_tracking) result.carrier_tracking = upsMatch[1];
+
+            // PRO number
+            const proMatch = text.match(/PRO\s*(?:NUMBER|#|NO\.?)?\s*:?\s*([A-Z0-9-]{4,30})/i);
+            if (proMatch) result.pro_number = proMatch[1];
+
+            // BOL number
+            const bolMatch = text.match(/B\.?O\.?L\.?\s*(?:NUMBER|#|NO\.?)?\s*:?\s*([A-Z0-9-]{4,30})/i);
+            if (bolMatch) result.bol_number = bolMatch[1];
+
+            // Weight
+            const weightMatch = text.match(/(?:WEIGHT|WT|WGT|GROSS)\s*:?\s*(\d[\d,]*\.?\d*)\s*(?:LBS?|POUNDS?|KG)/i);
+            if (weightMatch) result.weight = weightMatch[1].replace(',', '') + (weightMatch[0].match(/KG/i) ? ' kg' : ' lbs');
+
+            // Pieces / Quantity
+            const piecesMatch = text.match(/(?:PIECES?|PCS?|UNITS?|PALLETS?|PKGS?|PACKAGES?|QTY|QUANTITY)\s*:?\s*(\d+)/i);
+            if (piecesMatch) result.pieces = piecesMatch[1];
+
+            // Dimensions
+            const dimMatch = text.match(/(\d+)\s*[xX\u00d7]\s*(\d+)\s*[xX\u00d7]\s*(\d+)/);
+            if (dimMatch) result.dimensions = dimMatch[1] + ' x ' + dimMatch[2] + ' x ' + dimMatch[3];
+
+            // Ship From / Ship To
+            const shipFromMatch = text.match(/(?:SHIP\s*FROM|SHIPPER|ORIGIN|FROM)\s*:?\s*\n?([\s\S]{10,200}?)(?=SHIP\s*TO|CONSIGNEE|DEST|TO:|CARRIER|$)/i);
+            const shipToMatch = text.match(/(?:SHIP\s*TO|CONSIGNEE|DEST(?:INATION)?)\s*:?\s*\n?([\s\S]{10,200}?)(?=CARRIER|WEIGHT|DATE|BOL|TRACKING|THIRD|SPECIAL|$)/i);
+            if (shipFromMatch) result.ship_from = shipFromMatch[1].trim().substring(0, 200);
+            if (shipToMatch) result.ship_to = shipToMatch[1].trim().substring(0, 200);
+
+            // Fallback: addresses by state+ZIP pattern
+            if (!result.ship_from || !result.ship_to) {
+                const addrs = [];
+                const addrRe = /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)/g;
+                let m;
+                while ((m = addrRe.exec(text)) !== null) addrs.push(m[1] + ', ' + m[2] + ' ' + m[3]);
+                if (!result.ship_from && addrs.length >= 2) result.ship_from = addrs[0];
+                if (!result.ship_to && addrs.length >= 1) result.ship_to = addrs[addrs.length > 1 ? 1 : 0];
+            }
+
+            // Date
+            const dateMatch = text.match(/(?:DATE|SHIP\s*DATE|PICKUP)\s*:?\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i);
+            if (dateMatch) result.date = dateMatch[1];
+
+            // Description
+            const descMatch = text.match(/(?:DESCRIPTION|COMMODITY|CONTENTS?)\s*:?\s*(.{5,200})/i);
+            if (descMatch) result.description = descMatch[1].trim().substring(0, 200);
+
+            return result;
+        }
+
+        function showParsedResults(data) {
+            const body = document.getElementById('bol-parsed-body');
+            body.innerHTML = '';
+            const fields = [
+                { key: 'document_type', label: 'Document Type', format: (v) => v === 'bol' ? 'Bill of Lading' : v === 'shipping_label' ? 'Shipping Label' : 'Document' },
+                { key: 'carrier', label: 'Carrier' },
+                { key: 'carrier_tracking', label: 'Tracking #' },
+                { key: 'bol_number', label: 'BOL #' },
+                { key: 'pro_number', label: 'PRO #' },
+                { key: 'weight', label: 'Weight' },
+                { key: 'pieces', label: 'Pieces' },
+                { key: 'dimensions', label: 'Dimensions' },
+                { key: 'ship_from', label: 'Ship From' },
+                { key: 'ship_to', label: 'Ship To' },
+                { key: 'date', label: 'Date' },
+                { key: 'description', label: 'Description' },
+                { key: 'confidence', label: 'OCR Confidence', format: (v) => Math.round(v) + '%' }
+            ];
+            let hasData = false;
+            for (const f of fields) {
+                if (data[f.key] !== undefined && data[f.key] !== null && data[f.key] !== 'unknown') {
+                    hasData = true;
+                    const row = document.createElement('div');
+                    row.className = 'bol-parsed-row';
+                    row.innerHTML = '<span class="bol-parsed-label">' + f.label + '</span><span class="bol-parsed-value">' + (f.format ? f.format(data[f.key]) : data[f.key]) + '</span>';
+                    body.appendChild(row);
+                }
+            }
+            if (!hasData) {
+                body.innerHTML = '<div style="text-align:center;padding:10px;color:#94a3b8;font-size:0.8rem;">No data extracted. The document will still be attached to the shipment.</div>';
+            }
+            bolParsedResults.classList.add('active');
+            const autofillBtn = document.getElementById('bol-autofill-btn');
+            autofillBtn.style.display = (data.weight || data.pieces || data.dimensions || data.ship_to) ? '' : 'none';
+        }
+
+        function autofillFromParsed() {
+            if (!bolParsedData) return;
+            if (bolParsedData.weight) {
+                const wt = parseFloat(bolParsedData.weight);
+                if (wt > 0 && wt <= 2000) {
+                    sc.weight = Math.round(wt);
+                    document.getElementById('sc-weight-input').value = sc.weight;
+                    document.getElementById('sc-weight-slider').value = Math.min(500, sc.weight);
+                }
+            }
+            if (bolParsedData.pieces) {
+                const pcs = parseInt(bolParsedData.pieces);
+                if (pcs > 0 && pcs <= 1000) { sc.quantity = pcs; document.getElementById('sc-qty').value = sc.quantity; }
+            }
+            if (bolParsedData.dimensions) {
+                const dims = bolParsedData.dimensions.match(/(\d+)\s*x\s*(\d+)\s*x\s*(\d+)/i);
+                if (dims) {
+                    sc.length = Math.min(120, parseInt(dims[1]));
+                    sc.width = Math.min(120, parseInt(dims[2]));
+                    sc.height = Math.min(120, parseInt(dims[3]));
+                    document.getElementById('sc-length').value = sc.length;
+                    document.getElementById('sc-width').value = sc.width;
+                    document.getElementById('sc-height').value = sc.height;
+                    if (viewer3D && viewer3D.active) viewer3D.updateDimensions(sc.length, sc.width, sc.height);
+                }
+            }
+            if (bolParsedData.ship_to) {
+                const addrMatch = bolParsedData.ship_to.match(/([A-Za-z\s]+)\s*,?\s*([A-Z]{2})\s+(\d{5})/);
+                if (addrMatch) {
+                    document.getElementById('sc-dest-city').value = addrMatch[1].trim();
+                    document.getElementById('sc-dest-state').value = addrMatch[2];
+                    document.getElementById('sc-dest-zip').value = addrMatch[3];
+                }
+            }
+            updatePricing();
+            const btn = document.getElementById('bol-autofill-btn');
+            btn.textContent = '✓ Fields Updated!';
+            btn.style.background = '#065f46';
+            setTimeout(() => { btn.textContent = 'Auto-fill Fields'; btn.style.background = ''; }, 2000);
+            trackCalcEvent('bol_autofill_applied', { fields: Object.keys(bolParsedData).length });
+        }
+
+        // Upload BOL file to Firebase Storage and return download URL
+        async function uploadBOLToStorage(file, trackingNumber) {
+            try {
+                const ext = file.name.split('.').pop();
+                const path = 'shipments/' + trackingNumber + '/documents/' + Date.now() + '.' + ext;
+                const fileRef = storageRef(storage, path);
+                const snapshot = await uploadBytes(fileRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                return { url: downloadURL, path: path };
+            } catch (err) {
+                console.warn('Storage upload failed:', err.message);
+                return null;
+            }
+        }
+
+        // =====================================================
         // PDF DOWNLOAD BUTTON
         // =====================================================
         document.getElementById('sc-download-pdf').addEventListener('click', () => generatePDF());
@@ -1877,12 +2385,67 @@
                 },
                 notes: sc.notes || `Shipment: ${sc.quantity} ${sc.packageType}(s), Zone: ${getZoneLabel(sc.shippingZone)}`,
                 status: 'pending',
+                bol_document: null,
+                tracking_events: [{
+                    event: 'shipment_created',
+                    timestamp: new Date().toISOString(),
+                    details: 'Shipment created via portal'
+                }],
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
 
             try {
                 const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
+
+                // Upload BOL / Shipping Label if attached
+                if (bolFile) {
+                    try {
+                        const uploadResult = await uploadBOLToStorage(bolFile, trackingNumber);
+                        const docType = (bolParsedData && bolParsedData.document_type !== 'unknown') ? bolParsedData.document_type : 'document';
+                        const bolDocData = {
+                            type: docType,
+                            file_name: bolFile.name,
+                            file_size: bolFile.size,
+                            file_type: bolFile.type,
+                            file_url: uploadResult ? uploadResult.url : null,
+                            storage_path: uploadResult ? uploadResult.path : null,
+                            uploaded_at: new Date().toISOString(),
+                            parsed_data: bolParsedData || {},
+                            ocr_confidence: bolParsedData ? bolParsedData.confidence : null
+                        };
+
+                        // Update shipment with document info
+                        await updateDoc(doc(db, 'shipments', shipmentRef.id), {
+                            bol_document: bolDocData,
+                            carrier_tracking: bolParsedData?.carrier_tracking || null,
+                            carrier_name: bolParsedData?.carrier || null,
+                            bol_number: bolParsedData?.bol_number || null,
+                            pro_number: bolParsedData?.pro_number || null,
+                            tracking_events: [
+                                { event: 'shipment_created', timestamp: new Date().toISOString(), details: 'Shipment created via portal' },
+                                { event: 'document_uploaded', timestamp: new Date().toISOString(), details: docType === 'bol' ? 'Bill of Lading uploaded and scanned' : docType === 'shipping_label' ? 'Shipping label uploaded and scanned' : 'Document uploaded and scanned', document_type: docType, file_name: bolFile.name }
+                            ]
+                        });
+
+                        // Also store in separate shipment_documents collection for querying
+                        await addDoc(collection(db, 'shipment_documents'), {
+                            shipment_id: shipmentRef.id,
+                            tracking_number: trackingNumber,
+                            customer_id: currentUser.uid,
+                            ...bolDocData
+                        });
+
+                        trackCalcEvent('bol_uploaded_with_shipment', {
+                            tracking_number: trackingNumber,
+                            document_type: docType,
+                            carrier: bolParsedData?.carrier || 'unknown',
+                            has_tracking: !!bolParsedData?.carrier_tracking
+                        });
+                    } catch (bolErr) {
+                        console.warn('BOL upload failed (shipment still created):', bolErr.message);
+                    }
+                }
 
                 // Log detailed billable events
                 try {
@@ -2068,7 +2631,7 @@
         // =====================================================
         async function loadShipments() {
             const tbody = document.getElementById('shipments-list');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Loading...</td></tr>';
 
             try {
                 const statusFilter = document.getElementById('status-filter').value;
@@ -2088,18 +2651,39 @@
                 }
                 const snapshot = await getDocs(q);
                 if (snapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">No shipments found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">No shipments found</td></tr>';
                     return;
                 }
                 tbody.innerHTML = '';
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const row = document.createElement('tr');
+
+                    // Build document badge
+                    let docBadge = '<span style="color:#94a3b8;font-size:0.75rem;">—</span>';
+                    if (data.bol_document) {
+                        const dtype = data.bol_document.type;
+                        if (dtype === 'bol') {
+                            docBadge = '<span class="doc-badge doc-badge-bol">📋 BOL</span>';
+                        } else if (dtype === 'shipping_label') {
+                            docBadge = '<span class="doc-badge doc-badge-label">🏷️ Label</span>';
+                        } else {
+                            docBadge = '<span class="doc-badge doc-badge-doc">📄 Doc</span>';
+                        }
+                        if (data.carrier_name) {
+                            docBadge += '<br><span style="font-size:0.68rem;color:#64748b;">' + data.carrier_name + '</span>';
+                        }
+                        if (data.carrier_tracking) {
+                            docBadge += '<br><span style="font-size:0.65rem;color:#14b8a6;font-family:monospace;">' + data.carrier_tracking.substring(0, 16) + '</span>';
+                        }
+                    }
+
                     row.innerHTML = `
                         <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
                         <td>${data.destination?.name || 'N/A'}</td>
                         <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
                         <td style="text-transform: capitalize;">${data.service_type || data.shipping_zone || ''}</td>
+                        <td>${docBadge}</td>
                         <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
                         <td>${new Date(data.created_at).toLocaleDateString()}</td>
                     `;
@@ -2107,7 +2691,7 @@
                 });
             } catch (error) {
                 console.error('Error loading shipments:', error);
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Error loading shipments</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Error loading shipments</td></tr>';
             }
         }
 
