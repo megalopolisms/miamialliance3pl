@@ -4080,6 +4080,32 @@ ul {
   line-height: 1.6;
 }
 
+.faq-icon {
+  font-size: 1.5rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.faq-item {
+  position: relative;
+}
+
+.faq-item a {
+  text-decoration: none;
+}
+
+.faq-item a:hover {
+  text-decoration: underline;
+}
+
+.faq-filter-btn:hover {
+  border-color: var(--color-accent) !important;
+  color: var(--color-accent) !important;
+}
+
+.faq-filter-btn.active:hover {
+  color: white !important;
+}
+
 /* --- Carrier Logo Cards Enhancement --- */
 .carrier-grid {
   display: flex;
