@@ -2401,6 +2401,118 @@ ul {
   border-color: var(--color-accent);
 }
 
+/* FBA Prep Services */
+.fba-prep-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff9900, #ff6600);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
+.fba-prep-toggle {
+  padding: 4px 0;
+}
+
+.fba-prep-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+@media (max-width: 480px) {
+  .fba-prep-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fba-prep-item {
+  background: var(--color-white);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.fba-prep-item:hover {
+  border-color: #ff9900;
+}
+
+.fba-prep-item.active {
+  border-color: #ff9900;
+  box-shadow: 0 0 0 2px rgba(255, 153, 0, 0.15);
+  background: #fff8f0;
+}
+
+.fba-prep-service-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.fba-prep-service-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #ff9900;
+}
+
+.fba-svc-icon {
+  font-size: 16px;
+}
+
+.fba-svc-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fba-svc-rate {
+  margin-left: auto;
+  font-weight: 700;
+  color: #ff9900;
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.fba-svc-qty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.fba-qty-input {
+  width: 70px;
+  text-align: center;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  font-family: inherit;
+}
+
+.fba-qty-input:focus {
+  outline: none;
+  border-color: #ff9900;
+}
+
 /* Quote Results */
 .quote-results {
   background: var(--color-gray-50);

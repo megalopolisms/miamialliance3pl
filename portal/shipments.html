@@ -1059,6 +1059,95 @@
                             </label>
                         </div>
 
+                        <!-- FBA Prep Services -->
+                        <div class="quote-control-group" id="sc-fba-prep-group">
+                            <label class="quote-label fba-prep-toggle" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="sc-fba-prep-enabled" style="width: 18px; height: 18px; cursor: pointer;">
+                                <span class="fba-prep-badge">FBA</span>
+                                <span data-i18n="quote.fbaPrep.label">FBA Prep Services</span>
+                            </label>
+                            <div id="sc-fba-prep-services" class="fba-prep-grid" style="display: none;">
+                                <div class="fba-prep-item" data-service="fnskuLabeling">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="fnskuLabeling">
+                                        <span class="fba-svc-icon">🏷️</span>
+                                        <span class="fba-svc-name">FNSKU Labeling</span>
+                                        <span class="fba-svc-rate">$0.30/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="fnskuLabeling" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="fnskuLabeling" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="fnskuLabeling" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="polyBagging">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="polyBagging">
+                                        <span class="fba-svc-icon">🛍️</span>
+                                        <span class="fba-svc-name">Poly Bagging</span>
+                                        <span class="fba-svc-rate">$0.50/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="polyBagging" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="polyBagging" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="polyBagging" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="bubbleWrapping">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="bubbleWrapping">
+                                        <span class="fba-svc-icon">🫧</span>
+                                        <span class="fba-svc-name">Bubble Wrapping</span>
+                                        <span class="fba-svc-rate">$1.00/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="bubbleWrapping" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="bubbleWrapping" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="bubbleWrapping" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="bundling">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="bundling">
+                                        <span class="fba-svc-icon">📦</span>
+                                        <span class="fba-svc-name">Bundling / Kitting</span>
+                                        <span class="fba-svc-rate">$2.00/bundle</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="bundling" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="bundling" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="bundling" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="boxLabels">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="boxLabels">
+                                        <span class="fba-svc-icon">📋</span>
+                                        <span class="fba-svc-name">Box Content Labels</span>
+                                        <span class="fba-svc-rate">$3.00/box</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="boxLabels" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="boxLabels" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="boxLabels" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="inspectionQC">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="inspectionQC">
+                                        <span class="fba-svc-icon">🔍</span>
+                                        <span class="fba-svc-name">Inspection & QC</span>
+                                        <span class="fba-svc-rate">$0.15/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="inspectionQC" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="inspectionQC" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="inspectionQC" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- ====== PRICING RESULTS (same position as quote.html — inside left panel) ====== -->
                         <div class="quote-results" style="margin-top: var(--spacing-md, 16px);">
                             <h3 class="quote-results-title" data-i18n="quote.results.title">Estimated Quote</h3>
@@ -1097,6 +1186,10 @@
                             <div class="quote-line" id="sc-r-dropship-row" style="display: none;">
                                 <span data-i18n="quote.results.dropship">Drop Ship (by unit)</span>
                                 <span id="sc-r-dropship">$0.00</span>
+                            </div>
+                            <div class="quote-line" id="sc-r-fbaprep-row" style="display: none;">
+                                <span data-i18n="quote.results.fbaPrep">FBA Prep Services</span>
+                                <span id="sc-r-fbaprep">$0.00</span>
                             </div>
 
                             <div class="quote-divider"></div>
@@ -1831,7 +1924,15 @@
                 storageDays: 30,
                 minStorage: 5.0,
                 shippingZones: { local: 0.45, regional: 0.65, national: 0.85, none: 0, dropship: 0 },
-                dropShipRates: { envelope: 1.5, small: 3.0, medium: 5.0, large: 20.0 }
+                dropShipRates: { envelope: 1.5, small: 3.0, medium: 5.0, large: 20.0 },
+                fbaPrep: {
+                    fnskuLabeling: { rate: 0.3, label: 'FNSKU Labeling', unit: 'unit' },
+                    polyBagging: { rate: 0.5, label: 'Poly Bagging', unit: 'unit' },
+                    bubbleWrapping: { rate: 1.0, label: 'Bubble Wrapping', unit: 'unit' },
+                    bundling: { rate: 2.0, label: 'Bundling / Kitting', unit: 'bundle' },
+                    boxLabels: { rate: 3.0, label: 'Box Content Labels', unit: 'box' },
+                    inspectionQC: { rate: 0.15, label: 'Inspection & QC', unit: 'unit' }
+                }
             };
 
         // =====================================================
@@ -1845,6 +1946,17 @@
             shippingZone: 'regional',
             blackWrapping: false,
             dropShipQty: { envelope: 0, small: 0, medium: 0, large: 0 },
+            fbaPrep: {
+                enabled: false,
+                services: {
+                    fnskuLabeling: { selected: false, qty: 0 },
+                    polyBagging: { selected: false, qty: 0 },
+                    bubbleWrapping: { selected: false, qty: 0 },
+                    bundling: { selected: false, qty: 0 },
+                    boxLabels: { selected: false, qty: 0 },
+                    inspectionQC: { selected: false, qty: 0 }
+                }
+            },
             destination: { name: '', street: '', city: '', state: '', zip: '' },
             notes: ''
         };
@@ -1862,7 +1974,8 @@
                     shippingZone: sc.shippingZone,
                     storageDays: PRICING.storageDays,
                     blackWrapping: sc.blackWrapping,
-                    dropShipQty: sc.dropShipQty
+                    dropShipQty: sc.dropShipQty,
+                    fbaPrep: sc.fbaPrep
                 });
             }
             // Inline fallback (same algorithm as quote-pricing-engine.js)
@@ -1889,8 +2002,17 @@
                     dropship += qty * PRICING.dropShipRates[size];
                 }
             }
-            const total = storage + handling + pickPack + shipping + wrapping + dropship;
-            return { storage, handling, pickPack, shipping, wrapping, dropship, total, cubicFt, dimWeight, billableWeight };
+            // FBA Prep calculation (inline fallback)
+            let fbaPrepTotal = 0;
+            if (sc.fbaPrep && sc.fbaPrep.enabled && PRICING.fbaPrep) {
+                for (const [key, svc] of Object.entries(sc.fbaPrep.services)) {
+                    if (svc && svc.selected && svc.qty > 0 && PRICING.fbaPrep[key]) {
+                        fbaPrepTotal += svc.qty * PRICING.fbaPrep[key].rate;
+                    }
+                }
+            }
+            const total = storage + handling + pickPack + shipping + wrapping + dropship + fbaPrepTotal;
+            return { storage, handling, pickPack, shipping, wrapping, dropship, fbaPrepTotal, total, cubicFt, dimWeight, billableWeight };
         }
 
         function fmt(amount) {
@@ -1917,6 +2039,7 @@
             set('sc-r-shipping', fmt(q.shipping));
             set('sc-r-wrapping', fmt(q.wrapping));
             set('sc-r-dropship', fmt(q.dropship));
+            set('sc-r-fbaprep', fmt(q.fbaPrepTotal || 0));
             set('sc-r-total', fmt(q.total));
 
             // Show/hide wrapping row (pallet + option selected) — same as quote.html
@@ -1926,6 +2049,10 @@
             // Show/hide drop ship row — same as quote.html
             const dropshipRow = document.getElementById('sc-r-dropship-row');
             if (dropshipRow) dropshipRow.style.display = (sc.shippingZone === 'dropship' && q.dropship > 0) ? 'flex' : 'none';
+
+            // Show/hide FBA prep row — same as quote.html
+            const fbaPrepRow = document.getElementById('sc-r-fbaprep-row');
+            if (fbaPrepRow) fbaPrepRow.style.display = (sc.fbaPrep.enabled && (q.fbaPrepTotal || 0) > 0) ? 'flex' : 'none';
 
             // Show/hide shipping row (hide when no shipping or dropship) — same as quote.html
             const shippingRow = document.getElementById('sc-r-shipping-row');
@@ -2052,6 +2179,15 @@
             if (q.shipping > 0) priceLines.push(['Est. Shipping', fmt(q.shipping)]);
             if (q.wrapping > 0) priceLines.push(['Black Wrapping', fmt(q.wrapping)]);
             if (q.dropship > 0) priceLines.push(['Drop Ship', fmt(q.dropship)]);
+            // Add FBA Prep line items if enabled
+            if (sc.fbaPrep && sc.fbaPrep.enabled) {
+                const fbaRates = PRICING.fbaPrep || {};
+                for (const [key, svc] of Object.entries(sc.fbaPrep.services)) {
+                    if (svc.selected && svc.qty > 0 && fbaRates[key]) {
+                        priceLines.push([`FBA: ${fbaRates[key].label} x${svc.qty}`, fmt(svc.qty * fbaRates[key].rate)]);
+                    }
+                }
+            }
 
             doc.setFontSize(8);
             priceLines.forEach(([label, value], i) => {
@@ -2085,9 +2221,12 @@
             doc.setFontSize(7);
             doc.setTextColor(148, 163, 184);
             doc.setFont('helvetica', 'normal');
-            const rateText = sc.packageType === 'pallet'
+            let rateText = sc.packageType === 'pallet'
                 ? `Pallet: $0.75/day | Handling: $15.00/unit | Pick & Pack: $5.00/unit${sc.blackWrapping ? ' | Wrapping: $7.00/pallet' : ''}`
                 : `Box: $0.025/cu ft/day | Handling: $3.50/unit | Pick & Pack: $1.25/unit`;
+            if (sc.fbaPrep && sc.fbaPrep.enabled && (q.fbaPrepTotal || 0) > 0) {
+                rateText += ' | FBA Prep included';
+            }
             doc.text(rateText, pageW / 2, rateY, { align: 'center' });
 
             // Notes
@@ -2186,6 +2325,17 @@
             sc.shippingZone = 'regional';
             sc.blackWrapping = false;
             sc.dropShipQty = { envelope: 0, small: 0, medium: 0, large: 0 };
+            sc.fbaPrep = {
+                enabled: false,
+                services: {
+                    fnskuLabeling: { selected: false, qty: 0 },
+                    polyBagging: { selected: false, qty: 0 },
+                    bubbleWrapping: { selected: false, qty: 0 },
+                    bundling: { selected: false, qty: 0 },
+                    boxLabels: { selected: false, qty: 0 },
+                    inspectionQC: { selected: false, qty: 0 }
+                }
+            };
             sc.destination = { name: '', street: '', city: '', state: '', zip: '' };
             sc.notes = '';
 
@@ -2206,6 +2356,13 @@
             ['envelope', 'small', 'medium', 'large'].forEach(s => {
                 document.getElementById('sc-ds-' + s).value = 0;
             });
+            // Reset FBA Prep UI
+            document.getElementById('sc-fba-prep-enabled').checked = false;
+            document.getElementById('sc-fba-prep-services').style.display = 'none';
+            document.querySelectorAll('#calc-overlay .sc-fba-svc-check').forEach(cb => { cb.checked = false; });
+            document.querySelectorAll('#calc-overlay .sc-fba-qty-input').forEach(inp => { inp.value = 0; });
+            document.querySelectorAll('#sc-fba-prep-services .fba-svc-qty').forEach(div => { div.style.display = 'none'; });
+            document.querySelectorAll('#sc-fba-prep-services .fba-prep-item').forEach(item => { item.classList.remove('active'); });
             document.getElementById('sc-dest-name').value = '';
             document.getElementById('sc-dest-street').value = '';
             document.getElementById('sc-dest-city').value = '';
@@ -2391,6 +2548,73 @@
         });
 
         // =====================================================
+        // EVENT HANDLERS — FBA Prep Services
+        // =====================================================
+        // Master toggle
+        document.getElementById('sc-fba-prep-enabled').addEventListener('change', (e) => {
+            sc.fbaPrep.enabled = e.target.checked;
+            document.getElementById('sc-fba-prep-services').style.display = sc.fbaPrep.enabled ? 'grid' : 'none';
+            if (!sc.fbaPrep.enabled) {
+                // Reset all services when master toggle is unchecked
+                for (const key of Object.keys(sc.fbaPrep.services)) {
+                    sc.fbaPrep.services[key] = { selected: false, qty: 0 };
+                }
+                document.querySelectorAll('#calc-overlay .sc-fba-svc-check').forEach(cb => { cb.checked = false; });
+                document.querySelectorAll('#calc-overlay .sc-fba-qty-input').forEach(inp => { inp.value = 0; });
+                document.querySelectorAll('#sc-fba-prep-services .fba-svc-qty').forEach(div => { div.style.display = 'none'; });
+                document.querySelectorAll('#sc-fba-prep-services .fba-prep-item').forEach(item => { item.classList.remove('active'); });
+            }
+            updatePricing();
+            trackCalcEvent('shipment_fba_toggled', { enabled: sc.fbaPrep.enabled });
+        });
+
+        // Individual service checkboxes
+        document.querySelectorAll('#calc-overlay .sc-fba-svc-check').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const key = cb.dataset.service;
+                sc.fbaPrep.services[key].selected = cb.checked;
+                const item = cb.closest('.fba-prep-item');
+                const qtyDiv = item.querySelector('.fba-svc-qty');
+                if (cb.checked) {
+                    sc.fbaPrep.services[key].qty = sc.fbaPrep.services[key].qty || 1;
+                    item.classList.add('active');
+                    qtyDiv.style.display = 'flex';
+                    qtyDiv.querySelector('.sc-fba-qty-input').value = sc.fbaPrep.services[key].qty;
+                } else {
+                    sc.fbaPrep.services[key].qty = 0;
+                    item.classList.remove('active');
+                    qtyDiv.style.display = 'none';
+                    qtyDiv.querySelector('.sc-fba-qty-input').value = 0;
+                }
+                updatePricing();
+            });
+        });
+
+        // FBA quantity +/- buttons
+        document.querySelectorAll('#calc-overlay .sc-fba-qty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.dataset.service;
+                const action = btn.dataset.action;
+                if (action === 'increase') {
+                    sc.fbaPrep.services[key].qty = Math.min(99999, sc.fbaPrep.services[key].qty + 1);
+                } else {
+                    sc.fbaPrep.services[key].qty = Math.max(0, sc.fbaPrep.services[key].qty - 1);
+                }
+                btn.closest('.fba-svc-qty').querySelector('.sc-fba-qty-input').value = sc.fbaPrep.services[key].qty;
+                updatePricing();
+            });
+        });
+
+        // FBA quantity direct input
+        document.querySelectorAll('#calc-overlay .sc-fba-qty-input').forEach(inp => {
+            inp.addEventListener('input', () => {
+                const key = inp.dataset.service;
+                sc.fbaPrep.services[key].qty = Math.max(0, Math.min(99999, parseInt(inp.value) || 0));
+                updatePricing();
+            });
+        });
+
+        // =====================================================
         // PDF DOWNLOAD BUTTON
         // =====================================================
         document.getElementById('sc-download-pdf').addEventListener('click', () => generatePDF());
@@ -2506,6 +2730,15 @@
                 shipping_zone: sc.shippingZone,
                 black_wrapping: sc.blackWrapping,
                 dropship_qty: sc.shippingZone === 'dropship' ? { ...sc.dropShipQty } : null,
+                fba_prep: sc.fbaPrep.enabled ? {
+                    enabled: true,
+                    services: Object.fromEntries(
+                        Object.entries(sc.fbaPrep.services)
+                            .filter(([, svc]) => svc.selected && svc.qty > 0)
+                            .map(([key, svc]) => [key, { qty: svc.qty, rate: (PRICING.fbaPrep && PRICING.fbaPrep[key]) ? PRICING.fbaPrep[key].rate : 0 }])
+                    ),
+                    total: quoteResult.fbaPrepTotal || 0
+                } : null,
                 quote_estimate: {
                     storage: quoteResult.storage,
                     handling: quoteResult.handling,
@@ -2513,6 +2746,7 @@
                     shipping: quoteResult.shipping,
                     wrapping: quoteResult.wrapping,
                     dropship: quoteResult.dropship,
+                    fba_prep: quoteResult.fbaPrepTotal || 0,
                     total: quoteResult.total,
                     storage_days: PRICING.storageDays
                 },
