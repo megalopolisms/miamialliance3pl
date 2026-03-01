@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Instant 3D Quote Calculator | Miami Alliance 3PL - Warehouse Pricing</title>
     <meta name="description" content="Get an instant 3PL quote with our interactive 3D calculator. Visualize your box or pallet in real-time and get transparent pricing for storage, handling, pick & pack, and shipping in Miami.">
-    <meta name="keywords" content="3PL quote, warehouse quote Miami, storage pricing calculator, fulfillment costs, logistics calculator, 3D quote tool, pallet storage rates, box storage pricing, Miami warehouse rates, Medley FL 3PL">
+    <meta name="keywords" content="3PL quote, warehouse quote Miami, storage pricing calculator, fulfillment costs, logistics calculator, 3D quote tool, pallet storage rates, box storage pricing, Miami warehouse rates, Medley FL 3PL, FBA prep services, Amazon FBA prep, FNSKU labeling, poly bagging, FBA compliance Miami">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="author" content="Miami Alliance 3PL">
     <meta name="geo.region" content="US-FL">
@@ -401,6 +401,95 @@
                             </label>
                         </div>
 
+                        <!-- FBA Prep Services -->
+                        <div class="quote-control-group" id="fba-prep-group">
+                            <label class="quote-label fba-prep-toggle" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="fba-prep-enabled" style="width: 18px; height: 18px; cursor: pointer;">
+                                <span class="fba-prep-badge">FBA</span>
+                                <span data-i18n="quote.fbaPrep.label">FBA Prep Services</span>
+                            </label>
+                            <div id="fba-prep-services" class="fba-prep-grid" style="display: none;">
+                                <div class="fba-prep-item" data-service="fnskuLabeling">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="fba-svc-check" data-service="fnskuLabeling">
+                                        <span class="fba-svc-icon">🏷️</span>
+                                        <span class="fba-svc-name">FNSKU Labeling</span>
+                                        <span class="fba-svc-rate">$0.30/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button class="qty-btn fba-qty-btn" data-service="fnskuLabeling" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input" data-service="fnskuLabeling" value="0" min="0" max="99999">
+                                        <button class="qty-btn fba-qty-btn" data-service="fnskuLabeling" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="polyBagging">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="fba-svc-check" data-service="polyBagging">
+                                        <span class="fba-svc-icon">🛍️</span>
+                                        <span class="fba-svc-name">Poly Bagging</span>
+                                        <span class="fba-svc-rate">$0.50/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button class="qty-btn fba-qty-btn" data-service="polyBagging" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input" data-service="polyBagging" value="0" min="0" max="99999">
+                                        <button class="qty-btn fba-qty-btn" data-service="polyBagging" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="bubbleWrapping">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="fba-svc-check" data-service="bubbleWrapping">
+                                        <span class="fba-svc-icon">🫧</span>
+                                        <span class="fba-svc-name">Bubble Wrapping</span>
+                                        <span class="fba-svc-rate">$1.00/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button class="qty-btn fba-qty-btn" data-service="bubbleWrapping" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input" data-service="bubbleWrapping" value="0" min="0" max="99999">
+                                        <button class="qty-btn fba-qty-btn" data-service="bubbleWrapping" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="bundling">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="fba-svc-check" data-service="bundling">
+                                        <span class="fba-svc-icon">📦</span>
+                                        <span class="fba-svc-name">Bundling / Kitting</span>
+                                        <span class="fba-svc-rate">$2.00/bundle</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button class="qty-btn fba-qty-btn" data-service="bundling" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input" data-service="bundling" value="0" min="0" max="99999">
+                                        <button class="qty-btn fba-qty-btn" data-service="bundling" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="boxLabels">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="fba-svc-check" data-service="boxLabels">
+                                        <span class="fba-svc-icon">📋</span>
+                                        <span class="fba-svc-name">Box Content Labels</span>
+                                        <span class="fba-svc-rate">$3.00/box</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button class="qty-btn fba-qty-btn" data-service="boxLabels" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input" data-service="boxLabels" value="0" min="0" max="99999">
+                                        <button class="qty-btn fba-qty-btn" data-service="boxLabels" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="inspectionQC">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="fba-svc-check" data-service="inspectionQC">
+                                        <span class="fba-svc-icon">🔍</span>
+                                        <span class="fba-svc-name">Inspection & QC</span>
+                                        <span class="fba-svc-rate">$0.15/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button class="qty-btn fba-qty-btn" data-service="inspectionQC" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input" data-service="inspectionQC" value="0" min="0" max="99999">
+                                        <button class="qty-btn fba-qty-btn" data-service="inspectionQC" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Quote Results -->
                         <div class="quote-results">
                             <h3 class="quote-results-title" data-i18n="quote.results.title">Estimated Quote</h3>
@@ -439,6 +528,10 @@
                             <div class="quote-line" id="dropship-row" style="display: none;">
                                 <span data-i18n="quote.results.dropship">Drop Ship (by unit)</span>
                                 <span id="result-dropship">$0.00</span>
+                            </div>
+                            <div class="quote-line" id="fba-prep-row" style="display: none;">
+                                <span data-i18n="quote.results.fbaPrep">FBA Prep Services</span>
+                                <span id="result-fba-prep">$0.00</span>
                             </div>
 
                             <div class="quote-divider"></div>

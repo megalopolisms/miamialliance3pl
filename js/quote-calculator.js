@@ -55,6 +55,17 @@ class QuoteCalculator {
     this.storageDays = 30;
     this.blackWrapping = false; // Black wrapping option - $7/pallet
     this.dropShipQty = { envelope: 0, small: 0, medium: 0, large: 0 }; // Drop ship unit quantities
+    this.fbaPrep = {
+      enabled: false,
+      services: {
+        fnskuLabeling: { selected: false, qty: 0 },
+        polyBagging: { selected: false, qty: 0 },
+        bubbleWrapping: { selected: false, qty: 0 },
+        bundling: { selected: false, qty: 0 },
+        boxLabels: { selected: false, qty: 0 },
+        inspectionQC: { selected: false, qty: 0 },
+      },
+    };
 
     this.init();
   }
@@ -249,6 +260,90 @@ class QuoteCalculator {
       });
     }
 
+    // FBA Prep master toggle
+    const fbaPrepEnabled = document.getElementById("fba-prep-enabled");
+    if (fbaPrepEnabled) {
+      fbaPrepEnabled.addEventListener("change", (e) => {
+        this.fbaPrep.enabled = e.target.checked;
+        const servicesGrid = document.getElementById("fba-prep-services");
+        if (servicesGrid) {
+          servicesGrid.style.display = this.fbaPrep.enabled ? "grid" : "none";
+        }
+        // Reset all services when disabling
+        if (!this.fbaPrep.enabled) {
+          Object.keys(this.fbaPrep.services).forEach((key) => {
+            this.fbaPrep.services[key] = { selected: false, qty: 0 };
+          });
+          document.querySelectorAll(".fba-svc-check").forEach((cb) => {
+            cb.checked = false;
+          });
+          document.querySelectorAll(".fba-qty-input").forEach((inp) => {
+            inp.value = 0;
+          });
+          document.querySelectorAll(".fba-svc-qty").forEach((el) => {
+            el.style.display = "none";
+          });
+          document.querySelectorAll(".fba-prep-item").forEach((el) => {
+            el.classList.remove("active");
+          });
+        }
+        this.calculate();
+      });
+    }
+
+    // FBA Prep individual service checkboxes
+    document.querySelectorAll(".fba-svc-check").forEach((checkbox) => {
+      checkbox.addEventListener("change", (e) => {
+        const serviceKey = e.target.dataset.service;
+        this.fbaPrep.services[serviceKey].selected = e.target.checked;
+        const item = e.target.closest(".fba-prep-item");
+        const qtyDiv = item ? item.querySelector(".fba-svc-qty") : null;
+        if (qtyDiv) {
+          qtyDiv.style.display = e.target.checked ? "flex" : "none";
+        }
+        if (item) {
+          item.classList.toggle("active", e.target.checked);
+        }
+        // Auto-set qty to 1 when first checked
+        if (e.target.checked && this.fbaPrep.services[serviceKey].qty === 0) {
+          this.fbaPrep.services[serviceKey].qty = 1;
+          const qtyInput = item ? item.querySelector(".fba-qty-input") : null;
+          if (qtyInput) qtyInput.value = 1;
+        }
+        if (!e.target.checked) {
+          this.fbaPrep.services[serviceKey].qty = 0;
+          const qtyInput = item ? item.querySelector(".fba-qty-input") : null;
+          if (qtyInput) qtyInput.value = 0;
+        }
+        this.calculate();
+      });
+    });
+
+    // FBA Prep quantity buttons
+    document.querySelectorAll(".fba-qty-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const serviceKey = btn.dataset.service;
+        const item = btn.closest(".fba-prep-item");
+        const input = item ? item.querySelector(".fba-qty-input") : null;
+        if (btn.dataset.action === "increase") {
+          this.fbaPrep.services[serviceKey].qty = Math.min(99999, this.fbaPrep.services[serviceKey].qty + 1);
+        } else {
+          this.fbaPrep.services[serviceKey].qty = Math.max(0, this.fbaPrep.services[serviceKey].qty - 1);
+        }
+        if (input) input.value = this.fbaPrep.services[serviceKey].qty;
+        this.calculate();
+      });
+    });
+
+    // FBA Prep quantity inputs
+    document.querySelectorAll(".fba-qty-input").forEach((input) => {
+      input.addEventListener("input", (e) => {
+        const serviceKey = e.target.dataset.service;
+        this.fbaPrep.services[serviceKey].qty = Math.max(0, Math.min(99999, parseInt(e.target.value) || 0));
+        this.calculate();
+      });
+    });
+
     // Initial calculation
     this.calculate();
   }
@@ -293,6 +388,7 @@ class QuoteCalculator {
       storageDays: this.storageDays,
       blackWrapping: this.blackWrapping,
       dropShipQty: this.dropShipQty,
+      fbaPrep: this.fbaPrep,
     };
 
     const result = window.MA3PLQuoteEngine
@@ -309,7 +405,8 @@ class QuoteCalculator {
           let dropship = 0;
 
           if (this.packageType === "pallet") {
-            storage = PRICING.palletStoragePerDay * this.storageDays * this.quantity;
+            storage =
+              PRICING.palletStoragePerDay * this.storageDays * this.quantity;
             handling = PRICING.palletHandling * this.quantity;
             pickPack = PRICING.palletPickPack * this.quantity;
             if (this.shippingZone === "dropship") {
@@ -342,8 +439,18 @@ class QuoteCalculator {
           }
 
           storage = Math.max(storage, PRICING.minStorage || 5.0);
+          // Calculate FBA prep total (fallback)
+          let fbaPrepTotal = 0;
+          if (this.fbaPrep && this.fbaPrep.enabled && PRICING.fbaPrep) {
+            Object.keys(this.fbaPrep.services).forEach((key) => {
+              const svc = this.fbaPrep.services[key];
+              if (svc && svc.selected && svc.qty > 0 && PRICING.fbaPrep[key]) {
+                fbaPrepTotal += svc.qty * PRICING.fbaPrep[key].rate;
+              }
+            });
+          }
           const total =
-            storage + handling + pickPack + shipping + wrapping + dropship;
+            storage + handling + pickPack + shipping + wrapping + dropship + fbaPrepTotal;
           return {
             cubicFt,
             dimWeight,
@@ -354,6 +461,7 @@ class QuoteCalculator {
             shipping,
             wrapping,
             dropship,
+            fbaPrepTotal,
             total,
           };
         })();
@@ -368,6 +476,7 @@ class QuoteCalculator {
       shipping: result.shipping,
       wrapping: result.wrapping,
       dropship: result.dropship,
+      fbaPrepTotal: result.fbaPrepTotal || 0,
       total: result.total,
     });
 
@@ -391,6 +500,7 @@ class QuoteCalculator {
       shipping: result.shipping,
       wrapping: result.wrapping,
       dropship: result.dropship,
+      fbaPrepTotal: result.fbaPrepTotal || 0,
       total: result.total,
     };
   }
@@ -405,6 +515,7 @@ class QuoteCalculator {
       "result-shipping": this.formatCurrency(values.shipping),
       "result-wrapping": this.formatCurrency(values.wrapping),
       "result-dropship": this.formatCurrency(values.dropship),
+      "result-fba-prep": this.formatCurrency(values.fbaPrepTotal || 0),
       "result-total": this.formatCurrency(values.total),
     };
 
@@ -425,6 +536,15 @@ class QuoteCalculator {
     if (dropshipRow) {
       dropshipRow.style.display =
         this.shippingZone === "dropship" && values.dropship > 0
+          ? "flex"
+          : "none";
+    }
+
+    // Show/hide FBA prep row
+    const fbaPrepRow = document.getElementById("fba-prep-row");
+    if (fbaPrepRow) {
+      fbaPrepRow.style.display =
+        this.fbaPrep.enabled && (values.fbaPrepTotal || 0) > 0
           ? "flex"
           : "none";
     }
@@ -462,6 +582,24 @@ class QuoteCalculator {
           qty: qty,
           rate: PRICING.dropShipRates[size],
           total: qty * PRICING.dropShipRates[size],
+        });
+      }
+    }
+    return lines;
+  }
+
+  getFbaPrepBreakdown() {
+    const lines = [];
+    if (!this.fbaPrep || !this.fbaPrep.enabled) return lines;
+    const fbaRates = PRICING.fbaPrep || {};
+    for (const [key, svc] of Object.entries(this.fbaPrep.services)) {
+      if (svc.selected && svc.qty > 0 && fbaRates[key]) {
+        lines.push({
+          label: fbaRates[key].label,
+          qty: svc.qty,
+          rate: fbaRates[key].rate,
+          unit: fbaRates[key].unit,
+          total: svc.qty * fbaRates[key].rate,
         });
       }
     }
@@ -670,6 +808,19 @@ class QuoteCalculator {
       priceRows.push(["Black Wrapping", this.formatCurrency(results.wrapping)]);
     }
 
+    // Add FBA Prep line items if enabled
+    if (this.fbaPrep && this.fbaPrep.enabled) {
+      const fbaBreakdown = this.getFbaPrepBreakdown();
+      if (fbaBreakdown.length > 0) {
+        fbaBreakdown.forEach((item) => {
+          priceRows.push([
+            `FBA: ${item.label} x${item.qty}`,
+            this.formatCurrency(item.total),
+          ]);
+        });
+      }
+    }
+
     doc.setFontSize(10);
     priceRows.forEach(([service, amount], index) => {
       const rowY = yPos + index * 9;
@@ -738,6 +889,18 @@ class QuoteCalculator {
       rates.push(`Black Wrap: $${PRICING.blackWrapping.toFixed(2)}/pallet`);
     }
     doc.text(rates.join("   |   "), 105, yPos, { align: "center" });
+
+    // FBA Prep rate details (separate line if enabled)
+    if (this.fbaPrep && this.fbaPrep.enabled) {
+      const fbaBreakdown = this.getFbaPrepBreakdown();
+      if (fbaBreakdown.length > 0) {
+        yPos += 6;
+        const fbaRateStr = fbaBreakdown.map(
+          (item) => `${item.label}: $${item.rate.toFixed(2)}/${item.unit}`
+        ).join("   |   ");
+        doc.text("FBA Prep: " + fbaRateStr, 105, yPos, { align: "center" });
+      }
+    }
 
     // ===== IMPORTANT NOTES =====
     yPos += 15;
@@ -846,7 +1009,7 @@ class QuoteCalculator {
     // Remove after 4 seconds
     setTimeout(() => {
       toast.classList.remove("show");
-      setTimeout(() => toast.remove(), 300);
+      setTimeout(() => toast.remove(), 500);
     }, 4000);
   }
 }

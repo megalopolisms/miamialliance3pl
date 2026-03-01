@@ -29,6 +29,14 @@
       medium: 5.0,
       large: 20.0,
     },
+    fbaPrep: {
+      fnskuLabeling: { rate: 0.3, label: "FNSKU Labeling", unit: "unit" },
+      polyBagging: { rate: 0.5, label: "Poly Bagging", unit: "unit" },
+      bubbleWrapping: { rate: 1.0, label: "Bubble Wrapping", unit: "unit" },
+      bundling: { rate: 2.0, label: "Bundling / Kitting", unit: "bundle" },
+      boxLabels: { rate: 3.0, label: "Box Content Labels", unit: "box" },
+      inspectionQC: { rate: 0.15, label: "Inspection & QC", unit: "unit" },
+    },
   });
 
   function clampNumber(value, fallback, min, max) {
@@ -74,15 +82,43 @@
       weight: clampNumber(source.weight, 25, 1, 2000),
       quantity: clampNumber(source.quantity, 1, 1, 1000),
       shippingZone: normalizeZone(source.shippingZone || "regional"),
-      storageDays: clampNumber(
-        source.storageDays,
-        PRICING.storageDays,
-        1,
-        365,
-      ),
+      storageDays: clampNumber(source.storageDays, PRICING.storageDays, 1, 365),
       blackWrapping: Boolean(source.blackWrapping),
       dropShipQty: normalizeDropShipQty(source.dropShipQty),
+      fbaPrep: normalizeFbaPrepInput(source.fbaPrep),
     };
+  }
+
+  function normalizeFbaPrepInput(fbaPrep) {
+    var input = fbaPrep || {};
+    var result = { enabled: Boolean(input.enabled), services: {} };
+    var services = PRICING.fbaPrep;
+    for (var key in services) {
+      if (Object.prototype.hasOwnProperty.call(services, key)) {
+        var svc =
+          input.services && input.services[key] ? input.services[key] : {};
+        result.services[key] = {
+          selected: Boolean(svc.selected),
+          qty: clampNumber(svc.qty, 0, 0, 99999),
+        };
+      }
+    }
+    return result;
+  }
+
+  function getFbaPrepTotal(fbaPrep) {
+    if (!fbaPrep || !fbaPrep.enabled) return 0;
+    var total = 0;
+    var services = PRICING.fbaPrep;
+    for (var key in services) {
+      if (Object.prototype.hasOwnProperty.call(services, key)) {
+        var svc = fbaPrep.services[key];
+        if (svc && svc.selected && svc.qty > 0) {
+          total += svc.qty * services[key].rate;
+        }
+      }
+    }
+    return total;
   }
 
   function getCubicFeet(dimensions) {
@@ -170,7 +206,15 @@
     }
 
     storage = Math.max(storage, PRICING.minStorage);
-    var total = storage + handling + pickPack + shipping + wrapping + dropship;
+    var fbaPrepTotal = getFbaPrepTotal(config.fbaPrep);
+    var total =
+      storage +
+      handling +
+      pickPack +
+      shipping +
+      wrapping +
+      dropship +
+      fbaPrepTotal;
 
     return {
       packageType: config.packageType,
@@ -181,6 +225,7 @@
       storageDays: config.storageDays,
       blackWrapping: config.blackWrapping,
       dropShipQty: config.dropShipQty,
+      fbaPrep: config.fbaPrep,
       cubicFt: cubicFt,
       dimWeight: dimWeight,
       billableWeight: billableWeight,
@@ -190,6 +235,7 @@
       shipping: shipping,
       wrapping: wrapping,
       dropship: dropship,
+      fbaPrepTotal: fbaPrepTotal,
       total: total,
     };
   }
@@ -200,6 +246,7 @@
     getDimensionalWeight: getDimensionalWeight,
     getBillableWeight: getBillableWeight,
     getDropShipTotal: getDropShipTotal,
+    getFbaPrepTotal: getFbaPrepTotal,
     getZoneLabel: getZoneLabel,
     calculateEstimate: calculateEstimate,
   };

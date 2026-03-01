@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Shipments | Miami Alliance 3PL Portal</title>
     <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0f172a">
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
@@ -101,6 +102,16 @@
             overflow-y: auto;
             border-right: 1px solid var(--color-gray-200, #e5e7eb);
             padding: var(--spacing-lg, 24px);
+        }
+        @media (max-width: 992px) {
+            .calc-modal-body .quote-tool {
+                grid-template-columns: 1fr;
+            }
+            .calc-modal-body .quote-controls {
+                max-height: none;
+                border-right: none;
+                border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+            }
         }
 
         /* 3D Canvas Panel (RIGHT side — same as quote.html) */
@@ -343,100 +354,437 @@
             letter-spacing: 0.05em;
             font-weight: 700;
             color: #1e3a5f;
-            margin: 0 0 4px;
+            margin: 0 0 8px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        .bol-upload-zone {
-            border: 2px dashed var(--color-gray-300, #d1d5db);
+        .bol-section-subtitle {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0 0 12px;
+            line-height: 1.4;
+        }
+        .bol-dropzone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 28px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: #f8fafc;
+            position: relative;
+        }
+        .bol-dropzone:hover,
+        .bol-dropzone.dragover {
+            border-color: #14b8a6;
+            background: #f0fdfa;
+        }
+        .bol-dropzone.dragover {
+            transform: scale(1.01);
+            box-shadow: 0 0 0 4px rgba(20,184,166,0.15);
+        }
+        .bol-dropzone.has-file {
+            border-color: #14b8a6;
+            border-style: solid;
+            background: #f0fdfa;
+        }
+        .bol-drop-icon {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .bol-drop-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #334155;
+        }
+        .bol-drop-hint {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .bol-drop-formats {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .bol-format-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: #e2e8f0;
+            color: #475569;
+            text-transform: uppercase;
+        }
+        .bol-file-preview {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .bol-file-preview.active { display: flex; }
+        .bol-file-icon {
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .bol-file-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .bol-file-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .bol-file-size {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .bol-file-remove {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .bol-file-remove:hover {
+            background: #fee2e2;
+        }
+        /* BOL parsing status */
+        .bol-parse-status {
+            display: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-top: 10px;
+            align-items: center;
+            gap: 8px;
+        }
+        .bol-parse-status.active { display: flex; }
+        .bol-parse-status.parsing {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
+        }
+        .bol-parse-status.success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #15803d;
+        }
+        .bol-parse-status.warning {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+        }
+        .bol-parse-status.error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+        }
+        .bol-parse-spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(29,78,216,0.2);
+            border-top-color: #1d4ed8;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            flex-shrink: 0;
+        }
+        /* Extracted data panel */
+        .bol-extracted-data {
+            display: none;
+            margin-top: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .bol-extracted-data.active { display: block; }
+        .bol-extracted-header {
+            background: linear-gradient(135deg, #1e3a5f, #0f172a);
+            color: white;
+            padding: 10px 16px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .bol-extracted-header .bol-auto-fill-btn {
+            background: #14b8a6;
+            border: none;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        .bol-extracted-header .bol-auto-fill-btn:hover {
+            background: #0d9488;
+        }
+        .bol-extracted-body {
+            padding: 12px 16px;
+            background: #f8fafc;
+        }
+        .bol-data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.82rem;
+        }
+        .bol-data-row:last-child { border-bottom: none; }
+        .bol-data-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+        .bol-data-value {
+            color: #1e293b;
+            font-weight: 700;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        .bol-data-value.muted {
+            color: #94a3b8;
+            font-weight: 400;
+            font-style: italic;
+            font-family: inherit;
+        }
+        /* Cargo tracking items */
+        .cargo-tracking-section {
+            display: none;
+            margin-top: 12px;
+        }
+        .cargo-tracking-section.active { display: block; }
+        .cargo-item-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .cargo-item-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .cargo-item-details {
+            flex: 1;
+        }
+        .cargo-item-id {
+            font-family: monospace;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #14b8a6;
+            background: #f0fdfa;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 2px;
+        }
+        .cargo-item-desc {
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+        .cargo-item-status {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: #fef3c7;
+            color: #92400e;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .cargo-add-btn {
+            width: 100%;
+            padding: 8px;
+            background: transparent;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            color: #64748b;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .cargo-add-btn:hover {
+            border-color: #14b8a6;
+            color: #14b8a6;
+            background: #f0fdfa;
+        }
+
+        /* ================================================
+           PACKING LIST / INVOICE UPLOAD STEP
+           ================================================ */
+        .docs-upload-section {
+            border-top: 2px solid var(--color-gray-200, #e5e7eb);
+            padding-top: var(--spacing-md, 16px);
+            margin-top: var(--spacing-md, 16px);
+        }
+        .docs-section-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .docs-section-subtitle {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0 0 12px;
+            line-height: 1.4;
+        }
+        .docs-upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        @media (max-width: 600px) {
+            .docs-upload-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .doc-upload-card {
+            border: 2px dashed #cbd5e1;
             border-radius: 12px;
             padding: 20px 16px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
-            background: #fafbfc;
+            transition: all 0.25s ease;
+            background: #f8fafc;
             position: relative;
         }
-        .bol-upload-zone:hover,
-        .bol-upload-zone.drag-over {
+        .doc-upload-card:hover,
+        .doc-upload-card.dragover {
             border-color: #14b8a6;
             background: #f0fdfa;
         }
-        .bol-upload-zone .upload-icon { font-size: 2rem; margin-bottom: 6px; }
-        .bol-upload-zone .upload-text { font-size: 0.85rem; color: #64748b; }
-        .bol-upload-zone .upload-text strong { color: #14b8a6; cursor: pointer; }
-        .bol-upload-zone .upload-formats { font-size: 0.72rem; color: #94a3b8; margin-top: 4px; }
-        .bol-upload-zone input[type="file"] { display: none; }
-
-        .bol-file-preview {
-            display: none;
-            border: 1px solid var(--color-gray-200, #e5e7eb);
-            border-radius: 12px;
-            padding: 12px;
-            margin-top: 10px;
-            background: #fff;
+        .doc-upload-card.dragover {
+            transform: scale(1.01);
+            box-shadow: 0 0 0 4px rgba(20,184,166,0.15);
         }
-        .bol-file-preview.active { display: block; }
-        .bol-file-header {
+        .doc-upload-card.has-file {
+            border-color: #14b8a6;
+            border-style: solid;
+            background: #f0fdfa;
+        }
+        .doc-upload-card .doc-icon {
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .doc-upload-card .doc-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 4px;
+        }
+        .doc-upload-card .doc-hint {
+            font-size: 0.72rem;
+            color: #94a3b8;
+        }
+        .doc-upload-card .doc-formats {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 6px;
+        }
+        .doc-upload-card .doc-format-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 10px;
+            background: #e2e8f0;
+            color: #475569;
+            text-transform: uppercase;
+        }
+        .doc-file-preview {
+            display: none;
             align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: 8px;
+            text-align: left;
         }
-        .bol-file-info { display: flex; align-items: center; gap: 8px; }
-        .bol-file-icon { font-size: 1.5rem; }
-        .bol-file-name { font-weight: 600; font-size: 0.85rem; color: #1e293b; }
-        .bol-file-size { font-size: 0.72rem; color: #94a3b8; }
-        .bol-remove-btn {
-            background: none; border: none; color: #ef4444; cursor: pointer;
-            font-size: 1.1rem; padding: 4px; border-radius: 50%; transition: background 0.2s;
+        .doc-file-preview.active {
+            display: flex;
         }
-        .bol-remove-btn:hover { background: #fef2f2; }
-
-        .bol-ocr-progress { display: none; margin-top: 10px; }
-        .bol-ocr-progress.active { display: block; }
-        .bol-progress-bar {
-            height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-bottom: 6px;
+        .doc-file-preview .doc-file-icon {
+            font-size: 1.4rem;
+            flex-shrink: 0;
         }
-        .bol-progress-fill {
-            height: 100%; background: linear-gradient(90deg, #14b8a6, #0d9488);
-            border-radius: 3px; width: 0%; transition: width 0.3s;
+        .doc-file-preview .doc-file-info {
+            flex: 1;
+            min-width: 0;
         }
-        .bol-ocr-status {
-            font-size: 0.75rem; color: #64748b; display: flex; align-items: center; gap: 6px;
+        .doc-file-preview .doc-file-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .bol-ocr-spinner {
-            width: 14px; height: 14px; border: 2px solid #e5e7eb; border-top-color: #14b8a6;
-            border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block;
+        .doc-file-preview .doc-file-size {
+            font-size: 0.7rem;
+            color: #94a3b8;
         }
-
-        .bol-parsed-results { display: none; margin-top: 10px; border: 1px solid #d1fae5; border-radius: 10px; overflow: hidden; }
-        .bol-parsed-results.active { display: block; }
-        .bol-parsed-header {
-            background: #ecfdf5; padding: 8px 12px;
-            display: flex; justify-content: space-between; align-items: center;
+        .doc-file-preview .doc-file-remove {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
         }
-        .bol-parsed-header span { font-size: 0.78rem; font-weight: 700; color: #065f46; }
-        .bol-autofill-btn {
-            background: #14b8a6; color: white; border: none; padding: 4px 12px;
-            border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        .doc-file-preview .doc-file-remove:hover {
+            background: #fee2e2;
         }
-        .bol-autofill-btn:hover { background: #0d9488; }
-        .bol-parsed-body { padding: 10px 12px; background: #fff; }
-        .bol-parsed-row {
-            display: flex; justify-content: space-between; padding: 4px 0;
-            font-size: 0.8rem; border-bottom: 1px solid #f1f5f9;
+        .doc-optional-badge {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            font-weight: 500;
+            font-style: italic;
+            margin-left: 4px;
         }
-        .bol-parsed-row:last-child { border-bottom: none; }
-        .bol-parsed-label { color: #64748b; font-weight: 500; }
-        .bol-parsed-value { color: #1e293b; font-weight: 600; text-align: right; max-width: 60%; word-break: break-word; }
-        .doc-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;
-        }
-        .doc-badge-bol { background: #dbeafe; color: #1e40af; }
-        .doc-badge-label { background: #fef3c7; color: #92400e; }
-        .doc-badge-doc { background: #e0e7ff; color: #3730a3; }
 
         /* Responsive overrides for modal */
         @media (max-width: 1023px) {
@@ -490,12 +838,27 @@
                 <a href="shipments.html" class="portal-nav-item active" aria-current="page">
                     <span aria-hidden="true">🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span>
                 </a>
+                <a href="pickups.html" class="portal-nav-item">
+                    <span aria-hidden="true">🏗️</span> <span>Pickup & Delivery</span>
+                </a>
                 <a href="tracking.html" class="portal-nav-item">
                     <span aria-hidden="true">🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span>
                 </a>
                 <a href="inventory.html" class="portal-nav-item">
                     <span aria-hidden="true">📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span>
                 </a>
+                <a href="billing.html" class="portal-nav-item">
+                    <span aria-hidden="true">💵</span> <span data-i18n="portal.sidebar.billing">Billing</span>
+                </a>
+                <a href="contracts.html" class="portal-nav-item">
+                    <span aria-hidden="true">📄</span> <span>Contracts</span>
+                </a>
+                <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true" data-i18n="portal.sidebar.adminLabel">Admin</div>
+                    <a href="admin-panel.html" class="portal-nav-item">
+                        <span>🛡️</span> <span>Admin Control Panel</span>
+                    </a>                    <a href="admin-billing.html" class="portal-nav-item"><span>📝</span> <span>Activity Billing</span></a>
+                </div>
             </nav>
         </aside>
 
@@ -527,8 +890,8 @@
                             <th scope="col" data-i18n="portal.table.tracking">Tracking #</th>
                             <th scope="col" data-i18n="portal.table.recipient">Recipient</th>
                             <th scope="col" data-i18n="portal.table.destination">Destination</th>
-                            <th scope="col" data-i18n="portal.table.service">Service</th>
                             <th scope="col">Documents</th>
+                            <th scope="col" data-i18n="portal.table.service">Service</th>
                             <th scope="col" data-i18n="portal.table.status">Status</th>
                             <th scope="col" data-i18n="portal.table.created">Created</th>
                         </tr>
@@ -696,6 +1059,95 @@
                             </label>
                         </div>
 
+                        <!-- FBA Prep Services -->
+                        <div class="quote-control-group" id="sc-fba-prep-group">
+                            <label class="quote-label fba-prep-toggle" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="sc-fba-prep-enabled" style="width: 18px; height: 18px; cursor: pointer;">
+                                <span class="fba-prep-badge">FBA</span>
+                                <span data-i18n="quote.fbaPrep.label">FBA Prep Services</span>
+                            </label>
+                            <div id="sc-fba-prep-services" class="fba-prep-grid" style="display: none;">
+                                <div class="fba-prep-item" data-service="fnskuLabeling">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="fnskuLabeling">
+                                        <span class="fba-svc-icon">🏷️</span>
+                                        <span class="fba-svc-name">FNSKU Labeling</span>
+                                        <span class="fba-svc-rate">$0.30/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="fnskuLabeling" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="fnskuLabeling" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="fnskuLabeling" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="polyBagging">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="polyBagging">
+                                        <span class="fba-svc-icon">🛍️</span>
+                                        <span class="fba-svc-name">Poly Bagging</span>
+                                        <span class="fba-svc-rate">$0.50/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="polyBagging" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="polyBagging" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="polyBagging" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="bubbleWrapping">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="bubbleWrapping">
+                                        <span class="fba-svc-icon">🫧</span>
+                                        <span class="fba-svc-name">Bubble Wrapping</span>
+                                        <span class="fba-svc-rate">$1.00/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="bubbleWrapping" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="bubbleWrapping" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="bubbleWrapping" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="bundling">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="bundling">
+                                        <span class="fba-svc-icon">📦</span>
+                                        <span class="fba-svc-name">Bundling / Kitting</span>
+                                        <span class="fba-svc-rate">$2.00/bundle</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="bundling" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="bundling" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="bundling" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="boxLabels">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="boxLabels">
+                                        <span class="fba-svc-icon">📋</span>
+                                        <span class="fba-svc-name">Box Content Labels</span>
+                                        <span class="fba-svc-rate">$3.00/box</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="boxLabels" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="boxLabels" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="boxLabels" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="fba-prep-item" data-service="inspectionQC">
+                                    <label class="fba-prep-service-label">
+                                        <input type="checkbox" class="sc-fba-svc-check" data-service="inspectionQC">
+                                        <span class="fba-svc-icon">🔍</span>
+                                        <span class="fba-svc-name">Inspection & QC</span>
+                                        <span class="fba-svc-rate">$0.15/unit</span>
+                                    </label>
+                                    <div class="fba-svc-qty" style="display: none;">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="inspectionQC" data-action="decrease">-</button>
+                                        <input type="number" class="fba-qty-input sc-fba-qty-input" data-service="inspectionQC" value="0" min="0" max="99999">
+                                        <button type="button" class="qty-btn sc-fba-qty-btn" data-service="inspectionQC" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- ====== PRICING RESULTS (same position as quote.html — inside left panel) ====== -->
                         <div class="quote-results" style="margin-top: var(--spacing-md, 16px);">
                             <h3 class="quote-results-title" data-i18n="quote.results.title">Estimated Quote</h3>
@@ -735,6 +1187,10 @@
                                 <span data-i18n="quote.results.dropship">Drop Ship (by unit)</span>
                                 <span id="sc-r-dropship">$0.00</span>
                             </div>
+                            <div class="quote-line" id="sc-r-fbaprep-row" style="display: none;">
+                                <span data-i18n="quote.results.fbaPrep">FBA Prep Services</span>
+                                <span id="sc-r-fbaprep">$0.00</span>
+                            </div>
 
                             <div class="quote-divider"></div>
 
@@ -751,6 +1207,121 @@
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             Download PDF Quote
                         </button>
+
+                        <!-- ====== BOL / SHIPPING LABEL UPLOAD ====== -->
+                        <div class="bol-upload-section">
+                            <div class="bol-section-title">📄 Upload BOL or Shipping Label</div>
+                            <div class="bol-section-subtitle">
+                                Upload your Bill of Lading or Shipping Label and we'll auto-extract shipment details. Each pallet/box gets a unique tracking ID.
+                            </div>
+
+                            <!-- Drop Zone -->
+                            <div class="bol-dropzone" id="bol-dropzone">
+                                <input type="file" id="bol-file-input" accept=".pdf,.png,.jpg,.jpeg" style="display:none;">
+                                <span class="bol-drop-icon">📤</span>
+                                <div class="bol-drop-text">Drop your BOL or Label here</div>
+                                <div class="bol-drop-hint">or click to browse files</div>
+                                <div class="bol-drop-formats">
+                                    <span class="bol-format-badge">PDF</span>
+                                    <span class="bol-format-badge">PNG</span>
+                                    <span class="bol-format-badge">JPG</span>
+                                </div>
+                            </div>
+
+                            <!-- File Preview -->
+                            <div class="bol-file-preview" id="bol-file-preview">
+                                <span class="bol-file-icon" id="bol-file-type-icon">📄</span>
+                                <div class="bol-file-info">
+                                    <div class="bol-file-name" id="bol-file-name">document.pdf</div>
+                                    <div class="bol-file-size" id="bol-file-size">125 KB</div>
+                                </div>
+                                <button type="button" class="bol-file-remove" id="bol-file-remove" title="Remove file">&times;</button>
+                            </div>
+
+                            <!-- Parse Status -->
+                            <div class="bol-parse-status" id="bol-parse-status">
+                                <span class="bol-parse-spinner" id="bol-spinner"></span>
+                                <span id="bol-status-text">Analyzing document...</span>
+                            </div>
+
+                            <!-- Extracted Data Panel -->
+                            <div class="bol-extracted-data" id="bol-extracted-data">
+                                <div class="bol-extracted-header">
+                                    <span>📋 Extracted Data</span>
+                                    <button type="button" class="bol-auto-fill-btn" id="bol-auto-fill-btn">⚡ Auto-Fill Form</button>
+                                </div>
+                                <div class="bol-extracted-body" id="bol-extracted-body">
+                                    <!-- Dynamically populated by parser -->
+                                </div>
+                            </div>
+
+                            <!-- Cargo Tracking Items -->
+                            <div class="cargo-tracking-section" id="cargo-tracking-section">
+                                <div class="bol-section-title" style="margin-top:12px;">📦 Cargo Tracking Items</div>
+                                <div id="cargo-items-list">
+                                    <!-- Dynamically populated cargo item cards -->
+                                </div>
+                                <button type="button" class="cargo-add-btn" id="cargo-add-btn">+ Add Pallet / Box</button>
+                            </div>
+                        </div>
+
+                        <!-- ====== PACKING LIST / INVOICE UPLOAD ====== -->
+                        <div class="docs-upload-section">
+                            <div class="docs-section-title">📎 Upload Documents <span class="doc-optional-badge">(Optional)</span></div>
+                            <div class="docs-section-subtitle">
+                                Attach a Packing List and/or Commercial Invoice for this shipment. These documents help us process your cargo faster.
+                            </div>
+
+                            <div class="docs-upload-grid">
+                                <!-- Packing List Upload -->
+                                <div class="doc-upload-card" id="packing-list-dropzone" data-doc-type="packing_list">
+                                    <input type="file" id="packing-list-input" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv,.doc,.docx" style="display:none;">
+                                    <span class="doc-icon">📋</span>
+                                    <div class="doc-label">Packing List</div>
+                                    <div class="doc-hint">Drop file or click to browse</div>
+                                    <div class="doc-formats">
+                                        <span class="doc-format-badge">PDF</span>
+                                        <span class="doc-format-badge">XLS</span>
+                                        <span class="doc-format-badge">IMG</span>
+                                        <span class="doc-format-badge">DOC</span>
+                                    </div>
+                                </div>
+
+                                <!-- Invoice Upload -->
+                                <div class="doc-upload-card" id="invoice-dropzone" data-doc-type="invoice">
+                                    <input type="file" id="invoice-input" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv,.doc,.docx" style="display:none;">
+                                    <span class="doc-icon">🧾</span>
+                                    <div class="doc-label">Commercial Invoice</div>
+                                    <div class="doc-hint">Drop file or click to browse</div>
+                                    <div class="doc-formats">
+                                        <span class="doc-format-badge">PDF</span>
+                                        <span class="doc-format-badge">XLS</span>
+                                        <span class="doc-format-badge">IMG</span>
+                                        <span class="doc-format-badge">DOC</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Packing List File Preview -->
+                            <div class="doc-file-preview" id="packing-list-preview">
+                                <span class="doc-file-icon" id="packing-list-type-icon">📄</span>
+                                <div class="doc-file-info">
+                                    <div class="doc-file-name" id="packing-list-file-name">packing-list.pdf</div>
+                                    <div class="doc-file-size" id="packing-list-file-size">125 KB</div>
+                                </div>
+                                <button type="button" class="doc-file-remove" id="packing-list-remove" title="Remove file">&times;</button>
+                            </div>
+
+                            <!-- Invoice File Preview -->
+                            <div class="doc-file-preview" id="invoice-preview">
+                                <span class="doc-file-icon" id="invoice-type-icon">📄</span>
+                                <div class="doc-file-info">
+                                    <div class="doc-file-name" id="invoice-file-name">invoice.pdf</div>
+                                    <div class="doc-file-size" id="invoice-file-size">125 KB</div>
+                                </div>
+                                <button type="button" class="doc-file-remove" id="invoice-remove" title="Remove file">&times;</button>
+                            </div>
+                        </div>
 
                         <!-- DESTINATION ADDRESS (shipment-specific addition) -->
                         <div class="quote-control-group" style="border-top: 2px solid var(--color-gray-200, #e5e7eb); padding-top: var(--spacing-md, 16px); margin-top: var(--spacing-md, 16px);">
@@ -788,63 +1359,6 @@
                             <label class="quote-label">Special Instructions (Optional)</label>
                             <div class="dest-form-group">
                                 <textarea id="sc-notes" placeholder="Fragile items, stacking instructions, etc." rows="2" style="resize:vertical;"></textarea>
-                            </div>
-                        </div>
-
-                        <!-- ====== BOL / SHIPPING LABEL UPLOAD STEP ====== -->
-                        <div class="quote-control-group bol-upload-section">
-                            <div class="bol-section-title">📋 Upload BOL or Shipping Label</div>
-                            <p style="font-size: 0.78rem; color: #64748b; margin-bottom: 10px;">
-                                Upload a Bill of Lading or shipping label to auto-extract tracking info and link it to this shipment.
-                            </p>
-
-                            <!-- Drop Zone -->
-                            <div class="bol-upload-zone" id="bol-upload-zone">
-                                <div class="upload-icon">📤</div>
-                                <div class="upload-text">
-                                    Drag & drop your file here, or <strong id="bol-browse-trigger">browse</strong>
-                                </div>
-                                <div class="upload-formats">Accepts: JPG, PNG, PDF (max 10 MB)</div>
-                                <input type="file" id="bol-file-input" accept="image/jpeg,image/png,application/pdf">
-                            </div>
-
-                            <!-- File Preview -->
-                            <div class="bol-file-preview" id="bol-file-preview">
-                                <div class="bol-file-header">
-                                    <div class="bol-file-info">
-                                        <span class="bol-file-icon" id="bol-file-icon">📄</span>
-                                        <div>
-                                            <div class="bol-file-name" id="bol-file-name">document.pdf</div>
-                                            <div class="bol-file-size" id="bol-file-size">1.2 MB</div>
-                                        </div>
-                                    </div>
-                                    <button class="bol-remove-btn" id="bol-remove-btn" title="Remove file">&times;</button>
-                                </div>
-                                <div id="bol-thumbnail-container" style="display:none; margin-top:8px; border-radius:8px; overflow:hidden; max-height:200px;">
-                                    <img id="bol-thumbnail" style="width:100%; height:auto; object-fit:contain; max-height:200px;" alt="Uploaded document preview">
-                                </div>
-                            </div>
-
-                            <!-- OCR Progress -->
-                            <div class="bol-ocr-progress" id="bol-ocr-progress">
-                                <div class="bol-progress-bar">
-                                    <div class="bol-progress-fill" id="bol-progress-fill"></div>
-                                </div>
-                                <div class="bol-ocr-status">
-                                    <span class="bol-ocr-spinner"></span>
-                                    <span id="bol-ocr-status-text">Scanning document...</span>
-                                </div>
-                            </div>
-
-                            <!-- Parsed Results -->
-                            <div class="bol-parsed-results" id="bol-parsed-results">
-                                <div class="bol-parsed-header">
-                                    <span>✅ Document Scanned</span>
-                                    <button class="bol-autofill-btn" id="bol-autofill-btn">Auto-fill Fields</button>
-                                </div>
-                                <div class="bol-parsed-body" id="bol-parsed-body">
-                                    <!-- Parsed rows inserted dynamically -->
-                                </div>
                             </div>
                         </div>
 
@@ -903,10 +1417,7 @@
     <!-- jsPDF Library for PDF Generation (same as quote.html) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- Tesseract.js for OCR (BOL / Shipping Label scanning) -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
-    <!-- PDF.js for rendering PDF pages to canvas (for OCR) -->
+    <!-- PDF.js for client-side PDF text extraction (BOL parsing) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         if (window.pdfjsLib) {
@@ -918,8 +1429,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -937,7 +1447,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
         // Fallback admin emails
         const FALLBACK_ADMIN_EMAILS = [
@@ -1415,7 +1924,15 @@
                 storageDays: 30,
                 minStorage: 5.0,
                 shippingZones: { local: 0.45, regional: 0.65, national: 0.85, none: 0, dropship: 0 },
-                dropShipRates: { envelope: 1.5, small: 3.0, medium: 5.0, large: 20.0 }
+                dropShipRates: { envelope: 1.5, small: 3.0, medium: 5.0, large: 20.0 },
+                fbaPrep: {
+                    fnskuLabeling: { rate: 0.3, label: 'FNSKU Labeling', unit: 'unit' },
+                    polyBagging: { rate: 0.5, label: 'Poly Bagging', unit: 'unit' },
+                    bubbleWrapping: { rate: 1.0, label: 'Bubble Wrapping', unit: 'unit' },
+                    bundling: { rate: 2.0, label: 'Bundling / Kitting', unit: 'bundle' },
+                    boxLabels: { rate: 3.0, label: 'Box Content Labels', unit: 'box' },
+                    inspectionQC: { rate: 0.15, label: 'Inspection & QC', unit: 'unit' }
+                }
             };
 
         // =====================================================
@@ -1429,14 +1946,20 @@
             shippingZone: 'regional',
             blackWrapping: false,
             dropShipQty: { envelope: 0, small: 0, medium: 0, large: 0 },
+            fbaPrep: {
+                enabled: false,
+                services: {
+                    fnskuLabeling: { selected: false, qty: 0 },
+                    polyBagging: { selected: false, qty: 0 },
+                    bubbleWrapping: { selected: false, qty: 0 },
+                    bundling: { selected: false, qty: 0 },
+                    boxLabels: { selected: false, qty: 0 },
+                    inspectionQC: { selected: false, qty: 0 }
+                }
+            },
             destination: { name: '', street: '', city: '', state: '', zip: '' },
             notes: ''
         };
-
-        // BOL / Shipping Label upload state
-        let bolFile = null;
-        let bolParsedData = null;
-        let bolFileDataURL = null;
 
         // =====================================================
         // PRICING CALCULATION (uses shared engine)
@@ -1451,7 +1974,8 @@
                     shippingZone: sc.shippingZone,
                     storageDays: PRICING.storageDays,
                     blackWrapping: sc.blackWrapping,
-                    dropShipQty: sc.dropShipQty
+                    dropShipQty: sc.dropShipQty,
+                    fbaPrep: sc.fbaPrep
                 });
             }
             // Inline fallback (same algorithm as quote-pricing-engine.js)
@@ -1478,8 +2002,17 @@
                     dropship += qty * PRICING.dropShipRates[size];
                 }
             }
-            const total = storage + handling + pickPack + shipping + wrapping + dropship;
-            return { storage, handling, pickPack, shipping, wrapping, dropship, total, cubicFt, dimWeight, billableWeight };
+            // FBA Prep calculation (inline fallback)
+            let fbaPrepTotal = 0;
+            if (sc.fbaPrep && sc.fbaPrep.enabled && PRICING.fbaPrep) {
+                for (const [key, svc] of Object.entries(sc.fbaPrep.services)) {
+                    if (svc && svc.selected && svc.qty > 0 && PRICING.fbaPrep[key]) {
+                        fbaPrepTotal += svc.qty * PRICING.fbaPrep[key].rate;
+                    }
+                }
+            }
+            const total = storage + handling + pickPack + shipping + wrapping + dropship + fbaPrepTotal;
+            return { storage, handling, pickPack, shipping, wrapping, dropship, fbaPrepTotal, total, cubicFt, dimWeight, billableWeight };
         }
 
         function fmt(amount) {
@@ -1506,6 +2039,7 @@
             set('sc-r-shipping', fmt(q.shipping));
             set('sc-r-wrapping', fmt(q.wrapping));
             set('sc-r-dropship', fmt(q.dropship));
+            set('sc-r-fbaprep', fmt(q.fbaPrepTotal || 0));
             set('sc-r-total', fmt(q.total));
 
             // Show/hide wrapping row (pallet + option selected) — same as quote.html
@@ -1515,6 +2049,10 @@
             // Show/hide drop ship row — same as quote.html
             const dropshipRow = document.getElementById('sc-r-dropship-row');
             if (dropshipRow) dropshipRow.style.display = (sc.shippingZone === 'dropship' && q.dropship > 0) ? 'flex' : 'none';
+
+            // Show/hide FBA prep row — same as quote.html
+            const fbaPrepRow = document.getElementById('sc-r-fbaprep-row');
+            if (fbaPrepRow) fbaPrepRow.style.display = (sc.fbaPrep.enabled && (q.fbaPrepTotal || 0) > 0) ? 'flex' : 'none';
 
             // Show/hide shipping row (hide when no shipping or dropship) — same as quote.html
             const shippingRow = document.getElementById('sc-r-shipping-row');
@@ -1641,6 +2179,15 @@
             if (q.shipping > 0) priceLines.push(['Est. Shipping', fmt(q.shipping)]);
             if (q.wrapping > 0) priceLines.push(['Black Wrapping', fmt(q.wrapping)]);
             if (q.dropship > 0) priceLines.push(['Drop Ship', fmt(q.dropship)]);
+            // Add FBA Prep line items if enabled
+            if (sc.fbaPrep && sc.fbaPrep.enabled) {
+                const fbaRates = PRICING.fbaPrep || {};
+                for (const [key, svc] of Object.entries(sc.fbaPrep.services)) {
+                    if (svc.selected && svc.qty > 0 && fbaRates[key]) {
+                        priceLines.push([`FBA: ${fbaRates[key].label} x${svc.qty}`, fmt(svc.qty * fbaRates[key].rate)]);
+                    }
+                }
+            }
 
             doc.setFontSize(8);
             priceLines.forEach(([label, value], i) => {
@@ -1674,9 +2221,12 @@
             doc.setFontSize(7);
             doc.setTextColor(148, 163, 184);
             doc.setFont('helvetica', 'normal');
-            const rateText = sc.packageType === 'pallet'
+            let rateText = sc.packageType === 'pallet'
                 ? `Pallet: $0.75/day | Handling: $15.00/unit | Pick & Pack: $5.00/unit${sc.blackWrapping ? ' | Wrapping: $7.00/pallet' : ''}`
                 : `Box: $0.025/cu ft/day | Handling: $3.50/unit | Pick & Pack: $1.25/unit`;
+            if (sc.fbaPrep && sc.fbaPrep.enabled && (q.fbaPrepTotal || 0) > 0) {
+                rateText += ' | FBA Prep included';
+            }
             doc.text(rateText, pageW / 2, rateY, { align: 'center' });
 
             // Notes
@@ -1775,6 +2325,17 @@
             sc.shippingZone = 'regional';
             sc.blackWrapping = false;
             sc.dropShipQty = { envelope: 0, small: 0, medium: 0, large: 0 };
+            sc.fbaPrep = {
+                enabled: false,
+                services: {
+                    fnskuLabeling: { selected: false, qty: 0 },
+                    polyBagging: { selected: false, qty: 0 },
+                    bubbleWrapping: { selected: false, qty: 0 },
+                    bundling: { selected: false, qty: 0 },
+                    boxLabels: { selected: false, qty: 0 },
+                    inspectionQC: { selected: false, qty: 0 }
+                }
+            };
             sc.destination = { name: '', street: '', city: '', state: '', zip: '' };
             sc.notes = '';
 
@@ -1795,15 +2356,19 @@
             ['envelope', 'small', 'medium', 'large'].forEach(s => {
                 document.getElementById('sc-ds-' + s).value = 0;
             });
+            // Reset FBA Prep UI
+            document.getElementById('sc-fba-prep-enabled').checked = false;
+            document.getElementById('sc-fba-prep-services').style.display = 'none';
+            document.querySelectorAll('#calc-overlay .sc-fba-svc-check').forEach(cb => { cb.checked = false; });
+            document.querySelectorAll('#calc-overlay .sc-fba-qty-input').forEach(inp => { inp.value = 0; });
+            document.querySelectorAll('#sc-fba-prep-services .fba-svc-qty').forEach(div => { div.style.display = 'none'; });
+            document.querySelectorAll('#sc-fba-prep-services .fba-prep-item').forEach(item => { item.classList.remove('active'); });
             document.getElementById('sc-dest-name').value = '';
             document.getElementById('sc-dest-street').value = '';
             document.getElementById('sc-dest-city').value = '';
             document.getElementById('sc-dest-state').value = '';
             document.getElementById('sc-dest-zip').value = '';
             document.getElementById('sc-notes').value = '';
-
-            // Reset BOL upload state
-            removeBOLFile();
 
             // Reset success state
             document.getElementById('calc-success').classList.remove('active');
@@ -1813,6 +2378,19 @@
             const createBtn = document.getElementById('sc-create-btn');
             createBtn.disabled = false;
             createBtn.innerHTML = '✓ Create Shipment';
+
+            // Reset BOL upload state
+            if (typeof resetBOLState === 'function') resetBOLState();
+
+            // Reset document uploads
+            docsState.packing_list = { file: null, dataUrl: null };
+            docsState.invoice = { file: null, dataUrl: null };
+            document.getElementById('packing-list-dropzone')?.classList.remove('has-file');
+            document.getElementById('invoice-dropzone')?.classList.remove('has-file');
+            document.getElementById('packing-list-preview')?.classList.remove('active');
+            document.getElementById('invoice-preview')?.classList.remove('active');
+            document.getElementById('packing-list-input').value = '';
+            document.getElementById('invoice-input').value = '';
 
             clearError();
             updatePricing();
@@ -1970,324 +2548,71 @@
         });
 
         // =====================================================
-        // BOL / SHIPPING LABEL UPLOAD + OCR SYSTEM
+        // EVENT HANDLERS — FBA Prep Services
         // =====================================================
-        const bolUploadZone = document.getElementById('bol-upload-zone');
-        const bolFileInput = document.getElementById('bol-file-input');
-        const bolBrowseTrigger = document.getElementById('bol-browse-trigger');
-        const bolFilePreview = document.getElementById('bol-file-preview');
-        const bolOCRProgress = document.getElementById('bol-ocr-progress');
-        const bolParsedResults = document.getElementById('bol-parsed-results');
-
-        bolBrowseTrigger.addEventListener('click', (e) => { e.stopPropagation(); bolFileInput.click(); });
-        bolUploadZone.addEventListener('click', () => bolFileInput.click());
-        bolUploadZone.addEventListener('dragover', (e) => { e.preventDefault(); bolUploadZone.classList.add('drag-over'); });
-        bolUploadZone.addEventListener('dragleave', () => { bolUploadZone.classList.remove('drag-over'); });
-        bolUploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            bolUploadZone.classList.remove('drag-over');
-            if (e.dataTransfer.files.length > 0) handleBOLFile(e.dataTransfer.files[0]);
-        });
-        bolFileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) handleBOLFile(e.target.files[0]);
-        });
-        document.getElementById('bol-remove-btn').addEventListener('click', () => removeBOLFile());
-        document.getElementById('bol-autofill-btn').addEventListener('click', () => autofillFromParsed());
-
-        function removeBOLFile() {
-            bolFile = null;
-            bolParsedData = null;
-            bolFileDataURL = null;
-            bolFileInput.value = '';
-            bolFilePreview.classList.remove('active');
-            bolOCRProgress.classList.remove('active');
-            bolParsedResults.classList.remove('active');
-            document.getElementById('bol-thumbnail-container').style.display = 'none';
-            bolUploadZone.style.display = '';
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-        }
-
-        async function handleBOLFile(file) {
-            const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-            if (!validTypes.includes(file.type)) { showError('Invalid file type. Please upload JPG, PNG, or PDF.'); return; }
-            if (file.size > 10 * 1024 * 1024) { showError('File too large. Maximum size is 10 MB.'); return; }
-            clearError();
-            bolFile = file;
-
-            const isImage = file.type.startsWith('image/');
-            document.getElementById('bol-file-icon').textContent = isImage ? '🖼️' : '📄';
-            document.getElementById('bol-file-name').textContent = file.name;
-            document.getElementById('bol-file-size').textContent = formatFileSize(file.size);
-            bolFilePreview.classList.add('active');
-            bolUploadZone.style.display = 'none';
-
-            if (isImage) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    bolFileDataURL = ev.target.result;
-                    document.getElementById('bol-thumbnail').src = ev.target.result;
-                    document.getElementById('bol-thumbnail-container').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                document.getElementById('bol-thumbnail-container').style.display = 'none';
-            }
-
-            await runOCR(file);
-        }
-
-        async function runOCR(file) {
-            bolOCRProgress.classList.add('active');
-            bolParsedResults.classList.remove('active');
-            const progressFill = document.getElementById('bol-progress-fill');
-            const statusText = document.getElementById('bol-ocr-status-text');
-
-            try {
-                statusText.textContent = 'Initializing scanner...';
-                progressFill.style.width = '10%';
-                let imageSource;
-
-                if (file.type === 'application/pdf') {
-                    statusText.textContent = 'Rendering PDF page...';
-                    progressFill.style.width = '20%';
-                    imageSource = await pdfToCanvas(file);
-                    if (!imageSource) {
-                        statusText.textContent = 'PDF rendering unavailable — attaching file only.';
-                        bolParsedData = { document_type: 'unknown', note: 'PDF could not be rendered for OCR' };
-                        setTimeout(() => { bolOCRProgress.classList.remove('active'); showParsedResults(bolParsedData); }, 600);
-                        return;
-                    }
-                } else {
-                    imageSource = file;
+        // Master toggle
+        document.getElementById('sc-fba-prep-enabled').addEventListener('change', (e) => {
+            sc.fbaPrep.enabled = e.target.checked;
+            document.getElementById('sc-fba-prep-services').style.display = sc.fbaPrep.enabled ? 'grid' : 'none';
+            if (!sc.fbaPrep.enabled) {
+                // Reset all services when master toggle is unchecked
+                for (const key of Object.keys(sc.fbaPrep.services)) {
+                    sc.fbaPrep.services[key] = { selected: false, qty: 0 };
                 }
-
-                statusText.textContent = 'Scanning document with OCR...';
-                progressFill.style.width = '30%';
-
-                const result = await Tesseract.recognize(imageSource, 'eng', {
-                    logger: (m) => {
-                        if (m.status === 'recognizing text') {
-                            const pct = Math.round(30 + m.progress * 60);
-                            progressFill.style.width = pct + '%';
-                            statusText.textContent = 'Scanning... ' + Math.round(m.progress * 100) + '%';
-                        }
-                    }
-                });
-
-                progressFill.style.width = '95%';
-                statusText.textContent = 'Parsing extracted text...';
-
-                const ocrText = result.data.text;
-                const confidence = result.data.confidence;
-                bolParsedData = parseBOLText(ocrText, confidence);
-                progressFill.style.width = '100%';
-
-                setTimeout(() => { bolOCRProgress.classList.remove('active'); showParsedResults(bolParsedData); }, 500);
-                trackCalcEvent('bol_scanned', { file_type: file.type, confidence, document_type: bolParsedData.document_type });
-            } catch (error) {
-                console.error('OCR Error:', error);
-                progressFill.style.width = '100%';
-                statusText.textContent = 'Scan complete (limited results)';
-                bolParsedData = { document_type: 'unknown', error: error.message };
-                setTimeout(() => { bolOCRProgress.classList.remove('active'); showParsedResults(bolParsedData); }, 500);
-            }
-        }
-
-        async function pdfToCanvas(file) {
-            if (!window.pdfjsLib) return null;
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                const page = await pdf.getPage(1);
-                const scale = 2;
-                const viewport = page.getViewport({ scale });
-                const canvas = document.createElement('canvas');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-                return canvas;
-            } catch (e) {
-                console.warn('PDF rendering failed:', e);
-                return null;
-            }
-        }
-
-        function parseBOLText(text, confidence) {
-            const result = { document_type: 'unknown', confidence: confidence, raw_text_preview: text.substring(0, 500) };
-
-            // Detect document type
-            if (/BILL\s*OF\s*LADING|B\/?O\/?L|BOL\s*#|STRAIGHT\s*BILL/i.test(text)) {
-                result.document_type = 'bol';
-            } else if (/SHIPPING\s*LABEL|SHIP\s*TO|TRACKING\s*(NUMBER|#|NO)/i.test(text)) {
-                result.document_type = 'shipping_label';
-            } else if (/FEDEX|UPS|USPS|DHL|CARRIER/i.test(text)) {
-                result.document_type = 'shipping_label';
-            }
-
-            // Carrier detection
-            const carriers = [
-                { p: /FEDEX|FED\s*EX/i, n: 'FedEx' }, { p: /\bUPS\b/i, n: 'UPS' },
-                { p: /USPS|UNITED\s*STATES\s*POSTAL/i, n: 'USPS' }, { p: /\bDHL\b/i, n: 'DHL' },
-                { p: /AMAZON/i, n: 'Amazon' }, { p: /OLD\s*DOMINION|ODFL/i, n: 'Old Dominion' },
-                { p: /XPO\s*LOGISTICS|XPO/i, n: 'XPO Logistics' }, { p: /SAIA/i, n: 'SAIA' },
-                { p: /ESTES/i, n: 'Estes Express' }, { p: /YRC|YELLOW/i, n: 'YRC Freight' },
-                { p: /R\+?L\s*CARRIERS/i, n: 'R+L Carriers' }, { p: /ABF\s*FREIGHT/i, n: 'ABF Freight' },
-                { p: /SOUTHEASTERN\s*FREIGHT/i, n: 'Southeastern Freight' }
-            ];
-            for (const c of carriers) { if (c.p.test(text)) { result.carrier = c.n; break; } }
-
-            // Tracking number (near "tracking" keyword)
-            const trackingMatch = text.match(/TRACKING\s*(?:NUMBER|#|NO\.?)?\s*:?\s*([A-Z0-9]{8,34})/i);
-            if (trackingMatch) result.carrier_tracking = trackingMatch[1];
-
-            // UPS tracking format
-            const upsMatch = text.match(/\b(1Z[A-Z0-9]{16})\b/i);
-            if (upsMatch && !result.carrier_tracking) result.carrier_tracking = upsMatch[1];
-
-            // PRO number
-            const proMatch = text.match(/PRO\s*(?:NUMBER|#|NO\.?)?\s*:?\s*([A-Z0-9-]{4,30})/i);
-            if (proMatch) result.pro_number = proMatch[1];
-
-            // BOL number
-            const bolMatch = text.match(/B\.?O\.?L\.?\s*(?:NUMBER|#|NO\.?)?\s*:?\s*([A-Z0-9-]{4,30})/i);
-            if (bolMatch) result.bol_number = bolMatch[1];
-
-            // Weight
-            const weightMatch = text.match(/(?:WEIGHT|WT|WGT|GROSS)\s*:?\s*(\d[\d,]*\.?\d*)\s*(?:LBS?|POUNDS?|KG)/i);
-            if (weightMatch) result.weight = weightMatch[1].replace(',', '') + (weightMatch[0].match(/KG/i) ? ' kg' : ' lbs');
-
-            // Pieces / Quantity
-            const piecesMatch = text.match(/(?:PIECES?|PCS?|UNITS?|PALLETS?|PKGS?|PACKAGES?|QTY|QUANTITY)\s*:?\s*(\d+)/i);
-            if (piecesMatch) result.pieces = piecesMatch[1];
-
-            // Dimensions
-            const dimMatch = text.match(/(\d+)\s*[xX\u00d7]\s*(\d+)\s*[xX\u00d7]\s*(\d+)/);
-            if (dimMatch) result.dimensions = dimMatch[1] + ' x ' + dimMatch[2] + ' x ' + dimMatch[3];
-
-            // Ship From / Ship To
-            const shipFromMatch = text.match(/(?:SHIP\s*FROM|SHIPPER|ORIGIN|FROM)\s*:?\s*\n?([\s\S]{10,200}?)(?=SHIP\s*TO|CONSIGNEE|DEST|TO:|CARRIER|$)/i);
-            const shipToMatch = text.match(/(?:SHIP\s*TO|CONSIGNEE|DEST(?:INATION)?)\s*:?\s*\n?([\s\S]{10,200}?)(?=CARRIER|WEIGHT|DATE|BOL|TRACKING|THIRD|SPECIAL|$)/i);
-            if (shipFromMatch) result.ship_from = shipFromMatch[1].trim().substring(0, 200);
-            if (shipToMatch) result.ship_to = shipToMatch[1].trim().substring(0, 200);
-
-            // Fallback: addresses by state+ZIP pattern
-            if (!result.ship_from || !result.ship_to) {
-                const addrs = [];
-                const addrRe = /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)/g;
-                let m;
-                while ((m = addrRe.exec(text)) !== null) addrs.push(m[1] + ', ' + m[2] + ' ' + m[3]);
-                if (!result.ship_from && addrs.length >= 2) result.ship_from = addrs[0];
-                if (!result.ship_to && addrs.length >= 1) result.ship_to = addrs[addrs.length > 1 ? 1 : 0];
-            }
-
-            // Date
-            const dateMatch = text.match(/(?:DATE|SHIP\s*DATE|PICKUP)\s*:?\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i);
-            if (dateMatch) result.date = dateMatch[1];
-
-            // Description
-            const descMatch = text.match(/(?:DESCRIPTION|COMMODITY|CONTENTS?)\s*:?\s*(.{5,200})/i);
-            if (descMatch) result.description = descMatch[1].trim().substring(0, 200);
-
-            return result;
-        }
-
-        function showParsedResults(data) {
-            const body = document.getElementById('bol-parsed-body');
-            body.innerHTML = '';
-            const fields = [
-                { key: 'document_type', label: 'Document Type', format: (v) => v === 'bol' ? 'Bill of Lading' : v === 'shipping_label' ? 'Shipping Label' : 'Document' },
-                { key: 'carrier', label: 'Carrier' },
-                { key: 'carrier_tracking', label: 'Tracking #' },
-                { key: 'bol_number', label: 'BOL #' },
-                { key: 'pro_number', label: 'PRO #' },
-                { key: 'weight', label: 'Weight' },
-                { key: 'pieces', label: 'Pieces' },
-                { key: 'dimensions', label: 'Dimensions' },
-                { key: 'ship_from', label: 'Ship From' },
-                { key: 'ship_to', label: 'Ship To' },
-                { key: 'date', label: 'Date' },
-                { key: 'description', label: 'Description' },
-                { key: 'confidence', label: 'OCR Confidence', format: (v) => Math.round(v) + '%' }
-            ];
-            let hasData = false;
-            for (const f of fields) {
-                if (data[f.key] !== undefined && data[f.key] !== null && data[f.key] !== 'unknown') {
-                    hasData = true;
-                    const row = document.createElement('div');
-                    row.className = 'bol-parsed-row';
-                    row.innerHTML = '<span class="bol-parsed-label">' + f.label + '</span><span class="bol-parsed-value">' + (f.format ? f.format(data[f.key]) : data[f.key]) + '</span>';
-                    body.appendChild(row);
-                }
-            }
-            if (!hasData) {
-                body.innerHTML = '<div style="text-align:center;padding:10px;color:#94a3b8;font-size:0.8rem;">No data extracted. The document will still be attached to the shipment.</div>';
-            }
-            bolParsedResults.classList.add('active');
-            const autofillBtn = document.getElementById('bol-autofill-btn');
-            autofillBtn.style.display = (data.weight || data.pieces || data.dimensions || data.ship_to) ? '' : 'none';
-        }
-
-        function autofillFromParsed() {
-            if (!bolParsedData) return;
-            if (bolParsedData.weight) {
-                const wt = parseFloat(bolParsedData.weight);
-                if (wt > 0 && wt <= 2000) {
-                    sc.weight = Math.round(wt);
-                    document.getElementById('sc-weight-input').value = sc.weight;
-                    document.getElementById('sc-weight-slider').value = Math.min(500, sc.weight);
-                }
-            }
-            if (bolParsedData.pieces) {
-                const pcs = parseInt(bolParsedData.pieces);
-                if (pcs > 0 && pcs <= 1000) { sc.quantity = pcs; document.getElementById('sc-qty').value = sc.quantity; }
-            }
-            if (bolParsedData.dimensions) {
-                const dims = bolParsedData.dimensions.match(/(\d+)\s*x\s*(\d+)\s*x\s*(\d+)/i);
-                if (dims) {
-                    sc.length = Math.min(120, parseInt(dims[1]));
-                    sc.width = Math.min(120, parseInt(dims[2]));
-                    sc.height = Math.min(120, parseInt(dims[3]));
-                    document.getElementById('sc-length').value = sc.length;
-                    document.getElementById('sc-width').value = sc.width;
-                    document.getElementById('sc-height').value = sc.height;
-                    if (viewer3D && viewer3D.active) viewer3D.updateDimensions(sc.length, sc.width, sc.height);
-                }
-            }
-            if (bolParsedData.ship_to) {
-                const addrMatch = bolParsedData.ship_to.match(/([A-Za-z\s]+)\s*,?\s*([A-Z]{2})\s+(\d{5})/);
-                if (addrMatch) {
-                    document.getElementById('sc-dest-city').value = addrMatch[1].trim();
-                    document.getElementById('sc-dest-state').value = addrMatch[2];
-                    document.getElementById('sc-dest-zip').value = addrMatch[3];
-                }
+                document.querySelectorAll('#calc-overlay .sc-fba-svc-check').forEach(cb => { cb.checked = false; });
+                document.querySelectorAll('#calc-overlay .sc-fba-qty-input').forEach(inp => { inp.value = 0; });
+                document.querySelectorAll('#sc-fba-prep-services .fba-svc-qty').forEach(div => { div.style.display = 'none'; });
+                document.querySelectorAll('#sc-fba-prep-services .fba-prep-item').forEach(item => { item.classList.remove('active'); });
             }
             updatePricing();
-            const btn = document.getElementById('bol-autofill-btn');
-            btn.textContent = '✓ Fields Updated!';
-            btn.style.background = '#065f46';
-            setTimeout(() => { btn.textContent = 'Auto-fill Fields'; btn.style.background = ''; }, 2000);
-            trackCalcEvent('bol_autofill_applied', { fields: Object.keys(bolParsedData).length });
-        }
+            trackCalcEvent('shipment_fba_toggled', { enabled: sc.fbaPrep.enabled });
+        });
 
-        // Upload BOL file to Firebase Storage and return download URL
-        async function uploadBOLToStorage(file, trackingNumber) {
-            try {
-                const ext = file.name.split('.').pop();
-                const path = 'shipments/' + trackingNumber + '/documents/' + Date.now() + '.' + ext;
-                const fileRef = storageRef(storage, path);
-                const snapshot = await uploadBytes(fileRef, file);
-                const downloadURL = await getDownloadURL(snapshot.ref);
-                return { url: downloadURL, path: path };
-            } catch (err) {
-                console.warn('Storage upload failed:', err.message);
-                return null;
-            }
-        }
+        // Individual service checkboxes
+        document.querySelectorAll('#calc-overlay .sc-fba-svc-check').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const key = cb.dataset.service;
+                sc.fbaPrep.services[key].selected = cb.checked;
+                const item = cb.closest('.fba-prep-item');
+                const qtyDiv = item.querySelector('.fba-svc-qty');
+                if (cb.checked) {
+                    sc.fbaPrep.services[key].qty = sc.fbaPrep.services[key].qty || 1;
+                    item.classList.add('active');
+                    qtyDiv.style.display = 'flex';
+                    qtyDiv.querySelector('.sc-fba-qty-input').value = sc.fbaPrep.services[key].qty;
+                } else {
+                    sc.fbaPrep.services[key].qty = 0;
+                    item.classList.remove('active');
+                    qtyDiv.style.display = 'none';
+                    qtyDiv.querySelector('.sc-fba-qty-input').value = 0;
+                }
+                updatePricing();
+            });
+        });
+
+        // FBA quantity +/- buttons
+        document.querySelectorAll('#calc-overlay .sc-fba-qty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const key = btn.dataset.service;
+                const action = btn.dataset.action;
+                if (action === 'increase') {
+                    sc.fbaPrep.services[key].qty = Math.min(99999, sc.fbaPrep.services[key].qty + 1);
+                } else {
+                    sc.fbaPrep.services[key].qty = Math.max(0, sc.fbaPrep.services[key].qty - 1);
+                }
+                btn.closest('.fba-svc-qty').querySelector('.sc-fba-qty-input').value = sc.fbaPrep.services[key].qty;
+                updatePricing();
+            });
+        });
+
+        // FBA quantity direct input
+        document.querySelectorAll('#calc-overlay .sc-fba-qty-input').forEach(inp => {
+            inp.addEventListener('input', () => {
+                const key = inp.dataset.service;
+                sc.fbaPrep.services[key].qty = Math.max(0, Math.min(99999, parseInt(inp.value) || 0));
+                updatePricing();
+            });
+        });
 
         // =====================================================
         // PDF DOWNLOAD BUTTON
@@ -2357,6 +2682,38 @@
                 value: quoteResult.total
             });
 
+            // Build BOL document reference
+            const bolDocument = bolState.file ? {
+                filename: bolState.file.name,
+                file_type: bolState.file.type,
+                file_size: bolState.file.size,
+                uploaded_at: new Date().toISOString(),
+                parsed_data: bolState.parsedData || null,
+                bol_number: bolState.parsedData?.bolNumber || null,
+                carrier: bolState.parsedData?.carrier || null,
+                po_number: bolState.parsedData?.poNumber || null,
+                external_tracking: bolState.parsedData?.trackingNumber || null
+            } : null;
+
+            // Build cargo items array
+            const cargoItemsData = bolState.cargoItems.map(item => ({
+                cargo_id: item.cargo_id,
+                type: item.type,
+                index: item.index,
+                weight: item.weight,
+                description: item.description,
+                bol_number: item.bol_number,
+                status: 'awaiting_receipt',
+                status_history: [{
+                    status: 'awaiting_receipt',
+                    timestamp: new Date().toISOString(),
+                    updated_by: currentUser.uid,
+                    note: 'Shipment created'
+                }],
+                location: null,
+                created_at: new Date().toISOString()
+            }));
+
             const newShipment = {
                 user_id: currentUser.uid,
                 tracking_number: trackingNumber,
@@ -2373,6 +2730,15 @@
                 shipping_zone: sc.shippingZone,
                 black_wrapping: sc.blackWrapping,
                 dropship_qty: sc.shippingZone === 'dropship' ? { ...sc.dropShipQty } : null,
+                fba_prep: sc.fbaPrep.enabled ? {
+                    enabled: true,
+                    services: Object.fromEntries(
+                        Object.entries(sc.fbaPrep.services)
+                            .filter(([, svc]) => svc.selected && svc.qty > 0)
+                            .map(([key, svc]) => [key, { qty: svc.qty, rate: (PRICING.fbaPrep && PRICING.fbaPrep[key]) ? PRICING.fbaPrep[key].rate : 0 }])
+                    ),
+                    total: quoteResult.fbaPrepTotal || 0
+                } : null,
                 quote_estimate: {
                     storage: quoteResult.storage,
                     handling: quoteResult.handling,
@@ -2380,72 +2746,35 @@
                     shipping: quoteResult.shipping,
                     wrapping: quoteResult.wrapping,
                     dropship: quoteResult.dropship,
+                    fba_prep: quoteResult.fbaPrepTotal || 0,
                     total: quoteResult.total,
                     storage_days: PRICING.storageDays
                 },
+                // BOL / Shipping Label data
+                bol_document: bolDocument,
+                cargo_items: cargoItemsData,
+                cargo_count: cargoItemsData.length,
                 notes: sc.notes || `Shipment: ${sc.quantity} ${sc.packageType}(s), Zone: ${getZoneLabel(sc.shippingZone)}`,
+                // Packing List & Invoice documents
+                packing_list: docsState.packing_list.file ? {
+                    filename: docsState.packing_list.file.name,
+                    file_type: docsState.packing_list.file.type,
+                    file_size: docsState.packing_list.file.size,
+                    uploaded_at: new Date().toISOString()
+                } : null,
+                commercial_invoice: docsState.invoice.file ? {
+                    filename: docsState.invoice.file.name,
+                    file_type: docsState.invoice.file.type,
+                    file_size: docsState.invoice.file.size,
+                    uploaded_at: new Date().toISOString()
+                } : null,
                 status: 'pending',
-                bol_document: null,
-                tracking_events: [{
-                    event: 'shipment_created',
-                    timestamp: new Date().toISOString(),
-                    details: 'Shipment created via portal'
-                }],
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
 
             try {
                 const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
-
-                // Upload BOL / Shipping Label if attached
-                if (bolFile) {
-                    try {
-                        const uploadResult = await uploadBOLToStorage(bolFile, trackingNumber);
-                        const docType = (bolParsedData && bolParsedData.document_type !== 'unknown') ? bolParsedData.document_type : 'document';
-                        const bolDocData = {
-                            type: docType,
-                            file_name: bolFile.name,
-                            file_size: bolFile.size,
-                            file_type: bolFile.type,
-                            file_url: uploadResult ? uploadResult.url : null,
-                            storage_path: uploadResult ? uploadResult.path : null,
-                            uploaded_at: new Date().toISOString(),
-                            parsed_data: bolParsedData || {},
-                            ocr_confidence: bolParsedData ? bolParsedData.confidence : null
-                        };
-
-                        // Update shipment with document info
-                        await updateDoc(doc(db, 'shipments', shipmentRef.id), {
-                            bol_document: bolDocData,
-                            carrier_tracking: bolParsedData?.carrier_tracking || null,
-                            carrier_name: bolParsedData?.carrier || null,
-                            bol_number: bolParsedData?.bol_number || null,
-                            pro_number: bolParsedData?.pro_number || null,
-                            tracking_events: [
-                                { event: 'shipment_created', timestamp: new Date().toISOString(), details: 'Shipment created via portal' },
-                                { event: 'document_uploaded', timestamp: new Date().toISOString(), details: docType === 'bol' ? 'Bill of Lading uploaded and scanned' : docType === 'shipping_label' ? 'Shipping label uploaded and scanned' : 'Document uploaded and scanned', document_type: docType, file_name: bolFile.name }
-                            ]
-                        });
-
-                        // Also store in separate shipment_documents collection for querying
-                        await addDoc(collection(db, 'shipment_documents'), {
-                            shipment_id: shipmentRef.id,
-                            tracking_number: trackingNumber,
-                            customer_id: currentUser.uid,
-                            ...bolDocData
-                        });
-
-                        trackCalcEvent('bol_uploaded_with_shipment', {
-                            tracking_number: trackingNumber,
-                            document_type: docType,
-                            carrier: bolParsedData?.carrier || 'unknown',
-                            has_tracking: !!bolParsedData?.carrier_tracking
-                        });
-                    } catch (bolErr) {
-                        console.warn('BOL upload failed (shipment still created):', bolErr.message);
-                    }
-                }
 
                 // Log detailed billable events
                 try {
@@ -2542,6 +2871,79 @@
                     console.warn('Billing events failed:', billingErr.message);
                 }
 
+                // Store individual cargo tracking items in Firestore
+                if (cargoItemsData.length > 0) {
+                    try {
+                        for (const cargoItem of cargoItemsData) {
+                            await addDoc(collection(db, 'cargo_items'), {
+                                ...cargoItem,
+                                shipment_id: shipmentRef.id,
+                                tracking_number: trackingNumber,
+                                user_id: currentUser.uid
+                            });
+                        }
+                        trackCalcEvent('cargo_items_created', { count: cargoItemsData.length });
+                    } catch (cargoErr) {
+                        console.warn('Cargo items storage failed:', cargoErr.message);
+                    }
+                }
+
+                // Store BOL document metadata
+                if (bolDocument) {
+                    try {
+                        await addDoc(collection(db, 'bol_documents'), {
+                            shipment_id: shipmentRef.id,
+                            tracking_number: trackingNumber,
+                            user_id: currentUser.uid,
+                            ...bolDocument,
+                            // Store file as base64 data URL (for small files < 1MB)
+                            file_data: (bolState.fileDataUrl && bolState.file.size < 1048576) ? bolState.fileDataUrl : null,
+                            created_at: new Date().toISOString()
+                        });
+                        trackCalcEvent('bol_document_stored', { file_type: bolState.file.type });
+                    } catch (bolErr) {
+                        console.warn('BOL document storage failed:', bolErr.message);
+                    }
+                }
+
+                // Store Packing List document
+                if (docsState.packing_list.file) {
+                    try {
+                        await addDoc(collection(db, 'shipment_documents'), {
+                            shipment_id: shipmentRef.id,
+                            tracking_number: trackingNumber,
+                            user_id: currentUser.uid,
+                            doc_type: 'packing_list',
+                            filename: docsState.packing_list.file.name,
+                            file_type: docsState.packing_list.file.type,
+                            file_size: docsState.packing_list.file.size,
+                            file_data: (docsState.packing_list.dataUrl && docsState.packing_list.file.size < 1048576) ? docsState.packing_list.dataUrl : null,
+                            created_at: new Date().toISOString()
+                        });
+                    } catch (docErr) {
+                        console.warn('Packing list storage failed:', docErr.message);
+                    }
+                }
+
+                // Store Invoice document
+                if (docsState.invoice.file) {
+                    try {
+                        await addDoc(collection(db, 'shipment_documents'), {
+                            shipment_id: shipmentRef.id,
+                            tracking_number: trackingNumber,
+                            user_id: currentUser.uid,
+                            doc_type: 'commercial_invoice',
+                            filename: docsState.invoice.file.name,
+                            file_type: docsState.invoice.file.type,
+                            file_size: docsState.invoice.file.size,
+                            file_data: (docsState.invoice.dataUrl && docsState.invoice.file.size < 1048576) ? docsState.invoice.dataUrl : null,
+                            created_at: new Date().toISOString()
+                        });
+                    } catch (docErr) {
+                        console.warn('Invoice storage failed:', docErr.message);
+                    }
+                }
+
                 // GA4 tracking
                 if (window.MA3PLAnalytics) {
                     MA3PLAnalytics.track('shipment_created', {
@@ -2618,6 +3020,687 @@
             }
         });
 
+        // =====================================================
+        // BOL / SHIPPING LABEL UPLOAD & PARSING SYSTEM
+        // =====================================================
+        const bolState = {
+            file: null,
+            fileDataUrl: null,
+            parsedData: null,
+            cargoItems: []
+        };
+
+        // =====================================================
+        // PACKING LIST / INVOICE UPLOAD SYSTEM
+        // =====================================================
+        const docsState = {
+            packing_list: { file: null, dataUrl: null },
+            invoice: { file: null, dataUrl: null }
+        };
+
+        function initDocUpload(docType, dropzoneId, inputId, previewId, nameId, sizeId, iconId, removeId) {
+            const dropzone = document.getElementById(dropzoneId);
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+
+            if (!dropzone || !input) return;
+
+            // Click to browse
+            dropzone.addEventListener('click', (e) => {
+                if (e.target.closest('.doc-file-remove')) return;
+                input.click();
+            });
+
+            // Drag events
+            ['dragenter', 'dragover'].forEach(evt => {
+                dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+            });
+            ['dragleave', 'drop'].forEach(evt => {
+                dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); });
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                const file = e.dataTransfer.files[0];
+                if (file) handleDocFile(docType, file, dropzoneId, previewId, nameId, sizeId, iconId);
+            });
+
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) handleDocFile(docType, file, dropzoneId, previewId, nameId, sizeId, iconId);
+            });
+
+            // Remove button
+            document.getElementById(removeId)?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                docsState[docType] = { file: null, dataUrl: null };
+                document.getElementById(dropzoneId).classList.remove('has-file');
+                document.getElementById(previewId).classList.remove('active');
+                document.getElementById(inputId).value = '';
+            });
+        }
+
+        function handleDocFile(docType, file, dropzoneId, previewId, nameId, sizeId, iconId) {
+            // Max 5MB per document
+            if (file.size > 5 * 1024 * 1024) {
+                if (window.MA3PL?.toast) window.MA3PL.toast.warning('File too large. Maximum size is 5MB.');
+                else { var t = document.createElement('div'); t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); t.style.cssText='position:fixed;bottom:24px;right:24px;padding:16px 24px;border-radius:12px;font-weight:500;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.15);background:#f59e0b;color:white;'; t.textContent='File too large. Maximum size is 5MB.'; document.body.appendChild(t); setTimeout(function(){t.remove();},4000); }
+                return;
+            }
+
+            docsState[docType].file = file;
+
+            // Read as base64 data URL for storage
+            const reader = new FileReader();
+            reader.onload = (e) => { docsState[docType].dataUrl = e.target.result; };
+            reader.readAsDataURL(file);
+
+            // Update UI
+            document.getElementById(dropzoneId).classList.add('has-file');
+            document.getElementById(previewId).classList.add('active');
+            document.getElementById(nameId).textContent = file.name;
+            document.getElementById(sizeId).textContent = formatFileSize(file.size);
+
+            const ext = file.name.split('.').pop().toLowerCase();
+            let icon = '📎';
+            if (ext === 'pdf') icon = '📄';
+            else if (['png', 'jpg', 'jpeg'].includes(ext)) icon = '🖼️';
+            else if (['xlsx', 'xls', 'csv'].includes(ext)) icon = '📊';
+            else if (['doc', 'docx'].includes(ext)) icon = '📝';
+            document.getElementById(iconId).textContent = icon;
+        }
+
+        // Initialize both document uploads
+        initDocUpload('packing_list', 'packing-list-dropzone', 'packing-list-input', 'packing-list-preview', 'packing-list-file-name', 'packing-list-file-size', 'packing-list-type-icon', 'packing-list-remove');
+        initDocUpload('invoice', 'invoice-dropzone', 'invoice-input', 'invoice-preview', 'invoice-file-name', 'invoice-file-size', 'invoice-type-icon', 'invoice-remove');
+
+        // Generate unique cargo tracking IDs
+        function generateCargoId(type) {
+            const prefix = type === 'pallet' ? 'PLT' : 'BOX';
+            const timestamp = Date.now().toString(36).toUpperCase();
+            const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+            return `MA3PL-${prefix}-${timestamp}${random}`;
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        // Get file type icon
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (ext === 'pdf') return '📄';
+            if (['png', 'jpg', 'jpeg'].includes(ext)) return '🖼️';
+            return '📎';
+        }
+
+        // =====================================================
+        // BOL TEXT PARSER — Extracts structured data from text
+        // =====================================================
+        function parseBOLText(text) {
+            const data = {};
+            const upper = text.toUpperCase();
+
+            // BOL Number / PRO Number
+            const bolPatterns = [
+                /(?:BOL|B\/L|BILL\s*OF\s*LADING)\s*(?:#|NO\.?|NUMBER)?\s*[:.]?\s*([A-Z0-9\-]{4,20})/i,
+                /(?:PRO)\s*(?:#|NO\.?|NUMBER)?\s*[:.]?\s*([A-Z0-9\-]{4,20})/i,
+                /(?:REFERENCE|REF)\s*(?:#|NO\.?)?\s*[:.]?\s*([A-Z0-9\-]{4,20})/i
+            ];
+            for (const pat of bolPatterns) {
+                const m = text.match(pat);
+                if (m) { data.bolNumber = m[1].trim(); break; }
+            }
+
+            // PO Number
+            const poMatch = text.match(/(?:PO|P\.O\.?|PURCHASE\s*ORDER)\s*(?:#|NO\.?)?\s*[:.]?\s*([A-Z0-9\-]{3,20})/i);
+            if (poMatch) data.poNumber = poMatch[1].trim();
+
+            // Carrier
+            const carrierPatterns = [
+                /(?:CARRIER|TRUCKING|TRANSPORT)\s*(?:NAME)?\s*[:.]?\s*([A-Za-z\s&]+?)(?:\s{2,}|\n|$)/i,
+                /(?:SHIPPED\s*(?:VIA|BY))\s*[:.]?\s*([A-Za-z\s&]+?)(?:\s{2,}|\n|$)/i
+            ];
+            for (const pat of carrierPatterns) {
+                const m = text.match(pat);
+                if (m) { data.carrier = m[1].trim().substring(0, 50); break; }
+            }
+
+            // Tracking Number (common carrier formats)
+            const trackingPatterns = [
+                /(?:TRACKING|TRACK)\s*(?:#|NO\.?)?\s*[:.]?\s*([A-Z0-9]{10,30})/i,
+                /(?:1Z[A-Z0-9]{16})/i,                    // UPS
+                /(?:\d{12,22})/,                            // FedEx / USPS
+                /(?:SCAC|TRAILER)\s*(?:#|NO\.?)?\s*[:.]?\s*([A-Z0-9\-]{4,15})/i
+            ];
+            for (const pat of trackingPatterns) {
+                const m = text.match(pat);
+                if (m) {
+                    data.trackingNumber = (m[1] || m[0]).trim();
+                    break;
+                }
+            }
+
+            // Weight
+            const weightPatterns = [
+                /(?:TOTAL\s*)?(?:GROSS\s*)?WEIGHT\s*[:.]?\s*([\d,]+(?:\.\d+)?)\s*(?:LBS?|POUNDS?|KGS?)/i,
+                /(\d{2,6}(?:\.\d+)?)\s*(?:LBS?|POUNDS?)\s*(?:TOTAL|GROSS)?/i
+            ];
+            for (const pat of weightPatterns) {
+                const m = text.match(pat);
+                if (m) {
+                    const w = parseFloat(m[1].replace(/,/g, ''));
+                    if (w > 0 && w < 100000) { data.weight = w; break; }
+                }
+            }
+
+            // Number of Pieces / Pallets / Boxes
+            const piecesPatterns = [
+                /(\d+)\s*(?:PALLETS?|PLTS?|SKIDS?)/i,
+                /(?:PALLETS?|PLTS?|SKIDS?)\s*[:.]?\s*(\d+)/i,
+                /(\d+)\s*(?:PIECES?|PCS?|PKGS?|PACKAGES?|CARTONS?|BOXES?|CTN)/i,
+                /(?:PIECES?|PCS?|PKGS?|QTY)\s*[:.]?\s*(\d+)/i
+            ];
+            for (const pat of piecesPatterns) {
+                const m = text.match(pat);
+                if (m) {
+                    const qty = parseInt(m[1]);
+                    if (qty > 0 && qty < 10000) {
+                        data.quantity = qty;
+                        // Determine if pallets or boxes
+                        if (/PALLET|PLT|SKID/i.test(m[0])) {
+                            data.packageType = 'pallet';
+                        } else {
+                            data.packageType = 'box';
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Dimensions
+            const dimPatterns = [
+                /(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)\s*(?:IN|INCHES?|")?/i,
+                /(?:DIMENSIONS?|DIM|SIZE)\s*[:.]?\s*(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)/i
+            ];
+            for (const pat of dimPatterns) {
+                const m = text.match(pat);
+                if (m) {
+                    data.length = parseFloat(m[1]);
+                    data.width = parseFloat(m[2]);
+                    data.height = parseFloat(m[3]);
+                    break;
+                }
+            }
+
+            // Shipper Name/Address
+            const shipperMatch = text.match(/(?:SHIPPER|SHIP\s*FROM|FROM|ORIGIN)\s*[:.]?\s*\n?\s*([^\n]{5,60})/i);
+            if (shipperMatch) data.shipperName = shipperMatch[1].trim();
+
+            // Consignee / Ship To
+            const consigneePatterns = [
+                /(?:CONSIGNEE|SHIP\s*TO|DELIVER\s*TO|TO)\s*[:.]?\s*\n?\s*([^\n]{5,60})/i,
+                /(?:RECIPIENT|RECEIVER)\s*[:.]?\s*\n?\s*([^\n]{5,60})/i
+            ];
+            for (const pat of consigneePatterns) {
+                const m = text.match(pat);
+                if (m) { data.consigneeName = m[1].trim(); break; }
+            }
+
+            // Address extraction (look for state + zip pattern)
+            const addressMatches = text.match(/([A-Za-z\s]+),?\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)/g);
+            if (addressMatches && addressMatches.length > 0) {
+                // Last match is usually the destination
+                const lastAddr = addressMatches[addressMatches.length - 1];
+                const addrParts = lastAddr.match(/([A-Za-z\s]+?),?\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)/);
+                if (addrParts) {
+                    data.destCity = addrParts[1].trim();
+                    data.destState = addrParts[2];
+                    data.destZip = addrParts[3];
+                }
+                // If there are 2+ addresses, first is origin, second is destination
+                if (addressMatches.length >= 2) {
+                    const destAddr = addressMatches[addressMatches.length - 1];
+                    const destParts = destAddr.match(/([A-Za-z\s]+?),?\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)/);
+                    if (destParts) {
+                        data.destCity = destParts[1].trim();
+                        data.destState = destParts[2];
+                        data.destZip = destParts[3];
+                    }
+                }
+            }
+
+            // Street address (look for common patterns)
+            const streetMatch = text.match(/(\d+\s+[A-Za-z0-9\s.]+(?:ST|STREET|AVE|AVENUE|BLVD|BOULEVARD|RD|ROAD|DR|DRIVE|LN|LANE|WAY|CT|COURT|PL|PLACE|HWY|HIGHWAY|PKWY|PARKWAY)\.?(?:\s+(?:STE|SUITE|APT|UNIT|#)\s*[A-Z0-9\-]+)?)/i);
+            if (streetMatch) data.destStreet = streetMatch[1].trim();
+
+            // Description of goods
+            const descMatch = text.match(/(?:DESCRIPTION|COMMODITY|GOODS|CONTENTS)\s*(?:OF\s*GOODS?)?\s*[:.]?\s*\n?\s*([^\n]{5,100})/i);
+            if (descMatch) data.description = descMatch[1].trim();
+
+            // Freight class
+            const classMatch = text.match(/(?:CLASS|FREIGHT\s*CLASS|NMFC)\s*[:.]?\s*(\d{2,3}(?:\.\d)?)/i);
+            if (classMatch) data.freightClass = classMatch[1];
+
+            return data;
+        }
+
+        // =====================================================
+        // PDF TEXT EXTRACTION
+        // =====================================================
+        async function extractPDFText(file) {
+            if (!window.pdfjsLib) {
+                throw new Error('PDF.js library not loaded');
+            }
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + '\n';
+            }
+            return fullText;
+        }
+
+        // =====================================================
+        // RENDER EXTRACTED DATA
+        // =====================================================
+        function renderExtractedData(data) {
+            const body = document.getElementById('bol-extracted-body');
+            const fields = [
+                { key: 'bolNumber', label: 'BOL / PRO #' },
+                { key: 'poNumber', label: 'PO #' },
+                { key: 'carrier', label: 'Carrier' },
+                { key: 'trackingNumber', label: 'Tracking #' },
+                { key: 'quantity', label: 'Pieces / Units' },
+                { key: 'packageType', label: 'Package Type' },
+                { key: 'weight', label: 'Weight (lbs)' },
+                { key: 'length', label: 'Length (in)' },
+                { key: 'width', label: 'Width (in)' },
+                { key: 'height', label: 'Height (in)' },
+                { key: 'shipperName', label: 'Shipper' },
+                { key: 'consigneeName', label: 'Consignee' },
+                { key: 'destStreet', label: 'Street' },
+                { key: 'destCity', label: 'City' },
+                { key: 'destState', label: 'State' },
+                { key: 'destZip', label: 'ZIP' },
+                { key: 'description', label: 'Description' },
+                { key: 'freightClass', label: 'Freight Class' }
+            ];
+
+            let html = '';
+            let foundCount = 0;
+            for (const f of fields) {
+                const val = data[f.key];
+                if (val !== undefined && val !== null && val !== '') {
+                    foundCount++;
+                    html += `<div class="bol-data-row">
+                        <span class="bol-data-label">${f.label}</span>
+                        <span class="bol-data-value">${val}</span>
+                    </div>`;
+                }
+            }
+
+            if (foundCount === 0) {
+                html = `<div class="bol-data-row">
+                    <span class="bol-data-label">No structured data found</span>
+                    <span class="bol-data-value muted">Fill in manually below</span>
+                </div>`;
+            }
+
+            body.innerHTML = html;
+            return foundCount;
+        }
+
+        // =====================================================
+        // GENERATE CARGO ITEMS FROM PARSED DATA
+        // =====================================================
+        function generateCargoItems(data) {
+            bolState.cargoItems = [];
+            const qty = data.quantity || sc.quantity || 1;
+            const type = data.packageType || sc.packageType || 'box';
+
+            for (let i = 0; i < qty; i++) {
+                bolState.cargoItems.push({
+                    cargo_id: generateCargoId(type),
+                    type: type,
+                    index: i + 1,
+                    weight: data.weight ? Math.round(data.weight / qty) : null,
+                    description: data.description || '',
+                    bol_number: data.bolNumber || '',
+                    status: 'awaiting_receipt'
+                });
+            }
+
+            renderCargoItems();
+        }
+
+        // =====================================================
+        // RENDER CARGO TRACKING ITEMS
+        // =====================================================
+        function renderCargoItems() {
+            const list = document.getElementById('cargo-items-list');
+            const section = document.getElementById('cargo-tracking-section');
+
+            if (bolState.cargoItems.length === 0) {
+                section.classList.remove('active');
+                return;
+            }
+
+            section.classList.add('active');
+            let html = '';
+            for (const item of bolState.cargoItems) {
+                const icon = item.type === 'pallet' ? '🏗️' : '📦';
+                const weightStr = item.weight ? `${item.weight} lbs` : 'TBD';
+                html += `<div class="cargo-item-card" data-cargo-id="${item.cargo_id}">
+                    <span class="cargo-item-icon">${icon}</span>
+                    <div class="cargo-item-details">
+                        <div class="cargo-item-id">${item.cargo_id}</div>
+                        <div class="cargo-item-desc">${item.type === 'pallet' ? 'Pallet' : 'Box'} #${item.index} • ${weightStr}${item.description ? ' • ' + item.description.substring(0, 40) : ''}</div>
+                    </div>
+                    <span class="cargo-item-status">Awaiting</span>
+                </div>`;
+            }
+            list.innerHTML = html;
+        }
+
+        // =====================================================
+        // AUTO-FILL FORM FROM PARSED DATA
+        // =====================================================
+        function autoFillFromBOL(data) {
+            // Package type
+            if (data.packageType) {
+                sc.packageType = data.packageType;
+                document.querySelectorAll('#calc-overlay .package-option').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.type === data.packageType);
+                });
+                document.getElementById('sc-wrapping-group').style.display = data.packageType === 'pallet' ? 'block' : 'none';
+                if (viewer3D && viewer3D.active) viewer3D.setPackageType(data.packageType);
+            }
+
+            // Dimensions
+            if (data.length && data.length >= 1 && data.length <= 120) {
+                sc.length = Math.round(data.length);
+                document.getElementById('sc-length').value = sc.length;
+            }
+            if (data.width && data.width >= 1 && data.width <= 120) {
+                sc.width = Math.round(data.width);
+                document.getElementById('sc-width').value = sc.width;
+            }
+            if (data.height && data.height >= 1 && data.height <= 120) {
+                sc.height = Math.round(data.height);
+                document.getElementById('sc-height').value = sc.height;
+            }
+
+            // Weight
+            if (data.weight && data.weight >= 1 && data.weight <= 2000) {
+                sc.weight = Math.round(data.weight);
+                document.getElementById('sc-weight-input').value = sc.weight;
+                document.getElementById('sc-weight-slider').value = Math.min(500, sc.weight);
+            }
+
+            // Quantity
+            if (data.quantity && data.quantity >= 1 && data.quantity <= 1000) {
+                sc.quantity = data.quantity;
+                document.getElementById('sc-qty').value = sc.quantity;
+            }
+
+            // Destination
+            if (data.consigneeName) {
+                document.getElementById('sc-dest-name').value = data.consigneeName;
+            }
+            if (data.destStreet) {
+                document.getElementById('sc-dest-street').value = data.destStreet;
+            }
+            if (data.destCity) {
+                document.getElementById('sc-dest-city').value = data.destCity;
+            }
+            if (data.destState) {
+                document.getElementById('sc-dest-state').value = data.destState;
+            }
+            if (data.destZip) {
+                document.getElementById('sc-dest-zip').value = data.destZip;
+            }
+
+            // Notes
+            const notes = [];
+            if (data.bolNumber) notes.push('BOL: ' + data.bolNumber);
+            if (data.carrier) notes.push('Carrier: ' + data.carrier);
+            if (data.description) notes.push(data.description);
+            if (notes.length > 0) {
+                document.getElementById('sc-notes').value = notes.join(' | ');
+            }
+
+            // Update 3D viewer
+            if (viewer3D && viewer3D.active) {
+                viewer3D.updateDimensions(sc.length, sc.width, sc.height);
+            }
+
+            updatePricing();
+
+            // Generate cargo items
+            generateCargoItems(data);
+
+            trackCalcEvent('bol_auto_fill_applied', {
+                fields_filled: Object.keys(data).length,
+                has_dimensions: !!(data.length && data.width && data.height),
+                has_weight: !!data.weight,
+                has_destination: !!data.destCity
+            });
+        }
+
+        // =====================================================
+        // FILE UPLOAD HANDLERS
+        // =====================================================
+        const bolDropzone = document.getElementById('bol-dropzone');
+        const bolFileInput = document.getElementById('bol-file-input');
+        const bolFilePreview = document.getElementById('bol-file-preview');
+        const bolParseStatus = document.getElementById('bol-parse-status');
+        const bolExtractedData = document.getElementById('bol-extracted-data');
+
+        // Click to browse
+        bolDropzone.addEventListener('click', () => bolFileInput.click());
+
+        // Drag events
+        bolDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            bolDropzone.classList.add('dragover');
+        });
+        bolDropzone.addEventListener('dragleave', () => {
+            bolDropzone.classList.remove('dragover');
+        });
+        bolDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            bolDropzone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) handleBOLFile(files[0]);
+        });
+
+        // File input change
+        bolFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleBOLFile(e.target.files[0]);
+        });
+
+        // Remove file
+        document.getElementById('bol-file-remove').addEventListener('click', () => {
+            bolState.file = null;
+            bolState.fileDataUrl = null;
+            bolState.parsedData = null;
+            bolState.cargoItems = [];
+            bolFileInput.value = '';
+            bolDropzone.classList.remove('has-file');
+            bolFilePreview.classList.remove('active');
+            bolParseStatus.classList.remove('active', 'parsing', 'success', 'warning', 'error');
+            bolExtractedData.classList.remove('active');
+            document.getElementById('cargo-tracking-section').classList.remove('active');
+        });
+
+        // Auto-fill button
+        document.getElementById('bol-auto-fill-btn').addEventListener('click', () => {
+            if (bolState.parsedData) {
+                autoFillFromBOL(bolState.parsedData);
+                // Flash success
+                const btn = document.getElementById('bol-auto-fill-btn');
+                btn.textContent = '✓ Applied!';
+                btn.style.background = '#15803d';
+                setTimeout(() => {
+                    btn.textContent = '⚡ Auto-Fill Form';
+                    btn.style.background = '';
+                }, 2000);
+            }
+        });
+
+        // Add cargo item manually
+        document.getElementById('cargo-add-btn').addEventListener('click', () => {
+            const type = sc.packageType || 'box';
+            bolState.cargoItems.push({
+                cargo_id: generateCargoId(type),
+                type: type,
+                index: bolState.cargoItems.length + 1,
+                weight: null,
+                description: '',
+                bol_number: bolState.parsedData?.bolNumber || '',
+                status: 'awaiting_receipt'
+            });
+            renderCargoItems();
+        });
+
+        // =====================================================
+        // HANDLE BOL FILE UPLOAD
+        // =====================================================
+        async function handleBOLFile(file) {
+            // Validate file type
+            const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+            if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|png|jpg|jpeg)$/i)) {
+                showBOLStatus('error', '❌ Unsupported file type. Use PDF, PNG, or JPG.');
+                return;
+            }
+
+            // Validate file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showBOLStatus('error', '❌ File too large. Maximum 10MB.');
+                return;
+            }
+
+            bolState.file = file;
+
+            // Show file preview
+            document.getElementById('bol-file-type-icon').textContent = getFileIcon(file.name);
+            document.getElementById('bol-file-name').textContent = file.name;
+            document.getElementById('bol-file-size').textContent = formatFileSize(file.size);
+            bolFilePreview.classList.add('active');
+            bolDropzone.classList.add('has-file');
+
+            // Store as data URL for Firestore
+            const reader = new FileReader();
+            reader.onload = (e) => { bolState.fileDataUrl = e.target.result; };
+            reader.readAsDataURL(file);
+
+            // Parse the document
+            if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+                await parsePDFDocument(file);
+            } else {
+                // Image file — can't extract text client-side without OCR API
+                showBOLStatus('warning', '🖼️ Image uploaded. Fill in the details manually or use a PDF for auto-extraction.');
+                // Still generate cargo items based on current form state
+                generateCargoItems({
+                    quantity: sc.quantity,
+                    packageType: sc.packageType
+                });
+                // Show cargo tracking
+                document.getElementById('cargo-tracking-section').classList.add('active');
+            }
+
+            trackCalcEvent('bol_file_uploaded', {
+                file_type: file.type,
+                file_size: file.size,
+                is_pdf: file.type === 'application/pdf'
+            });
+        }
+
+        // =====================================================
+        // PARSE PDF DOCUMENT
+        // =====================================================
+        async function parsePDFDocument(file) {
+            showBOLStatus('parsing', '🔍 Analyzing document...');
+
+            try {
+                const text = await extractPDFText(file);
+                bolState.parsedData = parseBOLText(text);
+
+                const fieldCount = renderExtractedData(bolState.parsedData);
+                bolExtractedData.classList.add('active');
+
+                // Generate cargo items from parsed data
+                generateCargoItems(bolState.parsedData);
+
+                if (fieldCount >= 3) {
+                    showBOLStatus('success', `✅ Extracted ${fieldCount} fields — click Auto-Fill to populate the form.`);
+                } else if (fieldCount > 0) {
+                    showBOLStatus('warning', `⚠️ Found ${fieldCount} field(s). Some data may need manual entry.`);
+                } else {
+                    showBOLStatus('warning', '⚠️ Could not extract structured data. Please fill in details manually.');
+                }
+
+                trackCalcEvent('bol_parsed', {
+                    fields_found: fieldCount,
+                    has_bol_number: !!bolState.parsedData.bolNumber,
+                    has_weight: !!bolState.parsedData.weight,
+                    has_dimensions: !!(bolState.parsedData.length && bolState.parsedData.width && bolState.parsedData.height)
+                });
+
+            } catch (err) {
+                console.error('PDF parse error:', err);
+                showBOLStatus('error', '❌ Error reading PDF: ' + err.message);
+                // Still allow manual entry
+                generateCargoItems({
+                    quantity: sc.quantity,
+                    packageType: sc.packageType
+                });
+            }
+        }
+
+        // =====================================================
+        // BOL STATUS DISPLAY
+        // =====================================================
+        function showBOLStatus(type, message) {
+            const el = document.getElementById('bol-parse-status');
+            el.classList.remove('active', 'parsing', 'success', 'warning', 'error');
+            el.classList.add('active', type);
+
+            const spinner = document.getElementById('bol-spinner');
+            spinner.style.display = type === 'parsing' ? 'block' : 'none';
+
+            document.getElementById('bol-status-text').textContent = message;
+        }
+
+        // =====================================================
+        // RESET BOL STATE (called by resetCalculator)
+        // =====================================================
+        function resetBOLState() {
+            bolState.file = null;
+            bolState.fileDataUrl = null;
+            bolState.parsedData = null;
+            bolState.cargoItems = [];
+            if (bolFileInput) bolFileInput.value = '';
+            if (bolDropzone) bolDropzone.classList.remove('has-file');
+            if (bolFilePreview) bolFilePreview.classList.remove('active');
+            if (bolParseStatus) bolParseStatus.classList.remove('active', 'parsing', 'success', 'warning', 'error');
+            if (bolExtractedData) bolExtractedData.classList.remove('active');
+            const cargoSection = document.getElementById('cargo-tracking-section');
+            if (cargoSection) cargoSection.classList.remove('active');
+            const cargoList = document.getElementById('cargo-items-list');
+            if (cargoList) cargoList.innerHTML = '';
+        }
+
+        // Patch resetCalculator to also reset BOL state
+        const _originalResetCalc = resetCalculator;
+        // We'll call resetBOLState inside the existing reset flow
+
         // Logout
         document.getElementById('logout-btn').addEventListener('click', async (e) => {
             e.preventDefault();
@@ -2659,31 +3742,28 @@
                     const data = docSnap.data();
                     const row = document.createElement('tr');
 
-                    // Build document badge
-                    let docBadge = '<span style="color:#94a3b8;font-size:0.75rem;">—</span>';
+                    // BOL / Cargo / Docs column
+                    let bolCargoHtml = '';
                     if (data.bol_document) {
-                        const dtype = data.bol_document.type;
-                        if (dtype === 'bol') {
-                            docBadge = '<span class="doc-badge doc-badge-bol">📋 BOL</span>';
-                        } else if (dtype === 'shipping_label') {
-                            docBadge = '<span class="doc-badge doc-badge-label">🏷️ Label</span>';
-                        } else {
-                            docBadge = '<span class="doc-badge doc-badge-doc">📄 Doc</span>';
-                        }
-                        if (data.carrier_name) {
-                            docBadge += '<br><span style="font-size:0.68rem;color:#64748b;">' + data.carrier_name + '</span>';
-                        }
-                        if (data.carrier_tracking) {
-                            docBadge += '<br><span style="font-size:0.65rem;color:#14b8a6;font-family:monospace;">' + data.carrier_tracking.substring(0, 16) + '</span>';
-                        }
+                        bolCargoHtml += `<span style="font-size:0.75rem;background:#eff6ff;color:#1d4ed8;padding:2px 6px;border-radius:4px;font-weight:600;">📄 BOL</span> `;
                     }
+                    if (data.cargo_count && data.cargo_count > 0) {
+                        bolCargoHtml += `<span style="font-size:0.75rem;background:#f0fdfa;color:#0d9488;padding:2px 6px;border-radius:4px;font-weight:600;">📦 ${data.cargo_count} item${data.cargo_count > 1 ? 's' : ''}</span> `;
+                    }
+                    if (data.packing_list) {
+                        bolCargoHtml += `<span style="font-size:0.75rem;background:#f0fdf4;color:#166534;padding:2px 6px;border-radius:4px;font-weight:600;">📋 PL</span> `;
+                    }
+                    if (data.commercial_invoice) {
+                        bolCargoHtml += `<span style="font-size:0.75rem;background:#fefce8;color:#854d0e;padding:2px 6px;border-radius:4px;font-weight:600;">🧾 INV</span> `;
+                    }
+                    if (!bolCargoHtml) bolCargoHtml = '<span style="color:#94a3b8;font-size:0.8rem;">—</span>';
 
                     row.innerHTML = `
                         <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
                         <td>${data.destination?.name || 'N/A'}</td>
                         <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
+                        <td>${bolCargoHtml}</td>
                         <td style="text-transform: capitalize;">${data.service_type || data.shipping_zone || ''}</td>
-                        <td>${docBadge}</td>
                         <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
                         <td>${new Date(data.created_at).toLocaleDateString()}</td>
                     `;

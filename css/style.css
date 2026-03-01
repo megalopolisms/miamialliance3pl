@@ -109,6 +109,63 @@ ul {
 }
 
 /* ==========================================================================
+   Accessibility
+   ========================================================================== */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip to content link for keyboard users */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-accent);
+  color: white;
+  padding: 8px 16px;
+  z-index: 10000;
+  font-weight: 600;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 0;
+}
+
+/* Focus visible styling for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .hero-shape,
+  .hero-floating-icon,
+  .dog-runner,
+  .velocity-runner,
+  .float,
+  .scroll-progress {
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
    Utilities
    ========================================================================== */
 .container {
@@ -388,6 +445,8 @@ ul {
   top: calc(70px + var(--banner-height, 0px));
   left: 0;
   right: 0;
+  max-height: calc(100vh - 70px - var(--banner-height, 0px));
+  overflow-y: auto;
   background-color: var(--color-white);
   padding: var(--spacing-md);
   display: flex;
@@ -419,6 +478,26 @@ ul {
   color: var(--color-accent);
 }
 
+/* Customer Portal button — mobile dropdown CTA */
+.nav-menu .btn.btn-outline {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  background-color: var(--color-accent);
+  color: var(--color-white);
+  border-color: var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.5rem;
+  margin-top: var(--spacing-xs);
+  font-weight: 700;
+  text-align: center;
+}
+
+.nav-menu .btn.btn-outline:hover {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
 @media (min-width: 768px) {
   .nav-toggle {
     display: none;
@@ -435,10 +514,25 @@ ul {
     opacity: 1;
     visibility: visible;
     background: transparent;
+    max-height: none;
+    overflow-y: visible;
   }
 
-  .nav-menu .btn-outline {
+  .nav-menu .btn.btn-outline {
+    display: inline-flex;
+    width: auto;
+    background-color: transparent;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
     padding: 0.5rem 1rem;
+    margin-top: 0;
+    font-weight: 600;
+  }
+
+  .nav-menu .btn.btn-outline:hover {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border-color: var(--color-primary);
   }
 }
 
@@ -1404,6 +1498,7 @@ ul {
   /* Nav menu improvements */
   .nav-menu {
     padding: var(--spacing-lg);
+    padding-bottom: calc(var(--spacing-lg) + var(--spacing-md));
   }
 
   .nav-link {
@@ -2304,6 +2399,118 @@ ul {
 .dropship-input:focus {
   outline: none;
   border-color: var(--color-accent);
+}
+
+/* FBA Prep Services */
+.fba-prep-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff9900, #ff6600);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
+.fba-prep-toggle {
+  padding: 4px 0;
+}
+
+.fba-prep-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+@media (max-width: 480px) {
+  .fba-prep-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fba-prep-item {
+  background: var(--color-white);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.fba-prep-item:hover {
+  border-color: #ff9900;
+}
+
+.fba-prep-item.active {
+  border-color: #ff9900;
+  box-shadow: 0 0 0 2px rgba(255, 153, 0, 0.15);
+  background: #fff8f0;
+}
+
+.fba-prep-service-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.fba-prep-service-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #ff9900;
+}
+
+.fba-svc-icon {
+  font-size: 16px;
+}
+
+.fba-svc-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fba-svc-rate {
+  margin-left: auto;
+  font-weight: 700;
+  color: #ff9900;
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.fba-svc-qty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.fba-qty-input {
+  width: 70px;
+  text-align: center;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  font-family: inherit;
+}
+
+.fba-qty-input:focus {
+  outline: none;
+  border-color: #ff9900;
 }
 
 /* Quote Results */
