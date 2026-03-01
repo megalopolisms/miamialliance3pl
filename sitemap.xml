@@ -234,6 +234,14 @@
         <priority>0.85</priority>
     </url>
 
+    <!-- FAQ -->
+    <url>
+        <loc>https://miamialliance3pl.com/faq.html</loc>
+        <lastmod>2026-03-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+
     <!-- Contact -->
     <url>
         <loc>https://miamialliance3pl.com/contact.html</loc>
