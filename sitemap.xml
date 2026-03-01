@@ -5,7 +5,7 @@
     <!-- Homepage -->
     <url>
         <loc>https://miamialliance3pl.com/</loc>
-        <lastmod>2026-02-21</lastmod>
+        <lastmod>2026-03-01</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
     </url>
@@ -14,6 +14,14 @@
     <url>
         <loc>https://miamialliance3pl.com/quote.html</loc>
         <lastmod>2026-02-21</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.95</priority>
+    </url>
+
+    <!-- Amazon 3PL Miami - Dedicated Landing Page -->
+    <url>
+        <loc>https://miamialliance3pl.com/amazon-3pl-miami.html</loc>
+        <lastmod>2026-03-01</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.95</priority>
     </url>
