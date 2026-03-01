@@ -13,7 +13,7 @@
     <!-- Instant Quote Calculator - High Priority Tool Page -->
     <url>
         <loc>https://miamialliance3pl.com/quote.html</loc>
-        <lastmod>2026-02-21</lastmod>
+        <lastmod>2026-03-01</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.95</priority>
     </url>
@@ -29,7 +29,7 @@
     <!-- Services -->
     <url>
         <loc>https://miamialliance3pl.com/services.html</loc>
-        <lastmod>2026-02-21</lastmod>
+        <lastmod>2026-03-01</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
     </url>
@@ -37,7 +37,7 @@
     <!-- Blog Hub -->
     <url>
         <loc>https://miamialliance3pl.com/blog.html</loc>
-        <lastmod>2026-02-28</lastmod>
+        <lastmod>2026-03-01</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
@@ -389,7 +389,7 @@
     <!-- Contact -->
     <url>
         <loc>https://miamialliance3pl.com/contact.html</loc>
-        <lastmod>2026-02-21</lastmod>
+        <lastmod>2026-03-01</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
@@ -405,7 +405,7 @@
     <!-- About -->
     <url>
         <loc>https://miamialliance3pl.com/about.html</loc>
-        <lastmod>2026-02-21</lastmod>
+        <lastmod>2026-03-01</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
