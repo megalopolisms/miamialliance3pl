@@ -332,9 +332,9 @@
 
     <!-- Urgency Banner -->
     <div class="urgency-banner">
-        <span class="urgency-copy" data-i18n="banner.copy">Limited availability — Only 3 warehouse bays remaining for Q2 2026</span>
+        <span class="urgency-copy" data-i18n="banner.copy">🎁 New customers get <strong>$100 in FREE storage credit</strong> — Limited time offer</span>
         <span class="urgency-actions">
-            <a href="quote.html?source=urgency-banner" data-i18n-html="banner.lock">Lock in your rate &rarr;</a>
+            <a href="quote.html?source=urgency-banner&promo=100free" data-i18n-html="banner.lock">Claim Your $100 Credit &rarr;</a>
             <a href="blog.html?source=urgency-banner" aria-label="Read the Miami Alliance 3PL blog" data-i18n-html="banner.blog">Read the 3PL Blog &rarr;</a>
         </span>
     </div>
@@ -486,6 +486,34 @@
                     <div class="trust-item">
                         <span class="trust-icon">🌍</span>
                         <span data-i18n="home.trust.international">International Shipping</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== $100 FREE STORAGE PROMO ===== -->
+        <section class="promo-100-section reveal-scale" id="free-storage-promo">
+            <div class="container">
+                <div class="promo-100-card">
+                    <div class="promo-100-badge">NEW CUSTOMER OFFER</div>
+                    <div class="promo-100-content">
+                        <div class="promo-100-amount">
+                            <span class="promo-dollar">$</span><span class="promo-number">100</span>
+                        </div>
+                        <div class="promo-100-details">
+                            <h2 class="promo-100-title">Free Storage Credit for First-Time Customers</h2>
+                            <p class="promo-100-desc">Start storing with Miami Alliance 3PL and get <strong>$100 applied to your first invoice</strong>. No strings attached — no contracts, no minimums, no catches. Just send us your inventory and we'll cover the first $100 of storage.</p>
+                            <ul class="promo-100-perks">
+                                <li>✅ Applies to pallet or shelf storage at either location</li>
+                                <li>✅ Valid for new customers — Miami or Biloxi warehouse</li>
+                                <li>✅ No promo code needed — automatically applied at onboarding</li>
+                                <li>✅ Combine with our free 3PL strategy session</li>
+                            </ul>
+                            <div class="promo-100-cta">
+                                <a href="quote.html?promo=100free" class="btn btn-primary btn-large">Get My Free Quote + $100 Credit →</a>
+                                <a href="contact.html?promo=100free" class="btn btn-secondary">Talk to Our Team</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -944,6 +972,7 @@
     </div>
 
     <script src="js/main.js"></script>
+    <script src="js/lead-capture.js"></script>
     <script src="js/lang/es.js"></script>
     <script src="js/i18n.js"></script>
 </body>
