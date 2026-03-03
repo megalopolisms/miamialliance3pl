@@ -30,3 +30,32 @@ Thumbs.db
 npm-debug.log*
 mcp/node_modules/
 mcp/audit.log
+
+# Temp/build artifacts
+.tmp/
+.firebase/
+.firebaserc
+firebase.json
+firestore.rules
+firestore.indexes.json
+functions/
+
+# Dev docs (not for public site)
+AGENTS.md
+ARCHITECTURE.md
+IMPLEMENTATION_PLAN.md
+PROGRESS.md
+STRIPE_SETUP.md
+FTZ_APPLICATION_RESEARCH.md
+
+# Conflicted copies (Dropbox)
+*conflicted copy*
+
+# Scripts & admin
+*.py
+*.sh
+scripts/
+admin/
+
+# GitHub workflows (managed separately)
+.github/
