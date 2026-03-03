@@ -26,6 +26,14 @@
         <priority>0.95</priority>
     </url>
 
+    <!-- Dropshipping Fulfillment Miami - Dedicated Landing Page -->
+    <url>
+        <loc>https://miamialliance3pl.com/dropshipping-fulfillment-miami.html</loc>
+        <lastmod>2026-03-03</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.95</priority>
+    </url>
+
     <!-- Services -->
     <url>
         <loc>https://miamialliance3pl.com/services.html</loc>
@@ -422,6 +430,30 @@
     <url>
         <loc>https://miamialliance3pl.com/blog/just-in-case-inventory-tariff-uncertainty-warehouse-demand-2026.html</loc>
         <lastmod>2026-03-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Dropshipping Fulfillment Guide Miami 3PL (NEW Mar 3) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/dropshipping-fulfillment-guide-miami-3pl.html</loc>
+        <lastmod>2026-03-03</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
+    <!-- Blog: Dropshipping vs 3PL Which Model Best (NEW Mar 3) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/dropshipping-vs-3pl-which-model-best-ecommerce.html</loc>
+        <lastmod>2026-03-03</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Scale Dropshipping Business 3PL Partner Miami (NEW Mar 3) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/scale-dropshipping-business-3pl-partner-miami.html</loc>
+        <lastmod>2026-03-03</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.85</priority>
     </url>
