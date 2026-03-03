@@ -20,8 +20,8 @@ window.MA3PL_TRANSLATIONS.es = {
   // SHARED: Urgency Banner
   // ═══════════════════════════════════════════════════════════════════
   "banner.copy":
-    "Disponibilidad limitada — Solo quedan 3 bahías de almacén para Q1 2026",
-  "banner.lock": "Asegura tu tarifa →",
+    "🎁 Nuevos clientes reciben <strong>$100 en crédito de almacenamiento GRATIS</strong> — Oferta por tiempo limitado",
+  "banner.lock": "Reclama tu crédito de $100 →",
   "banner.blog": "Lee el Blog 3PL →",
 
   // ═══════════════════════════════════════════════════════════════════

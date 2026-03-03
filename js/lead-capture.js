@@ -66,7 +66,7 @@
         <button class="lead-popup-close" aria-label="Close popup">&times;</button>
         <div class="lead-popup-icon">📦</div>
         <h2 class="lead-popup-title">Wait — Don't Leave Empty-Handed!</h2>
-        <p class="lead-popup-subtitle">Get <strong>$100 off</strong> your first month of warehousing + a free custom 3PL strategy session.</p>
+        <p class="lead-popup-subtitle">Get <strong>$100 in free storage credit</strong> applied to your first invoice + a free custom 3PL strategy session.</p>
         <form id="exit-popup-form" class="lead-popup-form">
           <input type="text" name="name" placeholder="Your name" required autocomplete="name" class="lead-popup-input">
           <input type="email" name="email" placeholder="Work email" required autocomplete="email" class="lead-popup-input">
@@ -151,7 +151,7 @@
       <div class="lead-popup-success">
         <div class="lead-popup-icon">✅</div>
         <h2 class="lead-popup-title">You're In!</h2>
-        <p class="lead-popup-subtitle">Your $100 credit is reserved. A 3PL strategist will reach out within 24 hours.</p>
+        <p class="lead-popup-subtitle">Your $100 free storage credit is reserved! A 3PL strategist will reach out within 24 hours.</p>
         <button class="lead-popup-btn" onclick="document.getElementById('exit-popup-overlay').classList.remove('active'); setTimeout(function(){document.getElementById('exit-popup-overlay').remove()},300);">Got It!</button>
       </div>
     `;

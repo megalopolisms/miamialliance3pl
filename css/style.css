@@ -4121,6 +4121,188 @@ ul {
   }
 }
 
+/* --- $100 Free Storage Promo Section --- */
+.promo-100-section {
+  padding: var(--spacing-2xl) 0;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #e0f2fe 100%);
+}
+
+.promo-100-card {
+  background: white;
+  border-radius: 20px;
+  padding: 48px;
+  box-shadow:
+    0 8px 32px rgba(16, 185, 129, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.promo-100-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(
+    circle,
+    rgba(16, 185, 129, 0.08) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.promo-100-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.promo-100-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.promo-100-amount {
+  display: flex;
+  align-items: flex-start;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.promo-dollar {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #10b981;
+  margin-top: 8px;
+}
+
+.promo-number {
+  font-size: 6rem;
+  font-weight: 900;
+  color: #10b981;
+  letter-spacing: -3px;
+  line-height: 0.85;
+}
+
+.promo-100-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.promo-100-desc {
+  font-size: 1.05rem;
+  color: var(--color-gray-600);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.promo-100-perks {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.promo-100-perks li {
+  font-size: 0.9rem;
+  color: var(--color-gray-700);
+  font-weight: 500;
+}
+
+.promo-100-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .promo-100-card {
+    padding: 28px 20px;
+  }
+
+  .promo-100-content {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .promo-number {
+    font-size: 4rem;
+  }
+
+  .promo-dollar {
+    font-size: 1.75rem;
+    margin-top: 4px;
+  }
+
+  .promo-100-perks {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .promo-100-cta {
+    justify-content: center;
+  }
+}
+
+/* --- $100 Promo Inline Banner (Quote Page) --- */
+.promo-inline-banner {
+  padding: 0;
+  margin-top: -8px;
+}
+
+.promo-inline-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+}
+
+.promo-inline-icon {
+  font-size: 1.75rem;
+  flex-shrink: 0;
+}
+
+.promo-inline-text {
+  font-size: 0.95rem;
+  color: #065f46;
+  line-height: 1.5;
+}
+
+.promo-inline-text strong {
+  color: #047857;
+}
+
+@media (max-width: 640px) {
+  .promo-inline-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+    padding: 14px 16px;
+  }
+}
+
 /* --- FAQ Enhancement --- */
 .faq-section {
   padding: var(--spacing-3xl) 0;
