@@ -25,7 +25,9 @@
 
   /* Typography */
   --font-family:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "Manrope", "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
   --font-size-lg: 1.125rem;
@@ -91,6 +93,20 @@ body {
   background-color: var(--color-white);
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family:
+    "Sora",
+    "Manrope",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 }
 
 img {
@@ -775,21 +791,42 @@ ul {
    ========================================================================== */
 .cta-section {
   padding: var(--spacing-3xl) 0;
-  background-color: var(--color-gray-50);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
   text-align: center;
 }
 
 .cta-section h2 {
   font-size: var(--font-size-3xl);
   font-weight: 700;
-  color: var(--color-gray-900);
+  color: var(--color-white);
   margin-bottom: var(--spacing-sm);
 }
 
 .cta-section p {
   font-size: var(--font-size-lg);
-  color: var(--color-gray-500);
+  color: rgba(255, 255, 255, 0.85);
   margin-bottom: var(--spacing-lg);
+}
+
+.cta-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+@media (max-width: 767px) {
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  .cta-buttons .btn {
+    width: 100%;
+  }
 }
 
 /* ==========================================================================
@@ -1489,10 +1526,12 @@ ul {
   /* CTA section */
   .cta-section h2 {
     font-size: 1.5rem;
+    color: var(--color-white);
   }
 
   .cta-section p {
     font-size: 1rem;
+    color: rgba(255, 255, 255, 0.85);
   }
 
   /* Nav menu improvements */
@@ -1543,21 +1582,6 @@ ul {
 
   .hero-title {
     font-size: 2.5rem;
-  }
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-
-  html {
-    scroll-behavior: auto;
   }
 }
 
@@ -4178,6 +4202,21 @@ ul {
   font-size: 1.5rem;
   width: 40px;
   text-align: center;
+}
+
+/* Locations grid responsive */
+.locations-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xl);
+  margin-top: var(--spacing-lg);
+}
+
+@media (max-width: 767px) {
+  .locations-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
 }
 
 /* --- Page Transition --- */
