@@ -1305,6 +1305,14 @@
         }
         window.formatFileSize = formatFileSize;
 
+        function parseFirestoreDate(value) {
+            if (!value) return null;
+            if (value instanceof Date) return value;
+            if (typeof value.toDate === 'function') return value.toDate();
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        }
+
         // ===== TOAST =====
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
@@ -1995,14 +2003,15 @@
             });
 
             tbody.innerHTML = list.map(c => {
-                const joined = c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A';
+                const joinedDate = parseFirestoreDate(c.created_at);
+                const joined = joinedDate ? joinedDate.toLocaleDateString() : 'N/A';
                 const role = c.role || 'customer';
                 const shipCount = shipmentCounts[c.id] || 0;
 
                 return `
                     <tr>
                         <td class="company-name">${c.company_name || '-'}</td>
-                        <td>${c.name || '-'}</td>
+                        <td>${c.name || c.email || '-'}</td>
                         <td>${c.email || '-'}</td>
                         <td><span class="badge badge-${role === 'admin' ? 'approved' : role === 'employee' ? 'in_progress' : 'pending'}">${role}</span></td>
                         <td>${shipCount}</td>
@@ -2032,6 +2041,7 @@
             if (!c) return;
             const shipments = allShipments.filter(s => s.user_id === customerId);
             const pickups = allPickups.filter(p => p.user_id === customerId);
+            const joinedAt = parseFirestoreDate(c.created_at);
 
             let shipmentsHtml = '<p style="color: var(--color-gray-500);">No shipments</p>';
             if (shipments.length > 0) {
@@ -2050,11 +2060,11 @@
             const html = `
                 <div style="display: grid; gap: var(--spacing-md);">
                     <div><strong>Company:</strong> ${c.company_name || 'N/A'}</div>
-                    <div><strong>Name:</strong> ${c.name || 'N/A'}</div>
+                    <div><strong>Name:</strong> ${c.name || c.email || 'N/A'}</div>
                     <div><strong>Email:</strong> ${c.email || 'N/A'}</div>
                     <div><strong>Phone:</strong> ${c.phone || 'N/A'}</div>
                     <div><strong>Role:</strong> <span class="badge badge-${(c.role || 'customer') === 'admin' ? 'approved' : 'pending'}">${c.role || 'customer'}</span></div>
-                    <div><strong>Joined:</strong> ${c.created_at ? new Date(c.created_at).toLocaleString() : 'N/A'}</div>
+                    <div><strong>Joined:</strong> ${joinedAt ? joinedAt.toLocaleString() : 'N/A'}</div>
                     <hr style="border: none; border-top: 1px solid var(--color-gray-200);">
                     <div><strong>Shipments (${shipments.length}):</strong></div>
                     ${shipmentsHtml}

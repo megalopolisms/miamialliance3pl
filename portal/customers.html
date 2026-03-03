@@ -531,6 +531,19 @@
             window.location.href = '../login.html';
         });
 
+        function toDateValue(value) {
+            if (!value) return null;
+            if (value instanceof Date) return value;
+            if (typeof value.toDate === 'function') return value.toDate();
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        }
+
+        function toDateLabel(value) {
+            const date = toDateValue(value);
+            return date ? date.toLocaleDateString() : 'Unknown';
+        }
+
         async function loadCustomers() {
             try {
                 const customersRef = collection(db, 'users');
@@ -546,11 +559,9 @@
                     allCustomers.push(data);
 
                     // Check if new this month
-                    if (data.created_at) {
-                        const createdDate = new Date(data.created_at);
-                        if (createdDate >= firstOfMonth) {
-                            newThisMonth++;
-                        }
+                    const createdDate = toDateValue(data.created_at);
+                    if (createdDate && createdDate >= firstOfMonth) {
+                        newThisMonth++;
                     }
                 });
 
@@ -606,8 +617,8 @@
 
             // Sort by created_at descending
             customers.sort((a, b) => {
-                const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
-                const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+                const dateA = toDateValue(a.created_at) || new Date(0);
+                const dateB = toDateValue(b.created_at) || new Date(0);
                 return dateB - dateA;
             });
 
@@ -618,18 +629,18 @@
                 <div class="customer-card">
                     <div class="customer-header">
                         <div>
-                            <div class="customer-name">${customer.name || 'Unknown'}</div>
+                            <div class="customer-name">${customer.name || customer.email || 'Unknown'}</div>
                             <div class="customer-company">${customer.company_name || 'No company'}</div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <button class="btn-edit" onclick="openEditModal('${customer.id}')">Edit</button>
-                            <span class="badge ${customer.isAdmin ? 'badge-pending' : 'badge-delivered'}">${customer.isAdmin ? 'Admin' : 'Customer'}</span>
+                            <span class="badge ${customer.role === 'admin' ? 'badge-pending' : customer.role === 'employee' ? 'badge-in_transit' : 'badge-delivered'}">${customer.role === 'admin' ? 'Admin' : customer.role === 'employee' ? 'Employee' : 'Customer'}</span>
                         </div>
                     </div>
                     <div class="customer-meta">
                         <span>📧 ${customer.email || 'No email'}</span>
                         <span>📞 ${customer.phone || 'No phone'}</span>
-                        <span>📅 Joined: ${customer.created_at ? new Date(customer.created_at).toLocaleDateString() : 'Unknown'}</span>
+                        <span>📅 Joined: ${toDateLabel(customer.created_at)}</span>
                     </div>
                     <div class="customer-stats">
                         <div class="stat-item">

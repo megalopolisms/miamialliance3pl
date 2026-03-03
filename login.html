@@ -241,6 +241,7 @@
 
         // Google Auth Provider
         const googleProvider = new GoogleAuthProvider();
+        let authFlowInProgress = false;
 
         // Check for pending invite and return role
         async function checkPendingInvite(email) {
@@ -265,7 +266,7 @@
 
         // Check if already logged in
         onAuthStateChanged(auth, (user) => {
-            if (user) {
+            if (user && !authFlowInProgress) {
                 window.location.href = 'portal/dashboard.html';
             }
         });
@@ -310,6 +311,7 @@
 
         // Google Sign-In handler
         document.getElementById('google-signin').addEventListener('click', async () => {
+            authFlowInProgress = true;
             try {
                 // Set persistence FIRST to ensure auth state survives redirect
                 await setPersistence(auth, browserLocalPersistence);
@@ -329,6 +331,7 @@
                     if (!accepted) {
                         // User declined — sign them out and abort
                         await auth.signOut();
+                        authFlowInProgress = false;
                         return;
                     }
 
@@ -376,6 +379,7 @@
             } catch (error) {
                 console.error('Google sign-in error:', error);
                 showLoginToast('Google sign-in failed. Please try again.', 'error');
+                authFlowInProgress = false;
             }
         });
 
@@ -431,6 +435,7 @@
         // Login handler
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            authFlowInProgress = true;
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
 
@@ -469,12 +474,14 @@
                 window.location.href = 'portal/dashboard.html';
             } catch (error) {
                 showLoginToast('Login failed. Please check your credentials.', 'error');
+                authFlowInProgress = false;
             }
         });
 
         // Signup handler
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            authFlowInProgress = true;
             const name = document.getElementById('signup-name').value;
             const company = document.getElementById('signup-company').value;
             const email = document.getElementById('signup-email').value;
@@ -484,6 +491,7 @@
 
             if (password !== confirm) {
                 showLoginToast('Passwords do not match.', 'error');
+                authFlowInProgress = false;
                 return;
             }
 
@@ -493,6 +501,7 @@
             if (!agreeCheckbox.checked) {
                 termsError.style.display = 'block';
                 agreeCheckbox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                authFlowInProgress = false;
                 return;
             }
             termsError.style.display = 'none';
@@ -542,6 +551,7 @@
             } catch (error) {
                 console.error('Signup error:', error);
                 showLoginToast('Signup failed. ' + error.message, 'error');
+                authFlowInProgress = false;
             }
         });
 
