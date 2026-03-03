@@ -217,8 +217,15 @@
                             <div class="contact-info-item">
                                 <div class="icon">📍</div>
                                 <div>
-                                    <h4 data-i18n="contact.info.address">Address</h4>
+                                    <h4>Miami Warehouse</h4>
                                     <p>8780 NW 100th ST<br>Medley, FL 33178</p>
+                                </div>
+                            </div>
+                            <div class="contact-info-item">
+                                <div class="icon">📍</div>
+                                <div>
+                                    <h4>Biloxi Warehouse</h4>
+                                    <p>1606 Beach Blvd<br>Biloxi, MS 39531</p>
                                 </div>
                             </div>
                             <div class="contact-info-item">
@@ -267,25 +274,49 @@
             </div>
         </section>
 
-        <!-- Map Section -->
-        <section class="map-section">
-            <div class="map-container">
-                <iframe
-                    src="https://www.google.com/maps?q=8780+NW+100th+St,+Medley,+FL+33178&output=embed"
-                    width="100%"
-                    height="450"
-                    style="border:0; filter: grayscale(20%) contrast(1.05);"
-                    allowfullscreen=""
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                    title="Miami Alliance 3PL Location - 8780 NW 100th St, Medley, FL">
-                </iframe>
-                <div class="map-overlay">
-                    <div class="map-card">
-                        <h3 data-i18n-html="contact.map.name">📦 Miami Alliance 3PL</h3>
-                        <p>8780 NW 100th St<br>Medley, FL 33178</p>
-                        <p style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-top: var(--spacing-xs);" data-i18n="contact.map.note">8 miles from Miami International Airport (MIA)</p>
-                        <a href="https://www.google.com/maps/dir//8780+NW+100th+St,+Medley,+FL+33178" target="_blank" rel="noopener" class="btn btn-primary" data-i18n="contact.map.directions">Get Directions</a>
+        <!-- Map Section — Dual Locations -->
+        <section class="content-section" style="padding: var(--spacing-2xl) 0;">
+            <div class="container">
+                <h2 class="section-title">Our Warehouse Locations</h2>
+                <p class="section-subtitle">Two strategic facilities serving the Southeast United States</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg);">
+                    <!-- Miami Map -->
+                    <div style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg);">
+                        <iframe
+                            src="https://www.google.com/maps?q=8780+NW+100th+St,+Medley,+FL+33178&output=embed"
+                            width="100%"
+                            height="300"
+                            style="border:0; filter: grayscale(20%) contrast(1.05);"
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            title="Miami Alliance 3PL - Miami Warehouse">
+                        </iframe>
+                        <div style="padding: var(--spacing-md); background: white;">
+                            <h4 style="margin-bottom: var(--spacing-xs);">📦 Miami Warehouse</h4>
+                            <p style="color: var(--color-gray-600); font-size: var(--font-size-sm);">8780 NW 100th St, Medley, FL 33178</p>
+                            <p style="color: var(--color-gray-500); font-size: var(--font-size-xs); margin-top: 4px;">8 miles from Miami International Airport (MIA)</p>
+                            <a href="https://www.google.com/maps/dir//8780+NW+100th+St,+Medley,+FL+33178" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top: var(--spacing-sm); width: 100%;">Get Directions</a>
+                        </div>
+                    </div>
+                    <!-- Biloxi Map -->
+                    <div style="border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg);">
+                        <iframe
+                            src="https://www.google.com/maps?q=1606+Beach+Blvd,+Biloxi,+MS+39531&output=embed"
+                            width="100%"
+                            height="300"
+                            style="border:0; filter: grayscale(20%) contrast(1.05);"
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            title="Miami Alliance 3PL - Biloxi Warehouse">
+                        </iframe>
+                        <div style="padding: var(--spacing-md); background: white;">
+                            <h4 style="margin-bottom: var(--spacing-xs);">📦 Biloxi Warehouse</h4>
+                            <p style="color: var(--color-gray-600); font-size: var(--font-size-sm);">1606 Beach Blvd, Biloxi, MS 39531</p>
+                            <p style="color: var(--color-gray-500); font-size: var(--font-size-xs); margin-top: 4px;">Gulf Coast · Near Port of Gulfport · I-10 access</p>
+                            <a href="https://www.google.com/maps/dir//1606+Beach+Blvd,+Biloxi,+MS+39531" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top: var(--spacing-sm); width: 100%;">Get Directions</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -326,9 +357,11 @@
                 </div>
                 <div class="footer-contact">
                     <h4 data-i18n="footer.contact">Contact</h4>
-                    <p>8780 NW 100th ST</p>
-                    <p>Medley, FL 33178</p>
-                    <p><a href="mailto:info@miamialliance3pl.com" style="color: var(--color-accent);">info@miamialliance3pl.com</a></p>
+                    <p style="font-weight: 600; margin-bottom: 2px;">Miami</p>
+                    <p>8780 NW 100th ST, Medley, FL 33178</p>
+                    <p style="font-weight: 600; margin-top: 8px; margin-bottom: 2px;">Biloxi</p>
+                    <p>1606 Beach Blvd, Biloxi, MS 39531</p>
+                    <p style="margin-top: 8px;"><a href="mailto:info@miamialliance3pl.com" style="color: var(--color-accent);">info@miamialliance3pl.com</a></p>
                     <p><a href="tel:+17868738819" style="color: var(--color-accent);">(786) 873-8819</a></p>
                 </div>
             </div>

@@ -4990,6 +4990,13 @@ h4,
   }
 }
 
+/* ── Dual-location grids: stack on mobile ──────────────────── */
+@media (max-width: 768px) {
+  [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* ── Dual-content language blocks (blog articles) ──────────────────── */
 .lang-es {
   display: none;

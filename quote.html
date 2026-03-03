@@ -273,6 +273,18 @@
                 <div class="quote-tool">
                     <!-- Left Panel: Controls -->
                     <div class="quote-controls">
+                        <!-- Warehouse Location -->
+                        <div class="quote-control-group">
+                            <label class="quote-label">Warehouse Location</label>
+                            <select id="warehouse-select" class="zone-select" style="font-size: 1rem; padding: 12px 16px; border-radius: 12px; border: 2px solid var(--color-gray-200); background: white; font-weight: 600; color: var(--color-gray-900);">
+                                <option value="miami" selected>📍 Miami, FL — Medley (8780 NW 100th ST)</option>
+                                <option value="biloxi">📍 Biloxi, MS — Gulf Coast (1606 Beach Blvd)</option>
+                            </select>
+                            <div id="warehouse-info" style="margin-top: 8px; padding: 10px 14px; background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(14,165,233,0.04)); border-radius: 10px; border: 1px solid rgba(16,185,129,0.12); font-size: 0.82rem; color: var(--color-gray-600); line-height: 1.5;">
+                                <span id="warehouse-highlights">Minutes from Port Miami & MIA · Gateway to Latin America · I-95, I-75, FL Turnpike access</span>
+                            </div>
+                        </div>
+
                         <!-- Package Type -->
                         <div class="quote-control-group">
                             <label class="quote-label" data-i18n="quote.package.label">Package Type</label>
@@ -642,7 +654,8 @@
                 </div>
                 <div class="footer-section">
                     <h4 data-i18n="footer.contact">Contact</h4>
-                    <p>8780 NW 100th ST<br>Medley, FL 33178</p>
+                    <p><strong>Miami:</strong> 8780 NW 100th ST, Medley, FL 33178</p>
+                    <p><strong>Biloxi:</strong> 1606 Beach Blvd, Biloxi, MS 39531</p>
                     <p><a href="mailto:info@miamialliance3pl.com">info@miamialliance3pl.com</a></p>
                 </div>
             </div>
@@ -669,7 +682,23 @@
     <script src="js/quote-pricing-engine.js"></script>
 
     <!-- Quote Calculator (non-module) -->
-    <script src="js/quote-calculator.js?v=20260219-1"></script>
+    <script src="js/quote-calculator.js?v=20260303-1"></script>
+
+    <!-- Warehouse selector highlight updater -->
+    <script>
+    (function() {
+        var sel = document.getElementById('warehouse-select');
+        var highlights = document.getElementById('warehouse-highlights');
+        if (!sel || !highlights) return;
+        sel.addEventListener('change', function() {
+            var WH = window.MA3PLQuoteEngine && window.MA3PLQuoteEngine.WAREHOUSES;
+            var wh = WH && WH[sel.value];
+            if (wh && wh.highlights) {
+                highlights.textContent = wh.highlights.join(' · ');
+            }
+        });
+    })();
+    </script>
 
     <!-- Internationalization -->
     <script src="js/lang/es.js"></script>

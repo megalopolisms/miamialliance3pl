@@ -454,6 +454,13 @@
                                 </select>
                             </div>
                             <div class="form-group">
+                                <label for="entry-warehouse">Warehouse *</label>
+                                <select id="entry-warehouse" required>
+                                    <option value="miami">📍 Miami, FL — Medley</option>
+                                    <option value="biloxi">📍 Biloxi, MS — Gulf Coast</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label for="entry-date">Date *</label>
                                 <input type="date" id="entry-date" required>
                             </div>
@@ -577,6 +584,11 @@
                         <select id="hist-customer" onchange="loadHistory()">
                             <option value="">All Customers</option>
                         </select>
+                        <select id="hist-warehouse" onchange="loadHistory()" style="min-width: 150px;">
+                            <option value="">All Warehouses</option>
+                            <option value="miami">📍 Miami, FL</option>
+                            <option value="biloxi">📍 Biloxi, MS</option>
+                        </select>
                         <select id="hist-type" onchange="loadHistory()">
                             <option value="">All Types</option>
                             <option value="receiving">Receiving</option>
@@ -611,6 +623,7 @@
                                 <tr>
                                     <th>Date</th>
                                     <th>Customer</th>
+                                    <th>Warehouse</th>
                                     <th>Activity</th>
                                     <th>Qty</th>
                                     <th>Unit</th>
@@ -622,7 +635,7 @@
                                 </tr>
                             </thead>
                             <tbody id="history-tbody">
-                                <tr><td colspan="10" style="text-align: center; padding: 20px;">Loading...</td></tr>
+                                <tr><td colspan="11" style="text-align: center; padding: 20px;">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1148,6 +1161,7 @@
             const activity = {
                 customer_id: customerId,
                 customer_name: customer?.company_name || customer?.name || customer?.email || 'Unknown',
+                warehouse: document.getElementById('entry-warehouse').value || 'miami',
                 date: document.getElementById('entry-date').value,
                 activity_type: activityType,
                 billing_item_id: activityType,
@@ -1196,11 +1210,13 @@
         window.saveAndAddAnother = async function() {
             const saved = await saveActivity();
             if (saved) {
-                // Keep customer and date, clear the rest
+                // Keep customer, warehouse, and date, clear the rest
                 const customer = document.getElementById('entry-customer').value;
+                const warehouse = document.getElementById('entry-warehouse').value;
                 const date = document.getElementById('entry-date').value;
                 document.getElementById('activity-form').reset();
                 document.getElementById('entry-customer').value = customer;
+                document.getElementById('entry-warehouse').value = warehouse;
                 document.getElementById('entry-date').value = date;
                 document.querySelectorAll('.quick-type').forEach(b => b.classList.remove('selected'));
                 updateCalcPreview();
@@ -1328,6 +1344,7 @@
         // ──────────────────────────────────────────────
         window.loadHistory = async function() {
             const customerId = document.getElementById('hist-customer').value;
+            const warehouseFilter = document.getElementById('hist-warehouse').value;
             const activityType = document.getElementById('hist-type').value;
             const billedFilter = document.getElementById('hist-billed').value;
             const fromDate = document.getElementById('hist-from').value;
@@ -1337,6 +1354,7 @@
             const constraints = [];
 
             if (customerId) constraints.push(where('customer_id', '==', customerId));
+            if (warehouseFilter) constraints.push(where('warehouse', '==', warehouseFilter));
             if (activityType) constraints.push(where('activity_type', '==', activityType));
             if (billedFilter === 'unbilled') constraints.push(where('billed', '==', false));
             if (billedFilter === 'billed') constraints.push(where('billed', '==', true));
@@ -1356,7 +1374,7 @@
                 let typeTotals = {};
 
                 if (snap.empty) {
-                    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px;">No activities found for the selected filters.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 20px;">No activities found for the selected filters.</td></tr>';
                 } else {
                     snap.forEach(d => {
                         const a = d.data();
@@ -1365,10 +1383,15 @@
                         count++;
                         typeTotals[itemType] = (typeTotals[itemType] || 0) + (a.amount || 0);
 
+                        const whId = a.warehouse || 'miami';
+                        const whLabel = whId === 'biloxi' ? '📍 Biloxi' : '📍 Miami';
+                        const whColor = whId === 'biloxi' ? '#8b5cf6' : '#14b8a6';
+
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${a.date}</td>
                             <td>${a.customer_name}</td>
+                            <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">${whLabel}</span></td>
                             <td>${getActivityIcon(itemType)} ${getActivityLabel(itemType)}</td>
                             <td>${a.quantity}</td>
                             <td>${a.unit}</td>

@@ -637,6 +637,11 @@
                     <option value="delivered" data-i18n="portal.admin.filter.delivered">Delivered</option>
                     <option value="cancelled" data-i18n="portal.admin.filter.cancelled">Cancelled</option>
                 </select>
+                <select id="warehouse-filter" style="min-width: 160px;">
+                    <option value="">All Warehouses</option>
+                    <option value="miami">📍 Miami, FL</option>
+                    <option value="biloxi">📍 Biloxi, MS</option>
+                </select>
                 <button class="btn btn-primary" onclick="applyFilters()" data-i18n="portal.admin.filter.btn">Filter</button>
                 <button class="btn btn-outline" onclick="clearFilters()" data-i18n="portal.admin.filter.clear">Clear</button>
             </div>
@@ -882,6 +887,7 @@
                             <div class="shipment-customer">
                                 👤 ${customer.name || customer.email || 'Unknown Customer'}
                                 ${customer.company_name ? `• ${customer.company_name}` : ''}
+                                • <span style="background: ${(shipment.warehouse || shipment.warehouseId || 'miami') === 'biloxi' ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' : 'linear-gradient(135deg, #14b8a6, #0d9488)'}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">${(shipment.warehouse || shipment.warehouseId || 'miami') === 'biloxi' ? '📍 Biloxi, MS' : '📍 Miami, FL'}</span>
                             </div>
                         </div>
                         <span class="badge badge-${shipment.status}" id="badge-${shipment.id}">${formatStatus(shipment.status || 'unknown')}</span>
@@ -1291,6 +1297,7 @@
         window.applyFilters = function() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const statusFilter = document.getElementById('status-filter').value;
+            const warehouseFilter = document.getElementById('warehouse-filter').value;
 
             let filtered = allShipments;
 
@@ -1308,12 +1315,17 @@
                 filtered = filtered.filter(s => s.status === statusFilter);
             }
 
+            if (warehouseFilter) {
+                filtered = filtered.filter(s => (s.warehouse || s.warehouseId || 'miami') === warehouseFilter);
+            }
+
             displayShipments(filtered);
         };
 
         window.clearFilters = function() {
             document.getElementById('search-input').value = '';
             document.getElementById('status-filter').value = '';
+            document.getElementById('warehouse-filter').value = '';
             displayShipments(allShipments);
         };
 

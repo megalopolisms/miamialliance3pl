@@ -107,7 +107,11 @@
                 </div>
 
                 <!-- Shipment Details -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                    <div class="dashboard-card">
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">📍 Warehouse</h3>
+                        <p id="result-warehouse" style="color: var(--color-gray-900); font-weight: 600;"></p>
+                    </div>
                     <div class="dashboard-card">
                         <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);" data-i18n="portal.tracking.origin">Origin</h3>
                         <p id="result-origin" style="color: var(--color-gray-900);"></p>
@@ -297,6 +301,15 @@
             const statusEl = document.getElementById('result-status');
             statusEl.className = 'badge badge-' + data.status;
             statusEl.textContent = data.status.replace('_', ' ');
+
+            // Warehouse location
+            const whId = data.warehouse || data.warehouseId || 'miami';
+            const warehouseEl = document.getElementById('result-warehouse');
+            if (whId === 'biloxi') {
+                warehouseEl.innerHTML = '<span style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">📍 Biloxi, MS</span><br><span style="font-size: 0.8rem; color: var(--color-gray-500);">1606 Beach Blvd, Biloxi, MS 39531</span>';
+            } else {
+                warehouseEl.innerHTML = '<span style="background: linear-gradient(135deg, #14b8a6, #0d9488); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">📍 Miami, FL</span><br><span style="font-size: 0.8rem; color: var(--color-gray-500);">8780 NW 100th ST, Medley, FL 33178</span>';
+            }
 
             document.getElementById('result-origin').innerHTML = `
                 ${data.origin.street}<br>
