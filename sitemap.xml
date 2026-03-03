@@ -5,7 +5,7 @@
     <!-- Homepage -->
     <url>
         <loc>https://miamialliance3pl.com/</loc>
-        <lastmod>2026-02-21</lastmod>
+        <lastmod>2026-03-02</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
     </url>
@@ -21,17 +21,49 @@
     <!-- Services -->
     <url>
         <loc>https://miamialliance3pl.com/services.html</loc>
-        <lastmod>2026-02-21</lastmod>
+        <lastmod>2026-03-02</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
+    </url>
+
+    <!-- Dropshipping Fulfillment Landing Page - HIGH PRIORITY -->
+    <url>
+        <loc>https://miamialliance3pl.com/dropshipping-fulfillment-miami.html</loc>
+        <lastmod>2026-03-02</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.95</priority>
     </url>
 
     <!-- Blog Hub -->
     <url>
         <loc>https://miamialliance3pl.com/blog.html</loc>
-        <lastmod>2026-02-28</lastmod>
+        <lastmod>2026-03-02</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
+    </url>
+
+    <!-- Blog: Dropshipping vs 3PL Fulfillment (NEW Mar 2) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/dropshipping-vs-3pl-fulfillment-which-model-fits-your-business.html</loc>
+        <lastmod>2026-03-02</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: How to Start Dropshipping Business Miami (NEW Mar 2) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/how-to-start-dropshipping-business-miami-3pl-guide.html</loc>
+        <lastmod>2026-03-02</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Best Dropshipping Fulfillment Centers Miami 2026 (NEW Mar 2) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/best-dropshipping-fulfillment-centers-miami-2026.html</loc>
+        <lastmod>2026-03-02</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
     </url>
 
     <!-- Blog: Amazon FBA Prep Shutdown 2026 (NEW Feb 28) -->
@@ -237,7 +269,7 @@
     <!-- FAQ -->
     <url>
         <loc>https://miamialliance3pl.com/faq.html</loc>
-        <lastmod>2026-03-01</lastmod>
+        <lastmod>2026-03-02</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
