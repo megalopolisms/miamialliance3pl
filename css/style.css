@@ -18,6 +18,7 @@
   --color-gray-100: #f1f5f9;
   --color-gray-200: #e2e8f0;
   --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
   --color-gray-500: #64748b;
   --color-gray-600: #475569;
   --color-gray-700: #334155;
@@ -25,7 +26,9 @@
 
   /* Typography */
   --font-family:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "Manrope", "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
   --font-size-lg: 1.125rem;
@@ -91,6 +94,20 @@ body {
   background-color: var(--color-white);
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family:
+    "Sora",
+    "Manrope",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 }
 
 img {
@@ -395,10 +412,17 @@ ul {
   z-index: 1000;
 }
 
+.header .container {
+  max-width: 1280px;
+  padding-left: clamp(0.75rem, 1.8vw, 1.5rem);
+  padding-right: clamp(0.75rem, 1.8vw, 1.5rem);
+}
+
 .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--spacing-xs);
   height: 70px;
 }
 
@@ -406,6 +430,8 @@ ul {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
+  flex-shrink: 0;
+  min-width: 0;
   font-weight: 700;
   font-size: var(--font-size-lg);
 }
@@ -416,6 +442,9 @@ ul {
 
 .logo-text {
   color: var(--color-primary);
+  font-size: clamp(0.95rem, 0.3vw + 0.8rem, 1.05rem);
+  line-height: 1.05;
+  white-space: nowrap;
 }
 
 .logo-accent {
@@ -498,7 +527,11 @@ ul {
   border-color: var(--color-accent-hover);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
+  .nav {
+    gap: 0.75rem;
+  }
+
   .nav-toggle {
     display: none;
   }
@@ -507,15 +540,23 @@ ul {
     position: static;
     flex-direction: row;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
     padding: 0;
     box-shadow: none;
     transform: none;
     opacity: 1;
     visibility: visible;
     background: transparent;
+    margin-left: auto;
+    gap: 0.625rem;
     max-height: none;
     overflow-y: visible;
+  }
+
+  .nav-link {
+    padding: var(--spacing-xs) 0.25rem;
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
   }
 
   .nav-menu .btn.btn-outline {
@@ -524,15 +565,34 @@ ul {
     background-color: transparent;
     color: var(--color-primary);
     border-color: var(--color-primary);
-    padding: 0.5rem 1rem;
+    padding: 0.35rem 0.65rem;
     margin-top: 0;
     font-weight: 600;
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
   }
 
   .nav-menu .btn.btn-outline:hover {
     background-color: var(--color-primary);
     color: var(--color-white);
     border-color: var(--color-primary);
+  }
+}
+
+/* Full desktop — roomier nav */
+@media (min-width: 1280px) {
+  .nav-menu {
+    gap: var(--spacing-md);
+  }
+
+  .nav-link {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-base);
+  }
+
+  .nav-menu .btn.btn-outline {
+    padding: 0.5rem 1rem;
+    font-size: var(--font-size-base);
   }
 }
 
@@ -775,21 +835,42 @@ ul {
    ========================================================================== */
 .cta-section {
   padding: var(--spacing-3xl) 0;
-  background-color: var(--color-gray-50);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
   text-align: center;
 }
 
 .cta-section h2 {
   font-size: var(--font-size-3xl);
   font-weight: 700;
-  color: var(--color-gray-900);
+  color: var(--color-white);
   margin-bottom: var(--spacing-sm);
 }
 
 .cta-section p {
   font-size: var(--font-size-lg);
-  color: var(--color-gray-500);
+  color: rgba(255, 255, 255, 0.85);
   margin-bottom: var(--spacing-lg);
+}
+
+.cta-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+@media (max-width: 767px) {
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  .cta-buttons .btn {
+    width: 100%;
+  }
 }
 
 /* ==========================================================================
@@ -1489,10 +1570,12 @@ ul {
   /* CTA section */
   .cta-section h2 {
     font-size: 1.5rem;
+    color: var(--color-white);
   }
 
   .cta-section p {
     font-size: 1rem;
+    color: rgba(255, 255, 255, 0.85);
   }
 
   /* Nav menu improvements */
@@ -1544,20 +1627,16 @@ ul {
   .hero-title {
     font-size: 2.5rem;
   }
-}
 
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  /* Hamburger menu stays on tablet — polish the dropdown */
+  .nav-menu {
+    padding: var(--spacing-lg);
+    padding-bottom: calc(var(--spacing-lg) + var(--spacing-md));
   }
 
-  html {
-    scroll-behavior: auto;
+  .nav-link {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 1.1rem;
   }
 }
 
@@ -4180,6 +4259,21 @@ ul {
   text-align: center;
 }
 
+/* Locations grid responsive */
+.locations-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xl);
+  margin-top: var(--spacing-lg);
+}
+
+@media (max-width: 767px) {
+  .locations-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+}
+
 /* --- Page Transition --- */
 @keyframes pageLoad {
   from {
@@ -4372,8 +4466,11 @@ body {
    ========================================================================== */
 
 :root {
-  --font-family: "Manrope", "Segoe UI", sans-serif;
-  --font-display: "Sora", "Segoe UI", sans-serif;
+  --font-family:
+    "Manrope", "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  --font-display:
+    "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --color-ink-950: #060f22;
   --color-ink-900: #0b1730;
   --color-cyan-500: #06b6d4;
@@ -4447,7 +4544,7 @@ h4,
 }
 
 .hero-title {
-  max-width: 16ch;
+  max-width: 22ch;
   font-weight: 800;
 }
 
@@ -4906,35 +5003,35 @@ h4,
   list-style: none;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   margin: 0;
   padding: 0;
-  order: -1;
 }
 
 .lang-switcher-wrap {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   background: rgba(15, 23, 42, 0.06);
   border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 8px;
-  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  padding: 3px;
 }
 
 .lang-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
   background: none;
   border: 1px solid transparent;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 4px 6px;
   border-radius: 6px;
   transition: all 0.2s ease;
   color: var(--color-gray-500, #6b7280);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
   text-transform: uppercase;
   font-family: var(--font-family);
   white-space: nowrap;
@@ -4962,6 +5059,7 @@ h4,
 }
 
 .lang-divider {
+  display: none;
   color: rgba(15, 23, 42, 0.25);
   font-size: 0.75rem;
   user-select: none;
@@ -4969,11 +5067,12 @@ h4,
 }
 
 .lang-label {
+  display: none;
   line-height: 1;
 }
 
-/* ── Mobile adjustments ─────────────────────────────────────────── */
-@media (max-width: 768px) {
+/* ── Mobile + tablet adjustments (hamburger stays until 1024px) ── */
+@media (max-width: 1023px) {
   .lang-switcher {
     order: 0;
     justify-content: center;
@@ -4990,11 +5089,20 @@ h4,
   .lang-btn {
     padding: 6px 12px;
     font-size: 0.8rem;
+    gap: 4px;
   }
 
   .lang-btn svg {
     width: 28px;
     height: 14px;
+  }
+
+  .lang-divider {
+    display: inline;
+  }
+
+  .lang-label {
+    display: inline;
   }
 }
 
