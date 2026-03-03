@@ -18,6 +18,7 @@
   --color-gray-100: #f1f5f9;
   --color-gray-200: #e2e8f0;
   --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
   --color-gray-500: #64748b;
   --color-gray-600: #475569;
   --color-gray-700: #334155;
@@ -4411,8 +4412,11 @@ body {
    ========================================================================== */
 
 :root {
-  --font-family: "Manrope", "Segoe UI", sans-serif;
-  --font-display: "Sora", "Segoe UI", sans-serif;
+  --font-family:
+    "Manrope", "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  --font-display:
+    "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --color-ink-950: #060f22;
   --color-ink-900: #0b1730;
   --color-cyan-500: #06b6d4;
@@ -4486,7 +4490,7 @@ h4,
 }
 
 .hero-title {
-  max-width: 16ch;
+  max-width: 22ch;
   font-weight: 800;
 }
 
