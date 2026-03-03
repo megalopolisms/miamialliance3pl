@@ -928,6 +928,15 @@
                     <!-- ====== LEFT PANEL: Controls + Results (same as quote.html) ====== -->
                     <div class="quote-controls">
 
+                        <!-- Warehouse Location -->
+                        <div class="quote-control-group">
+                            <label class="quote-label">Warehouse Location</label>
+                            <select id="sc-warehouse-select" class="zone-select" style="font-size: 0.95rem; padding: 10px 14px; border-radius: 10px; border: 2px solid var(--color-gray-200); background: white; font-weight: 600; color: var(--color-gray-900); width: 100%;">
+                                <option value="miami" selected>📍 Miami, FL — Medley</option>
+                                <option value="biloxi">📍 Biloxi, MS — Gulf Coast</option>
+                            </select>
+                        </div>
+
                         <!-- Package Type -->
                         <div class="quote-control-group">
                             <label class="quote-label" data-i18n="quote.package.label">Package Type</label>
@@ -1071,7 +1080,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="sc-fba-svc-check" data-service="fnskuLabeling">
                                         <span class="fba-svc-icon">🏷️</span>
-                                        <span class="fba-svc-name">FNSKU Labeling</span>
+                                        <span class="fba-svc-name">Label</span>
                                         <span class="fba-svc-rate">$0.30/unit</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -1084,7 +1093,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="sc-fba-svc-check" data-service="polyBagging">
                                         <span class="fba-svc-icon">🛍️</span>
-                                        <span class="fba-svc-name">Poly Bagging</span>
+                                        <span class="fba-svc-name">Bag</span>
                                         <span class="fba-svc-rate">$0.50/unit</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -1097,7 +1106,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="sc-fba-svc-check" data-service="bubbleWrapping">
                                         <span class="fba-svc-icon">🫧</span>
-                                        <span class="fba-svc-name">Bubble Wrapping</span>
+                                        <span class="fba-svc-name">Wrap</span>
                                         <span class="fba-svc-rate">$1.00/unit</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -1110,7 +1119,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="sc-fba-svc-check" data-service="bundling">
                                         <span class="fba-svc-icon">📦</span>
-                                        <span class="fba-svc-name">Bundling / Kitting</span>
+                                        <span class="fba-svc-name">Bundle</span>
                                         <span class="fba-svc-rate">$2.00/bundle</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -1123,7 +1132,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="sc-fba-svc-check" data-service="boxLabels">
                                         <span class="fba-svc-icon">📋</span>
-                                        <span class="fba-svc-name">Box Content Labels</span>
+                                        <span class="fba-svc-name">Box</span>
                                         <span class="fba-svc-rate">$3.00/box</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -1136,7 +1145,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="sc-fba-svc-check" data-service="inspectionQC">
                                         <span class="fba-svc-icon">🔍</span>
-                                        <span class="fba-svc-name">Inspection & QC</span>
+                                        <span class="fba-svc-name">Inspect</span>
                                         <span class="fba-svc-rate">$0.15/unit</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -1940,6 +1949,7 @@
         // =====================================================
         const sc = {
             packageType: 'box',
+            selectedWarehouse: 'miami',
             length: 12, width: 12, height: 12,
             weight: 25,
             quantity: 1,
@@ -2350,6 +2360,9 @@
             document.getElementById('sc-weight-input').value = 25;
             document.getElementById('sc-qty').value = 1;
             document.getElementById('sc-zone').value = 'regional';
+            var scWhSel = document.getElementById('sc-warehouse-select');
+            if (scWhSel) scWhSel.value = 'miami';
+            sc.selectedWarehouse = 'miami';
             document.getElementById('sc-wrapping').checked = false;
             document.getElementById('sc-wrapping-group').style.display = 'none';
             document.getElementById('sc-dropship-group').style.display = 'none';
@@ -2406,6 +2419,29 @@
             const el = document.getElementById('sc-error');
             el.textContent = '';
             el.classList.remove('active');
+        }
+
+        // =====================================================
+        // EVENT HANDLER — Warehouse Selector
+        // =====================================================
+        const scWarehouseSel = document.getElementById('sc-warehouse-select');
+        if (scWarehouseSel) {
+            scWarehouseSel.addEventListener('change', (e) => {
+                sc.selectedWarehouse = e.target.value;
+                // Update shipping zone labels
+                const WH = window.MA3PLQuoteEngine && window.MA3PLQuoteEngine.WAREHOUSES;
+                const wh = WH && WH[sc.selectedWarehouse];
+                if (wh) {
+                    const zs = document.getElementById('sc-zone');
+                    if (zs) {
+                        const localOpt = zs.querySelector('option[value="local"]');
+                        const regionalOpt = zs.querySelector('option[value="regional"]');
+                        if (localOpt) localOpt.textContent = wh.localZoneLabel;
+                        if (regionalOpt) regionalOpt.textContent = wh.regionalZoneLabel;
+                    }
+                }
+                updatePricing();
+            });
         }
 
         // =====================================================
@@ -2717,7 +2753,12 @@
             const newShipment = {
                 user_id: currentUser.uid,
                 tracking_number: trackingNumber,
-                origin: { street: '8780 NW 100th ST', city: 'Medley', state: 'FL', zip: '33178' },
+                origin: (function() {
+                    var WH = window.MA3PLQuoteEngine && window.MA3PLQuoteEngine.WAREHOUSES;
+                    var wh = WH && WH[sc.selectedWarehouse];
+                    if (wh && sc.selectedWarehouse === 'biloxi') return { street: '1606 Beach Blvd', city: 'Biloxi', state: 'MS', zip: '39531' };
+                    return { street: '8780 NW 100th ST', city: 'Medley', state: 'FL', zip: '33178' };
+                })(),
                 destination: { name: d.name, street: d.street, city: d.city, state: d.state, zip: d.zip },
                 package: {
                     type: sc.packageType,
@@ -2727,6 +2768,7 @@
                     billable_weight: quoteResult.billableWeight,
                     cubic_ft: quoteResult.cubicFt
                 },
+                warehouse: sc.selectedWarehouse || 'miami',
                 shipping_zone: sc.shippingZone,
                 black_wrapping: sc.blackWrapping,
                 dropship_qty: sc.shippingZone === 'dropship' ? { ...sc.dropShipQty } : null,

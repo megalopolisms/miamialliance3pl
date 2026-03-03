@@ -10,8 +10,8 @@
     <meta name="author" content="Miami Alliance 3PL">
     <meta name="geo.region" content="US-FL">
     <meta name="geo.placename" content="Medley, Florida">
-    <meta name="geo.position" content="25.8676;-80.3353">
-    <meta name="ICBM" content="25.8676, -80.3353">
+    <meta name="geo.position" content="25.8606;-80.3456">
+    <meta name="ICBM" content="25.8606, -80.3456">
     <link rel="canonical" href="https://miamialliance3pl.com/quote.html">
 
     <!-- Open Graph / Facebook -->
@@ -56,6 +56,8 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
 
     <!-- Structured Data - WebApplication -->
     <script type="application/ld+json">
@@ -271,6 +273,18 @@
                 <div class="quote-tool">
                     <!-- Left Panel: Controls -->
                     <div class="quote-controls">
+                        <!-- Warehouse Location -->
+                        <div class="quote-control-group">
+                            <label class="quote-label">Warehouse Location</label>
+                            <select id="warehouse-select" class="zone-select" style="font-size: 1rem; padding: 12px 16px; border-radius: 12px; border: 2px solid var(--color-gray-200); background: white; font-weight: 600; color: var(--color-gray-900);">
+                                <option value="miami" selected>📍 Miami, FL — Medley (8780 NW 100th ST)</option>
+                                <option value="biloxi">📍 Biloxi, MS — Gulf Coast (1606 Beach Blvd)</option>
+                            </select>
+                            <div id="warehouse-info" style="margin-top: 8px; padding: 10px 14px; background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(14,165,233,0.04)); border-radius: 10px; border: 1px solid rgba(16,185,129,0.12); font-size: 0.82rem; color: var(--color-gray-600); line-height: 1.5;">
+                                <span id="warehouse-highlights">Minutes from Port Miami & MIA · Gateway to Latin America · I-95, I-75, FL Turnpike access</span>
+                            </div>
+                        </div>
+
                         <!-- Package Type -->
                         <div class="quote-control-group">
                             <label class="quote-label" data-i18n="quote.package.label">Package Type</label>
@@ -414,7 +428,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="fba-svc-check" data-service="fnskuLabeling">
                                         <span class="fba-svc-icon">🏷️</span>
-                                        <span class="fba-svc-name">FNSKU Labeling</span>
+                                        <span class="fba-svc-name">Label</span>
                                         <span class="fba-svc-rate">$0.30/unit</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -427,7 +441,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="fba-svc-check" data-service="polyBagging">
                                         <span class="fba-svc-icon">🛍️</span>
-                                        <span class="fba-svc-name">Poly Bagging</span>
+                                        <span class="fba-svc-name">Bag</span>
                                         <span class="fba-svc-rate">$0.50/unit</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -440,7 +454,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="fba-svc-check" data-service="bubbleWrapping">
                                         <span class="fba-svc-icon">🫧</span>
-                                        <span class="fba-svc-name">Bubble Wrapping</span>
+                                        <span class="fba-svc-name">Wrap</span>
                                         <span class="fba-svc-rate">$1.00/unit</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -453,7 +467,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="fba-svc-check" data-service="bundling">
                                         <span class="fba-svc-icon">📦</span>
-                                        <span class="fba-svc-name">Bundling / Kitting</span>
+                                        <span class="fba-svc-name">Bundle</span>
                                         <span class="fba-svc-rate">$2.00/bundle</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -466,7 +480,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="fba-svc-check" data-service="boxLabels">
                                         <span class="fba-svc-icon">📋</span>
-                                        <span class="fba-svc-name">Box Content Labels</span>
+                                        <span class="fba-svc-name">Box</span>
                                         <span class="fba-svc-rate">$3.00/box</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -479,7 +493,7 @@
                                     <label class="fba-prep-service-label">
                                         <input type="checkbox" class="fba-svc-check" data-service="inspectionQC">
                                         <span class="fba-svc-icon">🔍</span>
-                                        <span class="fba-svc-name">Inspection & QC</span>
+                                        <span class="fba-svc-name">Inspect</span>
                                         <span class="fba-svc-rate">$0.15/unit</span>
                                     </label>
                                     <div class="fba-svc-qty" style="display: none;">
@@ -640,7 +654,8 @@
                 </div>
                 <div class="footer-section">
                     <h4 data-i18n="footer.contact">Contact</h4>
-                    <p>8780 NW 100th ST<br>Medley, FL 33178</p>
+                    <p><strong>Miami:</strong> 8780 NW 100th ST, Medley, FL 33178</p>
+                    <p><strong>Biloxi:</strong> 1606 Beach Blvd, Biloxi, MS 39531</p>
                     <p><a href="mailto:info@miamialliance3pl.com">info@miamialliance3pl.com</a></p>
                 </div>
             </div>
@@ -667,7 +682,23 @@
     <script src="js/quote-pricing-engine.js"></script>
 
     <!-- Quote Calculator (non-module) -->
-    <script src="js/quote-calculator.js?v=20260219-1"></script>
+    <script src="js/quote-calculator.js?v=20260303-1"></script>
+
+    <!-- Warehouse selector highlight updater -->
+    <script>
+    (function() {
+        var sel = document.getElementById('warehouse-select');
+        var highlights = document.getElementById('warehouse-highlights');
+        if (!sel || !highlights) return;
+        sel.addEventListener('change', function() {
+            var WH = window.MA3PLQuoteEngine && window.MA3PLQuoteEngine.WAREHOUSES;
+            var wh = WH && WH[sel.value];
+            if (wh && wh.highlights) {
+                highlights.textContent = wh.highlights.join(' · ');
+            }
+        });
+    })();
+    </script>
 
     <!-- Internationalization -->
     <script src="js/lang/es.js"></script>

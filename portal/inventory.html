@@ -118,6 +118,13 @@
                             <label for="item-reorder" data-i18n="portal.inventory.form.reorderLevel">Reorder Level</label>
                             <input type="number" id="item-reorder" placeholder="10" min="0">
                         </div>
+                        <div class="form-group">
+                            <label for="item-warehouse">Warehouse</label>
+                            <select id="item-warehouse" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);">
+                                <option value="miami">📍 Miami, FL — Medley</option>
+                                <option value="biloxi">📍 Biloxi, MS — Gulf Coast</option>
+                            </select>
+                        </div>
                         <div class="form-group" id="customer-select-group" style="display: none;">
                             <label for="item-customer" data-i18n="portal.inventory.form.customerOwner">Customer (Owner)</label>
                             <select id="item-customer" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);">
@@ -148,10 +155,15 @@
                 </div>
             </div>
 
-            <!-- Search -->
-            <div style="margin-bottom: var(--spacing-md);">
+            <!-- Search & Warehouse Filter -->
+            <div style="margin-bottom: var(--spacing-md); display: flex; gap: var(--spacing-sm); flex-wrap: wrap; align-items: center;">
                 <label for="search-input" class="visually-hidden" data-i18n="portal.inventory.searchLabel">Search inventory</label>
-                <input type="text" id="search-input" placeholder="Search by SKU or product name..." style="width: 100%; max-width: 400px; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);" role="searchbox" aria-label="Search inventory by SKU or product name" data-i18n-placeholder="portal.inventory.searchPlaceholder" data-i18n-aria="portal.inventory.searchAria">
+                <input type="text" id="search-input" placeholder="Search by SKU or product name..." style="flex: 1; min-width: 250px; max-width: 400px; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);" role="searchbox" aria-label="Search inventory by SKU or product name" data-i18n-placeholder="portal.inventory.searchPlaceholder" data-i18n-aria="portal.inventory.searchAria">
+                <select id="warehouse-filter" style="padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-weight: 600; min-width: 160px;">
+                    <option value="">All Warehouses</option>
+                    <option value="miami">📍 Miami, FL</option>
+                    <option value="biloxi">📍 Biloxi, MS</option>
+                </select>
             </div>
 
             <!-- Inventory Table -->
@@ -163,6 +175,7 @@
                             <th scope="col" data-i18n="portal.inventory.table.productName">Product Name</th>
                             <th scope="col" id="customer-col-header" style="display: none;" data-i18n="portal.inventory.table.customer">Customer</th>
                             <th scope="col" data-i18n="portal.inventory.table.quantity">Quantity</th>
+                            <th scope="col">Warehouse</th>
                             <th scope="col" data-i18n="portal.inventory.table.location">Location</th>
                             <th scope="col" data-i18n="portal.inventory.table.lastUpdated">Last Updated</th>
                             <th scope="col" data-i18n="portal.inventory.table.actions">Actions</th>
@@ -170,7 +183,7 @@
                     </thead>
                     <tbody id="inventory-list">
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);" data-i18n="portal.inventory.loading">
+                            <td colspan="8" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);" data-i18n="portal.inventory.loading">
                                 Loading inventory...
                             </td>
                         </tr>
@@ -219,6 +232,13 @@
                     <div class="form-group">
                         <label for="edit-reorder" data-i18n="portal.inventory.form.reorderLevel">Reorder Level</label>
                         <input type="number" id="edit-reorder" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-warehouse">Warehouse</label>
+                        <select id="edit-warehouse" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);">
+                            <option value="miami">📍 Miami, FL — Medley</option>
+                            <option value="biloxi">📍 Biloxi, MS — Gulf Coast</option>
+                        </select>
                     </div>
                 </div>
                 <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
@@ -381,16 +401,28 @@
             document.getElementById('item-edit-id').value = '';
         });
 
-        // Search
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            const search = e.target.value.toLowerCase();
-            const filtered = inventoryData.filter(item =>
-                item.sku.toLowerCase().includes(search) ||
-                item.name.toLowerCase().includes(search) ||
-                (customersMap[item.user_id] && customersMap[item.user_id].toLowerCase().includes(search))
-            );
+        // Search & warehouse filter
+        function applyInventoryFilters() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const whFilter = document.getElementById('warehouse-filter').value;
+            let filtered = inventoryData;
+
+            if (search) {
+                filtered = filtered.filter(item =>
+                    item.sku.toLowerCase().includes(search) ||
+                    item.name.toLowerCase().includes(search) ||
+                    (customersMap[item.user_id] && customersMap[item.user_id].toLowerCase().includes(search))
+                );
+            }
+
+            if (whFilter) {
+                filtered = filtered.filter(item => (item.warehouse || 'miami') === whFilter);
+            }
+
             renderInventory(filtered);
-        });
+        }
+        document.getElementById('search-input').addEventListener('input', applyInventoryFilters);
+        document.getElementById('warehouse-filter').addEventListener('change', applyInventoryFilters);
 
         // Add/Edit item form submission
         document.getElementById('item-form').addEventListener('submit', async (e) => {
@@ -414,6 +446,7 @@
                 name: document.getElementById('item-name').value,
                 quantity: parseInt(document.getElementById('item-qty').value),
                 location: document.getElementById('item-location').value || 'Unassigned',
+                warehouse: document.getElementById('item-warehouse').value || 'miami',
                 reorder_level: parseInt(document.getElementById('item-reorder').value) || 10,
                 last_updated: new Date().toISOString()
             };
@@ -449,6 +482,7 @@
                 name: document.getElementById('edit-name').value,
                 quantity: parseInt(document.getElementById('edit-qty').value),
                 location: document.getElementById('edit-location').value || 'Unassigned',
+                warehouse: document.getElementById('edit-warehouse').value || 'miami',
                 reorder_level: parseInt(document.getElementById('edit-reorder').value) || 10,
                 last_updated: new Date().toISOString()
             };
@@ -503,7 +537,7 @@
 
         async function loadInventory() {
             const tbody = document.getElementById('inventory-list');
-            const colspan = isStaff() ? 7 : 6;
+            const colspan = isStaff() ? 8 : 7;
             tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Loading...</td></tr>`;
 
             try {
@@ -543,14 +577,14 @@
                 renderInventory(inventoryData);
             } catch (error) {
                 console.error('Error loading inventory:', error);
-                const colspan = isStaff() ? 7 : 6;
+                const colspan = isStaff() ? 8 : 7;
                 tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Error loading inventory</td></tr>`;
             }
         }
 
         function renderInventory(items) {
             const tbody = document.getElementById('inventory-list');
-            const colspan = isStaff() ? 7 : 6;
+            const colspan = isStaff() ? 8 : 7;
 
             if (items.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">No inventory items found</td></tr>`;
@@ -582,6 +616,10 @@
                     actionsHtml = '<span style="color: var(--color-gray-400);">View only</span>';
                 }
 
+                const whId = item.warehouse || 'miami';
+                const whLabel = whId === 'biloxi' ? '📍 Biloxi' : '📍 Miami';
+                const whColor = whId === 'biloxi' ? '#8b5cf6' : '#14b8a6';
+
                 row.innerHTML = `
                     <td><strong>${item.sku}</strong></td>
                     <td>${item.name}</td>
@@ -590,6 +628,7 @@
                         ${item.quantity}
                         ${isLowStock ? '<span style="font-size: var(--font-size-sm); margin-left: 4px;">Low Stock</span>' : ''}
                     </td>
+                    <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">${whLabel}</span></td>
                     <td>${item.location}</td>
                     <td>${new Date(item.last_updated).toLocaleDateString()}</td>
                     <td>${actionsHtml}</td>
@@ -619,6 +658,7 @@
                             document.getElementById('edit-qty').value = item.quantity;
                             document.getElementById('edit-location').value = item.location || '';
                             document.getElementById('edit-reorder').value = item.reorder_level || 10;
+                            document.getElementById('edit-warehouse').value = item.warehouse || 'miami';
                             document.getElementById('edit-modal').style.display = 'flex';
                         }
                     });

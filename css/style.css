@@ -2454,7 +2454,8 @@ ul {
 }
 
 .fba-prep-service-label {
-  display: flex;
+  display: grid;
+  grid-template-columns: 16px 18px minmax(52px, 1fr) auto;
   align-items: center;
   gap: 6px;
   font-size: var(--font-size-sm);
@@ -2472,22 +2473,29 @@ ul {
 
 .fba-svc-icon {
   font-size: 16px;
+  text-align: center;
 }
 
 .fba-svc-name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: inline-block;
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  font-weight: 700;
+  color: var(--color-gray-900);
   white-space: nowrap;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #fef3e2;
+  border: 1px solid #ffd8a3;
 }
 
 .fba-svc-rate {
-  margin-left: auto;
   font-weight: 700;
   color: #ff9900;
   font-size: var(--font-size-sm);
   white-space: nowrap;
+  justify-self: end;
 }
 
 .fba-svc-qty {
@@ -4987,6 +4995,13 @@ h4,
   .lang-btn svg {
     width: 28px;
     height: 14px;
+  }
+}
+
+/* ── Dual-location grids: stack on mobile ──────────────────── */
+@media (max-width: 768px) {
+  [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
   }
 }
 

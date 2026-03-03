@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipments | Miami Alliance 3PL Portal</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/style.css">
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KTW0F25ZM1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-KTW0F25ZM1');
+    </script>
+    <script src="../js/analytics.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-icon">📦</span>
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="portal-sidebar">
+            <nav role="navigation" aria-label="Main navigation">
+                <a href="dashboard.html" class="portal-nav-item">
+                    <span aria-hidden="true">📊</span> Dashboard
+                </a>
+                <a href="shipments.html" class="portal-nav-item active" aria-current="page">
+                    <span aria-hidden="true">🚚</span> Shipments
+                </a>
+                <a href="tracking.html" class="portal-nav-item">
+                    <span aria-hidden="true">🔍</span> Tracking
+                </a>
+                <a href="inventory.html" class="portal-nav-item">
+                    <span aria-hidden="true">📦</span> Inventory
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="portal-main">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-sm);">
+                <h1 style="color: var(--color-gray-900);">Shipments</h1>
+                <div style="display: flex; gap: var(--spacing-xs);">
+                    <button id="new-shipment-chat-btn" class="btn btn-primary">+ New Shipment</button>
+                    <button id="new-shipment-btn" class="btn btn-outline">Classic Form</button>
+                </div>
+            </div>
+
+            <!-- New Shipment Form (hidden by default) -->
+            <div id="shipment-form-container" class="dashboard-card" style="display: none; margin-bottom: var(--spacing-xl);">
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">Create New Shipment</h2>
+                <form id="shipment-form" data-validate-form>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: var(--spacing-md);">
+                        <div>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);">Origin Address</h3>
+                            <div class="form-group">
+                                <label for="origin-street">Street Address</label>
+                                <input type="text" id="origin-street" required value="8780 NW 100th ST" aria-required="true">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
+                                <div class="form-group">
+                                    <label for="origin-city">City</label>
+                                    <input type="text" id="origin-city" required value="Medley" aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="origin-state">State</label>
+                                    <input type="text" id="origin-state" name="origin-state" required value="FL" maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" data-validate="state" aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="origin-zip">ZIP</label>
+                                    <input type="text" id="origin-zip" name="origin-zip" required value="33178" pattern="\d{5}(-\d{4})?" title="5 or 9 digit ZIP code" data-validate="zip" aria-required="true">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);">Destination Address</h3>
+                            <div class="form-group">
+                                <label for="dest-name">Recipient Name</label>
+                                <input type="text" id="dest-name" required placeholder="John Smith" aria-required="true">
+                            </div>
+                            <div class="form-group">
+                                <label for="dest-street">Street Address</label>
+                                <input type="text" id="dest-street" required placeholder="123 Main St" aria-required="true">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--spacing-sm);">
+                                <div class="form-group">
+                                    <label for="dest-city">City</label>
+                                    <input type="text" id="dest-city" required placeholder="City" aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="dest-state">State</label>
+                                    <input type="text" id="dest-state" name="dest-state" required placeholder="ST" maxlength="2" pattern="[A-Za-z]{2}" title="2-letter state code" data-validate="state" aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="dest-zip">ZIP</label>
+                                    <input type="text" id="dest-zip" name="dest-zip" required placeholder="12345" pattern="\d{5}(-\d{4})?" title="5 or 9 digit ZIP code" data-validate="zip" aria-required="true">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-700);">Package Details</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-sm);">
+                                <div class="form-group">
+                                    <label for="pkg-weight">Weight (lbs)</label>
+                                    <input type="number" id="pkg-weight" name="pkg-weight" required placeholder="0" min="0.1" step="0.1" data-validate="decimal" aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-length">Length (in)</label>
+                                    <input type="number" id="pkg-length" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-width">Width (in)</label>
+                                    <input type="number" id="pkg-width" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-height">Height (in)</label>
+                                    <input type="number" id="pkg-height" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pkg-qty">Quantity</label>
+                                    <input type="number" id="pkg-qty" required value="1" min="1" aria-required="true">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="form-group">
+                                <label for="service-type">Service Type</label>
+                                <select id="service-type" required aria-required="true">
+                                    <option value="standard">Standard (3-5 days)</option>
+                                    <option value="express">Express (1-2 days)</option>
+                                    <option value="overnight">Overnight</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="notes">Notes (optional)</label>
+                                <textarea id="notes" placeholder="Special instructions..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+                        <button type="submit" class="btn btn-primary">Create Shipment</button>
+                        <button type="button" id="cancel-shipment" class="btn btn-outline">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Filter -->
+            <div style="margin-bottom: var(--spacing-md);">
+                <select id="status-filter" style="padding: 0.5rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);">
+                    <option value="all">All Shipments</option>
+                    <option value="pending">Pending</option>
+                    <option value="picked_up">Picked Up</option>
+                    <option value="in_transit">In Transit</option>
+                    <option value="delivered">Delivered</option>
+                </select>
+            </div>
+
+            <!-- Shipments Table -->
+            <div class="table-wrapper">
+                <table class="data-table" role="table" aria-label="Shipments list">
+                    <thead>
+                        <tr>
+                            <th scope="col">Tracking #</th>
+                            <th scope="col">Recipient</th>
+                            <th scope="col">Destination</th>
+                            <th scope="col">Service</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Created</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shipments-list">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">
+                                Loading shipments...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Chat Wizard Modal -->
+    <div id="chat-modal" class="chat-modal" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2 id="chat-modal-title"><span aria-hidden="true">📦</span> New Shipment</h2>
+                <button class="chat-close" id="chat-close" aria-label="Close dialog">&times;</button>
+            </div>
+            <div class="chat-progress" id="chat-progress">
+                <div class="chat-progress-dot active"></div>
+                <div class="chat-progress-dot"></div>
+                <div class="chat-progress-dot"></div>
+                <div class="chat-progress-dot"></div>
+                <div class="chat-progress-dot"></div>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be injected here -->
+            </div>
+            <div class="chat-actions" id="chat-actions" style="display: none;">
+                <button class="btn btn-cancel" id="btn-cancel">Cancel</button>
+                <button class="btn btn-edit" id="btn-edit">Edit</button>
+                <button class="btn btn-confirm" id="btn-confirm">Confirm & Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-KTW0F25ZM1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Fallback admin emails (used if Firestore role not set)
+        const FALLBACK_ADMIN_EMAILS = [
+            'yuri.petrini.m5@gmail.com',
+            'admin@miamialliance3pl.com'
+        ];
+
+        let currentUser = null;
+        let currentUserRole = 'customer'; // Default role
+        let isStaff = false; // true for admin or employee
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '../login.html';
+                return;
+            }
+            currentUser = user;
+
+            // Get user role from Firestore
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                document.getElementById('user-name').textContent = 'Welcome, ' + userData.name;
+
+                // Check role from Firestore first
+                if (userData.role) {
+                    currentUserRole = userData.role;
+                    isStaff = (currentUserRole === 'admin' || currentUserRole === 'employee');
+                } else {
+                    // Fallback to email check if no role in Firestore
+                    isStaff = FALLBACK_ADMIN_EMAILS.includes(user.email);
+                    currentUserRole = isStaff ? 'admin' : 'customer';
+                }
+            } else {
+                // No user doc - check fallback emails
+                isStaff = FALLBACK_ADMIN_EMAILS.includes(user.email);
+                currentUserRole = isStaff ? 'admin' : 'customer';
+            }
+
+            loadShipments();
+        });
+
+        // Logout handler
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+
+        // Toggle new shipment form
+        document.getElementById('new-shipment-btn').addEventListener('click', () => {
+            document.getElementById('shipment-form-container').style.display = 'block';
+        });
+
+        document.getElementById('cancel-shipment').addEventListener('click', () => {
+            document.getElementById('shipment-form-container').style.display = 'none';
+            document.getElementById('shipment-form').reset();
+        });
+
+        // Status filter
+        document.getElementById('status-filter').addEventListener('change', () => {
+            loadShipments();
+        });
+
+        // Create shipment
+        document.getElementById('shipment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
+
+            const shipmentData = {
+                user_id: currentUser.uid,
+                tracking_number: trackingNumber,
+                origin: {
+                    street: document.getElementById('origin-street').value,
+                    city: document.getElementById('origin-city').value,
+                    state: document.getElementById('origin-state').value,
+                    zip: document.getElementById('origin-zip').value
+                },
+                destination: {
+                    name: document.getElementById('dest-name').value,
+                    street: document.getElementById('dest-street').value,
+                    city: document.getElementById('dest-city').value,
+                    state: document.getElementById('dest-state').value,
+                    zip: document.getElementById('dest-zip').value
+                },
+                package: {
+                    weight: parseFloat(document.getElementById('pkg-weight').value),
+                    length: parseFloat(document.getElementById('pkg-length').value) || 0,
+                    width: parseFloat(document.getElementById('pkg-width').value) || 0,
+                    height: parseFloat(document.getElementById('pkg-height').value) || 0,
+                    quantity: parseInt(document.getElementById('pkg-qty').value)
+                },
+                service_type: document.getElementById('service-type').value,
+                notes: document.getElementById('notes').value,
+                status: 'pending',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const shipmentRef = await addDoc(collection(db, 'shipments'), shipmentData);
+
+                // Staff only: log billable event (non-fatal if it fails).
+                if (isStaff) {
+                    try {
+                        const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
+                        const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
+                        const pickpackRate = pricing?.handling?.pickpack || 5.00;
+                        const quantity = shipmentData.package?.quantity || 1;
+
+                        await addDoc(collection(db, 'billable_events'), {
+                            customer_id: currentUser.uid,
+                            event_type: 'shipping',
+                            description: 'Outbound Shipment - ' + trackingNumber,
+                            quantity: quantity,
+                            unit: 'packages',
+                            rate: pickpackRate,
+                            shipment_id: shipmentRef.id,
+                            invoiced: false,
+                            created_at: new Date().toISOString(),
+                            created_by: currentUser.uid
+                        });
+                    } catch (err) {
+                        console.warn('Non-fatal: failed to log billable event:', err);
+                    }
+                }
+
+                alert('Shipment created! Tracking #: ' + trackingNumber);
+                document.getElementById('shipment-form-container').style.display = 'none';
+                document.getElementById('shipment-form').reset();
+                loadShipments();
+            } catch (error) {
+                alert('Error creating shipment: ' + error.message);
+            }
+        });
+
+        async function loadShipments() {
+            const tbody = document.getElementById('shipments-list');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Loading...</td></tr>';
+
+            try {
+                const statusFilter = document.getElementById('status-filter').value;
+                let q;
+
+                // Staff (admin/employee) see all shipments, customers see only their own
+                if (isStaff) {
+                    // Staff: show all shipments
+                    if (statusFilter === 'all') {
+                        q = query(
+                            collection(db, 'shipments'),
+                            orderBy('created_at', 'desc')
+                        );
+                    } else {
+                        q = query(
+                            collection(db, 'shipments'),
+                            where('status', '==', statusFilter),
+                            orderBy('created_at', 'desc')
+                        );
+                    }
+                } else {
+                    // Customer: show only their shipments
+                    if (statusFilter === 'all') {
+                        q = query(
+                            collection(db, 'shipments'),
+                            where('user_id', '==', currentUser.uid),
+                            orderBy('created_at', 'desc')
+                        );
+                    } else {
+                        q = query(
+                            collection(db, 'shipments'),
+                            where('user_id', '==', currentUser.uid),
+                            where('status', '==', statusFilter),
+                            orderBy('created_at', 'desc')
+                        );
+                    }
+                }
+
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">No shipments found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
+                        <td>${data.destination?.name || 'N/A'}</td>
+                        <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
+                        <td style="text-transform: capitalize;">${data.service_type}</td>
+                        <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
+                        <td>${new Date(data.created_at).toLocaleDateString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading shipments:', error);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Error loading shipments</td></tr>';
+            }
+        }
+
+        // =====================================================
+        // CHAT WIZARD
+        // =====================================================
+
+        const chatModal = document.getElementById('chat-modal');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatProgress = document.getElementById('chat-progress');
+        const chatActions = document.getElementById('chat-actions');
+
+        let chatStep = 0;
+        let shipmentData = {
+            type: '',
+            typeLabel: '',
+            quantity: '',
+            destination: {
+                name: '',
+                street: '',
+                city: '',
+                state: '',
+                zip: ''
+            },
+            service: '',
+            serviceLabel: ''
+        };
+
+        // Open chat wizard
+        document.getElementById('new-shipment-chat-btn').addEventListener('click', () => {
+            chatModal.classList.add('active');
+            resetChat();
+            showStep(0);
+        });
+
+        // Close chat wizard
+        document.getElementById('chat-close').addEventListener('click', closeChat);
+        document.getElementById('btn-cancel').addEventListener('click', closeChat);
+
+        // Close on backdrop click
+        chatModal.addEventListener('click', (e) => {
+            if (e.target === chatModal) closeChat();
+        });
+
+        function closeChat() {
+            chatModal.classList.remove('active');
+        }
+
+        function resetChat() {
+            chatStep = 0;
+            shipmentData = {
+                type: '', typeLabel: '', quantity: '',
+                destination: { name: '', street: '', city: '', state: '', zip: '' },
+                service: '', serviceLabel: ''
+            };
+            chatMessages.innerHTML = '';
+            chatActions.style.display = 'none';
+            updateProgress(0);
+        }
+
+        function updateProgress(step) {
+            const dots = chatProgress.querySelectorAll('.chat-progress-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'completed');
+                if (i < step) dot.classList.add('completed');
+                if (i === step) dot.classList.add('active');
+            });
+        }
+
+        function showTyping() {
+            const typing = document.createElement('div');
+            typing.className = 'chat-typing';
+            typing.id = 'typing-indicator';
+            typing.innerHTML = '<div class="chat-typing-dot"></div><div class="chat-typing-dot"></div><div class="chat-typing-dot"></div>';
+            chatMessages.appendChild(typing);
+            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            return typing;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) typing.remove();
+        }
+
+        function addBotMessage(html) {
+            hideTyping();
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble chat-bubble-bot';
+            bubble.innerHTML = html;
+            chatMessages.appendChild(bubble);
+            // Smooth scroll to bottom
+            setTimeout(() => {
+                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            }, 50);
+            return bubble;
+        }
+
+        function addUserMessage(text) {
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble chat-bubble-user';
+            bubble.textContent = text;
+            chatMessages.appendChild(bubble);
+            // Smooth scroll to bottom
+            setTimeout(() => {
+                chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+            }, 50);
+        }
+
+        function showStepWithTyping(step) {
+            showTyping();
+            setTimeout(() => {
+                showStep(step);
+            }, 600); // Show typing for 600ms
+        }
+
+        function showStep(step) {
+            chatStep = step;
+            updateProgress(step);
+
+            if (step === 0) {
+                // Step 1: Shipment Type
+                const bubble = addBotMessage(`
+                    <span class="chat-icon">🤖</span> What type of shipment?
+                    <div class="chat-options-large">
+                        <div class="chat-option-card" data-type="box" data-label="Box">
+                            <span class="card-icon">📦</span>
+                            <span class="card-label">Box</span>
+                        </div>
+                        <div class="chat-option-card" data-type="pallet" data-label="Pallet">
+                            <span class="card-icon">🎁</span>
+                            <span class="card-label">Pallet</span>
+                        </div>
+                        <div class="chat-option-card" data-type="container" data-label="Container">
+                            <span class="card-icon">🚢</span>
+                            <span class="card-label">Container</span>
+                        </div>
+                    </div>
+                `);
+                bubble.querySelectorAll('.chat-option-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        shipmentData.type = card.dataset.type;
+                        shipmentData.typeLabel = card.dataset.label;
+                        addUserMessage(card.dataset.label);
+                        setTimeout(() => showStepWithTyping(1), 300);
+                    });
+                });
+
+            } else if (step === 1) {
+                // Step 2: Quantity
+                const typeLabel = shipmentData.typeLabel.toLowerCase() + (shipmentData.type !== 'container' ? 'es' : 's');
+                const bubble = addBotMessage(`
+                    <span class="chat-icon">🤖</span> How many ${typeLabel}?
+                    <div class="chat-options">
+                        <button class="chat-option-btn" data-qty="1">1</button>
+                        <button class="chat-option-btn" data-qty="2-5">2-5</button>
+                        <button class="chat-option-btn" data-qty="6-10">6-10</button>
+                        <button class="chat-option-btn" data-qty="10+">10+</button>
+                    </div>
+                `);
+                bubble.querySelectorAll('.chat-option-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        shipmentData.quantity = btn.dataset.qty;
+                        addUserMessage(btn.dataset.qty);
+                        setTimeout(() => showStepWithTyping(2), 300);
+                    });
+                });
+
+            } else if (step === 2) {
+                // Step 3: Destination
+                const bubble = addBotMessage(`
+                    <span class="chat-icon">🤖</span> Where is it going?
+                    <div class="chat-input-group">
+                        <input type="text" id="dest-name-chat" placeholder="Recipient Name" required>
+                        <input type="text" id="dest-street-chat" placeholder="Street Address" required>
+                        <div class="chat-input-row">
+                            <input type="text" id="dest-city-chat" placeholder="City" required>
+                            <input type="text" id="dest-state-chat" placeholder="State" maxlength="2" required>
+                            <input type="text" id="dest-zip-chat" placeholder="ZIP" required>
+                        </div>
+                        <button class="btn btn-primary btn-next" id="dest-next">Next →</button>
+                    </div>
+                `);
+                document.getElementById('dest-next').addEventListener('click', () => {
+                    const name = document.getElementById('dest-name-chat').value.trim();
+                    const street = document.getElementById('dest-street-chat').value.trim();
+                    const city = document.getElementById('dest-city-chat').value.trim();
+                    const state = document.getElementById('dest-state-chat').value.trim().toUpperCase();
+                    const zip = document.getElementById('dest-zip-chat').value.trim();
+
+                    if (!name || !street || !city || !state || !zip) {
+                        alert('Please fill in all fields');
+                        return;
+                    }
+
+                    shipmentData.destination = { name, street, city, state, zip };
+                    addUserMessage(`${name}, ${city}, ${state}`);
+                    setTimeout(() => showStepWithTyping(3), 300);
+                });
+
+            } else if (step === 3) {
+                // Step 4: Service Speed
+                const bubble = addBotMessage(`
+                    <span class="chat-icon">🤖</span> Delivery speed?
+                    <div class="chat-options">
+                        <button class="chat-option-btn" data-service="standard" data-label="Standard (3-5 days)">
+                            <span class="option-icon">🐢</span>
+                            <span class="option-label">Standard</span>
+                        </button>
+                        <button class="chat-option-btn" data-service="express" data-label="Express (1-2 days)">
+                            <span class="option-icon">🚀</span>
+                            <span class="option-label">Express</span>
+                        </button>
+                        <button class="chat-option-btn" data-service="overnight" data-label="Overnight">
+                            <span class="option-icon">⚡</span>
+                            <span class="option-label">Overnight</span>
+                        </button>
+                    </div>
+                `);
+                bubble.querySelectorAll('.chat-option-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        shipmentData.service = btn.dataset.service;
+                        shipmentData.serviceLabel = btn.dataset.label;
+                        addUserMessage(btn.dataset.label);
+                        setTimeout(() => showStepWithTyping(4), 300);
+                    });
+                });
+
+            } else if (step === 4) {
+                // Step 5: Summary
+                const d = shipmentData.destination;
+                addBotMessage(`
+                    <span class="chat-icon">🤖</span> Review your shipment:
+                    <div class="chat-summary">
+                        <div class="chat-summary-row">
+                            <span class="chat-summary-label">Type</span>
+                            <span class="chat-summary-value">${shipmentData.quantity} ${shipmentData.typeLabel}(s)</span>
+                        </div>
+                        <div class="chat-summary-row">
+                            <span class="chat-summary-label">To</span>
+                            <span class="chat-summary-value">${d.name}</span>
+                        </div>
+                        <div class="chat-summary-row">
+                            <span class="chat-summary-label">Address</span>
+                            <span class="chat-summary-value">${d.street}, ${d.city}, ${d.state} ${d.zip}</span>
+                        </div>
+                        <div class="chat-summary-row">
+                            <span class="chat-summary-label">Service</span>
+                            <span class="chat-summary-value">${shipmentData.serviceLabel}</span>
+                        </div>
+                    </div>
+                `);
+                chatActions.style.display = 'flex';
+            }
+        }
+
+        // Edit button - restart
+        document.getElementById('btn-edit').addEventListener('click', () => {
+            resetChat();
+            showStep(0);
+        });
+
+        // Confirm button - create shipment
+        document.getElementById('btn-confirm').addEventListener('click', async () => {
+            if (!currentUser) {
+                alert('Please log in first');
+                return;
+            }
+
+            const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
+            const d = shipmentData.destination;
+
+            const newShipment = {
+                user_id: currentUser.uid,
+                tracking_number: trackingNumber,
+                origin: {
+                    street: '8780 NW 100th ST',
+                    city: 'Medley',
+                    state: 'FL',
+                    zip: '33178'
+                },
+                destination: {
+                    name: d.name,
+                    street: d.street,
+                    city: d.city,
+                    state: d.state,
+                    zip: d.zip
+                },
+                package: {
+                    type: shipmentData.type,
+                    quantity: shipmentData.quantity,
+                    weight: 0,
+                    length: 0,
+                    width: 0,
+                    height: 0
+                },
+                service_type: shipmentData.service,
+                notes: `Created via chat wizard - ${shipmentData.quantity} ${shipmentData.typeLabel}(s)`,
+                status: 'pending',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
+
+                // Staff only: log billable event (non-fatal if it fails).
+                if (isStaff) {
+                    try {
+                        const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
+                        const pricing = pricingDoc.exists() ? pricingDoc.data() : {};
+                        const pickpackRate = pricing?.handling?.pickpack || 5.00;
+                        const quantity = parseInt(newShipment.package?.quantity) || 1;
+
+                        await addDoc(collection(db, 'billable_events'), {
+                            customer_id: currentUser.uid,
+                            event_type: 'shipping',
+                            description: 'Outbound Shipment - ' + trackingNumber,
+                            quantity: quantity,
+                            unit: 'packages',
+                            rate: pickpackRate,
+                            shipment_id: shipmentRef.id,
+                            invoiced: false,
+                            created_at: new Date().toISOString(),
+                            created_by: currentUser.uid
+                        });
+                    } catch (err) {
+                        console.warn('Non-fatal: failed to log billable event:', err);
+                    }
+                }
+
+                closeChat();
+                alert('Shipment created! Tracking #: ' + trackingNumber);
+                loadShipments();
+            } catch (error) {
+                alert('Error creating shipment: ' + error.message);
+            }
+        });
+    </script>
+    <script src="../js/main.js"></script>
+    <!-- Form Validation Module -->
+    <script src="../js/form-validation.js"></script>
+</body>
+</html>

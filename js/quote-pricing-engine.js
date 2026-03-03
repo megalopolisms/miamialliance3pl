@@ -5,6 +5,41 @@
 (function (global) {
   "use strict";
 
+  var WAREHOUSES = Object.freeze({
+    miami: {
+      id: "miami",
+      name: "Miami Warehouse",
+      shortName: "Miami, FL",
+      address: "8780 NW 100th ST",
+      city: "Medley, FL 33178",
+      phone: "(786) 873-8819",
+      email: "info@miamialliance3pl.com",
+      highlights: [
+        "Minutes from Port Miami & MIA",
+        "Gateway to Latin America",
+        "I-95, I-75, FL Turnpike access",
+      ],
+      localZoneLabel: "Local (Florida)",
+      regionalZoneLabel: "Regional (Southeast)",
+    },
+    biloxi: {
+      id: "biloxi",
+      name: "Biloxi Warehouse",
+      shortName: "Biloxi, MS",
+      address: "1606 Beach Blvd",
+      city: "Biloxi, MS 39531",
+      phone: "(786) 873-8819",
+      email: "info@miamialliance3pl.com",
+      highlights: [
+        "Gulf Coast strategic location",
+        "Near Port of Gulfport",
+        "I-10, I-110 access",
+      ],
+      localZoneLabel: "Local (Gulf Coast)",
+      regionalZoneLabel: "Regional (Southeast)",
+    },
+  });
+
   var PRICING = Object.freeze({
     dimensionalFactor: 139,
     storagePerCubicFtDay: 0.025,
@@ -240,8 +275,27 @@
     };
   }
 
+  function getWarehouse(warehouseId) {
+    return Object.prototype.hasOwnProperty.call(WAREHOUSES, warehouseId)
+      ? WAREHOUSES[warehouseId]
+      : WAREHOUSES.miami;
+  }
+
+  function getWarehouseList() {
+    var list = [];
+    for (var key in WAREHOUSES) {
+      if (Object.prototype.hasOwnProperty.call(WAREHOUSES, key)) {
+        list.push(WAREHOUSES[key]);
+      }
+    }
+    return list;
+  }
+
   global.MA3PLQuoteEngine = {
     PRICING: PRICING,
+    WAREHOUSES: WAREHOUSES,
+    getWarehouse: getWarehouse,
+    getWarehouseList: getWarehouseList,
     getCubicFeet: getCubicFeet,
     getDimensionalWeight: getDimensionalWeight,
     getBillableWeight: getBillableWeight,

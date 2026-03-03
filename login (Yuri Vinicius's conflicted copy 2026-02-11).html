@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Portal Login | Miami Alliance 3PL</title>
+    <meta name="description" content="Log in to the Miami Alliance 3PL customer portal to manage shipments, track orders, and view inventory.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://miamialliance3pl.com/login.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KTW0F25ZM1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-KTW0F25ZM1');
+    </script>
+    <script src="js/analytics.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-page">
+    <div class="login-card">
+        <a href="index.html" class="logo">
+            <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+        </a>
+
+        <h1>Customer Portal</h1>
+
+        <!-- Google Sign In Button -->
+        <button id="google-signin" class="btn btn-google" style="width: 100%; margin-bottom: var(--spacing-md); background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18l-2.909-2.26c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z" fill="#34A853"/>
+                <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.002 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+            </svg>
+            Sign in with Google
+        </button>
+
+        <div style="text-align: center; margin-bottom: var(--spacing-md); color: var(--color-gray-500); font-size: var(--font-size-sm);">or</div>
+
+        <!-- Login Form -->
+        <form id="login-form" style="display: block;">
+            <div class="form-group">
+                <label for="login-email">Email Address</label>
+                <input type="email" id="login-email" name="email" required placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" name="password" required placeholder="Your password">
+            </div>
+            <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+
+        <!-- Signup Form (hidden by default) -->
+        <form id="signup-form" style="display: none;">
+            <div class="form-group">
+                <label for="signup-name">Full Name</label>
+                <input type="text" id="signup-name" name="name" required placeholder="John Smith">
+            </div>
+            <div class="form-group">
+                <label for="signup-company">Company Name</label>
+                <input type="text" id="signup-company" name="company" required placeholder="Your Company">
+            </div>
+            <div class="form-group">
+                <label for="signup-email">Email Address</label>
+                <input type="email" id="signup-email" name="email" required placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label for="signup-phone">Phone Number</label>
+                <input type="tel" id="signup-phone" name="phone" placeholder="(305) 555-0123">
+            </div>
+            <div class="form-group">
+                <label for="signup-password">Password</label>
+                <input type="password" id="signup-password" name="password" required placeholder="Create a password" minlength="8">
+            </div>
+            <div class="form-group">
+                <label for="signup-confirm">Confirm Password</label>
+                <input type="password" id="signup-confirm" name="confirm" required placeholder="Confirm your password">
+            </div>
+            <button type="submit" class="btn btn-primary">Create Account</button>
+        </form>
+
+        <!-- Reset Password Form (hidden by default) -->
+        <form id="reset-form" style="display: none;">
+            <p style="margin-bottom: var(--spacing-md); color: var(--color-gray-600); font-size: var(--font-size-sm);">Enter your email address and we'll send you a link to reset your password.</p>
+            <div class="form-group">
+                <label for="reset-email">Email Address</label>
+                <input type="email" id="reset-email" name="email" required placeholder="your@email.com">
+            </div>
+            <button type="submit" class="btn btn-primary">Send Reset Link</button>
+        </form>
+
+        <!-- Toggle Links -->
+        <div class="login-footer" id="login-footer">
+            <p>Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
+            <p><a href="#" id="show-reset">Forgot password?</a></p>
+        </div>
+        <div class="login-footer" id="signup-footer" style="display: none;">
+            <p>Already have an account? <a href="#" id="show-login-from-signup">Sign in</a></p>
+        </div>
+        <div class="login-footer" id="reset-footer" style="display: none;">
+            <p><a href="#" id="show-login-from-reset">Back to Sign In</a></p>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+            <a href="index.html" style="font-size: var(--font-size-sm); color: var(--color-gray-500);">← Back to Website</a>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, browserLocalPersistence, setPersistence } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-KTW0F25ZM1"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Fallback admin emails (for initial setup)
+        const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+
+        // Google Auth Provider
+        const googleProvider = new GoogleAuthProvider();
+
+        // Check for pending invite and return role
+        async function checkPendingInvite(email) {
+            try {
+                const inviteDoc = await getDoc(doc(db, 'pending_invites', email.toLowerCase()));
+                if (inviteDoc.exists()) {
+                    const inviteData = inviteDoc.data();
+                    // Delete the invite after use
+                    await deleteDoc(doc(db, 'pending_invites', email.toLowerCase()));
+                    return { role: inviteData.role, name: inviteData.name };
+                }
+            } catch (e) {
+                console.log('Error checking invite:', e);
+            }
+            return null;
+        }
+
+        // Check if already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.location.href = 'portal/dashboard.html';
+            }
+        });
+
+        // Google Sign-In handler
+        document.getElementById('google-signin').addEventListener('click', async () => {
+            try {
+                // Set persistence FIRST to ensure auth state survives redirect
+                await setPersistence(auth, browserLocalPersistence);
+
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
+
+                console.log('Google login success:', user.email);
+
+                const isFallbackAdmin = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+
+                // Check if user exists in Firestore, if not create profile
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (!userDoc.exists()) {
+                    // Check for pending invite
+                    const invite = await checkPendingInvite(user.email);
+                    const role = invite?.role || (isFallbackAdmin ? 'admin' : 'customer');
+
+                    await setDoc(doc(db, 'users', user.uid), {
+                        name: invite?.name || user.displayName || '',
+                        email: user.email,
+                        company_name: '',
+                        phone: user.phoneNumber || '',
+                        role: role,
+                        created_at: new Date().toISOString()
+                    });
+                } else if (isFallbackAdmin && !userDoc.data().role) {
+                    await setDoc(doc(db, 'users', user.uid), { role: 'admin' }, { merge: true });
+                }
+
+                // Small delay to ensure auth state is persisted
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Track Google sign-in in GA4
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.trackLogin('google');
+                }
+
+                window.location.href = 'portal/dashboard.html';
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                alert('Google sign-in failed: ' + error.message);
+            }
+        });
+
+        // Form elements
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const resetForm = document.getElementById('reset-form');
+        const loginFooter = document.getElementById('login-footer');
+        const signupFooter = document.getElementById('signup-footer');
+        const resetFooter = document.getElementById('reset-footer');
+
+        // Toggle forms
+        document.getElementById('show-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+            resetForm.style.display = 'none';
+            loginFooter.style.display = 'none';
+            signupFooter.style.display = 'block';
+            resetFooter.style.display = 'none';
+        });
+
+        document.getElementById('show-reset').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'none';
+            resetForm.style.display = 'block';
+            loginFooter.style.display = 'none';
+            signupFooter.style.display = 'none';
+            resetFooter.style.display = 'block';
+        });
+
+        document.getElementById('show-login-from-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            resetForm.style.display = 'none';
+            loginFooter.style.display = 'block';
+            signupFooter.style.display = 'none';
+            resetFooter.style.display = 'none';
+        });
+
+        document.getElementById('show-login-from-reset').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            resetForm.style.display = 'none';
+            loginFooter.style.display = 'block';
+            signupFooter.style.display = 'none';
+            resetFooter.style.display = 'none';
+        });
+
+        // Login handler
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // Track email login in GA4
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.trackLogin('email');
+                }
+                window.location.href = 'portal/dashboard.html';
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
+        });
+
+        // Signup handler
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const company = document.getElementById('signup-company').value;
+            const email = document.getElementById('signup-email').value.trim().toLowerCase();
+            const phone = document.getElementById('signup-phone').value;
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+
+            if (password !== confirm) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+                // Apply pending invite (if any) to set role/name, otherwise default to customer.
+                const invite = await checkPendingInvite(email);
+                const isFallbackAdmin = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email.toLowerCase());
+                const role = invite?.role || (isFallbackAdmin ? 'admin' : 'customer');
+
+                // Save user data to Firestore
+                await setDoc(doc(db, 'users', userCredential.user.uid), {
+                    name: invite?.name || name,
+                    company_name: company,
+                    email: email,
+                    phone: phone,
+                    role: role,
+                    created_at: new Date().toISOString()
+                });
+
+                // Track signup in GA4
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.trackSignup('email');
+                }
+
+                window.location.href = 'portal/dashboard.html';
+            } catch (error) {
+                alert('Signup failed: ' + error.message);
+            }
+        });
+
+        // Reset password handler
+        resetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('reset-email').value;
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert('Password reset email sent! Check your inbox.');
+                // Show login form
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                resetForm.style.display = 'none';
+                loginFooter.style.display = 'block';
+                signupFooter.style.display = 'none';
+                resetFooter.style.display = 'none';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

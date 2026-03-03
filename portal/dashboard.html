@@ -308,6 +308,47 @@
                 </div>
             </div>
 
+            <!-- Warehouse Location Breakdown (Staff only) -->
+            <div id="warehouse-breakdown" style="display: none; margin-bottom: var(--spacing-xl);">
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">📍 Warehouse Locations</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                    <div class="dashboard-card" style="border-left: 4px solid #14b8a6;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-sm);">
+                            <h3 style="margin: 0; color: var(--color-gray-900);">📍 Miami, FL</h3>
+                            <span style="background: linear-gradient(135deg, #14b8a6, #0d9488); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Medley</span>
+                        </div>
+                        <p style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">8780 NW 100th ST, Medley, FL 33178</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm);">
+                            <div>
+                                <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">Shipments</div>
+                                <div style="font-size: var(--font-size-xl); font-weight: 700; color: var(--color-primary);" id="miami-shipments">0</div>
+                            </div>
+                            <div>
+                                <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">Inventory</div>
+                                <div style="font-size: var(--font-size-xl); font-weight: 700; color: var(--color-primary);" id="miami-inventory">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-card" style="border-left: 4px solid #8b5cf6;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-sm);">
+                            <h3 style="margin: 0; color: var(--color-gray-900);">📍 Biloxi, MS</h3>
+                            <span style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Gulf Coast</span>
+                        </div>
+                        <p style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">1606 Beach Blvd, Biloxi, MS 39531</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm);">
+                            <div>
+                                <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">Shipments</div>
+                                <div style="font-size: var(--font-size-xl); font-weight: 700; color: #8b5cf6;" id="biloxi-shipments">0</div>
+                            </div>
+                            <div>
+                                <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">Inventory</div>
+                                <div style="font-size: var(--font-size-xl); font-weight: 700; color: #8b5cf6;" id="biloxi-inventory">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Quick Actions -->
             <div style="margin-bottom: var(--spacing-xl);">
                 <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.dashboard.quickActions">Quick Actions</h2>
@@ -402,6 +443,7 @@
                         <thead>
                             <tr>
                                 <th scope="col" data-i18n="portal.table.tracking">Tracking #</th>
+                                <th scope="col">Warehouse</th>
                                 <th scope="col" data-i18n="portal.table.destination">Destination</th>
                                 <th scope="col" data-i18n="portal.table.status">Status</th>
                                 <th scope="col" data-i18n="portal.table.date">Date</th>
@@ -409,7 +451,7 @@
                         </thead>
                         <tbody id="recent-shipments">
                             <tr>
-                                <td colspan="4" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">
+                                <td colspan="5" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">
                                     <span data-i18n="portal.dashboard.noShipments">No shipments yet.</span> <a href="shipments.html?new=1" style="color: var(--color-accent);" data-i18n="portal.dashboard.createFirst">Create your first shipment</a>
                                 </td>
                             </tr>
@@ -592,13 +634,37 @@
                 const usersSnap = await getDocs(collection(db, 'users'));
                 document.getElementById('total-users').textContent = usersSnap.size;
 
-                // Total shipments
+                // Total shipments + warehouse breakdown
                 const shipmentsSnap = await getDocs(collection(db, 'shipments'));
                 document.getElementById('total-shipments').textContent = shipmentsSnap.size;
 
-                // Total inventory
+                let miamiShipments = 0, biloxiShipments = 0;
+                shipmentsSnap.forEach(d => {
+                    const wh = d.data().warehouse || d.data().warehouseId || 'miami';
+                    if (wh === 'biloxi') biloxiShipments++;
+                    else miamiShipments++;
+                });
+
+                // Total inventory + warehouse breakdown
                 const inventorySnap = await getDocs(collection(db, 'inventory'));
                 document.getElementById('total-inventory').textContent = inventorySnap.size;
+
+                let miamiInventory = 0, biloxiInventory = 0;
+                inventorySnap.forEach(d => {
+                    const wh = d.data().warehouse || d.data().warehouseId || 'miami';
+                    if (wh === 'biloxi') biloxiInventory++;
+                    else miamiInventory++;
+                });
+
+                // Update warehouse breakdown widget
+                const whBreakdown = document.getElementById('warehouse-breakdown');
+                if (whBreakdown) {
+                    whBreakdown.style.display = 'block';
+                    document.getElementById('miami-shipments').textContent = miamiShipments;
+                    document.getElementById('biloxi-shipments').textContent = biloxiShipments;
+                    document.getElementById('miami-inventory').textContent = miamiInventory;
+                    document.getElementById('biloxi-inventory').textContent = biloxiInventory;
+                }
 
                 // Pending shipments (all)
                 const pendingQuery = query(collection(db, 'shipments'), where('status', '==', 'pending'));
@@ -883,9 +949,13 @@
                 tbody.innerHTML = '';
                 snapshot.forEach((doc) => {
                     const data = doc.data();
+                    const whId = data.warehouse || data.warehouseId || 'miami';
+                    const whLabel = whId === 'biloxi' ? '📍 Biloxi' : '📍 Miami';
+                    const whColor = whId === 'biloxi' ? '#8b5cf6' : '#14b8a6';
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent);">${data.tracking_number || 'N/A'}</a></td>
+                        <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">${whLabel}</span></td>
                         <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
                         <td><span class="badge badge-${data.status}">${(data.status || 'unknown').replace('_', ' ')}</span></td>
                         <td>${data.created_at ? new Date(data.created_at).toLocaleDateString() : 'N/A'}</td>

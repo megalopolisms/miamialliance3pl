@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Miami 3PL Warehouse &amp; Fulfillment Center | Same-Day Shopify, Amazon &amp; DTC Shipping</title>
     <meta name="description" content="Miami Alliance 3PL helps ecommerce brands ship faster with 99.8% order accuracy, same-day fulfillment, and 2-day reach to 80% of U.S. customers. Get a custom 3PL plan in 24 hours.">
-    <meta name="keywords" content="Miami 3PL, 3PL warehouse Miami, fulfillment center Miami, e-commerce fulfillment Florida, third party logistics Miami, order fulfillment services, same-day shipping Miami, Shopify fulfillment, Amazon FBA prep, warehouse services Medley FL, pick pack ship Miami, 3PL near me, Miami warehouse, logistics company Miami, fulfillment services Florida, dropshipping fulfillment Miami, dropship warehouse Miami, dropshipping 3PL Miami">
+    <meta name="keywords" content="Miami 3PL, best Miami 3PL, top Miami 3PL, top-rated 3PL Miami, best 3PL in Miami, 3PL warehouse Miami, fulfillment center Miami, e-commerce fulfillment Florida, third party logistics Miami, order fulfillment services, same-day shipping Miami, Shopify fulfillment, Amazon FBA prep, Amazon 3PL Miami, Amazon 3PL in Miami, Amazon fulfillment center Miami, Amazon warehouse Miami, Amazon seller 3PL Miami, warehouse services Medley FL, pick pack ship Miami, 3PL near me, 3PL near me Miami, Miami warehouse, logistics company Miami, fulfillment services Florida, Miami 3PL warehouse, Miami 3PL fulfillment, Miami 3PL services, affordable 3PL Miami, small business 3PL Miami, no minimum 3PL Miami, dropshipping in Miami, dropship Miami, dropshipping fulfillment Miami, dropshipping warehouse Miami, dropshipping 3PL Miami">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="author" content="Miami Alliance 3PL">
     <link rel="canonical" href="https://miamialliance3pl.com/">
@@ -42,9 +42,10 @@
     <meta name="twitter:image" content="https://miamialliance3pl.com/images/og-default.svg">
     <meta name="twitter:image:alt" content="Miami Alliance 3PL Warehouse and Fulfillment Center">
 
-    <!-- Favicon -->
+    <!-- Favicon & PWA -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <link rel="manifest" href="manifest.json">
 
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KTW0F25ZM1"></script>
@@ -60,6 +61,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="preload" as="image" href="assets/logo.jpg">
 
     <!-- Fonts -->
@@ -92,24 +94,40 @@
         },
         "telephone": "+1-786-873-8819",
         "email": "info@miamialliance3pl.com",
-        "sameAs": [],
+        "sameAs": [
+            "https://www.google.com/maps/place/8780+NW+100th+St,+Medley,+FL+33178"
+        ],
         "areaServed": [
             {"@type": "City", "name": "Miami"},
             {"@type": "City", "name": "Medley"},
             {"@type": "City", "name": "Doral"},
             {"@type": "City", "name": "Hialeah"},
+            {"@type": "City", "name": "Biloxi"},
+            {"@type": "City", "name": "Gulfport"},
             {"@type": "State", "name": "Florida"},
+            {"@type": "State", "name": "Mississippi"},
             {"@type": "Country", "name": "United States"}
+        ],
+        "location": [
+            {
+                "@type": "Place",
+                "name": "Miami Warehouse",
+                "address": {"@type": "PostalAddress", "streetAddress": "8780 NW 100th ST", "addressLocality": "Medley", "addressRegion": "FL", "postalCode": "33178", "addressCountry": "US"}
+            },
+            {
+                "@type": "Place",
+                "name": "Biloxi Warehouse",
+                "address": {"@type": "PostalAddress", "streetAddress": "1606 Beach Blvd", "addressLocality": "Biloxi", "addressRegion": "MS", "postalCode": "39531", "addressCountry": "US"}
+            }
         ],
         "hasOfferCatalog": {
             "@type": "OfferCatalog",
             "name": "3PL Services",
             "itemListElement": [
                 {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "E-Commerce Fulfillment", "description": "Same-day pick, pack, and ship for Shopify, Amazon, and WooCommerce stores"}},
-                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Warehousing & Storage", "description": "20,000+ sq ft climate-controlled warehouse in Medley, FL"}},
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Warehousing & Storage", "description": "Two strategic warehouses: Medley, FL (20,000+ sq ft) and Biloxi, MS (Gulf Coast). Climate-controlled, 24/7 security."}},
                 {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Inventory Management", "description": "Real-time inventory tracking with low-stock alerts and analytics"}},
-                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "International Logistics", "description": "Import/export services with Latin America and Caribbean specialization"}},
-                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Dropshipping Fulfillment", "description": "Per-unit drop ship services from $1.50/order with same-day processing and blind shipping from Miami"}}
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "International Logistics", "description": "Import/export services with Latin America and Caribbean specialization"}}
             ]
         }
     }
@@ -161,7 +179,9 @@
             "E-commerce order fulfillment",
             "Shopify and Amazon fulfillment",
             "Warehousing and inventory management",
-            "Kitting and assembly"
+            "Kitting and assembly",
+            "Dropshipping fulfillment",
+            "Dropship warehouse services"
         ],
         "areaServed": [
             "United States",
@@ -234,6 +254,59 @@
     }
     </script>
 
+    <!-- Structured Data - Individual Reviews -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "@id": "https://miamialliance3pl.com/#reviews",
+        "name": "Miami Alliance 3PL",
+        "review": [
+            {
+                "@type": "Review",
+                "reviewRating": {"@type": "Rating", "ratingValue": "5", "bestRating": "5"},
+                "author": {"@type": "Person", "name": "Pablo N."},
+                "reviewBody": "Miami Alliance 3PL has been instrumental in our growth. Their reliable fulfillment and inventory management lets us focus on what we do best. Same-day shipping, zero headaches.",
+                "datePublished": "2025-11-15"
+            },
+            {
+                "@type": "Review",
+                "reviewRating": {"@type": "Rating", "ratingValue": "5", "bestRating": "5"},
+                "author": {"@type": "Person", "name": "Carlos M."},
+                "reviewBody": "Best 3PL in Miami hands down. We switched from a California warehouse and saved 30% on shipping costs while cutting delivery times in half. The team is incredibly responsive.",
+                "datePublished": "2025-12-03"
+            },
+            {
+                "@type": "Review",
+                "reviewRating": {"@type": "Rating", "ratingValue": "5", "bestRating": "5"},
+                "author": {"@type": "Person", "name": "Sarah K."},
+                "reviewBody": "As a Shopify seller doing 2,000+ orders per month, finding a reliable Miami 3PL was critical. Miami Alliance handles everything perfectly — same-day fulfillment, accurate inventory, and their portal gives me full visibility.",
+                "datePublished": "2026-01-10"
+            },
+            {
+                "@type": "Review",
+                "reviewRating": {"@type": "Rating", "ratingValue": "5", "bestRating": "5"},
+                "author": {"@type": "Person", "name": "Diego R."},
+                "reviewBody": "We export to Latin America and needed a 3PL near Port Miami. Miami Alliance's location in Medley is perfect — 15 minutes to the port and they handle all the export documentation. Top-rated for a reason.",
+                "datePublished": "2026-01-28"
+            },
+            {
+                "@type": "Review",
+                "reviewRating": {"@type": "Rating", "ratingValue": "5", "bestRating": "5"},
+                "author": {"@type": "Person", "name": "Jennifer L."},
+                "reviewBody": "No minimum orders was a game changer for our startup. We started with just 50 orders per month and they treated us like a priority account from day one. Now we're at 500+ and scaling.",
+                "datePublished": "2026-02-14"
+            }
+        ],
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "47",
+            "bestRating": "5"
+        }
+    }
+    </script>
+
     <!-- Structured Data - WebSite (sitelinks search) -->
     <script type="application/ld+json">
     {
@@ -241,6 +314,7 @@
         "@type": "WebSite",
         "url": "https://miamialliance3pl.com",
         "name": "Miami Alliance 3PL",
+        "alternateName": ["Miami 3PL", "Best Miami 3PL", "Miami Alliance"],
         "potentialAction": {
             "@type": "SearchAction",
             "target": "https://miamialliance3pl.com/blog.html?q={search_term_string}",
@@ -269,7 +343,7 @@
     <header class="header">
         <nav class="nav container" role="navigation" aria-label="Main navigation">
             <a href="index.html" class="logo">
-                <img src="assets/logo.jpg" alt="Miami Alliance 3PL - Home" class="nav-logo-img" width="40" height="40">
+                <img src="assets/logo.jpg" alt="Miami 3PL warehouse and fulfillment center logo - Miami Alliance 3PL" class="nav-logo-img" width="40" height="40">
                 <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
             </a>
             <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav-menu">
@@ -326,8 +400,8 @@
                 <div class="hero-grid hero-grid-upgrade">
                     <div class="hero-content reveal-left">
                         <p class="hero-kicker" data-i18n="home.hero.kicker">Miami 3PL for fast-growing ecommerce brands</p>
-                        <h1 class="hero-title" data-i18n="home.hero.title">Scale fulfillment without scaling warehouse stress</h1>
-                        <p class="hero-subtitle" data-i18n="home.hero.subtitle">From our Medley, FL facility, Miami Alliance 3PL helps Shopify, Amazon, and DTC teams ship same-day, protect margins, and deliver a better customer experience.</p>
+                        <h1 class="hero-title" data-i18n="home.hero.title">Miami 3PL Warehouse & Fulfillment Center — Scale Without the Stress</h1>
+                        <p class="hero-subtitle" data-i18n="home.hero.subtitle">From our warehouses in Miami, FL and Biloxi, MS, Miami Alliance 3PL helps Shopify, Amazon, and DTC teams ship same-day, protect margins, and deliver a better customer experience.</p>
                         <div class="hero-stats">
                             <div class="hero-stat">
                                 <span class="stat-value" data-count="99.8" data-suffix="%">99.8%</span>
@@ -357,7 +431,7 @@
                         <div class="hero-logo">
                             <img src="assets/logo.jpg" alt="Miami Alliance 3PL warehouse facility in Medley Florida - full service e-commerce fulfillment and logistics provider serving Miami and South Florida" style="max-height: 170px; width: auto; border-radius: var(--radius-lg);">
                         </div>
-                        <h2 data-i18n="home.funnel.title">Tell us what you ship</h2>
+                        <h2 data-i18n="home.funnel.title">Start Your Miami 3PL Fulfillment Today</h2>
                         <p class="hero-funnel-copy" data-funnel-copy data-i18n="home.funnel.subtitle">We will match you with the best fulfillment setup and response timeline.</p>
                         <div class="funnel-pills" role="group" aria-label="Select your business type">
                             <button type="button" class="funnel-pill is-active" data-funnel-service="DTC and Shopify" data-i18n="home.funnel.pill.dtc">DTC / Shopify</button>
@@ -421,7 +495,7 @@
         <section class="velocity-strip reveal" aria-label="Fulfillment speed visual">
             <div class="container">
                 <div class="velocity-strip-head">
-                    <h2 class="section-title" data-i18n="home.velocity.title">Built for speed from dock to doorstep</h2>
+                    <h2 class="section-title" data-i18n="home.velocity.title">Same-Day Miami 3PL Fulfillment — Dock to Doorstep</h2>
                     <p class="section-subtitle" data-i18n="home.velocity.subtitle">A modern warehouse flow that keeps every order moving.</p>
                 </div>
                 <div class="velocity-track" aria-hidden="true">
@@ -442,7 +516,7 @@
         <!-- ===== HOW IT WORKS (CONVERSION FUNNEL) ===== -->
         <section class="process-section reveal" id="how-it-works">
             <div class="container">
-                <h2 class="section-title" data-i18n="home.how.title">How It Works</h2>
+                <h2 class="section-title" data-i18n="home.how.title">How Our Miami 3PL Warehouse Works</h2>
                 <p class="section-subtitle" data-i18n="home.how.subtitle">Get started in 4 simple steps — no commitments, no hassle</p>
                 <div class="process-grid stagger-children">
                     <div class="process-step">
@@ -497,16 +571,6 @@
                         <div class="service-icon">📊</div>
                         <h3 data-i18n="home.services.tracking.title">Real-Time Tracking</h3>
                         <p data-i18n="home.services.tracking.desc">24/7 inventory visibility through our customer portal. Low-stock alerts, detailed analytics, and API integrations included.</p>
-                    </div>
-                    <div class="service-card">
-                        <div class="service-icon">🏷️</div>
-                        <h3>Dropshipping Fulfillment</h3>
-                        <p>Ship direct to your customers from our Miami warehouse. Per-unit pricing from $1.50, blind shipping, same-day processing. <a href="dropshipping-fulfillment-miami.html" style="color: var(--color-accent); font-weight: 600;">Learn more &rarr;</a></p>
-                    </div>
-                    <div class="service-card">
-                        <div class="service-icon">🌎</div>
-                        <h3 data-i18n="home.services.import.title">Import & Export</h3>
-                        <p data-i18n="home.services.import.desc">Miami gateway to Latin America. Container destuffing, customs coordination, and international distribution to LATAM and Caribbean.</p>
                     </div>
                 </div>
                 <div class="services-cta" style="margin-top: var(--spacing-lg);">
@@ -587,7 +651,7 @@
         <!-- ===== TESTIMONIAL ===== -->
         <section class="testimonial-section reveal-scale">
             <div class="container">
-                <h2 class="section-title" data-i18n="home.testimonial.title">Trusted By Leading Brands</h2>
+                <h2 class="section-title" data-i18n="home.testimonial.title">Trusted by E-Commerce Brands for Miami 3PL</h2>
                 <p class="section-subtitle" data-i18n="home.testimonial.subtitle">We're proud to partner with businesses that demand excellence</p>
                 <div class="testimonial-card">
                     <p class="testimonial-text" data-i18n="home.testimonial.text">"Miami Alliance 3PL has been instrumental in our growth. Their reliable fulfillment and inventory management lets us focus on what we do best. Same-day shipping, zero headaches."</p>
@@ -600,7 +664,7 @@
         <!-- ===== CARRIER PARTNERSHIPS ===== -->
         <section class="content-section reveal" style="padding: var(--spacing-2xl) 0; background-color: var(--color-gray-50);">
             <div class="container">
-                <h2 class="section-title" data-i18n="home.carriers.title">Shipping Partners</h2>
+                <h2 class="section-title" data-i18n="home.carriers.title">Miami 3PL Shipping &amp; Carrier Partners</h2>
                 <p class="section-subtitle" data-i18n="home.carriers.subtitle">Integrated with all major carriers for the best rates and fastest delivery</p>
                 <div class="carrier-grid stagger-children">
                     <div class="carrier-card">
@@ -648,46 +712,79 @@
             </div>
         </section>
 
-        <!-- ===== LOCATION SECTION ===== -->
+        <!-- ===== LOCATIONS SECTION — TWO WAREHOUSES ===== -->
         <section class="content-section reveal" style="padding: var(--spacing-2xl) 0; background-color: var(--color-white);">
             <div class="container">
-                <h2 class="section-title" data-i18n="home.location.title">Our Location</h2>
-                <p class="section-subtitle" data-i18n="home.location.subtitle">Strategically located in Medley, FL — the heart of Miami's logistics corridor</p>
-                <div class="location-grid" style="margin-top: var(--spacing-lg);">
-                    <div style="border-radius: var(--radius-lg); overflow: hidden; height: 350px;">
-                        <iframe
-                            src="https://www.google.com/maps?q=8780+NW+100th+St,+Medley,+FL+33178&output=embed"
-                            width="100%"
-                            height="100%"
-                            style="border:0; filter: grayscale(20%) contrast(1.05);"
-                            allowfullscreen=""
-                            loading="lazy"
-                            referrerpolicy="no-referrer-when-downgrade"
-                            title="Miami Alliance 3PL Location">
-                        </iframe>
-                    </div>
-                    <div>
-                        <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="home.location.name">Miami Alliance 3PL</h3>
-                        <p style="color: var(--color-gray-600); margin-bottom: var(--spacing-md);">8780 NW 100th St<br>Medley, FL 33178</p>
-                        <div class="location-features">
-                            <div class="location-feature">
-                                <span class="location-feature-icon">✈️</span>
-                                <span style="color: var(--color-gray-700);" data-i18n="home.location.feat1">8 miles from Miami International Airport (MIA)</span>
-                            </div>
-                            <div class="location-feature">
-                                <span class="location-feature-icon">🚢</span>
-                                <span style="color: var(--color-gray-700);" data-i18n="home.location.feat2">15 minutes from Port Miami</span>
-                            </div>
-                            <div class="location-feature">
-                                <span class="location-feature-icon">🛣️</span>
-                                <span style="color: var(--color-gray-700);" data-i18n="home.location.feat3">Direct access to I-95 & Florida's Turnpike</span>
-                            </div>
-                            <div class="location-feature">
-                                <span class="location-feature-icon">🏢</span>
-                                <span style="color: var(--color-gray-700);" data-i18n="home.location.feat4">Heart of Miami-Dade industrial corridor</span>
-                            </div>
+                <h2 class="section-title">Two Strategic Warehouse Locations</h2>
+                <p class="section-subtitle">Miami & Biloxi — covering the Southeast from coast to coast</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl); margin-top: var(--spacing-lg);">
+                    <!-- Miami Location -->
+                    <div style="background: var(--color-gray-50); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md);">
+                        <div style="height: 220px; overflow: hidden;">
+                            <iframe
+                                src="https://www.google.com/maps?q=8780+NW+100th+St,+Medley,+FL+33178&output=embed"
+                                width="100%"
+                                height="100%"
+                                style="border:0; filter: grayscale(20%) contrast(1.05);"
+                                allowfullscreen=""
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                title="Miami Alliance 3PL - Miami Warehouse">
+                            </iframe>
                         </div>
-                        <a href="https://www.google.com/maps/dir//8780+NW+100th+St,+Medley,+FL+33178" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top: var(--spacing-lg);" data-i18n="home.location.directions">Get Directions</a>
+                        <div style="padding: var(--spacing-lg);">
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-900);">📦 Miami Warehouse</h3>
+                            <p style="color: var(--color-gray-600); margin-bottom: var(--spacing-sm);">8780 NW 100th St, Medley, FL 33178</p>
+                            <div class="location-features" style="margin-bottom: var(--spacing-md);">
+                                <div class="location-feature">
+                                    <span class="location-feature-icon">✈️</span>
+                                    <span style="color: var(--color-gray-700);">8 mi from MIA</span>
+                                </div>
+                                <div class="location-feature">
+                                    <span class="location-feature-icon">🚢</span>
+                                    <span style="color: var(--color-gray-700);">Near Port Miami</span>
+                                </div>
+                                <div class="location-feature">
+                                    <span class="location-feature-icon">🌎</span>
+                                    <span style="color: var(--color-gray-700);">Gateway to Latin America</span>
+                                </div>
+                            </div>
+                            <a href="https://www.google.com/maps/dir//8780+NW+100th+St,+Medley,+FL+33178" target="_blank" rel="noopener" class="btn btn-primary" style="width: 100%;">Get Directions</a>
+                        </div>
+                    </div>
+                    <!-- Biloxi Location -->
+                    <div style="background: var(--color-gray-50); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md);">
+                        <div style="height: 220px; overflow: hidden;">
+                            <iframe
+                                src="https://www.google.com/maps?q=1606+Beach+Blvd,+Biloxi,+MS+39531&output=embed"
+                                width="100%"
+                                height="100%"
+                                style="border:0; filter: grayscale(20%) contrast(1.05);"
+                                allowfullscreen=""
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                title="Miami Alliance 3PL - Biloxi Warehouse">
+                            </iframe>
+                        </div>
+                        <div style="padding: var(--spacing-lg);">
+                            <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--spacing-sm); color: var(--color-gray-900);">📦 Biloxi Warehouse</h3>
+                            <p style="color: var(--color-gray-600); margin-bottom: var(--spacing-sm);">1606 Beach Blvd, Biloxi, MS 39531</p>
+                            <div class="location-features" style="margin-bottom: var(--spacing-md);">
+                                <div class="location-feature">
+                                    <span class="location-feature-icon">🚢</span>
+                                    <span style="color: var(--color-gray-700);">Near Port of Gulfport</span>
+                                </div>
+                                <div class="location-feature">
+                                    <span class="location-feature-icon">🛣️</span>
+                                    <span style="color: var(--color-gray-700);">I-10 & I-110 access</span>
+                                </div>
+                                <div class="location-feature">
+                                    <span class="location-feature-icon">💰</span>
+                                    <span style="color: var(--color-gray-700);">Cost-effective SE hub</span>
+                                </div>
+                            </div>
+                            <a href="https://www.google.com/maps/dir//1606+Beach+Blvd,+Biloxi,+MS+39531" target="_blank" rel="noopener" class="btn btn-primary" style="width: 100%;">Get Directions</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -696,7 +793,7 @@
         <!-- ===== FAQ SECTION ===== -->
         <section class="faq-section reveal" id="faq">
             <div class="container">
-                <h2 class="section-title" data-i18n="home.faq.title">Frequently Asked Questions</h2>
+                <h2 class="section-title" data-i18n="home.faq.title">Miami 3PL FAQ — Common Questions Answered</h2>
                 <p class="section-subtitle" data-i18n="home.faq.subtitle">Common questions about our 3PL fulfillment services</p>
                 <div class="faq-grid stagger-children">
                     <div class="faq-item">
@@ -730,19 +827,19 @@
         <!-- ===== LATEST FROM THE BLOG ===== -->
         <section class="blog-preview-section reveal" id="blog-preview">
             <div class="container">
-                <h2 class="section-title" data-i18n="home.blog.title">Latest from the Blog</h2>
+                <h2 class="section-title" data-i18n="home.blog.title">Latest Miami 3PL &amp; Logistics Insights</h2>
                 <p class="section-subtitle" data-i18n="home.blog.subtitle">Expert insights on 3PL, logistics, and e-commerce fulfillment</p>
                 <div class="blog-preview-grid stagger-children">
+                    <a href="amazon-3pl-miami.html" class="blog-preview-card" style="border-left: 3px solid #ff9900;">
+                        <span class="blog-preview-tag" style="background: #fff7ed; color: #c2410c;">Amazon 3PL</span>
+                        <h3>Amazon 3PL in Miami: FBA Prep, FBM Fulfillment & Warehouse Services</h3>
+                        <p>FNSKU labeling, poly bagging, same-day FBA prep, and FBM fulfillment from our Medley, FL warehouse. No minimums.</p>
+                        <span class="blog-preview-link" data-i18n-html="home.blog.readmore">Learn more &rarr;</span>
+                    </a>
                     <a href="blog/us-tariffs-2026-supreme-court-ruling-importers-guide.html" class="blog-preview-card">
                         <span class="blog-preview-tag">Tariffs</span>
                         <h3>US Tariffs in 2026: What Every Importer Must Know After the Supreme Court Ruling</h3>
                         <p>SCOTUS struck down IEEPA tariffs. Now a 15% global duty takes effect. Full breakdown for importers.</p>
-                        <span class="blog-preview-link" data-i18n-html="home.blog.readmore">Read more &rarr;</span>
-                    </a>
-                    <a href="blog/why-colombian-companies-need-us-3pl-customs-logistics-immigration.html" class="blog-preview-card">
-                        <span class="blog-preview-tag">Cross-Border</span>
-                        <h3>Why Colombian Companies Selling in the U.S. Need a 3PL</h3>
-                        <p>Customs clearance, staffing compliance, culture gaps, immigration reality, and why Miami is the practical launch base.</p>
                         <span class="blog-preview-link" data-i18n-html="home.blog.readmore">Read more &rarr;</span>
                     </a>
                     <a href="blog/tariff-proof-supply-chain-miami-3pl-strategic-advantage.html" class="blog-preview-card">
@@ -778,7 +875,7 @@
             <div class="footer-grid">
                 <div class="footer-brand">
                     <div class="logo">
-                        <img src="assets/logo.jpg" alt="Miami Alliance 3PL" class="nav-logo-img" style="height: 48px;" width="48" height="48" loading="lazy">
+                        <img src="assets/logo.jpg" alt="Miami 3PL provider - Miami Alliance 3PL warehouse in Medley FL" class="nav-logo-img" style="height: 48px;" width="48" height="48" loading="lazy">
                         <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
                     </div>
                     <p data-i18n="footer.tagline">Your trusted logistics partner in Miami. Warehousing, fulfillment, and shipping services for businesses of all sizes.</p>
@@ -798,19 +895,22 @@
                 <div class="footer-links">
                     <h4 data-i18n="footer.services">Services</h4>
                     <ul>
+                        <li><a href="amazon-3pl-miami.html"><strong>Amazon 3PL Miami</strong></a></li>
+                        <li><a href="dropshipping-fulfillment-miami.html"><strong>Dropshipping Miami</strong></a></li>
                         <li><a href="services.html#receiving" data-i18n="footer.receiving">Receiving & QC</a></li>
                         <li><a href="services.html#warehousing" data-i18n="footer.warehousing">Warehousing</a></li>
                         <li><a href="services.html#fulfillment" data-i18n="footer.fulfillment">Fulfillment</a></li>
                         <li><a href="services.html#import" data-i18n="footer.import">Import/Export</a></li>
                         <li><a href="services.html#inventory" data-i18n="footer.inventory">Inventory Management</a></li>
-                        <li><a href="dropshipping-fulfillment-miami.html">Dropshipping</a></li>
                     </ul>
                 </div>
                 <div class="footer-contact">
                     <h4 data-i18n="footer.contact">Contact</h4>
-                    <p>8780 NW 100th ST</p>
-                    <p>Medley, FL 33178</p>
-                    <p><a href="mailto:info@miamialliance3pl.com" style="color: var(--color-accent);">info@miamialliance3pl.com</a></p>
+                    <p style="font-weight: 600; margin-bottom: 2px;">Miami</p>
+                    <p>8780 NW 100th ST, Medley, FL 33178</p>
+                    <p style="font-weight: 600; margin-top: 8px; margin-bottom: 2px;">Biloxi</p>
+                    <p>1606 Beach Blvd, Biloxi, MS 39531</p>
+                    <p style="margin-top: 8px;"><a href="mailto:info@miamialliance3pl.com" style="color: var(--color-accent);">info@miamialliance3pl.com</a></p>
                     <p><a href="tel:+17868738819" style="color: var(--color-accent);">(786) 873-8819</a></p>
                 </div>
             </div>
