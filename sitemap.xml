@@ -5,7 +5,7 @@
     <!-- Homepage -->
     <url>
         <loc>https://miamialliance3pl.com/</loc>
-        <lastmod>2026-03-01</lastmod>
+        <lastmod>2026-03-03</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
     </url>
@@ -29,8 +29,8 @@
     <!-- Services -->
     <url>
         <loc>https://miamialliance3pl.com/services.html</loc>
-        <lastmod>2026-03-01</lastmod>
-        <changefreq>monthly</changefreq>
+        <lastmod>2026-03-03</lastmod>
+        <changefreq>weekly</changefreq>
         <priority>0.9</priority>
     </url>
 
@@ -378,6 +378,54 @@
         <priority>0.85</priority>
     </url>
 
+    <!-- Blog: No Minimum Orders Small Business 3PL (NEW Mar 3) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/no-minimum-orders-small-business-3pl.html</loc>
+        <lastmod>2026-03-03</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Regional Supply Chain Reset Nearshoring Miami (NEW Mar 1) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/regional-supply-chain-reset-nearshoring-miami-warehouse-2026.html</loc>
+        <lastmod>2026-03-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Amazon FBA Fees Rise 2026 Switch to Miami 3PL (NEW Mar 1) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/amazon-fba-fees-rise-2026-switch-to-miami-3pl.html</loc>
+        <lastmod>2026-03-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Miami Latin America Trade Gateway LATAM Exporters (NEW Mar 1) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/miami-latin-america-trade-gateway-latam-exporters-2026.html</loc>
+        <lastmod>2026-03-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Supreme Court 10 Percent Tariff Miami Importers (NEW Mar 1) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/supreme-court-10-percent-tariff-miami-importers-supply-chain-2026.html</loc>
+        <lastmod>2026-03-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Just In Case Inventory Tariff Uncertainty (NEW Mar 1) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/just-in-case-inventory-tariff-uncertainty-warehouse-demand-2026.html</loc>
+        <lastmod>2026-03-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
     <!-- FAQ -->
     <url>
         <loc>https://miamialliance3pl.com/faq.html</loc>
@@ -405,9 +453,9 @@
     <!-- About -->
     <url>
         <loc>https://miamialliance3pl.com/about.html</loc>
-        <lastmod>2026-03-01</lastmod>
+        <lastmod>2026-03-03</lastmod>
         <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
+        <priority>0.8</priority>
     </url>
 
     <!-- Login / Customer Portal -->
