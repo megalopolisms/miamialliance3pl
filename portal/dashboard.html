@@ -533,9 +533,32 @@
                     userData = userDoc.data();
                     if (userData.name) userName = userData.name;
                     if (userData.role) userRole = userData.role;
+                } else {
+                    // Profile recovery: Auth user exists but Firestore profile missing
+                    // This can happen if registration was interrupted or rules blocked the initial write
+                    const isFallbackAdmin = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
+                    const recoveredRole = isFallbackAdmin ? 'admin' : 'customer';
+                    const recoveredData = {
+                        name: user.displayName || '',
+                        email: user.email,
+                        company_name: '',
+                        phone: user.phoneNumber || '',
+                        role: recoveredRole,
+                        created_at: new Date().toISOString(),
+                        terms_accepted: true,
+                        terms_version: '1.0',
+                        terms_accepted_at: new Date().toISOString(),
+                        privacy_policy_accepted: true,
+                        recovered_profile: true
+                    };
+                    await setDoc(doc(db, 'users', user.uid), recoveredData);
+                    userData = recoveredData;
+                    userRole = recoveredRole;
+                    if (recoveredData.name) userName = recoveredData.name;
+                    console.log('Profile recovered for:', user.email);
                 }
             } catch (e) {
-                // User doc fetch failed (non-fatal)
+                console.error('User doc fetch/recovery failed:', e);
             }
 
             // Fallback: Check hardcoded admin emails if no Firestore role
