@@ -248,12 +248,17 @@
                 const inviteDoc = await getDoc(doc(db, 'pending_invites', email.toLowerCase()));
                 if (inviteDoc.exists()) {
                     const inviteData = inviteDoc.data();
-                    // Delete the invite after use
-                    await deleteDoc(doc(db, 'pending_invites', email.toLowerCase()));
+                    // Try to delete the invite after use (non-fatal if permission denied)
+                    try {
+                        await deleteDoc(doc(db, 'pending_invites', email.toLowerCase()));
+                    } catch (deleteErr) {
+                        console.log('Invite cleanup deferred (will be cleaned by admin)');
+                    }
                     return { role: inviteData.role, name: inviteData.name };
                 }
             } catch (e) {
                 // Invite check failed (non-fatal)
+                console.log('Pending invite check skipped:', e.message);
             }
             return null;
         }
@@ -418,7 +423,33 @@
             const password = document.getElementById('login-password').value;
 
             try {
-                await signInWithEmailAndPassword(auth, email, password);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Profile recovery: if Auth user exists but Firestore profile is missing, create it now
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (!userDocSnap.exists()) {
+                    const isFallbackAdmin = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+                    const invite = await checkPendingInvite(user.email);
+                    const role = invite?.role || (isFallbackAdmin ? 'admin' : 'customer');
+
+                    await setDoc(userDocRef, {
+                        name: invite?.name || user.displayName || '',
+                        email: user.email,
+                        company_name: '',
+                        phone: user.phoneNumber || '',
+                        role: role,
+                        created_at: new Date().toISOString(),
+                        terms_accepted: true,
+                        terms_version: '1.0',
+                        terms_accepted_at: new Date().toISOString(),
+                        privacy_policy_accepted: true,
+                        recovered_profile: true
+                    });
+                    console.log('Profile recovered for user:', user.email);
+                }
+
                 // Track email login in GA4
                 if (window.MA3PLAnalytics) {
                     MA3PLAnalytics.trackLogin('email');

@@ -29,7 +29,8 @@ service cloud.firestore {
     // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isStaff());
-      allow create: if isAdmin();
+      // Allow admins to create any user doc, AND allow users to create their OWN profile (self-registration)
+      allow create: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
       allow update: if isAdmin() || isOwner(userId);
       allow delete: if isAdmin();
     }
@@ -135,7 +136,8 @@ service cloud.firestore {
       allow read: if isAuthenticated() && request.auth.token.email == email;
       allow create: if isAdmin();
       allow update: if isAdmin();
-      allow delete: if isAdmin();
+      // Allow admin OR the invited user themselves to consume (delete) their invite
+      allow delete: if isAdmin() || (isAuthenticated() && request.auth.token.email == email);
     }
   }
 }
