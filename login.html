@@ -336,7 +336,10 @@
                     const invite = await checkPendingInvite(user.email);
                     const role = invite?.role || (isFallbackAdmin ? 'admin' : 'customer');
 
-                    await setDoc(doc(db, 'users', user.uid), {
+                    // Force token refresh before Firestore write
+                    await user.getIdToken(true);
+
+                    const profileData = {
                         name: invite?.name || user.displayName || '',
                         email: user.email,
                         company_name: '',
@@ -347,7 +350,16 @@
                         terms_version: '1.0',
                         terms_accepted_at: new Date().toISOString(),
                         privacy_policy_accepted: true
-                    });
+                    };
+
+                    try {
+                        await setDoc(doc(db, 'users', user.uid), profileData);
+                    } catch (fsError) {
+                        console.error('Google profile creation failed, retrying...', fsError);
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await user.getIdToken(true);
+                        await setDoc(doc(db, 'users', user.uid), profileData);
+                    }
                 } else if (isFallbackAdmin && !userDoc.data().role) {
                     await setDoc(doc(db, 'users', user.uid), { role: 'admin' }, { merge: true });
                 }
@@ -487,9 +499,15 @@
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const newUser = userCredential.user;
+
+                // Wait briefly for auth token to propagate before Firestore write
+                await new Promise(resolve => setTimeout(resolve, 500));
+                // Force token refresh to ensure Firestore sees valid auth
+                await newUser.getIdToken(true);
 
                 // Save user data to Firestore with agreement acceptance record
-                await setDoc(doc(db, 'users', userCredential.user.uid), {
+                const profileData = {
                     name: name,
                     company_name: company,
                     email: email,
@@ -500,7 +518,17 @@
                     terms_version: '1.0',
                     terms_accepted_at: new Date().toISOString(),
                     privacy_policy_accepted: true
-                });
+                };
+
+                try {
+                    await setDoc(doc(db, 'users', newUser.uid), profileData);
+                } catch (fsError) {
+                    console.error('Firestore profile creation failed, retrying...', fsError);
+                    // Retry once after another short delay
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await newUser.getIdToken(true);
+                    await setDoc(doc(db, 'users', newUser.uid), profileData);
+                }
 
                 // Track signup and agreement acceptance in GA4
                 if (window.MA3PLAnalytics) {
@@ -512,6 +540,7 @@
 
                 window.location.href = 'portal/dashboard.html';
             } catch (error) {
+                console.error('Signup error:', error);
                 showLoginToast('Signup failed. ' + error.message, 'error');
             }
         });
