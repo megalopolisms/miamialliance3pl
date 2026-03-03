@@ -89,6 +89,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Leads — captured from exit-intent popup, newsletter, and other lead gen forms
+    match /leads/{leadId} {
+      allow read: if isStaff();
+      allow create: if true; // Public submissions (no auth required for lead capture)
+      allow update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
     // BOL Documents — uploaded Bills of Lading and Shipping Labels
     match /bol_documents/{docId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
