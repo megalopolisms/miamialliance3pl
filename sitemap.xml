@@ -514,4 +514,44 @@
         <priority>0.4</priority>
     </url>
 
+    <!-- Blog: How to Choose a 3PL in Miami Guide (NEW Mar 9) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/how-to-choose-a-3pl-miami-guide.html</loc>
+        <lastmod>2026-03-09</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: E-Commerce Fulfillment Miami Shopify Amazon Guide (NEW Mar 9) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/ecommerce-fulfillment-miami-shopify-amazon-guide.html</loc>
+        <lastmod>2026-03-09</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Miami Logistics Trends 2026 AI Automation (NEW Mar 9) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/miami-logistics-trends-2026-ai-automation.html</loc>
+        <lastmod>2026-03-09</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.80</priority>
+    </url>
+
+    <!-- Blog: South Florida Ecommerce Fulfillment Boom 2026 (NEW Mar 9) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/south-florida-ecommerce-fulfillment-boom-2026.html</loc>
+        <lastmod>2026-03-09</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.80</priority>
+    </url>
+
+    <!-- Blog: Florida Freight Trends Tariffs Port Congestion 2026 (NEW Mar 9) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/florida-freight-trends-tariffs-port-congestion-2026.html</loc>
+        <lastmod>2026-03-09</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.80</priority>
+    </url>
+
 </urlset>
