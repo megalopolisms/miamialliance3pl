@@ -42,7 +42,7 @@ class ToastManager {
             display: flex;
             flex-direction: column-reverse;
             gap: 10px;
-            max-width: 400px;
+            max-width: min(400px, calc(100vw - 40px));
         `;
     document.body.appendChild(this.container);
   }
@@ -296,7 +296,7 @@ class ModalManager {
             background: white;
             border-radius: 12px;
             max-width: ${options.width || "500px"};
-            width: 90%;
+            width: min(90%, calc(100vw - 32px));
             max-height: 90vh;
             overflow-y: auto;
             position: relative;
@@ -314,7 +314,7 @@ class ModalManager {
             `;
       header.innerHTML = `
                 <h2 style="margin:0;font-size:1.25rem;">${options.title}</h2>
-                <button class="modal-close" style="background:none;border:none;font-size:1.5rem;cursor:pointer;padding:0;line-height:1;">&times;</button>
+                <button class="modal-close" style="background:none;border:none;font-size:1.5rem;cursor:pointer;padding:8px;line-height:1;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;">&times;</button>
             `;
       content.appendChild(header);
       header.querySelector(".modal-close").onclick = () => this.close(id);
