@@ -1351,9 +1351,12 @@
         }
 
         function processFile(file) {
-            // Validate
-            const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
-            if (!validTypes.includes(file.type)) {
+            // Validate by MIME and extension (some clients send generic/empty MIME types)
+            const normalizedType = (file.type || '').toLowerCase();
+            const validMimeTypes = ['application/pdf', 'application/x-pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+            const hasValidMime = validMimeTypes.includes(normalizedType);
+            const hasValidExt = /\.(pdf|png|jpe?g)$/i.test(file.name || '');
+            if (!hasValidMime && !hasValidExt) {
                 if (window.MA3PL?.toast) window.MA3PL.toast.error('Invalid file type. Please upload PDF, PNG, or JPG.');
                 else alert('Invalid file type');
                 return;
@@ -1373,7 +1376,8 @@
 
             document.getElementById('file-name').textContent = file.name;
             document.getElementById('file-size').textContent = formatFileSize(file.size);
-            document.getElementById('file-icon').textContent = file.type === 'application/pdf' ? '📄' : '🖼️';
+            const isPdf = normalizedType === 'application/pdf' || normalizedType === 'application/x-pdf' || /\.pdf$/i.test(file.name || '');
+            document.getElementById('file-icon').textContent = isPdf ? '📄' : '🖼️';
 
             preview.classList.add('active');
             zone.style.display = 'none';
