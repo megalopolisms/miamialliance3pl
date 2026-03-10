@@ -1563,6 +1563,20 @@
                 </div>
             </div>
 
+            <!-- INCOMING INVENTORY ITEMS -->
+            <div class="panel-section">
+                <div class="panel-section-header">
+                    <div class="panel-section-icon" style="background: #d1fae5;">📋</div>
+                    <div>
+                        <div class="panel-section-title">Incoming Inventory Items</div>
+                        <div class="panel-section-subtitle">Itemized SKUs from this shipment</div>
+                    </div>
+                </div>
+                <div id="panel-incoming-items" style="padding: 0;">
+                    <div style="padding: 12px 16px; color: var(--color-gray-400); font-size: 0.85rem;">No items listed</div>
+                </div>
+            </div>
+
             <!-- ADMIN NOTES -->
             <div class="panel-section">
                 <div class="panel-section-header">
@@ -2087,6 +2101,41 @@
             document.getElementById('panel-pkg-width').value = pkg.width || '';
             document.getElementById('panel-pkg-height').value = pkg.height || '';
             document.getElementById('panel-pkg-quantity').value = pkg.quantity || 1;
+
+            // Incoming Inventory Items
+            const itemsContainer = document.getElementById('panel-incoming-items');
+            const incomingItems = shipment.incoming_items || [];
+            if (incomingItems.length > 0) {
+                itemsContainer.innerHTML = `
+                    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+                        <thead>
+                            <tr style="background:#f1f5f9;">
+                                <th style="padding:8px 12px;text-align:left;font-weight:700;color:#475569;font-size:0.72rem;text-transform:uppercase;">SKU</th>
+                                <th style="padding:8px 12px;text-align:left;font-weight:700;color:#475569;font-size:0.72rem;text-transform:uppercase;">Product</th>
+                                <th style="padding:8px 12px;text-align:center;font-weight:700;color:#475569;font-size:0.72rem;text-transform:uppercase;">Qty</th>
+                                <th style="padding:8px 12px;text-align:left;font-weight:700;color:#475569;font-size:0.72rem;text-transform:uppercase;">UPC</th>
+                                <th style="padding:8px 12px;text-align:left;font-weight:700;color:#475569;font-size:0.72rem;text-transform:uppercase;">Tags</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${incomingItems.map((item, idx) => `
+                                <tr style="border-bottom:1px solid #e2e8f0;${idx % 2 === 0 ? '' : 'background:#f8fafc;'}">
+                                    <td style="padding:8px 12px;font-weight:600;color:#1e293b;font-family:monospace;">${item.sku || ''}</td>
+                                    <td style="padding:8px 12px;color:#334155;">${item.name || ''}</td>
+                                    <td style="padding:8px 12px;text-align:center;font-weight:700;color:#0d9488;">${item.qty || 0}</td>
+                                    <td style="padding:8px 12px;font-family:monospace;font-size:0.78rem;color:#64748b;">${item.upc || '—'}</td>
+                                    <td style="padding:8px 12px;">${(item.tags || []).map(t => '<span style="background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:8px;font-size:0.7rem;font-weight:600;margin:1px;display:inline-block;">' + t + '</span>').join(' ') || '—'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div style="padding:8px 12px;background:#f0fdfa;border-top:1px solid #99f6e4;font-size:0.78rem;color:#0d9488;font-weight:600;">
+                        Total: ${incomingItems.length} SKU(s), ${incomingItems.reduce((s, i) => s + (i.qty || 0), 0)} units — Auto-synced to Inventory
+                    </div>
+                `;
+            } else {
+                itemsContainer.innerHTML = '<div style="padding:12px 16px;color:var(--color-gray-400);font-size:0.85rem;">No items listed for this shipment</div>';
+            }
 
             // Notes
             document.getElementById('panel-admin-notes').value = shipment.admin_notes || '';
