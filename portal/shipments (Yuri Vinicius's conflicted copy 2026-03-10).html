@@ -806,188 +806,6 @@
         @media (max-width: 640px) {
             .dest-form-grid.cols-3 { grid-template-columns: 1fr; }
         }
-
-        /* ================================================
-           INCOMING INVENTORY ITEMS — SKU Entry Section
-           ================================================ */
-        .incoming-items-section {
-            border-top: 2px solid var(--color-gray-200, #e5e7eb);
-            padding-top: var(--spacing-md, 16px);
-            margin-top: var(--spacing-md, 16px);
-        }
-        .incoming-items-title {
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 700;
-            color: #1e3a5f;
-            margin: 0 0 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .incoming-items-subtitle {
-            font-size: 0.78rem;
-            color: #64748b;
-            margin: 0 0 12px;
-            line-height: 1.4;
-        }
-        .incoming-items-required {
-            font-size: 0.7rem;
-            color: #dc2626;
-            font-weight: 600;
-            background: #fef2f2;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: auto;
-        }
-        .incoming-item-row {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 8px;
-            position: relative;
-            transition: all 0.2s;
-        }
-        .incoming-item-row:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        .incoming-item-row .item-row-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        .incoming-item-row .item-row-num {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #14b8a6;
-            background: #f0fdfa;
-            padding: 2px 8px;
-            border-radius: 6px;
-        }
-        .incoming-item-row .item-remove-btn {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            width: 24px; height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .incoming-item-row .item-remove-btn:hover {
-            background: #fee2e2;
-            transform: scale(1.1);
-        }
-        .incoming-item-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        .incoming-item-grid .item-field {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-        .incoming-item-grid .item-field.full-width {
-            grid-column: 1 / -1;
-        }
-        .incoming-item-grid .item-field label {
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: #475569;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-        .incoming-item-grid .item-field label .label-optional {
-            font-size: 0.62rem;
-            color: #94a3b8;
-            font-weight: 500;
-            margin-left: 4px;
-            text-transform: none;
-            letter-spacing: 0;
-        }
-        .incoming-item-grid .item-field .field-hint {
-            font-size: 0.68rem;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
-        .incoming-item-grid .item-field input {
-            padding: 8px 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-family: inherit;
-            color: #1e293b;
-            transition: border-color 0.2s;
-            background: white;
-        }
-        .incoming-item-grid .item-field input:focus {
-            outline: none;
-            border-color: #14b8a6;
-        }
-        .incoming-item-grid .item-field input::placeholder {
-            color: #94a3b8;
-            font-size: 0.8rem;
-        }
-        .incoming-item-grid .item-field input.field-error {
-            border-color: #ef4444;
-            background: #fef2f2;
-        }
-        .incoming-items-add-btn {
-            width: 100%;
-            padding: 10px;
-            background: transparent;
-            border: 2px dashed #cbd5e1;
-            border-radius: 10px;
-            color: #64748b;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 4px;
-        }
-        .incoming-items-add-btn:hover {
-            border-color: #14b8a6;
-            color: #14b8a6;
-            background: #f0fdfa;
-        }
-        .incoming-items-summary {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 12px;
-            background: #f0fdfa;
-            border: 1px solid #99f6e4;
-            border-radius: 8px;
-            margin-top: 8px;
-            font-size: 0.8rem;
-        }
-        .incoming-items-summary .summary-label {
-            color: #0d9488;
-            font-weight: 600;
-        }
-        .incoming-items-summary .summary-value {
-            color: #1e3a5f;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-        @media (max-width: 480px) {
-            .incoming-item-grid {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
@@ -1550,30 +1368,6 @@
                             <label class="quote-label">Special Instructions (Optional)</label>
                             <div class="dest-form-group">
                                 <textarea id="sc-notes" placeholder="Fragile items, stacking instructions, etc." rows="2" style="resize:vertical;"></textarea>
-                            </div>
-                        </div>
-
-                        <!-- INCOMING INVENTORY ITEMS — Required SKU Entry -->
-                        <div class="incoming-items-section">
-                            <div class="incoming-items-title">
-                                📋 Incoming Inventory Items
-                                <span class="incoming-items-required">REQUIRED</span>
-                            </div>
-                            <div class="incoming-items-subtitle">
-                                Add each incoming SKU with an itemized quantity. UPC and tags are optional but recommended for inventory matching.
-                            </div>
-
-                            <div id="incoming-items-list">
-                                <!-- Item rows are rendered by JS -->
-                            </div>
-
-                            <button type="button" class="incoming-items-add-btn" id="add-incoming-item-btn">
-                                + Add Another Item
-                            </button>
-
-                            <div class="incoming-items-summary" id="incoming-items-summary" style="display:none;">
-                                <span class="summary-label">Total SKUs: <span id="incoming-sku-count">0</span></span>
-                                <span class="summary-value">Total Units: <span id="incoming-unit-count">0</span></span>
                             </div>
                         </div>
 
@@ -2174,8 +1968,7 @@
                 }
             },
             destination: { name: '', street: '', city: '', state: '', zip: '' },
-            notes: '',
-            incomingItems: [{ sku: '', name: '', qty: 1, upc: '', tags: '' }]
+            notes: ''
         };
 
         // =====================================================
@@ -2555,7 +2348,6 @@
             };
             sc.destination = { name: '', street: '', city: '', state: '', zip: '' };
             sc.notes = '';
-            sc.incomingItems = [{ sku: '', name: '', qty: 1, upc: '', tags: '' }];
 
             // Reset UI inputs
             document.querySelectorAll('#calc-overlay .package-option').forEach(btn => {
@@ -2613,139 +2405,9 @@
             document.getElementById('packing-list-input').value = '';
             document.getElementById('invoice-input').value = '';
 
-            // Reset incoming items UI
-            renderIncomingItems();
-
             clearError();
             updatePricing();
         }
-
-        // =====================================================
-        // INCOMING INVENTORY ITEMS — Dynamic SKU Entry System
-        // =====================================================
-        function renderIncomingItems() {
-            const container = document.getElementById('incoming-items-list');
-            if (!container) return;
-            container.innerHTML = '';
-
-            sc.incomingItems.forEach((item, index) => {
-                const row = document.createElement('div');
-                row.className = 'incoming-item-row';
-                row.innerHTML = `
-                    <div class="item-row-header">
-                        <span class="item-row-num">Item #${index + 1}</span>
-                        ${sc.incomingItems.length > 1 ? `<button type="button" class="item-remove-btn" data-index="${index}" title="Remove item">&times;</button>` : ''}
-                    </div>
-                    <div class="incoming-item-grid">
-                        <div class="item-field">
-                            <label>SKU *</label>
-                            <input type="text" class="ii-sku" data-index="${index}" value="${escHtml(item.sku)}" placeholder="e.g. ABC-123">
-                        </div>
-                        <div class="item-field">
-                            <label>Product Name *</label>
-                            <input type="text" class="ii-name" data-index="${index}" value="${escHtml(item.name)}" placeholder="e.g. Widget Pro">
-                        </div>
-                        <div class="item-field">
-                            <label>Quantity *</label>
-                            <input type="number" class="ii-qty" data-index="${index}" value="${item.qty}" min="1" step="1" inputmode="numeric" placeholder="1">
-                        </div>
-                        <div class="item-field">
-                            <label>UPC / Barcode <span class="label-optional">optional</span></label>
-                            <input type="text" class="ii-upc" data-index="${index}" value="${escHtml(item.upc)}" placeholder="e.g. 012345678901">
-                            <div class="field-hint">Used to map this SKU directly into inventory records.</div>
-                        </div>
-                        <div class="item-field full-width">
-                            <label>Tags (comma-separated) <span class="label-optional">optional</span></label>
-                            <input type="text" class="ii-tags" data-index="${index}" value="${escHtml(item.tags)}" placeholder="e.g. fragile, electronics, lot-2024">
-                        </div>
-                    </div>
-                `;
-                container.appendChild(row);
-            });
-
-            // Bind events
-            container.querySelectorAll('.item-remove-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const idx = parseInt(btn.dataset.index);
-                    sc.incomingItems.splice(idx, 1);
-                    renderIncomingItems();
-                });
-            });
-
-            // Sync inputs back to state
-            container.querySelectorAll('.ii-sku').forEach(inp => {
-                inp.addEventListener('input', () => { sc.incomingItems[parseInt(inp.dataset.index)].sku = inp.value; updateIncomingItemsSummary(); });
-            });
-            container.querySelectorAll('.ii-name').forEach(inp => {
-                inp.addEventListener('input', () => { sc.incomingItems[parseInt(inp.dataset.index)].name = inp.value; });
-            });
-            container.querySelectorAll('.ii-qty').forEach(inp => {
-                inp.addEventListener('input', () => { sc.incomingItems[parseInt(inp.dataset.index)].qty = parseInt(inp.value) || 0; updateIncomingItemsSummary(); });
-            });
-            container.querySelectorAll('.ii-upc').forEach(inp => {
-                inp.addEventListener('input', () => { sc.incomingItems[parseInt(inp.dataset.index)].upc = inp.value; });
-            });
-            container.querySelectorAll('.ii-tags').forEach(inp => {
-                inp.addEventListener('input', () => { sc.incomingItems[parseInt(inp.dataset.index)].tags = inp.value; });
-            });
-
-            updateIncomingItemsSummary();
-        }
-
-        function updateIncomingItemsSummary() {
-            const summaryEl = document.getElementById('incoming-items-summary');
-            const validItems = getIncomingItemsForSave();
-            if (validItems.length > 0) {
-                summaryEl.style.display = 'flex';
-                document.getElementById('incoming-sku-count').textContent = validItems.length;
-                document.getElementById('incoming-unit-count').textContent = validItems.reduce((sum, i) => sum + i.qty, 0);
-            } else {
-                summaryEl.style.display = 'none';
-            }
-        }
-
-        function escHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        }
-
-        function normalizeIncomingItem(item) {
-            const rawQty = Number(item && item.qty);
-            const qty = Number.isFinite(rawQty) ? Math.max(0, Math.floor(rawQty)) : 0;
-            const tags = Array.isArray(item && item.tags)
-                ? item.tags.map(t => String(t || '').trim()).filter(Boolean)
-                : String((item && item.tags) || '').split(',').map(t => t.trim()).filter(Boolean);
-
-            return {
-                sku: String((item && item.sku) || '').trim(),
-                name: String((item && item.name) || '').trim(),
-                qty,
-                upc: String((item && item.upc) || '').trim(),
-                tags
-            };
-        }
-
-        function getNormalizedIncomingItems() {
-            return sc.incomingItems.map(normalizeIncomingItem);
-        }
-
-        function getIncomingItemsForSave() {
-            return getNormalizedIncomingItems().filter(i => i.sku && i.name && i.qty > 0);
-        }
-
-        // Add item button
-        document.getElementById('add-incoming-item-btn').addEventListener('click', () => {
-            sc.incomingItems.push({ sku: '', name: '', qty: 1, upc: '', tags: '' });
-            renderIncomingItems();
-            // Focus the new SKU field
-            setTimeout(() => {
-                const skuInputs = document.querySelectorAll('.ii-sku');
-                if (skuInputs.length) skuInputs[skuInputs.length - 1].focus();
-            }, 50);
-        });
-
-        // Initial render
-        renderIncomingItems();
 
         function showError(message) {
             const el = document.getElementById('sc-error');
@@ -3033,49 +2695,6 @@
 
             sc.destination = { name, street, city, state, zip };
             sc.notes = document.getElementById('sc-notes').value.trim();
-
-            // Clear field errors
-            document.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
-
-            const normalizedItems = getNormalizedIncomingItems();
-            let completedItems = 0;
-
-            for (let i = 0; i < normalizedItems.length; i++) {
-                const item = normalizedItems[i];
-                const hasUserInput = !!(item.sku || item.name || item.upc || item.tags.length || item.qty !== 1);
-                if (!hasUserInput) continue;
-
-                if (!item.sku) {
-                    showError(`Item #${i + 1}: SKU is required.`);
-                    const skuInput = document.querySelectorAll('.ii-sku')[i];
-                    if (skuInput) { skuInput.classList.add('field-error'); skuInput.focus(); }
-                    return false;
-                }
-
-                if (!item.name) {
-                    showError(`Item #${i + 1}: Product name is required.`);
-                    const nameInput = document.querySelectorAll('.ii-name')[i];
-                    if (nameInput) { nameInput.classList.add('field-error'); nameInput.focus(); }
-                    return false;
-                }
-
-                if (item.qty < 1) {
-                    showError(`Item #${i + 1}: Quantity must be at least 1.`);
-                    const qtyInput = document.querySelectorAll('.ii-qty')[i];
-                    if (qtyInput) { qtyInput.classList.add('field-error'); qtyInput.focus(); }
-                    return false;
-                }
-
-                completedItems++;
-            }
-
-            if (completedItems === 0) {
-                showError('At least one fully itemized SKU (SKU, name, and quantity) is required.');
-                const firstSku = document.querySelector('.ii-sku');
-                if (firstSku) { firstSku.classList.add('field-error'); firstSku.focus(); }
-                return false;
-            }
-
             return true;
         }
 
@@ -3091,7 +2710,6 @@
             const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
             const quoteResult = calculateQuote();
             const d = sc.destination;
-            const incomingItemsForSave = getIncomingItemsForSave();
 
             trackCalcEvent('shipment_submit_attempt', {
                 package_type: sc.packageType,
@@ -3178,8 +2796,6 @@
                 bol_document: bolDocument,
                 cargo_items: cargoItemsData,
                 cargo_count: cargoItemsData.length,
-                // Incoming inventory items (itemized SKUs)
-                incoming_items: incomingItemsForSave,
                 notes: sc.notes || `Shipment: ${sc.quantity} ${sc.packageType}(s), Zone: ${getZoneLabel(sc.shippingZone)}`,
                 // Packing List & Invoice documents
                 packing_list: docsState.packing_list.file ? {
@@ -3367,61 +2983,6 @@
                         });
                     } catch (docErr) {
                         console.warn('Invoice storage failed:', docErr.message);
-                    }
-                }
-
-                // Auto-add incoming items to inventory collection
-                const validItems = incomingItemsForSave;
-                if (validItems.length > 0) {
-                    try {
-                        for (const item of validItems) {
-                            // Check if SKU already exists for this user in this warehouse
-                            const existingQuery = query(
-                                collection(db, 'inventory'),
-                                where('user_id', '==', currentUser.uid),
-                                where('sku', '==', item.sku),
-                                where('warehouse', '==', sc.selectedWarehouse || 'miami')
-                            );
-                            const existingSnap = await getDocs(existingQuery);
-
-                            if (!existingSnap.empty) {
-                                // Update existing inventory item — add quantity
-                                const existingDoc = existingSnap.docs[0];
-                                const existingData = existingDoc.data();
-                                const updatedData = {
-                                    quantity: (existingData.quantity || 0) + item.qty,
-                                    last_updated: new Date().toISOString(),
-                                    last_shipment: trackingNumber
-                                };
-                                if (item.upc && !existingData.upc) updatedData.upc = item.upc;
-                                if (item.tags.length > 0) {
-                                    const oldTags = Array.isArray(existingData.tags)
-                                        ? existingData.tags
-                                        : String(existingData.tags || '').split(',').map(t => t.trim()).filter(Boolean);
-                                    updatedData.tags = [...new Set([...oldTags, ...item.tags])];
-                                }
-                                await setDoc(existingDoc.ref, updatedData, { merge: true });
-                            } else {
-                                // Create new inventory item
-                                await addDoc(collection(db, 'inventory'), {
-                                    user_id: currentUser.uid,
-                                    sku: item.sku,
-                                    name: item.name,
-                                    quantity: item.qty,
-                                    upc: item.upc || '',
-                                    tags: item.tags,
-                                    warehouse: sc.selectedWarehouse || 'miami',
-                                    location: 'Receiving',
-                                    reorder_level: 10,
-                                    source_shipment: trackingNumber,
-                                    last_shipment: trackingNumber,
-                                    last_updated: new Date().toISOString()
-                                });
-                            }
-                        }
-                        trackCalcEvent('inventory_items_synced', { count: validItems.length, tracking_number: trackingNumber });
-                    } catch (invErr) {
-                        console.warn('Inventory sync failed:', invErr.message);
                     }
                 }
 
