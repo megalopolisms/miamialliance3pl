@@ -3317,18 +3317,22 @@
                 // Store BOL document metadata
                 if (bolDocument) {
                     try {
+                        // Firestore 1 MiB doc limit — only embed base64 for files < 700KB to stay safe
+                        const safeFileLimit = 716800; // ~700KB raw = ~950KB base64, well under 1 MiB with metadata
+                        const fileData = (bolState.fileDataUrl && bolState.file.size < safeFileLimit) ? bolState.fileDataUrl : null;
                         await addDoc(collection(db, 'bol_documents'), {
                             shipment_id: shipmentRef.id,
                             tracking_number: trackingNumber,
                             user_id: currentUser.uid,
                             ...bolDocument,
-                            // Store file as base64 data URL (for small files < 1MB)
-                            file_data: (bolState.fileDataUrl && bolState.file.size < 1048576) ? bolState.fileDataUrl : null,
+                            file_data: fileData,
+                            file_stored: !!fileData,
                             created_at: new Date().toISOString()
                         });
-                        trackCalcEvent('bol_document_stored', { file_type: bolState.file.type });
+                        trackCalcEvent('bol_document_stored', { file_type: bolState.file.type, file_stored: !!fileData });
                     } catch (bolErr) {
                         console.warn('BOL document storage failed:', bolErr.message);
+                        // Non-blocking — shipment was already created successfully
                     }
                 }
 
@@ -3453,8 +3457,20 @@
                 trackCalcEvent('shipment_created_success', { tracking_number: trackingNumber, value: quoteResult.total });
 
             } catch (error) {
-                showError('Error creating shipment: ' + error.message);
-                trackCalcEvent('shipment_create_failed', { error: error.message });
+                console.error('Shipment creation error:', error);
+                // Provide user-friendly error messages
+                let userMsg = 'Error creating shipment. ';
+                if (error.code === 'permission-denied') {
+                    userMsg += 'Permission denied — please log out and log back in.';
+                } else if (error.code === 'resource-exhausted' || (error.message && error.message.includes('exceeds the maximum'))) {
+                    userMsg += 'Data too large. Try uploading a smaller BOL file (under 5MB).';
+                } else if (error.message && error.message.includes('network')) {
+                    userMsg += 'Network error — please check your connection and try again.';
+                } else {
+                    userMsg += error.message || 'Please try again or contact support.';
+                }
+                showError(userMsg);
+                trackCalcEvent('shipment_create_failed', { error: error.message, code: error.code || 'unknown' });
                 createBtn.disabled = false;
                 createBtn.innerHTML = '✓ Create Shipment';
             }
@@ -3560,7 +3576,7 @@
             });
         }
 
-        function handleDocFile(docType, file, dropzoneId, previewId, nameId, sizeId, iconId) {
+        async function handleDocFile(docType, file, dropzoneId, previewId, nameId, sizeId, iconId) {
             // Max 5MB per document
             if (file.size > 5 * 1024 * 1024) {
                 if (window.MA3PL?.toast) window.MA3PL.toast.warning('File too large. Maximum size is 5MB.');
@@ -3570,10 +3586,19 @@
 
             docsState[docType].file = file;
 
-            // Read as base64 data URL for storage
-            const reader = new FileReader();
-            reader.onload = (e) => { docsState[docType].dataUrl = e.target.result; };
-            reader.readAsDataURL(file);
+            // Read as base64 data URL for storage (await to prevent race condition)
+            try {
+                docsState[docType].dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.onabort = () => reject(new Error('File read cancelled'));
+                    reader.readAsDataURL(file);
+                });
+            } catch (readErr) {
+                console.warn('Doc FileReader error:', readErr);
+                docsState[docType].dataUrl = null; // Will save metadata only
+            }
 
             // Update UI
             document.getElementById(dropzoneId).classList.add('has-file');
@@ -3773,16 +3798,31 @@
         // =====================================================
         async function extractPDFText(file) {
             if (!window.pdfjsLib) {
-                throw new Error('PDF.js library not loaded');
+                throw new Error('PDF reader is loading — please wait a moment and try again, or use a JPG/PNG image instead.');
             }
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let arrayBuffer;
+            try {
+                arrayBuffer = await file.arrayBuffer();
+            } catch (bufErr) {
+                throw new Error('Could not read the file. It may be corrupted or too large. Please try a different file.');
+            }
+            let pdf;
+            try {
+                pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            } catch (pdfErr) {
+                throw new Error('Could not open this PDF. It may be password-protected, corrupted, or in an unsupported format. Try re-saving it or use a JPG/PNG image.');
+            }
             let fullText = '';
             for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => item.str).join(' ');
-                fullText += pageText + '\n';
+                try {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n';
+                } catch (pageErr) {
+                    console.warn(`Could not read page ${i}:`, pageErr);
+                    // Continue with other pages instead of failing entirely
+                }
             }
             return fullText;
         }
@@ -4076,10 +4116,20 @@
             bolFilePreview.classList.add('active');
             bolDropzone.classList.add('has-file');
 
-            // Store as data URL for Firestore
-            const reader = new FileReader();
-            reader.onload = (e) => { bolState.fileDataUrl = e.target.result; };
-            reader.readAsDataURL(file);
+            // Store as data URL for Firestore (await to prevent race condition)
+            try {
+                bolState.fileDataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => reject(new Error('Failed to read file. Please try again.'));
+                    reader.onabort = () => reject(new Error('File read was cancelled. Please try again.'));
+                    reader.readAsDataURL(file);
+                });
+            } catch (readErr) {
+                console.error('BOL FileReader error:', readErr);
+                showBOLStatus('error', '❌ ' + readErr.message);
+                return;
+            }
 
             // Parse the document
             if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
