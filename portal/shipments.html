@@ -1561,6 +1561,7 @@
                             </div>
                             <div class="incoming-items-subtitle">
                                 Add each incoming SKU with an itemized quantity. UPC and tags are optional but recommended for inventory matching.
+                                <strong style="display:block;margin-top:4px;color:#1d4ed8;font-size:0.8rem;">💡 Upload a BOL above to auto-populate this section.</strong>
                             </div>
 
                             <div id="incoming-items-list">
@@ -3070,10 +3071,16 @@
             }
 
             if (completedItems === 0) {
-                showError('At least one fully itemized SKU (SKU, name, and quantity) is required.');
-                const firstSku = document.querySelector('.ii-sku');
-                if (firstSku) { firstSku.classList.add('field-error'); firstSku.focus(); }
-                return false;
+                // If a BOL file was uploaded, allow submission without manual SKU entry —
+                // the BOL itself documents the cargo contents
+                if (bolState.file) {
+                    console.info('No manual SKU entries, but BOL file is attached — allowing submission.');
+                } else {
+                    showError('At least one fully itemized SKU (SKU, name, and quantity) is required. Tip: Upload a BOL to auto-populate.');
+                    const firstSku = document.querySelector('.ii-sku');
+                    if (firstSku) { firstSku.classList.add('field-error'); firstSku.focus(); }
+                    return false;
+                }
             }
 
             return true;
@@ -3113,8 +3120,10 @@
                 external_tracking: bolState.parsedData?.trackingNumber || null
             } : null;
 
-            // Build cargo items array
-            const cargoItemsData = bolState.cargoItems.map(item => ({
+            // Build cargo items array (hard-capped for performance + payload safety)
+            const allCargoItems = Array.isArray(bolState.cargoItems) ? bolState.cargoItems : [];
+            const cargoItemsWereTrimmed = allCargoItems.length > MAX_CARGO_ITEMS;
+            const cargoItemsData = allCargoItems.slice(0, MAX_CARGO_ITEMS).map(item => ({
                 cargo_id: item.cargo_id,
                 type: item.type,
                 index: item.index,
@@ -3131,6 +3140,19 @@
                 location: null,
                 created_at: new Date().toISOString()
             }));
+            const cargoItemsEmbedded = cargoItemsData.slice(0, EMBEDDED_CARGO_ITEMS_LIMIT).map(item => ({
+                cargo_id: item.cargo_id,
+                type: item.type,
+                index: item.index,
+                weight: item.weight,
+                description: item.description,
+                bol_number: item.bol_number,
+                status: item.status
+            }));
+
+            if (cargoItemsWereTrimmed) {
+                showBOLStatus('warning', `⚠️ Cargo list exceeded ${MAX_CARGO_ITEMS}. Extra items were not included.`);
+            }
 
             const newShipment = {
                 user_id: currentUser.uid,
@@ -3176,8 +3198,10 @@
                 },
                 // BOL / Shipping Label data
                 bol_document: bolDocument,
-                cargo_items: cargoItemsData,
+                cargo_items: cargoItemsEmbedded,
                 cargo_count: cargoItemsData.length,
+                cargo_items_embedded_count: cargoItemsEmbedded.length,
+                cargo_items_truncated: cargoItemsData.length > cargoItemsEmbedded.length || cargoItemsWereTrimmed,
                 // Incoming inventory items (itemized SKUs)
                 incoming_items: incomingItemsForSave,
                 notes: sc.notes || `Shipment: ${sc.quantity} ${sc.packageType}(s), Zone: ${getZoneLabel(sc.shippingZone)}`,
@@ -3198,6 +3222,21 @@
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
+
+            // Firestore has a strict 1 MiB per-document limit; trim embedded cargo preview first, then hard-fail if still too large.
+            let shipmentPayloadSize = estimatePayloadBytes(newShipment);
+            if (shipmentPayloadSize > FIRESTORE_DOC_SAFE_LIMIT_BYTES && Array.isArray(newShipment.cargo_items) && newShipment.cargo_items.length > 0) {
+                newShipment.cargo_items = [];
+                newShipment.cargo_items_embedded_count = 0;
+                newShipment.cargo_items_truncated = cargoItemsData.length > 0 || cargoItemsWereTrimmed;
+                newShipment.cargo_items_omitted_for_size = true;
+                shipmentPayloadSize = estimatePayloadBytes(newShipment);
+            }
+            if (shipmentPayloadSize > FIRESTORE_DOC_HARD_LIMIT_BYTES - 8192) {
+                const payloadErr = new Error('Shipment payload too large. Reduce itemized lines and try again.');
+                payloadErr.code = 'resource-exhausted';
+                throw payloadErr;
+            }
 
             try {
                 const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
@@ -3520,6 +3559,20 @@
         // =====================================================
         // BOL / SHIPPING LABEL UPLOAD & PARSING SYSTEM
         // =====================================================
+        const MAX_CARGO_ITEMS = 1000;
+        const EMBEDDED_CARGO_ITEMS_LIMIT = 100;
+        const FIRESTORE_DOC_SAFE_LIMIT_BYTES = 950000;
+        const FIRESTORE_DOC_HARD_LIMIT_BYTES = 1048576;
+
+        function estimatePayloadBytes(value) {
+            try {
+                return new TextEncoder().encode(JSON.stringify(value)).length;
+            } catch (err) {
+                console.warn('Payload size estimate failed:', err);
+                return 0;
+            }
+        }
+
         const bolState = {
             file: null,
             fileDataUrl: null,
@@ -3714,7 +3767,11 @@
                 if (m) {
                     const qty = parseInt(m[1]);
                     if (qty > 0 && qty < 10000) {
-                        data.quantity = qty;
+                        data.quantity = Math.min(qty, MAX_CARGO_ITEMS);
+                        if (qty > MAX_CARGO_ITEMS) {
+                            data.quantityCapped = true;
+                            data.originalQuantity = qty;
+                        }
                         // Determine if pallets or boxes
                         if (/PALLET|PLT|SKID/i.test(m[0])) {
                             data.packageType = 'pallet';
@@ -3797,8 +3854,20 @@
         // PDF TEXT EXTRACTION
         // =====================================================
         async function extractPDFText(file) {
+            // If PDF.js hasn't loaded yet, wait up to 5 seconds for it
             if (!window.pdfjsLib) {
-                throw new Error('PDF reader is loading — please wait a moment and try again, or use a JPG/PNG image instead.');
+                let waited = 0;
+                while (!window.pdfjsLib && waited < 5000) {
+                    await new Promise(r => setTimeout(r, 500));
+                    waited += 500;
+                }
+                if (!window.pdfjsLib) {
+                    throw new Error('PDF reader could not load. Please refresh the page and try again, or upload a JPG/PNG image instead.');
+                }
+                // Ensure worker is configured
+                if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                }
             }
             let arrayBuffer;
             try {
@@ -3882,8 +3951,10 @@
         // =====================================================
         function generateCargoItems(data) {
             bolState.cargoItems = [];
-            const qty = data.quantity || sc.quantity || 1;
+            const requestedQty = Number(data.quantity || sc.quantity || 1);
+            const qty = Math.max(1, Math.min(MAX_CARGO_ITEMS, Number.isFinite(requestedQty) ? Math.floor(requestedQty) : 1));
             const type = data.packageType || sc.packageType || 'box';
+            const wasCapped = requestedQty > MAX_CARGO_ITEMS;
 
             for (let i = 0; i < qty; i++) {
                 bolState.cargoItems.push({
@@ -3898,6 +3969,10 @@
             }
 
             renderCargoItems();
+
+            if (wasCapped) {
+                showBOLStatus('warning', `⚠️ Document listed ${requestedQty} items. Generated first ${MAX_CARGO_ITEMS}.`);
+            }
         }
 
         // =====================================================
@@ -3996,6 +4071,23 @@
                 document.getElementById('sc-notes').value = notes.join(' | ');
             }
 
+            // ─── AUTO-POPULATE INCOMING ITEMS FROM BOL DATA ───
+            // When a BOL is parsed, auto-create an incoming item so the user doesn't
+            // have to manually duplicate what the BOL already tells us.
+            const bolSku = data.bolNumber ? ('BOL-' + data.bolNumber.replace(/[^a-zA-Z0-9-]/g, '')) : ('BOL-' + Date.now().toString().slice(-6));
+            const bolProductName = data.description || (data.packageType === 'pallet' ? 'Pallet Shipment' : 'Box Shipment') + (data.bolNumber ? ' (BOL ' + data.bolNumber + ')' : '');
+            const bolQty = data.quantity && data.quantity >= 1 ? Math.floor(data.quantity) : (sc.quantity || 1);
+
+            // Replace the default empty item(s) with BOL-derived item
+            sc.incomingItems = [{
+                sku: bolSku,
+                name: bolProductName,
+                qty: bolQty,
+                upc: '',
+                tags: [data.carrier, data.bolNumber, data.packageType].filter(Boolean).join(', ')
+            }];
+            renderIncomingItems();
+
             // Update 3D viewer
             if (viewer3D && viewer3D.active) {
                 viewer3D.updateDimensions(sc.length, sc.width, sc.height);
@@ -4010,7 +4102,8 @@
                 fields_filled: Object.keys(data).length,
                 has_dimensions: !!(data.length && data.width && data.height),
                 has_weight: !!data.weight,
-                has_destination: !!data.destCity
+                has_destination: !!data.destCity,
+                auto_populated_items: true
             });
         }
 
@@ -4024,18 +4117,30 @@
         const bolExtractedData = document.getElementById('bol-extracted-data');
 
         // Click to browse
-        bolDropzone.addEventListener('click', () => bolFileInput.click());
+        bolDropzone.addEventListener('click', (e) => {
+            // Prevent double-trigger if clicking on the input itself
+            if (e.target === bolFileInput) return;
+            bolFileInput.click();
+        });
 
-        // Drag events
-        bolDropzone.addEventListener('dragover', (e) => {
+        // Drag events — dragenter + dragover both need preventDefault for drop to work in all browsers
+        bolDropzone.addEventListener('dragenter', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             bolDropzone.classList.add('dragover');
         });
-        bolDropzone.addEventListener('dragleave', () => {
+        bolDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            bolDropzone.classList.add('dragover');
+        });
+        bolDropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
             bolDropzone.classList.remove('dragover');
         });
         bolDropzone.addEventListener('drop', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             bolDropzone.classList.remove('dragover');
             const files = e.dataTransfer.files;
             if (files.length > 0) handleBOLFile(files[0]);
@@ -4077,6 +4182,10 @@
 
         // Add cargo item manually
         document.getElementById('cargo-add-btn').addEventListener('click', () => {
+            if (bolState.cargoItems.length >= MAX_CARGO_ITEMS) {
+                showBOLStatus('warning', `⚠️ Maximum of ${MAX_CARGO_ITEMS} cargo items reached.`);
+                return;
+            }
             const type = sc.packageType || 'box';
             bolState.cargoItems.push({
                 cargo_id: generateCargoId(type),
@@ -4094,9 +4203,14 @@
         // HANDLE BOL FILE UPLOAD
         // =====================================================
         async function handleBOLFile(file) {
-            // Validate file type
-            const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
-            if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|png|jpg|jpeg)$/i)) {
+            // Validate file type — accept common MIME types + extension fallback
+            // Some browsers/email clients report application/octet-stream or empty type for PDFs
+            const validMimeTypes = ['application/pdf', 'application/x-pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+            const hasValidMime = validMimeTypes.includes(file.type);
+            const hasValidExt = /\.(pdf|png|jpg|jpeg)$/i.test(file.name);
+            const isOctetStream = file.type === 'application/octet-stream' || file.type === '';
+
+            if (!hasValidMime && !hasValidExt && !isOctetStream) {
                 showBOLStatus('error', '❌ Unsupported file type. Use PDF, PNG, or JPG.');
                 return;
             }
@@ -4131,8 +4245,9 @@
                 return;
             }
 
-            // Parse the document
-            if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+            // Parse the document — detect PDF by MIME type, extension, or octet-stream with .pdf extension
+            const isPDF = file.type === 'application/pdf' || file.type === 'application/x-pdf' || /\.pdf$/i.test(file.name);
+            if (isPDF) {
                 await parsePDFDocument(file);
             } else {
                 // Image file — can't extract text client-side without OCR API
