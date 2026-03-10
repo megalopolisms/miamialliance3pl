@@ -434,44 +434,28 @@
         <priority>0.85</priority>
     </url>
 
+    <!-- Blog: Dropshipping Fulfillment Guide Miami 3PL (NEW Mar 3) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/dropshipping-fulfillment-guide-miami-3pl.html</loc>
+        <lastmod>2026-03-03</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
+    <!-- Blog: Dropshipping vs 3PL Which Model Best (NEW Mar 3) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/dropshipping-vs-3pl-which-model-best-ecommerce.html</loc>
+        <lastmod>2026-03-03</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
     <!-- Blog: Scale Dropshipping Business 3PL Partner Miami (NEW Mar 3) -->
     <url>
         <loc>https://miamialliance3pl.com/blog/scale-dropshipping-business-3pl-partner-miami.html</loc>
         <lastmod>2026-03-03</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.85</priority>
-    </url>
-
-    <!-- Amazon FBA Prep Miami - Dedicated Landing Page -->
-    <url>
-        <loc>https://miamialliance3pl.com/amazon-fba-prep-miami.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
-    </url>
-
-    <!-- Blog: Local vs National 3PL Miami (NEW Mar 9) -->
-    <url>
-        <loc>https://miamialliance3pl.com/blog/local-vs-national-3pl-miami.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
-    </url>
-
-    <!-- Blog: Florida Ecommerce Guide 2026 (NEW Mar 9) -->
-    <url>
-        <loc>https://miamialliance3pl.com/blog/florida-ecommerce-guide-2026.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
-    </url>
-
-    <!-- Blog: Shipping to Colombia Guide Miami (NEW Mar 9) -->
-    <url>
-        <loc>https://miamialliance3pl.com/blog/shipping-to-colombia-guide-miami.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
     </url>
 
     <!-- FAQ -->
@@ -506,6 +490,14 @@
         <priority>0.8</priority>
     </url>
 
+    <!-- Login / Customer Portal -->
+    <url>
+        <loc>https://miamialliance3pl.com/login.html</loc>
+        <lastmod>2026-02-26</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+
     <!-- Terms of Service & Client Agreement -->
     <url>
         <loc>https://miamialliance3pl.com/terms.html</loc>
@@ -520,70 +512,6 @@
         <lastmod>2026-02-26</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.4</priority>
-    </url>
-
-    <!-- Blog: How to Choose a 3PL in Miami Guide (NEW Mar 9) -->
-    <url>
-        <loc>https://miamialliance3pl.com/blog/how-to-choose-a-3pl-miami-guide.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.85</priority>
-    </url>
-
-    <!-- Blog: E-Commerce Fulfillment Miami Shopify Amazon Guide (NEW Mar 9) -->
-    <url>
-        <loc>https://miamialliance3pl.com/blog/ecommerce-fulfillment-miami-shopify-amazon-guide.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.85</priority>
-    </url>
-
-    <!-- Blog: Miami Logistics Trends 2026 AI Automation (NEW Mar 9) -->
-    <url>
-        <loc>https://miamialliance3pl.com/blog/miami-logistics-trends-2026-ai-automation.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.80</priority>
-    </url>
-
-    <!-- Blog: South Florida Ecommerce Fulfillment Boom 2026 (NEW Mar 9) -->
-    <url>
-        <loc>https://miamialliance3pl.com/blog/south-florida-ecommerce-fulfillment-boom-2026.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.80</priority>
-    </url>
-
-    <!-- Blog: Florida Freight Trends Tariffs Port Congestion 2026 (NEW Mar 9) -->
-    <url>
-        <loc>https://miamialliance3pl.com/blog/florida-freight-trends-tariffs-port-congestion-2026.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.80</priority>
-    </url>
-
-    <!-- Blog: Returns Management & Reverse Logistics (NEW Mar 9) -->
-    <url>
-        <loc>https://miamialliance3pl.com/blog/ecommerce-returns-management-reverse-logistics-miami-3pl.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.85</priority>
-    </url>
-
-    <!-- Blog: Food, Supplement & Beauty Fulfillment (NEW Mar 9) -->
-    <url>
-        <loc>https://miamialliance3pl.com/blog/food-supplement-beauty-fulfillment-miami-3pl.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.85</priority>
-    </url>
-
-    <!-- Blog: Best 3PL Warehouses in Miami 2026 (NEW Mar 9) -->
-    <url>
-        <loc>https://miamialliance3pl.com/blog/best-3pl-warehouses-miami-2026.html</loc>
-        <lastmod>2026-03-09</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.90</priority>
     </url>
 
 </urlset>
