@@ -610,4 +610,28 @@
         <priority>0.90</priority>
     </url>
 
+    <!-- Blog: 24 States Sue Tariffs March 2026 Supply Chain Impact -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/24-states-sue-tariffs-march-2026-supply-chain-impact.html</loc>
+        <lastmod>2026-03-11</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- Blog: AI Warehouse Automation Reshaping 3PL 2026 -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/ai-warehouse-automation-reshaping-3pl-2026.html</loc>
+        <lastmod>2026-03-11</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- Blog: Warehouse Demand Record Highs Just-in-Time Inventory 2026 -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/warehouse-demand-record-highs-just-in-time-inventory-2026.html</loc>
+        <lastmod>2026-03-11</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
 </urlset>
