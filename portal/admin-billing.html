@@ -321,11 +321,187 @@
         }
         .btn-generate:hover { background: #f0fdf4; }
 
+        /* Shipment Billing */
+        .sb-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-md);
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+        .sb-card:hover { box-shadow: var(--shadow-md); }
+        .sb-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: var(--color-gray-50);
+            cursor: pointer;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .sb-card-header .tracking {
+            font-weight: 700;
+            color: var(--color-primary);
+            font-size: var(--font-size-base);
+        }
+        .sb-card-header .meta {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: center;
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-500);
+            flex-wrap: wrap;
+        }
+        .sb-card-body {
+            padding: var(--spacing-lg);
+            display: none;
+            border-top: 1px solid var(--color-gray-200);
+        }
+        .sb-card.expanded .sb-card-body { display: block; }
+        .sb-charges-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: var(--spacing-md);
+        }
+        .sb-charges-table th, .sb-charges-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-gray-100);
+            font-size: var(--font-size-sm);
+        }
+        .sb-charges-table th {
+            background: var(--color-gray-50);
+            font-weight: 600;
+            color: var(--color-gray-600);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .sb-charges-table input.rate-edit {
+            width: 80px;
+            padding: 4px 8px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            text-align: right;
+        }
+        .sb-charges-table input.rate-edit:focus {
+            border-color: var(--color-primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.1);
+        }
+        .sb-charges-table .rate-source {
+            font-size: 0.65rem;
+            color: var(--color-gray-400);
+            display: block;
+            margin-top: 2px;
+        }
+        .sb-charges-table .line-total {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .sb-charges-table .line-edited {
+            background: #fef3c7;
+        }
+        .sb-summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md);
+            background: var(--color-gray-50);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+        }
+        .sb-summary-row .total {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .sb-summary-row .quoted {
+            color: var(--color-gray-500);
+            font-size: var(--font-size-sm);
+        }
+        .sb-summary-row .variance {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+        }
+        .sb-summary-row .variance.positive { color: #dc2626; }
+        .sb-summary-row .variance.negative { color: #10b981; }
+        .sb-summary-row .variance.zero { color: var(--color-gray-500); }
+        .sb-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+        .btn-import {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+        }
+        .btn-import:hover { box-shadow: var(--shadow-sm); }
+        .btn-import:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-save-rates {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+        }
+        .btn-save-rates:hover { opacity: 0.9; }
+        .badge-billing-pending { background: #fef3c7; color: #d97706; }
+        .badge-billing-imported { background: #dbeafe; color: #1d4ed8; }
+        .badge-billing-invoiced { background: #d1fae5; color: #059669; }
+        .sb-bulk-bar {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+        .sb-bulk-bar .info { font-size: var(--font-size-sm); }
+        .sb-bulk-bar .info strong { font-size: var(--font-size-lg); }
+        .sb-kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        .sb-kpi {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            text-align: center;
+        }
+        .sb-kpi .value { font-size: var(--font-size-xl); font-weight: 700; }
+        .sb-kpi .label { font-size: 0.75rem; color: var(--color-gray-500); margin-top: 4px; }
+        .sb-kpi.green .value { color: #10b981; }
+        .sb-kpi.amber .value { color: #f59e0b; }
+        .sb-kpi.blue .value { color: #3b82f6; }
+
         @media (max-width: 768px) {
             .entry-form { grid-template-columns: 1fr; }
             .recon-row { grid-template-columns: 1fr 1fr; }
             .filters-bar { flex-direction: column; }
             .generate-invoice-bar { flex-direction: column; gap: var(--spacing-md); text-align: center; }
+            .sb-card-header { flex-direction: column; align-items: flex-start; }
+            .sb-summary-row { flex-direction: column; gap: var(--spacing-sm); text-align: center; }
+            .sb-bulk-bar { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
@@ -412,6 +588,7 @@
             <!-- Tabs -->
             <div class="tabs">
                 <button class="tab active" onclick="showTab('entry', this)">Log Activity</button>
+                <button class="tab" onclick="showTab('shipments', this)">Shipment Billing</button>
                 <button class="tab" onclick="showTab('history', this)">Activity History</button>
                 <button class="tab" onclick="showTab('reconcile', this)">Quote vs Actual</button>
                 <button class="tab" onclick="showTab('generate', this)">Generate Invoice</button>
@@ -570,6 +747,74 @@
                             </tr>
                         </tfoot>
                     </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- TAB: SHIPMENT BILLING                          -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <div id="tab-shipments" class="tab-content" style="display: none;">
+                <!-- KPI Row -->
+                <div class="sb-kpi-row">
+                    <div class="sb-kpi amber">
+                        <div class="value" id="sb-kpi-unbilled">0</div>
+                        <div class="label">Unbilled Shipments</div>
+                    </div>
+                    <div class="sb-kpi green">
+                        <div class="value" id="sb-kpi-imported">0</div>
+                        <div class="label">Imported to Log</div>
+                    </div>
+                    <div class="sb-kpi blue">
+                        <div class="value" id="sb-kpi-total-unbilled">$0</div>
+                        <div class="label">Total Unbilled</div>
+                    </div>
+                    <div class="sb-kpi">
+                        <div class="value" id="sb-kpi-shipment-count">0</div>
+                        <div class="label">Total Shipments</div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h3>🚚 Shipment-Based Billing</h3>
+                    <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+                        Auto-calculated charges from shipment data. Review, override rates, and import to the activity log for invoicing.
+                    </p>
+
+                    <!-- Filters -->
+                    <div class="filters-bar">
+                        <select id="sb-customer" onchange="loadShipmentBilling()">
+                            <option value="">All Customers</option>
+                        </select>
+                        <select id="sb-billing-status" onchange="loadShipmentBilling()">
+                            <option value="">All Billing Status</option>
+                            <option value="pending" selected>Unbilled</option>
+                            <option value="imported">Imported to Log</option>
+                            <option value="invoiced">Invoiced</option>
+                        </select>
+                        <input type="date" id="sb-from" onchange="loadShipmentBilling()">
+                        <span style="color: var(--color-gray-500);">to</span>
+                        <input type="date" id="sb-to" onchange="loadShipmentBilling()">
+                    </div>
+
+                    <!-- Bulk Actions Bar -->
+                    <div class="sb-bulk-bar" id="sb-bulk-bar" style="display: none;">
+                        <div class="info">
+                            <strong id="sb-bulk-count">0</strong> unbilled shipments &bull;
+                            <strong id="sb-bulk-total">$0.00</strong> total charges
+                        </div>
+                        <div style="display: flex; gap: var(--spacing-sm);">
+                            <button class="btn-generate" onclick="importAllUnbilledShipments()">
+                                Import All to Activity Log
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Shipment Cards -->
+                    <div id="sb-cards-container">
+                        <p style="text-align: center; color: var(--color-gray-400); padding: 40px;">
+                            Loading shipments...
+                        </p>
                     </div>
                 </div>
             </div>
@@ -978,6 +1223,7 @@
             }
 
             if (tab === 'history') loadHistory();
+            if (tab === 'shipments') loadShipmentBilling();
             if (tab === 'reconcile') {}
             if (tab === 'generate') {}
         };
@@ -1021,6 +1267,11 @@
             await loadTodayActivities();
             await loadStats();
             setupQuickTypes();
+
+            // Initialize Shipment Billing tab
+            document.getElementById('sb-from').value = firstOfMonth();
+            document.getElementById('sb-to').value = lastOfMonth();
+
             document.getElementById('entry-customer').addEventListener('change', () => {
                 const type = document.getElementById('entry-type').value;
                 if (type) applyDefaultRate(type);
@@ -1040,7 +1291,7 @@
                 }
             });
 
-            const selects = ['entry-customer', 'hist-customer', 'recon-customer', 'gen-customer'];
+            const selects = ['entry-customer', 'hist-customer', 'recon-customer', 'gen-customer', 'sb-customer'];
             selects.forEach(id => {
                 const select = document.getElementById(id);
                 const first = select.options[0];
@@ -1818,6 +2069,499 @@
                 showToast('Error creating invoice: ' + err.message, 'error');
             }
         };
+
+        // ══════════════════════════════════════════════
+        // SHIPMENT BILLING TAB
+        // ══════════════════════════════════════════════
+
+        let shipmentBillingData = [];
+
+        window.loadShipmentBilling = async function() {
+            const customerId = document.getElementById('sb-customer').value;
+            const billingStatus = document.getElementById('sb-billing-status').value;
+            const fromDate = document.getElementById('sb-from').value;
+            const toDate = document.getElementById('sb-to').value;
+            const container = document.getElementById('sb-cards-container');
+
+            container.innerHTML = '<p style="text-align: center; color: var(--color-gray-400); padding: 40px;">Loading shipments...</p>';
+
+            try {
+                let constraints = [];
+                if (customerId) constraints.push(where('user_id', '==', customerId));
+                if (fromDate) constraints.push(where('created_at', '>=', fromDate));
+                if (toDate) constraints.push(where('created_at', '<=', toDate + 'T23:59:59'));
+                constraints.push(orderBy('created_at', 'desc'));
+
+                const q = query(collection(db, 'shipments'), ...constraints);
+                const snap = await getDocs(q);
+
+                shipmentBillingData = [];
+                snap.forEach(d => {
+                    const data = { id: d.id, ...d.data() };
+                    const status = data.billing_status || 'pending';
+                    if (billingStatus && status !== billingStatus) return;
+                    shipmentBillingData.push(data);
+                });
+
+                renderShipmentBillingCards();
+                updateShipmentBillingKPIs();
+            } catch (err) {
+                console.error('Shipment billing load error:', err);
+                container.innerHTML = `<p style="color: #ef4444; text-align: center; padding: 20px;">Error: ${err.message}</p>`;
+            }
+        };
+
+        function renderShipmentBillingCards() {
+            const container = document.getElementById('sb-cards-container');
+
+            if (shipmentBillingData.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--color-gray-400); padding: 40px;">No shipments found matching the selected filters.</p>';
+                return;
+            }
+
+            container.innerHTML = shipmentBillingData.map((shipment, idx) => {
+                const customer = customers.find(c => c.id === shipment.user_id);
+                const customerName = customer?.company_name || customer?.name || customer?.email || 'Unknown';
+                const tracking = shipment.tracking_number || shipment.id.slice(0, 10);
+                const createdDate = (shipment.created_at || '').split('T')[0] || 'N/A';
+                const pkg = shipment.package || {};
+                const pkgType = pkg.type || 'box';
+                const pkgQty = pkg.quantity || 1;
+                const status = shipment.billing_status || 'pending';
+                const overrides = shipment.billing_override || {};
+
+                // Calculate charges using quote_estimate or re-calculate
+                const charges = buildShipmentCharges(shipment, overrides);
+                const originalTotal = getOriginalTotal(shipment);
+                const currentTotal = charges.reduce((sum, c) => sum + c.amount, 0);
+                const variance = currentTotal - originalTotal;
+
+                let statusBadge = '';
+                if (status === 'pending') statusBadge = '<span class="badge badge-billing-pending">Unbilled</span>';
+                else if (status === 'imported') statusBadge = '<span class="badge badge-billing-imported">Imported</span>';
+                else if (status === 'invoiced') statusBadge = '<span class="badge badge-billing-invoiced">Invoiced</span>';
+
+                const chargeRows = charges.filter(c => c.amount > 0 || c.rate > 0).map(c => {
+                    const isEdited = overrides[c.key] !== undefined;
+                    const rateMeta = getRateMeta(c.billingItemKey || c.key, shipment.user_id);
+                    let sourceLabel = '';
+                    if (isEdited) sourceLabel = 'Admin override';
+                    else if (rateMeta.source === 'customer') sourceLabel = 'Customer rate';
+                    else if (rateMeta.source === 'pricing') sourceLabel = 'Pricing settings';
+                    else sourceLabel = 'Default rate';
+
+                    return `
+                        <tr class="${isEdited ? 'line-edited' : ''}">
+                            <td>${getActivityIcon(c.billingItemKey || c.key)} ${c.label}</td>
+                            <td>${c.detail}</td>
+                            <td>
+                                <input type="number" class="rate-edit"
+                                    value="${c.rate.toFixed(2)}"
+                                    step="0.01" min="0"
+                                    data-shipment-idx="${idx}"
+                                    data-charge-key="${c.key}"
+                                    onchange="onShipmentRateChange(this)">
+                                <span class="rate-source">${sourceLabel}</span>
+                            </td>
+                            <td class="line-total" id="sb-line-${idx}-${c.key}">${formatCurrency(c.amount)}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                let varianceHtml = '';
+                if (Math.abs(variance) > 0.01) {
+                    const cls = variance > 0 ? 'positive' : 'negative';
+                    varianceHtml = `<span class="variance ${cls}">${variance > 0 ? '+' : ''}${formatCurrency(variance)} vs quoted</span>`;
+                }
+
+                return `
+                    <div class="sb-card ${idx === 0 ? 'expanded' : ''}" id="sb-card-${idx}">
+                        <div class="sb-card-header" onclick="toggleShipmentCard(${idx})">
+                            <div>
+                                <span class="tracking">${tracking}</span>
+                                ${statusBadge}
+                            </div>
+                            <div class="meta">
+                                <span>${createdDate}</span>
+                                <span>${customerName}</span>
+                                <span>${pkgType === 'pallet' ? '🔲' : '📦'} ${pkgQty} ${pkgType}(s)</span>
+                                <span style="font-weight: 700; color: var(--color-primary);">${formatCurrency(currentTotal)}</span>
+                            </div>
+                        </div>
+                        <div class="sb-card-body">
+                            <div style="overflow-x: auto;">
+                                <table class="sb-charges-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Service</th>
+                                            <th>Detail</th>
+                                            <th>Rate</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${chargeRows}</tbody>
+                                    <tfoot>
+                                        <tr style="font-weight: 700; background: var(--color-gray-50);">
+                                            <td colspan="3" style="text-align: right;">Total:</td>
+                                            <td class="line-total" id="sb-total-${idx}">${formatCurrency(currentTotal)}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="sb-summary-row">
+                                <div>
+                                    <span class="total" id="sb-current-total-${idx}">${formatCurrency(currentTotal)}</span>
+                                    <span class="quoted">Original quote: ${formatCurrency(originalTotal)}</span>
+                                    ${varianceHtml}
+                                </div>
+                                <div class="sb-actions">
+                                    ${status === 'pending' ? `
+                                        <button class="btn-save-rates" onclick="saveShipmentRateOverrides(${idx})">Save Rate Changes</button>
+                                        <button class="btn-import" onclick="importShipmentToBilling(${idx})">Import to Activity Log</button>
+                                    ` : status === 'imported' ? `
+                                        <button class="btn-import" disabled>Already Imported</button>
+                                    ` : `
+                                        <button class="btn-import" disabled>Invoiced</button>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function buildShipmentCharges(shipment, overrides) {
+            const pkg = shipment.package || {};
+            const quote = shipment.quote_estimate || {};
+            const pkgType = pkg.type || 'box';
+            const qty = pkg.quantity || 1;
+            const storageDays = quote.storage_days || 30;
+            const zone = shipment.shipping_zone || 'regional';
+            const customerId = shipment.user_id;
+            const charges = [];
+
+            // Storage
+            const storageRateMeta = getRateMeta('storage', customerId);
+            const storageRate = overrides.storage !== undefined ? Number(overrides.storage) : storageRateMeta.rate;
+            let storageAmount = 0;
+            let storageDetail = '';
+            if (pkgType === 'pallet') {
+                storageAmount = storageRate * storageDays * qty;
+                storageDetail = `${qty} pallet(s) x ${storageDays} days x $${storageRate.toFixed(2)}/day`;
+            } else {
+                const cubicFt = (pkg.length || 12) * (pkg.width || 12) * (pkg.height || 12) / 1728;
+                storageAmount = Math.max(cubicFt * storageRate * storageDays * qty, 5.00);
+                storageDetail = `${cubicFt.toFixed(2)} cf x ${storageDays} days x $${storageRate.toFixed(3)}/cf/day x ${qty}`;
+            }
+            charges.push({ key: 'storage', billingItemKey: 'storage', label: 'Storage', rate: storageRate, amount: storageAmount, detail: storageDetail });
+
+            // Handling
+            const handlingRateMeta = getRateMeta('handling', customerId);
+            const handlingRate = overrides.handling !== undefined ? Number(overrides.handling) : handlingRateMeta.rate;
+            const handlingAmount = handlingRate * qty;
+            charges.push({ key: 'handling', billingItemKey: 'handling', label: 'Handling / Receiving', rate: handlingRate, amount: handlingAmount, detail: `${qty} ${pkgType}(s) x $${handlingRate.toFixed(2)}` });
+
+            // Pick & Pack
+            const ppRateMeta = getRateMeta('pick_pack', customerId);
+            const ppRate = overrides.pick_pack !== undefined ? Number(overrides.pick_pack) : ppRateMeta.rate;
+            const ppAmount = ppRate * qty;
+            charges.push({ key: 'pick_pack', billingItemKey: 'pick_pack', label: 'Pick & Pack', rate: ppRate, amount: ppAmount, detail: `${qty} ${pkgType}(s) x $${ppRate.toFixed(2)}` });
+
+            // Shipping
+            if (zone !== 'none' && zone !== 'dropship') {
+                const shippingRateMeta = getRateMeta('shipping', customerId);
+                const billableWeight = pkg.billable_weight || Math.max(pkg.weight || 25, ((pkg.length || 12) * (pkg.width || 12) * (pkg.height || 12)) / 139);
+                const shippingRate = overrides.shipping !== undefined ? Number(overrides.shipping) : (Number(quote.shipping) / qty || shippingRateMeta.rate);
+                const shippingAmount = overrides.shipping !== undefined ? shippingRate * qty : (Number(quote.shipping) || shippingRate * qty);
+                charges.push({ key: 'shipping', billingItemKey: 'shipping', label: 'Shipping', rate: shippingRate, amount: shippingAmount, detail: `${zone} zone, ~${billableWeight.toFixed(0)}lbs x ${qty}` });
+            }
+
+            // Drop Ship
+            if (zone === 'dropship') {
+                const dsQty = shipment.dropship_qty || {};
+                const dsTotal = Number(quote.dropship) || 0;
+                if (dsTotal > 0) {
+                    charges.push({ key: 'dropship', billingItemKey: 'dropship', label: 'Drop Ship', rate: dsTotal, amount: overrides.dropship !== undefined ? Number(overrides.dropship) : dsTotal, detail: `Env:${dsQty.envelope||0} Sm:${dsQty.small||0} Md:${dsQty.medium||0} Lg:${dsQty.large||0}` });
+                }
+            }
+
+            // Black Wrapping
+            if (shipment.black_wrapping) {
+                const wrapRateMeta = getRateMeta('wrapping', customerId);
+                const wrapRate = overrides.wrapping !== undefined ? Number(overrides.wrapping) : wrapRateMeta.rate;
+                const wrapAmount = wrapRate * qty;
+                charges.push({ key: 'wrapping', billingItemKey: 'wrapping', label: 'Black Wrapping', rate: wrapRate, amount: wrapAmount, detail: `${qty} ${pkgType}(s) x $${wrapRate.toFixed(2)}` });
+            }
+
+            // FBA Prep
+            const fba = shipment.fba_prep || (quote.fba_prep ? { enabled: true } : null);
+            if (fba && fba.enabled) {
+                const fbaTotal = Number(quote.fba_prep) || 0;
+                if (fbaTotal > 0) {
+                    charges.push({ key: 'fba_prep', billingItemKey: 'custom', label: 'FBA Prep Services', rate: fbaTotal, amount: overrides.fba_prep !== undefined ? Number(overrides.fba_prep) : fbaTotal, detail: 'Amazon FBA preparation' });
+                }
+            }
+
+            return charges;
+        }
+
+        function getOriginalTotal(shipment) {
+            const quote = shipment.quote_estimate || {};
+            return Number(quote.total) ||
+                (Number(quote.storage || 0) + Number(quote.handling || 0) +
+                 Number(quote.pick_pack || quote.pickPack || 0) + Number(quote.shipping || 0) +
+                 Number(quote.wrapping || 0) + Number(quote.dropship || 0) +
+                 Number(quote.fba_prep || 0));
+        }
+
+        window.toggleShipmentCard = function(idx) {
+            const card = document.getElementById('sb-card-' + idx);
+            if (card) card.classList.toggle('expanded');
+        };
+
+        window.onShipmentRateChange = function(input) {
+            const idx = parseInt(input.dataset.shipmentIdx);
+            const key = input.dataset.chargeKey;
+            const newRate = parseFloat(input.value) || 0;
+            const shipment = shipmentBillingData[idx];
+            if (!shipment) return;
+
+            // Store override
+            if (!shipment.billing_override) shipment.billing_override = {};
+            shipment.billing_override[key] = newRate;
+
+            // Recalculate charges
+            const charges = buildShipmentCharges(shipment, shipment.billing_override);
+            const total = charges.reduce((sum, c) => sum + c.amount, 0);
+
+            // Update specific line item amount
+            charges.forEach(c => {
+                const lineEl = document.getElementById(`sb-line-${idx}-${c.key}`);
+                if (lineEl) lineEl.textContent = formatCurrency(c.amount);
+            });
+
+            // Update totals
+            const totalEl = document.getElementById(`sb-total-${idx}`);
+            if (totalEl) totalEl.textContent = formatCurrency(total);
+            const currentTotalEl = document.getElementById(`sb-current-total-${idx}`);
+            if (currentTotalEl) currentTotalEl.textContent = formatCurrency(total);
+
+            // Highlight edited row
+            input.closest('tr').classList.add('line-edited');
+        };
+
+        window.saveShipmentRateOverrides = async function(idx) {
+            const shipment = shipmentBillingData[idx];
+            if (!shipment || !shipment.billing_override) {
+                showToast('No rate changes to save', 'error');
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, 'shipments', shipment.id), {
+                    billing_override: shipment.billing_override,
+                    billing_updated_at: new Date().toISOString(),
+                    billing_updated_by: currentUser.uid
+                });
+                showToast('Rate overrides saved for ' + (shipment.tracking_number || shipment.id.slice(0, 10)));
+            } catch (err) {
+                showToast('Error saving overrides: ' + err.message, 'error');
+            }
+        };
+
+        window.importShipmentToBilling = async function(idx) {
+            const shipment = shipmentBillingData[idx];
+            if (!shipment) return;
+
+            const customer = customers.find(c => c.id === shipment.user_id);
+            const customerName = customer?.company_name || customer?.name || customer?.email || 'Unknown';
+            const overrides = shipment.billing_override || {};
+            const charges = buildShipmentCharges(shipment, overrides);
+            const tracking = shipment.tracking_number || shipment.id.slice(0, 10);
+
+            if (!confirm(`Import ${charges.length} billing entries for shipment ${tracking} (${customerName})?\n\nTotal: ${formatCurrency(charges.reduce((s, c) => s + c.amount, 0))}`)) return;
+
+            try {
+                const importedIds = [];
+                for (const charge of charges) {
+                    if (charge.amount <= 0) continue;
+
+                    const rateMeta = getRateMeta(charge.billingItemKey || charge.key, shipment.user_id);
+                    const hasOverride = overrides[charge.key] !== undefined;
+
+                    const activity = {
+                        customer_id: shipment.user_id,
+                        customer_name: customerName,
+                        warehouse: shipment.warehouse || 'miami',
+                        date: (shipment.created_at || new Date().toISOString()).split('T')[0],
+                        activity_type: charge.billingItemKey || charge.key,
+                        billing_item_id: charge.billingItemKey || charge.key,
+                        billing_item_label: charge.label,
+                        quote_category: BILLING_ITEMS[charge.billingItemKey]?.quoteKey || 'extra',
+                        calculator_item: BILLING_ITEMS[charge.billingItemKey]?.calculatorItem || false,
+                        description: `${charge.label} — Shipment ${tracking}`,
+                        quantity: charge.amount / (charge.rate || 1),
+                        unit: BILLING_ITEMS[charge.billingItemKey]?.defaultUnit || 'units',
+                        rate: charge.rate,
+                        amount: charge.amount,
+                        rate_source: hasOverride ? 'manual_override' : rateMeta.source,
+                        pricing_rate_path: rateMeta.path || null,
+                        pricing_rate_default: Number(rateMeta.rate) || 0,
+                        customer_rate_applied: rateMeta.source === 'customer',
+                        reference: tracking,
+                        notes: `Auto-imported from shipment ${tracking}`,
+                        source_shipment_id: shipment.id,
+                        source_shipment_tracking: tracking,
+                        logged_by: currentUser.uid,
+                        logged_by_name: currentUserData.name || currentUser.email,
+                        logged_by_email: currentUser.email,
+                        billed: false,
+                        invoice_id: null,
+                        created_at: new Date().toISOString()
+                    };
+
+                    const docRef = await addDoc(collection(db, 'activity_log'), activity);
+                    importedIds.push(docRef.id);
+                }
+
+                // Update shipment billing status
+                await updateDoc(doc(db, 'shipments', shipment.id), {
+                    billing_status: 'imported',
+                    billing_imported_at: new Date().toISOString(),
+                    billing_imported_by: currentUser.uid,
+                    billing_activity_ids: importedIds,
+                    billing_override: overrides
+                });
+
+                shipment.billing_status = 'imported';
+                showToast(`Imported ${importedIds.length} billing entries for ${tracking}`);
+                renderShipmentBillingCards();
+                updateShipmentBillingKPIs();
+                await loadStats();
+            } catch (err) {
+                showToast('Import error: ' + err.message, 'error');
+            }
+        };
+
+        window.importAllUnbilledShipments = async function() {
+            const unbilled = shipmentBillingData.filter(s => (s.billing_status || 'pending') === 'pending');
+            if (unbilled.length === 0) {
+                showToast('No unbilled shipments to import', 'error');
+                return;
+            }
+
+            const total = unbilled.reduce((sum, s) => {
+                const charges = buildShipmentCharges(s, s.billing_override || {});
+                return sum + charges.reduce((s2, c) => s2 + c.amount, 0);
+            }, 0);
+
+            if (!confirm(`Import ALL ${unbilled.length} unbilled shipments?\n\nTotal charges: ${formatCurrency(total)}\n\nThis will create activity log entries for all shipments.`)) return;
+
+            let imported = 0;
+            for (let i = 0; i < shipmentBillingData.length; i++) {
+                if ((shipmentBillingData[i].billing_status || 'pending') === 'pending') {
+                    try {
+                        const shipment = shipmentBillingData[i];
+                        const customer = customers.find(c => c.id === shipment.user_id);
+                        const customerName = customer?.company_name || customer?.name || customer?.email || 'Unknown';
+                        const overrides = shipment.billing_override || {};
+                        const charges = buildShipmentCharges(shipment, overrides);
+                        const tracking = shipment.tracking_number || shipment.id.slice(0, 10);
+                        const importedIds = [];
+
+                        for (const charge of charges) {
+                            if (charge.amount <= 0) continue;
+                            const rateMeta = getRateMeta(charge.billingItemKey || charge.key, shipment.user_id);
+                            const hasOverride = overrides[charge.key] !== undefined;
+
+                            const activity = {
+                                customer_id: shipment.user_id,
+                                customer_name: customerName,
+                                warehouse: shipment.warehouse || 'miami',
+                                date: (shipment.created_at || new Date().toISOString()).split('T')[0],
+                                activity_type: charge.billingItemKey || charge.key,
+                                billing_item_id: charge.billingItemKey || charge.key,
+                                billing_item_label: charge.label,
+                                quote_category: BILLING_ITEMS[charge.billingItemKey]?.quoteKey || 'extra',
+                                calculator_item: BILLING_ITEMS[charge.billingItemKey]?.calculatorItem || false,
+                                description: `${charge.label} — Shipment ${tracking}`,
+                                quantity: charge.amount / (charge.rate || 1),
+                                unit: BILLING_ITEMS[charge.billingItemKey]?.defaultUnit || 'units',
+                                rate: charge.rate,
+                                amount: charge.amount,
+                                rate_source: hasOverride ? 'manual_override' : rateMeta.source,
+                                pricing_rate_path: rateMeta.path || null,
+                                pricing_rate_default: Number(rateMeta.rate) || 0,
+                                customer_rate_applied: rateMeta.source === 'customer',
+                                reference: tracking,
+                                notes: `Auto-imported from shipment ${tracking}`,
+                                source_shipment_id: shipment.id,
+                                source_shipment_tracking: tracking,
+                                logged_by: currentUser.uid,
+                                logged_by_name: currentUserData.name || currentUser.email,
+                                logged_by_email: currentUser.email,
+                                billed: false,
+                                invoice_id: null,
+                                created_at: new Date().toISOString()
+                            };
+                            const docRef = await addDoc(collection(db, 'activity_log'), activity);
+                            importedIds.push(docRef.id);
+                        }
+
+                        await updateDoc(doc(db, 'shipments', shipment.id), {
+                            billing_status: 'imported',
+                            billing_imported_at: new Date().toISOString(),
+                            billing_imported_by: currentUser.uid,
+                            billing_activity_ids: importedIds,
+                            billing_override: overrides
+                        });
+
+                        shipment.billing_status = 'imported';
+                        imported++;
+                    } catch (err) {
+                        console.error('Bulk import error for shipment:', shipmentBillingData[i].id, err);
+                    }
+                }
+            }
+
+            showToast(`Imported ${imported} shipments to activity log`);
+            renderShipmentBillingCards();
+            updateShipmentBillingKPIs();
+            await loadStats();
+        };
+
+        function updateShipmentBillingKPIs() {
+            let unbilledCount = 0;
+            let importedCount = 0;
+            let unbilledTotal = 0;
+
+            shipmentBillingData.forEach(s => {
+                const status = s.billing_status || 'pending';
+                if (status === 'pending') {
+                    unbilledCount++;
+                    const charges = buildShipmentCharges(s, s.billing_override || {});
+                    unbilledTotal += charges.reduce((sum, c) => sum + c.amount, 0);
+                } else if (status === 'imported') {
+                    importedCount++;
+                }
+            });
+
+            document.getElementById('sb-kpi-unbilled').textContent = unbilledCount;
+            document.getElementById('sb-kpi-imported').textContent = importedCount;
+            document.getElementById('sb-kpi-total-unbilled').textContent = formatCurrency(unbilledTotal);
+            document.getElementById('sb-kpi-shipment-count').textContent = shipmentBillingData.length;
+
+            // Show/hide bulk bar
+            const bulkBar = document.getElementById('sb-bulk-bar');
+            if (unbilledCount > 0) {
+                bulkBar.style.display = 'flex';
+                document.getElementById('sb-bulk-count').textContent = unbilledCount;
+                document.getElementById('sb-bulk-total').textContent = formatCurrency(unbilledTotal);
+            } else {
+                bulkBar.style.display = 'none';
+            }
+        }
 
         // ──────────────────────────────────────────────
         // LOGOUT
