@@ -215,10 +215,15 @@ def disruption_severity(text):
 
 
 def now_est():
-    """Current datetime in US Eastern."""
-    utc_now = datetime.now(timezone.utc)
-    est_offset = timedelta(hours=-5)
-    return utc_now + est_offset
+    """Current datetime in US Eastern (handles EST/EDT automatically)."""
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("America/New_York"))
+    except ImportError:
+        # Fallback for Python < 3.9
+        utc_now = datetime.now(timezone.utc)
+        est_offset = timedelta(hours=-5)
+        return utc_now + est_offset
 
 
 def log_execution(status, sections_ok, sections_failed, duration_ms, error=None):

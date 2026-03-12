@@ -634,4 +634,20 @@
         <priority>0.7</priority>
     </url>
 
+    <!-- Blog: Dropshipping Fulfillment Guide Miami 3PL -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/dropshipping-fulfillment-guide-miami-3pl.html</loc>
+        <lastmod>2026-03-11</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- Blog: Dropshipping vs 3PL Which Model Best Ecommerce -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/dropshipping-vs-3pl-which-model-best-ecommerce.html</loc>
+        <lastmod>2026-03-11</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
 </urlset>

@@ -398,9 +398,33 @@
             display: block;
             margin-top: 2px;
         }
+        .sb-charges-table .line-total-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        .sb-charges-table input.amount-edit {
+            width: 110px;
+            padding: 4px 8px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            text-align: right;
+        }
+        .sb-charges-table input.amount-edit:focus {
+            border-color: var(--color-primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.1);
+        }
         .sb-charges-table .line-total {
             font-weight: 700;
             color: var(--color-primary);
+        }
+        .sb-charges-table .override-meta {
+            font-size: 0.65rem;
+            color: var(--color-gray-400);
+            text-align: right;
         }
         .sb-charges-table .line-edited {
             background: #fef3c7;
@@ -956,12 +980,13 @@
     <div id="toast" class="toast"></div>
 
     <script src="../js/column-prefs.js"></script>
+    <script src="../js/billing-engine.js"></script>
     <script src="../js/lang/es.js"></script>
     <script src="../js/i18n.js"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, writeBatch, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
@@ -978,33 +1003,9 @@
         const db = getFirestore(app);
 
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
-
-        // ──────────────────────────────────────────────
-        // BILLING ITEM CATALOG
-        // Quote-calculator items are first-class, with operational items
-        // mapped back to quote categories for reconciliation.
-        // ──────────────────────────────────────────────
-        const BILLING_ITEMS = {
-            storage:           { label: 'Storage',              defaultUnit: 'pallet-days', icon: '🏭', ratePath: 'storage.palletDaily', fallbackRate: 0.75, quoteKey: 'storage', calculatorItem: true },
-            handling:          { label: 'Handling',             defaultUnit: 'orders',      icon: '📥', ratePath: 'handling.receiving', fallbackRate: 15.00, quoteKey: 'handling', calculatorItem: true },
-            pick_pack:         { label: 'Pick & Pack',          defaultUnit: 'orders',      icon: '📋', ratePath: 'handling.pickpack', fallbackRate: 8.00, quoteKey: 'pick_pack', calculatorItem: true },
-            shipping:          { label: 'Shipping / Outbound',  defaultUnit: 'shipments',   icon: '🚚', ratePath: null,                 fallbackRate: 45.00, quoteKey: 'shipping', calculatorItem: true },
-            wrapping:          { label: 'Black Wrapping',       defaultUnit: 'pallets',     icon: '⬛', ratePath: 'handling.wrapping', fallbackRate: 7.00, quoteKey: 'wrapping', calculatorItem: true },
-            dropship:          { label: 'Drop Ship (Units)',    defaultUnit: 'units',       icon: '📬', ratePath: null,                 fallbackRate: 0.00, quoteKey: 'dropship', calculatorItem: true },
-            receiving:         { label: 'Receiving / Intake',   defaultUnit: 'pallets',     icon: '📥', ratePath: 'handling.receiving', fallbackRate: 15.00, quoteKey: 'handling', calculatorItem: false },
-            labeling:          { label: 'Labeling',             defaultUnit: 'items',       icon: '🏷️', ratePath: 'handling.labeling', fallbackRate: 0.15, quoteKey: 'handling', calculatorItem: false },
-            palletizing:       { label: 'Palletizing',          defaultUnit: 'pallets',     icon: '📦', ratePath: 'handling.palletizing', fallbackRate: 10.00, quoteKey: 'handling', calculatorItem: false },
-            unloading:         { label: 'Unloading',            defaultUnit: 'hours',       icon: '⬇️', ratePath: 'handling.unloading', fallbackRate: 45.00, quoteKey: 'handling', calculatorItem: false },
-            loading:           { label: 'Loading',              defaultUnit: 'hours',       icon: '⬆️', ratePath: 'handling.loading', fallbackRate: 45.00, quoteKey: 'handling', calculatorItem: false },
-            kitting:           { label: 'Kitting / Assembly',   defaultUnit: 'kits',        icon: '🔧', ratePath: 'additional.kitting', fallbackRate: 5.00, quoteKey: 'extra', calculatorItem: false },
-            returns:           { label: 'Returns Processing',   defaultUnit: 'items',       icon: '🔄', ratePath: 'additional.returns', fallbackRate: 2.00, quoteKey: 'extra', calculatorItem: false },
-            rush:              { label: 'Rush Handling',        defaultUnit: 'orders',      icon: '⚡', ratePath: 'additional.rush', fallbackRate: 25.00, quoteKey: 'extra', calculatorItem: false },
-            pickup_delivery:   { label: 'Pickup / Delivery',    defaultUnit: 'trips',       icon: '🚛', ratePath: null,                 fallbackRate: 120.00, quoteKey: 'extra', calculatorItem: false },
-            container_drayage: { label: 'Container Drayage',    defaultUnit: 'containers',  icon: '🚢', ratePath: null,                 fallbackRate: 250.00, quoteKey: 'extra', calculatorItem: false },
-            custom:            { label: 'Custom Service',       defaultUnit: 'units',       icon: '✏️', ratePath: null,                 fallbackRate: 0.00, quoteKey: 'extra', calculatorItem: false }
-        };
-
-        const QUOTE_KEYS = ['storage', 'handling', 'pick_pack', 'shipping', 'wrapping', 'dropship'];
+        const BillingEngine = window.MA3PLBillingEngine;
+        const BILLING_ITEMS = BillingEngine.BILLING_ITEMS;
+        const QUOTE_KEYS = BillingEngine.QUOTE_KEYS;
 
         let customers = [];
         let pricingData = {};
@@ -1028,136 +1029,23 @@
         }
 
         function normalizeServiceKey(value) {
-            return String(value || '')
-                .trim()
-                .toLowerCase()
-                .replace(/&/g, 'and')
-                .replace(/[^a-z0-9]+/g, '_')
-                .replace(/^_+|_+$/g, '');
+            return BillingEngine.normalizeServiceKey(value);
         }
 
         function mapServiceToItem(serviceValue) {
-            const key = normalizeServiceKey(serviceValue);
-            const directMap = {
-                storage: 'storage',
-                pallet_storage_daily: 'storage',
-                pallet_storage: 'storage',
-                receiving: 'receiving',
-                handling: 'handling',
-                pick_and_pack: 'pick_pack',
-                pick_pack: 'pick_pack',
-                shipping: 'shipping',
-                outbound_shipping: 'shipping',
-                wrapping: 'wrapping',
-                black_wrapping: 'wrapping',
-                drop_ship: 'dropship',
-                dropship: 'dropship',
-                labeling: 'labeling',
-                palletizing: 'palletizing',
-                unloading: 'unloading',
-                loading: 'loading',
-                kitting: 'kitting',
-                returns_processing: 'returns',
-                returns: 'returns',
-                rush_handling: 'rush',
-                pickup_delivery: 'pickup_delivery',
-                container_drayage: 'container_drayage',
-                custom_service: 'custom'
-            };
-
-            if (directMap[key]) return directMap[key];
-            if (key.includes('pick') && key.includes('pack')) return 'pick_pack';
-            if (key.includes('drop') && key.includes('ship')) return 'dropship';
-            if (key.includes('wrap')) return 'wrapping';
-            if (key.includes('receiv')) return 'receiving';
-            if (key.includes('storag')) return 'storage';
-            return null;
+            return BillingEngine.mapServiceToItem(serviceValue);
         }
 
         function buildCustomerRateIndex() {
-            customerRateIndex = new Map();
-            const rates = Array.isArray(pricingData?.customerRates) ? pricingData.customerRates : [];
-
-            rates.forEach((row) => {
-                const customerId = row?.customerId;
-                const itemKey = mapServiceToItem(row?.service);
-                const rate = Number(row?.rate);
-
-                if (!customerId || !itemKey || !Number.isFinite(rate)) return;
-
-                let customerMap = customerRateIndex.get(customerId);
-                if (!customerMap) {
-                    customerMap = new Map();
-                    customerRateIndex.set(customerId, customerMap);
-                }
-
-                const entry = {
-                    rate,
-                    unit: String(row?.unit || '').trim(),
-                    sourceService: row?.service || itemKey
-                };
-
-                customerMap.set(itemKey, entry);
-
-                // Also provide fallback override on the quote category when relevant.
-                const quoteKey = BILLING_ITEMS[itemKey]?.quoteKey;
-                if (quoteKey && quoteKey !== 'extra' && !customerMap.has(quoteKey)) {
-                    customerMap.set(quoteKey, entry);
-                }
-            });
+            customerRateIndex = BillingEngine.buildCustomerRateIndex(pricingData);
         }
 
         function resolveCustomerRate(customerId, activityType) {
-            if (!customerId || !activityType) return null;
-            const customerMap = customerRateIndex.get(customerId);
-            if (!customerMap) return null;
-
-            if (customerMap.has(activityType)) {
-                return customerMap.get(activityType);
-            }
-
-            const quoteKey = getQuoteCategory(activityType);
-            if (quoteKey && quoteKey !== 'extra' && customerMap.has(quoteKey)) {
-                return customerMap.get(quoteKey);
-            }
-
-            return null;
+            return BillingEngine.resolveCustomerRate(customerRateIndex, customerId, activityType);
         }
 
         function getRateMeta(activityType, customerId) {
-            const item = BILLING_ITEMS[activityType];
-            if (!item) {
-                return { rate: 0, source: 'unknown', path: null, customerRate: null };
-            }
-
-            const customerRate = resolveCustomerRate(customerId, activityType);
-            if (customerRate) {
-                return {
-                    rate: Number(customerRate.rate) || 0,
-                    source: 'customer',
-                    path: null,
-                    customerRate
-                };
-            }
-
-            if (item.ratePath) {
-                const value = getNestedValue(pricingData, item.ratePath);
-                if (value !== undefined && value !== null && Number.isFinite(Number(value))) {
-                    return {
-                        rate: Number(value),
-                        source: 'pricing',
-                        path: item.ratePath,
-                        customerRate: null
-                    };
-                }
-            }
-
-            return {
-                rate: Number(item.fallbackRate) || 0,
-                source: 'fallback',
-                path: item.ratePath || null,
-                customerRate: null
-            };
+            return BillingEngine.getRateMeta(pricingData, customerRateIndex, activityType, customerId);
         }
 
         function getRateForType(activityType, customerId) {
@@ -1165,33 +1053,23 @@
         }
 
         function formatCurrency(n) {
-            return '$' + (Number(n) || 0).toFixed(2);
+            return '$' + BillingEngine.roundCurrency(n).toFixed(2);
         }
 
         function getActivityLabel(type) {
-            return BILLING_ITEMS[type]?.label || type;
+            return BillingEngine.getActivityLabel(type);
         }
 
         function getActivityIcon(type) {
-            return BILLING_ITEMS[type]?.icon || '📝';
+            return BillingEngine.getActivityIcon(type);
         }
 
         function getQuoteCategory(activityType) {
-            const quoteKey = BILLING_ITEMS[activityType]?.quoteKey;
-            return quoteKey || 'extra';
+            return BillingEngine.getQuoteCategory(activityType);
         }
 
         function getQuoteCategoryLabel(quoteKey) {
-            const map = {
-                storage: 'Storage',
-                handling: 'Handling',
-                pick_pack: 'Pick & Pack',
-                shipping: 'Shipping',
-                wrapping: 'Black Wrapping',
-                dropship: 'Drop Ship',
-                extra: 'Extra / Unquoted'
-            };
-            return map[quoteKey] || quoteKey;
+            return BillingEngine.getQuoteCategoryLabel(quoteKey);
         }
 
         function todayStr() {
@@ -1852,7 +1730,148 @@
         // ──────────────────────────────────────────────
         // GENERATE INVOICE TAB
         // ──────────────────────────────────────────────
-        let previewActivities = [];
+        let previewInvoiceBundle = null;
+
+        function getInvoiceSourceLabel(sourceType, count) {
+            const labels = {
+                activity_log: count === 1 ? 'activity entry' : 'activity entries',
+                storage_snapshot: count === 1 ? 'storage snapshot' : 'storage snapshots',
+                billable_event: count === 1 ? 'legacy event' : 'legacy events',
+                auto_shipment: count === 1 ? 'shipment charge' : 'shipment charges'
+            };
+            return `${count} ${labels[sourceType] || 'items'}`;
+        }
+
+        function getEntryDate(entry) {
+            return (entry.date || entry.created_at || '').split('T')[0] || '';
+        }
+
+        function isWithinPeriod(dateValue, periodStart, periodEnd) {
+            if (!dateValue) return true;
+            return dateValue >= periodStart && dateValue <= periodEnd;
+        }
+
+        async function buildInvoicePreviewBundle(customerId, periodStart, periodEnd) {
+            const [activitySnap, storageSnap, eventsSnap, shipmentSnap] = await Promise.all([
+                getDocs(query(
+                    collection(db, 'activity_log'),
+                    where('customer_id', '==', customerId),
+                    where('billed', '==', false),
+                    where('date', '>=', periodStart),
+                    where('date', '<=', periodEnd),
+                    orderBy('date', 'asc')
+                )),
+                getDocs(query(
+                    collection(db, 'storage_snapshots'),
+                    where('customer_id', '==', customerId),
+                    where('date', '>=', periodStart),
+                    where('date', '<=', periodEnd)
+                )),
+                getDocs(query(
+                    collection(db, 'billable_events'),
+                    where('customer_id', '==', customerId),
+                    where('invoiced', '==', false)
+                )),
+                getDocs(query(
+                    collection(db, 'shipments'),
+                    where('user_id', '==', customerId),
+                    where('created_at', '>=', periodStart),
+                    where('created_at', '<=', periodEnd + 'T23:59:59'),
+                    orderBy('created_at', 'asc')
+                ))
+            ]);
+
+            const activityEntries = [];
+            const syncedShipmentIds = new Set();
+            activitySnap.forEach((activityDoc) => {
+                const activity = { id: activityDoc.id, ...activityDoc.data() };
+                activityEntries.push({
+                    ...activity,
+                    source_type: 'activity_log',
+                    source_id: activityDoc.id
+                });
+                if (activity.source_shipment_id) syncedShipmentIds.add(activity.source_shipment_id);
+            });
+
+            const storageSnapshots = [];
+            storageSnap.forEach((snapshotDoc) => {
+                storageSnapshots.push({ id: snapshotDoc.id, ...snapshotDoc.data() });
+            });
+            const storageEntries = BillingEngine.buildStorageSnapshotEntries(storageSnapshots, {
+                pricingData,
+                customerRateIndex,
+                customerId
+            });
+
+            const legacyEvents = [];
+            eventsSnap.forEach((eventDoc) => {
+                legacyEvents.push({ id: eventDoc.id, ...eventDoc.data() });
+            });
+            const legacyEventEntries = BillingEngine.buildBillableEventEntries(
+                legacyEvents.filter((event) => {
+                    if (event.shipment_id) return false;
+                    return isWithinPeriod(getEntryDate(event), periodStart, periodEnd);
+                })
+            );
+
+            const pendingShipments = [];
+            const autoShipmentEntries = [];
+            const autoShipmentRefs = [];
+            shipmentSnap.forEach((shipmentDoc) => {
+                const shipment = { id: shipmentDoc.id, ...shipmentDoc.data() };
+                const status = shipment.billing_status || 'pending';
+                if (status === 'invoiced') return;
+                if (syncedShipmentIds.has(shipment.id)) return;
+
+                pendingShipments.push(shipment);
+                const shipmentEntries = BillingEngine.buildShipmentActivityEntries(shipment, {
+                    pricingData,
+                    customerRateIndex,
+                    customerName: customers.find((customer) => customer.id === shipment.user_id)?.company_name
+                        || customers.find((customer) => customer.id === shipment.user_id)?.name
+                        || customers.find((customer) => customer.id === shipment.user_id)?.email
+                        || 'Unknown'
+                }).map((entry) => ({
+                    ...entry,
+                    source_type: 'auto_shipment',
+                    source_id: `${shipment.id}:${entry.source_charge_key || entry.billing_item_id}`
+                }));
+
+                autoShipmentEntries.push(...shipmentEntries);
+                autoShipmentRefs.push({
+                    shipment,
+                    entries: shipmentEntries
+                });
+            });
+
+            const allEntries = [
+                ...activityEntries,
+                ...storageEntries,
+                ...legacyEventEntries,
+                ...autoShipmentEntries
+            ];
+            const lineItems = BillingEngine.groupInvoiceEntries(allEntries);
+            const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
+
+            return {
+                entries: allEntries,
+                lineItems,
+                subtotal,
+                activityEntries,
+                storageEntries,
+                legacyEventEntries,
+                autoShipmentEntries,
+                autoShipmentRefs,
+                syncedShipmentIds: Array.from(syncedShipmentIds),
+                counts: {
+                    activityEntries: activityEntries.length,
+                    storageEntries: storageEntries.length,
+                    legacyEventEntries: legacyEventEntries.length,
+                    autoShipmentEntries: autoShipmentEntries.length,
+                    pendingShipments: pendingShipments.length
+                }
+            };
+        }
 
         window.previewInvoiceActivities = async function() {
             const customerId = document.getElementById('gen-customer').value;
@@ -1868,52 +1887,13 @@
             const customer = customers.find(c => c.id === customerId);
 
             try {
-                const q = query(
-                    collection(db, 'activity_log'),
-                    where('customer_id', '==', customerId),
-                    where('billed', '==', false),
-                    where('date', '>=', periodStart),
-                    where('date', '<=', periodEnd),
-                    orderBy('date', 'asc')
-                );
-                const snap = await getDocs(q);
-
-                previewActivities = [];
-                snap.forEach(d => {
-                    previewActivities.push({ id: d.id, ...d.data() });
-                });
-
-                // Group by billing item + rate for invoice line items
-                const grouped = {};
-                previewActivities.forEach(a => {
-                    const itemType = a.billing_item_id || a.activity_type || 'custom';
-                    const quoteCategory = a.quote_category || getQuoteCategory(itemType);
-                    const key = [itemType, a.unit, Number(a.rate || 0).toFixed(4)].join('|');
-                    if (!grouped[key]) {
-                        grouped[key] = {
-                            billing_item_id: itemType,
-                            quote_category: quoteCategory,
-                            description: getActivityLabel(itemType),
-                            unit: a.unit,
-                            rate: Number(a.rate) || 0,
-                            quantity: 0,
-                            amount: 0,
-                            entries: 0,
-                            ids: []
-                        };
-                    }
-                    grouped[key].quantity += Number(a.quantity) || 0;
-                    grouped[key].amount += Number(a.amount) || 0;
-                    grouped[key].entries++;
-                    grouped[key].ids.push(a.id);
-                });
-
-                const lineItems = Object.values(grouped).sort((a, b) => b.amount - a.amount);
-                const grandTotal = lineItems.reduce((sum, li) => sum + li.amount, 0);
+                previewInvoiceBundle = await buildInvoicePreviewBundle(customerId, periodStart, periodEnd);
+                const lineItems = previewInvoiceBundle.lineItems;
+                const grandTotal = previewInvoiceBundle.subtotal;
 
                 if (lineItems.length === 0) {
                     document.getElementById('gen-preview').innerHTML =
-                        '<p style="text-align: center; color: var(--color-gray-400); padding: 40px;">No unbilled activities found for this customer in the selected period.</p>';
+                        '<p style="text-align: center; color: var(--color-gray-400); padding: 40px;">No unbilled billing sources found for this customer in the selected period.</p>';
                     return;
                 }
 
@@ -1924,15 +1904,28 @@
                         <td>${li.unit}</td>
                         <td>${formatCurrency(li.rate)}</td>
                         <td><strong>${formatCurrency(li.amount)}</strong></td>
-                        <td style="color: var(--color-gray-400);">${li.entries} entries &bull; ${getQuoteCategoryLabel(li.quote_category)}</td>
+                        <td style="color: var(--color-gray-400);">
+                            ${Object.entries(li.source_refs.reduce((acc, ref) => {
+                                acc[ref.type] = (acc[ref.type] || 0) + 1;
+                                return acc;
+                            }, {})).map(([type, count]) => getInvoiceSourceLabel(type, count)).join(' &bull; ')}
+                            &bull; ${getQuoteCategoryLabel(li.category)}
+                        </td>
                     </tr>
                 `).join('');
+
+                const sourceSummary = [
+                    getInvoiceSourceLabel('activity_log', previewInvoiceBundle.counts.activityEntries),
+                    getInvoiceSourceLabel('storage_snapshot', previewInvoiceBundle.counts.storageEntries),
+                    getInvoiceSourceLabel('billable_event', previewInvoiceBundle.counts.legacyEventEntries),
+                    `${previewInvoiceBundle.counts.pendingShipments} pending shipment(s)`
+                ].join(' &bull; ');
 
                 document.getElementById('gen-preview').innerHTML = `
                     <div class="section-card" style="border: 2px solid var(--color-primary);">
                         <h4 style="margin-bottom: var(--spacing-sm);">Invoice Preview — ${customer?.company_name || customer?.name}</h4>
                         <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
-                            Period: ${periodStart} to ${periodEnd} &bull; ${previewActivities.length} activity entries
+                            Period: ${periodStart} to ${periodEnd} &bull; ${sourceSummary}
                         </p>
                         <table class="activity-table">
                             <thead>
@@ -1958,7 +1951,7 @@
                     <div class="generate-invoice-bar">
                         <div class="info">
                             <h3>Ready to Generate Invoice</h3>
-                            <p>${lineItems.length} line items &bull; ${previewActivities.length} activities &bull; ${formatCurrency(grandTotal)} total</p>
+                            <p>${lineItems.length} line items &bull; ${previewInvoiceBundle.entries.length} billable entries &bull; ${formatCurrency(grandTotal)} total</p>
                         </div>
                         <button class="btn-generate" onclick="generateInvoiceFromActivities()">Generate Invoice</button>
                     </div>
@@ -1978,34 +1971,10 @@
             const periodEnd = document.getElementById('gen-period-end').value;
             const dueDays = parseInt(document.getElementById('gen-due-days').value);
 
-            if (previewActivities.length === 0) {
-                showToast('No activities to invoice', 'error');
+            if (!previewInvoiceBundle || previewInvoiceBundle.lineItems.length === 0) {
+                showToast('No billable items to invoice', 'error');
                 return;
             }
-
-            // Group activities into line items
-            const grouped = {};
-            previewActivities.forEach(a => {
-                const itemType = a.billing_item_id || a.activity_type || 'custom';
-                const quoteCategory = a.quote_category || getQuoteCategory(itemType);
-                const key = [itemType, a.unit, Number(a.rate || 0).toFixed(4)].join('|');
-                if (!grouped[key]) {
-                    grouped[key] = {
-                        category: quoteCategory,
-                        billing_item_id: itemType,
-                        description: getActivityLabel(itemType),
-                        unit: a.unit,
-                        rate: Number(a.rate) || 0,
-                        quantity: 0,
-                        amount: 0
-                    };
-                }
-                grouped[key].quantity += Number(a.quantity) || 0;
-                grouped[key].amount += Number(a.amount) || 0;
-            });
-
-            const lineItems = Object.values(grouped);
-            const subtotal = lineItems.reduce((sum, li) => sum + li.amount, 0);
 
             // Generate invoice number
             const now = new Date();
@@ -2014,6 +1983,16 @@
                 String(Math.floor(Math.random() * 9000) + 1000);
 
             const dueDate = new Date(now.getTime() + dueDays * 24 * 60 * 60 * 1000);
+            const lineItems = previewInvoiceBundle.lineItems.map((item) => ({
+                category: item.category,
+                billing_item_id: item.billing_item_id,
+                description: item.description,
+                unit: item.unit,
+                rate: item.rate,
+                quantity: item.quantity,
+                amount: item.amount
+            }));
+            const subtotal = previewInvoiceBundle.subtotal;
 
             const invoice = {
                 invoice_number: invNumber,
@@ -2022,7 +2001,7 @@
                 customer_email: customer?.email,
                 billing_period_start: periodStart,
                 billing_period_end: periodEnd,
-                billing_cycle: 'activity-based',
+                billing_cycle: 'comprehensive-billing',
                 due_date: dueDate.toISOString().split('T')[0],
                 line_items: lineItems,
                 subtotal: subtotal,
@@ -2031,9 +2010,12 @@
                 total: subtotal,
                 amount_paid: 0,
                 status: 'draft',
-                notes: `Generated from ${previewActivities.length} activity log entries (${periodStart} to ${periodEnd}). Activity-based billing.`,
-                source: 'activity_billing',
-                activity_count: previewActivities.length,
+                notes: `Generated from ${previewInvoiceBundle.entries.length} billable entries (${periodStart} to ${periodEnd}). Includes shipments, activity log, storage snapshots, and legacy billable events.`,
+                source: 'comprehensive_billing',
+                activity_count: previewInvoiceBundle.counts.activityEntries + previewInvoiceBundle.counts.autoShipmentEntries,
+                storage_snapshot_count: previewInvoiceBundle.counts.storageEntries,
+                billable_event_count: previewInvoiceBundle.counts.legacyEventEntries,
+                shipment_entry_count: previewInvoiceBundle.counts.autoShipmentEntries,
                 created_at: now.toISOString(),
                 created_by: currentUser.uid
             };
@@ -2042,18 +2024,92 @@
                 // 1. Create invoice
                 const invoiceRef = await addDoc(collection(db, 'invoices'), invoice);
 
-                // 2. Mark all activities as billed
-                for (const activity of previewActivities) {
+                // 2. Mark existing activity log entries as billed
+                for (const activity of previewInvoiceBundle.activityEntries) {
                     await updateDoc(doc(db, 'activity_log', activity.id), {
                         billed: true,
                         invoice_id: invoiceRef.id
                     });
                 }
 
+                // 3. Mark storage snapshots and legacy billable events
+                for (const snapshotEntry of previewInvoiceBundle.storageEntries) {
+                    await updateDoc(doc(db, 'storage_snapshots', snapshotEntry.source_id), {
+                        billed: true,
+                        invoice_id: invoiceRef.id
+                    });
+                }
+
+                for (const eventEntry of previewInvoiceBundle.legacyEventEntries) {
+                    await updateDoc(doc(db, 'billable_events', eventEntry.source_id), {
+                        invoiced: true,
+                        invoice_id: invoiceRef.id
+                    });
+                }
+
+                // 4. Persist auto-shipment entries as already billed invoice lines for transparency
+                const invoicedShipmentIds = new Set();
+                for (const shipmentRef of previewInvoiceBundle.autoShipmentRefs) {
+                    const createdIds = [];
+                    for (const entry of shipmentRef.entries) {
+                        const docRef = await addDoc(collection(db, 'activity_log'), {
+                            ...entry,
+                            logged_by: currentUser.uid,
+                            logged_by_name: currentUserData.name || currentUser.email,
+                            logged_by_email: currentUser.email,
+                            billed: true,
+                            invoice_id: invoiceRef.id,
+                            created_at: new Date().toISOString()
+                        });
+                        createdIds.push(docRef.id);
+                    }
+
+                    await updateDoc(doc(db, 'shipments', shipmentRef.shipment.id), {
+                        billing_status: 'invoiced',
+                        billing_invoice_id: invoiceRef.id,
+                        billing_activity_ids: createdIds,
+                        billing_invoiced_at: new Date().toISOString()
+                    });
+                    invoicedShipmentIds.add(shipmentRef.shipment.id);
+                }
+
+                // 5. Mark synced shipment records as invoiced
+                const activityShipmentIds = new Set(
+                    previewInvoiceBundle.activityEntries
+                        .map((entry) => entry.source_shipment_id)
+                        .filter(Boolean)
+                );
+                for (const shipmentId of activityShipmentIds) {
+                    if (invoicedShipmentIds.has(shipmentId)) continue;
+                    await updateDoc(doc(db, 'shipments', shipmentId), {
+                        billing_status: 'invoiced',
+                        billing_invoice_id: invoiceRef.id,
+                        billing_invoiced_at: new Date().toISOString()
+                    });
+                }
+
+                const allShipmentIds = new Set([
+                    ...Array.from(invoicedShipmentIds),
+                    ...Array.from(activityShipmentIds)
+                ]);
+                for (const shipmentId of allShipmentIds) {
+                    const relatedEventsSnap = await getDocs(query(
+                        collection(db, 'billable_events'),
+                        where('shipment_id', '==', shipmentId)
+                    ));
+                    for (const eventDoc of relatedEventsSnap.docs) {
+                        if (eventDoc.data().invoiced) continue;
+                        await updateDoc(eventDoc.ref, {
+                            invoiced: true,
+                            invoice_id: invoiceRef.id
+                        });
+                    }
+                }
+
                 showToast(`Invoice ${invNumber} created! Total: ${formatCurrency(subtotal)}`);
 
                 // Reset preview
-                previewActivities = [];
+                previewInvoiceBundle = null;
                 document.getElementById('gen-preview').innerHTML = `
                     <div style="text-align: center; padding: 40px;">
                         <div style="font-size: 3rem;">✅</div>
@@ -2064,6 +2120,7 @@
                 `;
 
                 await loadStats();
+                await loadShipmentBilling();
 
             } catch (err) {
                 showToast('Error creating invoice: ' + err.message, 'error');
@@ -2111,6 +2168,54 @@
             }
         };
 
+        function sanitizeShipmentOverrideDetail(shipment) {
+            const normalized = BillingEngine.getShipmentOverrides(shipment);
+            const detail = {};
+            const legacy = {};
+
+            Object.entries(normalized).forEach(([key, value]) => {
+                const row = {};
+                if (value.rate !== null) {
+                    row.rate = value.rate;
+                    legacy[key] = value.rate;
+                }
+                if (value.amount !== null) row.amount = value.amount;
+                if (value.note) row.note = value.note;
+                if (Object.keys(row).length) detail[key] = row;
+            });
+
+            shipment.billing_override_detail = detail;
+            shipment.billing_override = legacy;
+            return normalized;
+        }
+
+        function buildShipmentCharges(shipment) {
+            sanitizeShipmentOverrideDetail(shipment);
+            return BillingEngine.buildShipmentCharges(shipment, {
+                pricingData,
+                customerRateIndex
+            });
+        }
+
+        function getOriginalTotal(shipment) {
+            return BillingEngine.getOriginalShipmentTotal(shipment);
+        }
+
+        function getChargeSourceLabel(charge) {
+            if (charge.override?.amount !== null) return 'Admin amount override';
+            if (charge.override?.rate !== null) return 'Admin rate override';
+            if (charge.quoteAmount > 0) return 'Shipment quote';
+            if (charge.rateMeta?.source === 'customer') return 'Customer rate';
+            if (charge.rateMeta?.source === 'pricing') return 'Pricing settings';
+            return 'Fallback rate';
+        }
+
+        function getShipmentSyncButtonLabel(status) {
+            if (status === 'imported') return 'Resync Billing';
+            if (status === 'invoiced') return 'Invoiced';
+            return 'Sync to Billing';
+        }
+
         function renderShipmentBillingCards() {
             const container = document.getElementById('sb-cards-container');
 
@@ -2128,42 +2233,49 @@
                 const pkgType = pkg.type || 'box';
                 const pkgQty = pkg.quantity || 1;
                 const status = shipment.billing_status || 'pending';
-                const overrides = shipment.billing_override || {};
-
-                // Calculate charges using quote_estimate or re-calculate
-                const charges = buildShipmentCharges(shipment, overrides);
+                const charges = buildShipmentCharges(shipment);
                 const originalTotal = getOriginalTotal(shipment);
-                const currentTotal = charges.reduce((sum, c) => sum + c.amount, 0);
+                const currentTotal = charges.reduce((sum, charge) => sum + charge.amount, 0);
                 const variance = currentTotal - originalTotal;
 
                 let statusBadge = '';
                 if (status === 'pending') statusBadge = '<span class="badge badge-billing-pending">Unbilled</span>';
-                else if (status === 'imported') statusBadge = '<span class="badge badge-billing-imported">Imported</span>';
+                else if (status === 'imported') statusBadge = '<span class="badge badge-billing-imported">Synced</span>';
                 else if (status === 'invoiced') statusBadge = '<span class="badge badge-billing-invoiced">Invoiced</span>';
 
-                const chargeRows = charges.filter(c => c.amount > 0 || c.rate > 0).map(c => {
-                    const isEdited = overrides[c.key] !== undefined;
-                    const rateMeta = getRateMeta(c.billingItemKey || c.key, shipment.user_id);
-                    let sourceLabel = '';
-                    if (isEdited) sourceLabel = 'Admin override';
-                    else if (rateMeta.source === 'customer') sourceLabel = 'Customer rate';
-                    else if (rateMeta.source === 'pricing') sourceLabel = 'Pricing settings';
-                    else sourceLabel = 'Default rate';
+                const chargeRows = charges.map((charge) => {
+                    const isEdited = charge.override?.amount !== null || charge.override?.rate !== null || Boolean(charge.override?.note);
+                    const amountOverride = charge.override?.amount !== null ? charge.override.amount.toFixed(2) : '';
+                    const amountMeta = charge.override?.amount !== null
+                        ? 'Exact amount override'
+                        : (charge.quoteAmount > 0 ? 'Quote baseline' : 'Calculated from rate');
 
                     return `
                         <tr class="${isEdited ? 'line-edited' : ''}">
-                            <td>${getActivityIcon(c.billingItemKey || c.key)} ${c.label}</td>
-                            <td>${c.detail}</td>
+                            <td>${getActivityIcon(charge.billingItemKey || charge.key)} ${charge.label}</td>
+                            <td>${charge.detail}</td>
                             <td>
                                 <input type="number" class="rate-edit"
-                                    value="${c.rate.toFixed(2)}"
+                                    value="${Number(charge.rate || 0).toFixed(2)}"
                                     step="0.01" min="0"
                                     data-shipment-idx="${idx}"
-                                    data-charge-key="${c.key}"
+                                    data-charge-key="${charge.key}"
                                     onchange="onShipmentRateChange(this)">
-                                <span class="rate-source">${sourceLabel}</span>
+                                <span class="rate-source">${getChargeSourceLabel(charge)}</span>
                             </td>
-                            <td class="line-total" id="sb-line-${idx}-${c.key}">${formatCurrency(c.amount)}</td>
+                            <td>
+                                <div class="line-total-stack">
+                                    <span class="line-total" id="sb-line-${idx}-${charge.key}">${formatCurrency(charge.amount)}</span>
+                                    <input type="number" class="amount-edit"
+                                        value="${amountOverride}"
+                                        step="0.01" min="0"
+                                        placeholder="Exact amount"
+                                        data-shipment-idx="${idx}"
+                                        data-charge-key="${charge.key}"
+                                        onchange="onShipmentAmountChange(this)">
+                                    <span class="override-meta">${amountMeta}</span>
+                                </div>
+                            </td>
                         </tr>
                     `;
                 }).join('');
@@ -2215,13 +2327,12 @@
                                     ${varianceHtml}
                                 </div>
                                 <div class="sb-actions">
-                                    ${status === 'pending' ? `
-                                        <button class="btn-save-rates" onclick="saveShipmentRateOverrides(${idx})">Save Rate Changes</button>
-                                        <button class="btn-import" onclick="importShipmentToBilling(${idx})">Import to Activity Log</button>
-                                    ` : status === 'imported' ? `
-                                        <button class="btn-import" disabled>Already Imported</button>
+                                    ${status === 'invoiced' ? `
+                                        <button class="btn-save-rates" disabled>Locked</button>
+                                        <button class="btn-import" disabled>${getShipmentSyncButtonLabel(status)}</button>
                                     ` : `
-                                        <button class="btn-import" disabled>Invoiced</button>
+                                        <button class="btn-save-rates" onclick="saveShipmentRateOverrides(${idx})">${status === 'imported' ? 'Save + Resync' : 'Save Overrides'}</button>
+                                        <button class="btn-import" onclick="importShipmentToBilling(${idx})">${getShipmentSyncButtonLabel(status)}</button>
                                     `}
                                 </div>
                             </div>
@@ -2231,140 +2342,167 @@
             }).join('');
         }
 
-        function buildShipmentCharges(shipment, overrides) {
-            const pkg = shipment.package || {};
-            const quote = shipment.quote_estimate || {};
-            const pkgType = pkg.type || 'box';
-            const qty = pkg.quantity || 1;
-            const storageDays = quote.storage_days || 30;
-            const zone = shipment.shipping_zone || 'regional';
-            const customerId = shipment.user_id;
-            const charges = [];
-
-            // Storage
-            const storageRateMeta = getRateMeta('storage', customerId);
-            const storageRate = overrides.storage !== undefined ? Number(overrides.storage) : storageRateMeta.rate;
-            let storageAmount = 0;
-            let storageDetail = '';
-            if (pkgType === 'pallet') {
-                storageAmount = storageRate * storageDays * qty;
-                storageDetail = `${qty} pallet(s) x ${storageDays} days x $${storageRate.toFixed(2)}/day`;
-            } else {
-                const cubicFt = (pkg.length || 12) * (pkg.width || 12) * (pkg.height || 12) / 1728;
-                storageAmount = Math.max(cubicFt * storageRate * storageDays * qty, 5.00);
-                storageDetail = `${cubicFt.toFixed(2)} cf x ${storageDays} days x $${storageRate.toFixed(3)}/cf/day x ${qty}`;
-            }
-            charges.push({ key: 'storage', billingItemKey: 'storage', label: 'Storage', rate: storageRate, amount: storageAmount, detail: storageDetail });
-
-            // Handling
-            const handlingRateMeta = getRateMeta('handling', customerId);
-            const handlingRate = overrides.handling !== undefined ? Number(overrides.handling) : handlingRateMeta.rate;
-            const handlingAmount = handlingRate * qty;
-            charges.push({ key: 'handling', billingItemKey: 'handling', label: 'Handling / Receiving', rate: handlingRate, amount: handlingAmount, detail: `${qty} ${pkgType}(s) x $${handlingRate.toFixed(2)}` });
-
-            // Pick & Pack
-            const ppRateMeta = getRateMeta('pick_pack', customerId);
-            const ppRate = overrides.pick_pack !== undefined ? Number(overrides.pick_pack) : ppRateMeta.rate;
-            const ppAmount = ppRate * qty;
-            charges.push({ key: 'pick_pack', billingItemKey: 'pick_pack', label: 'Pick & Pack', rate: ppRate, amount: ppAmount, detail: `${qty} ${pkgType}(s) x $${ppRate.toFixed(2)}` });
-
-            // Shipping
-            if (zone !== 'none' && zone !== 'dropship') {
-                const shippingRateMeta = getRateMeta('shipping', customerId);
-                const billableWeight = pkg.billable_weight || Math.max(pkg.weight || 25, ((pkg.length || 12) * (pkg.width || 12) * (pkg.height || 12)) / 139);
-                const shippingRate = overrides.shipping !== undefined ? Number(overrides.shipping) : (Number(quote.shipping) / qty || shippingRateMeta.rate);
-                const shippingAmount = overrides.shipping !== undefined ? shippingRate * qty : (Number(quote.shipping) || shippingRate * qty);
-                charges.push({ key: 'shipping', billingItemKey: 'shipping', label: 'Shipping', rate: shippingRate, amount: shippingAmount, detail: `${zone} zone, ~${billableWeight.toFixed(0)}lbs x ${qty}` });
-            }
-
-            // Drop Ship
-            if (zone === 'dropship') {
-                const dsQty = shipment.dropship_qty || {};
-                const dsTotal = Number(quote.dropship) || 0;
-                if (dsTotal > 0) {
-                    charges.push({ key: 'dropship', billingItemKey: 'dropship', label: 'Drop Ship', rate: dsTotal, amount: overrides.dropship !== undefined ? Number(overrides.dropship) : dsTotal, detail: `Env:${dsQty.envelope||0} Sm:${dsQty.small||0} Md:${dsQty.medium||0} Lg:${dsQty.large||0}` });
-                }
-            }
-
-            // Black Wrapping
-            if (shipment.black_wrapping) {
-                const wrapRateMeta = getRateMeta('wrapping', customerId);
-                const wrapRate = overrides.wrapping !== undefined ? Number(overrides.wrapping) : wrapRateMeta.rate;
-                const wrapAmount = wrapRate * qty;
-                charges.push({ key: 'wrapping', billingItemKey: 'wrapping', label: 'Black Wrapping', rate: wrapRate, amount: wrapAmount, detail: `${qty} ${pkgType}(s) x $${wrapRate.toFixed(2)}` });
-            }
-
-            // FBA Prep
-            const fba = shipment.fba_prep || (quote.fba_prep ? { enabled: true } : null);
-            if (fba && fba.enabled) {
-                const fbaTotal = Number(quote.fba_prep) || 0;
-                if (fbaTotal > 0) {
-                    charges.push({ key: 'fba_prep', billingItemKey: 'custom', label: 'FBA Prep Services', rate: fbaTotal, amount: overrides.fba_prep !== undefined ? Number(overrides.fba_prep) : fbaTotal, detail: 'Amazon FBA preparation' });
-                }
-            }
-
-            return charges;
-        }
-
-        function getOriginalTotal(shipment) {
-            const quote = shipment.quote_estimate || {};
-            return Number(quote.total) ||
-                (Number(quote.storage || 0) + Number(quote.handling || 0) +
-                 Number(quote.pick_pack || quote.pickPack || 0) + Number(quote.shipping || 0) +
-                 Number(quote.wrapping || 0) + Number(quote.dropship || 0) +
-                 Number(quote.fba_prep || 0));
-        }
-
         window.toggleShipmentCard = function(idx) {
             const card = document.getElementById('sb-card-' + idx);
             if (card) card.classList.toggle('expanded');
         };
 
+        function setShipmentOverrideValue(shipment, key, field, rawValue) {
+            if (!shipment.billing_override_detail) shipment.billing_override_detail = {};
+            if (!shipment.billing_override_detail[key]) shipment.billing_override_detail[key] = {};
+
+            const trimmed = typeof rawValue === 'string' ? rawValue.trim() : rawValue;
+            if (trimmed === '' || trimmed === null || trimmed === undefined) {
+                delete shipment.billing_override_detail[key][field];
+            } else {
+                const parsed = Number(trimmed);
+                if (!Number.isFinite(parsed) || parsed < 0) return false;
+                shipment.billing_override_detail[key][field] = parsed;
+            }
+
+            if (shipment.billing_override_detail[key] && Object.keys(shipment.billing_override_detail[key]).length === 0) {
+                delete shipment.billing_override_detail[key];
+            }
+
+            sanitizeShipmentOverrideDetail(shipment);
+            return true;
+        }
+
+        function refreshShipmentBillingUI() {
+            renderShipmentBillingCards();
+            updateShipmentBillingKPIs();
+        }
+
         window.onShipmentRateChange = function(input) {
-            const idx = parseInt(input.dataset.shipmentIdx);
+            const idx = parseInt(input.dataset.shipmentIdx, 10);
             const key = input.dataset.chargeKey;
-            const newRate = parseFloat(input.value) || 0;
             const shipment = shipmentBillingData[idx];
             if (!shipment) return;
+            if (!setShipmentOverrideValue(shipment, key, 'rate', input.value)) {
+                showToast('Invalid rate override', 'error');
+                return;
+            }
+            refreshShipmentBillingUI();
+        };
 
-            // Store override
-            if (!shipment.billing_override) shipment.billing_override = {};
-            shipment.billing_override[key] = newRate;
+        window.onShipmentAmountChange = function(input) {
+            const idx = parseInt(input.dataset.shipmentIdx, 10);
+            const key = input.dataset.chargeKey;
+            const shipment = shipmentBillingData[idx];
+            if (!shipment) return;
+            if (!setShipmentOverrideValue(shipment, key, 'amount', input.value)) {
+                showToast('Invalid amount override', 'error');
+                return;
+            }
+            refreshShipmentBillingUI();
+        };
 
-            // Recalculate charges
-            const charges = buildShipmentCharges(shipment, shipment.billing_override);
-            const total = charges.reduce((sum, c) => sum + c.amount, 0);
+        async function syncShipmentToActivity(shipment, options = {}) {
+            const customer = customers.find(c => c.id === shipment.user_id);
+            const customerName = customer?.company_name || customer?.name || customer?.email || 'Unknown';
+            const tracking = shipment.tracking_number || shipment.id.slice(0, 10);
+            const charges = buildShipmentCharges(shipment);
+            const total = charges.reduce((sum, charge) => sum + charge.amount, 0);
 
-            // Update specific line item amount
-            charges.forEach(c => {
-                const lineEl = document.getElementById(`sb-line-${idx}-${c.key}`);
-                if (lineEl) lineEl.textContent = formatCurrency(c.amount);
+            if (!options.skipConfirm) {
+                const action = (shipment.billing_status || 'pending') === 'imported' ? 'Resync' : 'Sync';
+                if (!confirm(`${action} ${charges.length} billing entries for shipment ${tracking} (${customerName})?\n\nTotal: ${formatCurrency(total)}`)) {
+                    return null;
+                }
+            }
+
+            const existingSnap = await getDocs(query(
+                collection(db, 'activity_log'),
+                where('source_shipment_id', '==', shipment.id)
+            ));
+
+            const unbilledRefs = [];
+            let invoicedEntry = null;
+            existingSnap.forEach((entryDoc) => {
+                const data = entryDoc.data();
+                if (data.billed) invoicedEntry = { id: entryDoc.id, ...data };
+                else unbilledRefs.push(entryDoc.ref);
             });
 
-            // Update totals
-            const totalEl = document.getElementById(`sb-total-${idx}`);
-            if (totalEl) totalEl.textContent = formatCurrency(total);
-            const currentTotalEl = document.getElementById(`sb-current-total-${idx}`);
-            if (currentTotalEl) currentTotalEl.textContent = formatCurrency(total);
+            if (invoicedEntry) {
+                shipment.billing_status = 'invoiced';
+                shipment.billing_invoice_id = invoicedEntry.invoice_id || shipment.billing_invoice_id || null;
+                await updateDoc(doc(db, 'shipments', shipment.id), {
+                    billing_status: 'invoiced',
+                    billing_invoice_id: invoicedEntry.invoice_id || shipment.billing_invoice_id || null,
+                    billing_invoiced_at: invoicedEntry.created_at || new Date().toISOString()
+                });
+                throw new Error(`Shipment ${tracking} is already invoiced and cannot be resynced.`);
+            }
 
-            // Highlight edited row
-            input.closest('tr').classList.add('line-edited');
-        };
+            if (unbilledRefs.length) {
+                const deleteBatch = writeBatch(db);
+                unbilledRefs.forEach((ref) => deleteBatch.delete(ref));
+                await deleteBatch.commit();
+            }
+
+            const entries = BillingEngine.buildShipmentActivityEntries(shipment, {
+                pricingData,
+                customerRateIndex,
+                customerName
+            }).map((entry) => ({
+                ...entry,
+                logged_by: currentUser.uid,
+                logged_by_name: currentUserData.name || currentUser.email,
+                logged_by_email: currentUser.email,
+                billed: false,
+                invoice_id: null,
+                created_at: new Date().toISOString()
+            }));
+
+            const importedIds = [];
+            for (const entry of entries) {
+                const entryRef = await addDoc(collection(db, 'activity_log'), entry);
+                importedIds.push(entryRef.id);
+            }
+
+            const nowIso = new Date().toISOString();
+            await updateDoc(doc(db, 'shipments', shipment.id), {
+                billing_status: 'imported',
+                billing_imported_at: nowIso,
+                billing_imported_by: currentUser.uid,
+                billing_activity_ids: importedIds,
+                billing_override: shipment.billing_override || {},
+                billing_override_detail: shipment.billing_override_detail || {},
+                billing_updated_at: nowIso,
+                billing_updated_by: currentUser.uid
+            });
+
+            shipment.billing_status = 'imported';
+            shipment.billing_activity_ids = importedIds;
+            return { importedIds, tracking };
+        }
 
         window.saveShipmentRateOverrides = async function(idx) {
             const shipment = shipmentBillingData[idx];
-            if (!shipment || !shipment.billing_override) {
-                showToast('No rate changes to save', 'error');
-                return;
-            }
+            if (!shipment) return;
+
+            sanitizeShipmentOverrideDetail(shipment);
+            const tracking = shipment.tracking_number || shipment.id.slice(0, 10);
+            const nowIso = new Date().toISOString();
 
             try {
                 await updateDoc(doc(db, 'shipments', shipment.id), {
-                    billing_override: shipment.billing_override,
-                    billing_updated_at: new Date().toISOString(),
+                    billing_override: shipment.billing_override || {},
+                    billing_override_detail: shipment.billing_override_detail || {},
+                    billing_updated_at: nowIso,
                     billing_updated_by: currentUser.uid
                 });
-                showToast('Rate overrides saved for ' + (shipment.tracking_number || shipment.id.slice(0, 10)));
+
+                if ((shipment.billing_status || 'pending') === 'imported') {
+                    await syncShipmentToActivity(shipment, { skipConfirm: true });
+                    showToast(`Overrides saved and billing resynced for ${tracking}`);
+                } else {
+                    showToast(`Overrides saved for ${tracking}`);
+                }
+
+                refreshShipmentBillingUI();
+                await loadStats();
             } catch (err) {
                 showToast('Error saving overrides: ' + err.message, 'error');
             }
@@ -2374,160 +2512,45 @@
             const shipment = shipmentBillingData[idx];
             if (!shipment) return;
 
-            const customer = customers.find(c => c.id === shipment.user_id);
-            const customerName = customer?.company_name || customer?.name || customer?.email || 'Unknown';
-            const overrides = shipment.billing_override || {};
-            const charges = buildShipmentCharges(shipment, overrides);
-            const tracking = shipment.tracking_number || shipment.id.slice(0, 10);
-
-            if (!confirm(`Import ${charges.length} billing entries for shipment ${tracking} (${customerName})?\n\nTotal: ${formatCurrency(charges.reduce((s, c) => s + c.amount, 0))}`)) return;
-
             try {
-                const importedIds = [];
-                for (const charge of charges) {
-                    if (charge.amount <= 0) continue;
-
-                    const rateMeta = getRateMeta(charge.billingItemKey || charge.key, shipment.user_id);
-                    const hasOverride = overrides[charge.key] !== undefined;
-
-                    const activity = {
-                        customer_id: shipment.user_id,
-                        customer_name: customerName,
-                        warehouse: shipment.warehouse || 'miami',
-                        date: (shipment.created_at || new Date().toISOString()).split('T')[0],
-                        activity_type: charge.billingItemKey || charge.key,
-                        billing_item_id: charge.billingItemKey || charge.key,
-                        billing_item_label: charge.label,
-                        quote_category: BILLING_ITEMS[charge.billingItemKey]?.quoteKey || 'extra',
-                        calculator_item: BILLING_ITEMS[charge.billingItemKey]?.calculatorItem || false,
-                        description: `${charge.label} — Shipment ${tracking}`,
-                        quantity: charge.amount / (charge.rate || 1),
-                        unit: BILLING_ITEMS[charge.billingItemKey]?.defaultUnit || 'units',
-                        rate: charge.rate,
-                        amount: charge.amount,
-                        rate_source: hasOverride ? 'manual_override' : rateMeta.source,
-                        pricing_rate_path: rateMeta.path || null,
-                        pricing_rate_default: Number(rateMeta.rate) || 0,
-                        customer_rate_applied: rateMeta.source === 'customer',
-                        reference: tracking,
-                        notes: `Auto-imported from shipment ${tracking}`,
-                        source_shipment_id: shipment.id,
-                        source_shipment_tracking: tracking,
-                        logged_by: currentUser.uid,
-                        logged_by_name: currentUserData.name || currentUser.email,
-                        logged_by_email: currentUser.email,
-                        billed: false,
-                        invoice_id: null,
-                        created_at: new Date().toISOString()
-                    };
-
-                    const docRef = await addDoc(collection(db, 'activity_log'), activity);
-                    importedIds.push(docRef.id);
-                }
-
-                // Update shipment billing status
-                await updateDoc(doc(db, 'shipments', shipment.id), {
-                    billing_status: 'imported',
-                    billing_imported_at: new Date().toISOString(),
-                    billing_imported_by: currentUser.uid,
-                    billing_activity_ids: importedIds,
-                    billing_override: overrides
-                });
-
-                shipment.billing_status = 'imported';
-                showToast(`Imported ${importedIds.length} billing entries for ${tracking}`);
-                renderShipmentBillingCards();
-                updateShipmentBillingKPIs();
+                const result = await syncShipmentToActivity(shipment);
+                if (!result) return;
+                showToast(`Synced ${result.importedIds.length} billing entries for ${result.tracking}`);
+                refreshShipmentBillingUI();
                 await loadStats();
             } catch (err) {
-                showToast('Import error: ' + err.message, 'error');
+                showToast('Sync error: ' + err.message, 'error');
             }
         };
 
         window.importAllUnbilledShipments = async function() {
-            const unbilled = shipmentBillingData.filter(s => (s.billing_status || 'pending') === 'pending');
+            const unbilled = shipmentBillingData.filter((shipment) => (shipment.billing_status || 'pending') === 'pending');
             if (unbilled.length === 0) {
-                showToast('No unbilled shipments to import', 'error');
+                showToast('No unbilled shipments to sync', 'error');
                 return;
             }
 
-            const total = unbilled.reduce((sum, s) => {
-                const charges = buildShipmentCharges(s, s.billing_override || {});
-                return sum + charges.reduce((s2, c) => s2 + c.amount, 0);
+            const total = unbilled.reduce((sum, shipment) => {
+                const charges = buildShipmentCharges(shipment);
+                return sum + charges.reduce((chargeSum, charge) => chargeSum + charge.amount, 0);
             }, 0);
 
-            if (!confirm(`Import ALL ${unbilled.length} unbilled shipments?\n\nTotal charges: ${formatCurrency(total)}\n\nThis will create activity log entries for all shipments.`)) return;
+            if (!confirm(`Sync ALL ${unbilled.length} unbilled shipments?\n\nTotal charges: ${formatCurrency(total)}\n\nExisting unbilled shipment entries will be replaced with the latest overrides.`)) {
+                return;
+            }
 
-            let imported = 0;
-            for (let i = 0; i < shipmentBillingData.length; i++) {
-                if ((shipmentBillingData[i].billing_status || 'pending') === 'pending') {
-                    try {
-                        const shipment = shipmentBillingData[i];
-                        const customer = customers.find(c => c.id === shipment.user_id);
-                        const customerName = customer?.company_name || customer?.name || customer?.email || 'Unknown';
-                        const overrides = shipment.billing_override || {};
-                        const charges = buildShipmentCharges(shipment, overrides);
-                        const tracking = shipment.tracking_number || shipment.id.slice(0, 10);
-                        const importedIds = [];
-
-                        for (const charge of charges) {
-                            if (charge.amount <= 0) continue;
-                            const rateMeta = getRateMeta(charge.billingItemKey || charge.key, shipment.user_id);
-                            const hasOverride = overrides[charge.key] !== undefined;
-
-                            const activity = {
-                                customer_id: shipment.user_id,
-                                customer_name: customerName,
-                                warehouse: shipment.warehouse || 'miami',
-                                date: (shipment.created_at || new Date().toISOString()).split('T')[0],
-                                activity_type: charge.billingItemKey || charge.key,
-                                billing_item_id: charge.billingItemKey || charge.key,
-                                billing_item_label: charge.label,
-                                quote_category: BILLING_ITEMS[charge.billingItemKey]?.quoteKey || 'extra',
-                                calculator_item: BILLING_ITEMS[charge.billingItemKey]?.calculatorItem || false,
-                                description: `${charge.label} — Shipment ${tracking}`,
-                                quantity: charge.amount / (charge.rate || 1),
-                                unit: BILLING_ITEMS[charge.billingItemKey]?.defaultUnit || 'units',
-                                rate: charge.rate,
-                                amount: charge.amount,
-                                rate_source: hasOverride ? 'manual_override' : rateMeta.source,
-                                pricing_rate_path: rateMeta.path || null,
-                                pricing_rate_default: Number(rateMeta.rate) || 0,
-                                customer_rate_applied: rateMeta.source === 'customer',
-                                reference: tracking,
-                                notes: `Auto-imported from shipment ${tracking}`,
-                                source_shipment_id: shipment.id,
-                                source_shipment_tracking: tracking,
-                                logged_by: currentUser.uid,
-                                logged_by_name: currentUserData.name || currentUser.email,
-                                logged_by_email: currentUser.email,
-                                billed: false,
-                                invoice_id: null,
-                                created_at: new Date().toISOString()
-                            };
-                            const docRef = await addDoc(collection(db, 'activity_log'), activity);
-                            importedIds.push(docRef.id);
-                        }
-
-                        await updateDoc(doc(db, 'shipments', shipment.id), {
-                            billing_status: 'imported',
-                            billing_imported_at: new Date().toISOString(),
-                            billing_imported_by: currentUser.uid,
-                            billing_activity_ids: importedIds,
-                            billing_override: overrides
-                        });
-
-                        shipment.billing_status = 'imported';
-                        imported++;
-                    } catch (err) {
-                        console.error('Bulk import error for shipment:', shipmentBillingData[i].id, err);
-                    }
+            let synced = 0;
+            for (const shipment of unbilled) {
+                try {
+                    const result = await syncShipmentToActivity(shipment, { skipConfirm: true });
+                    if (result) synced += 1;
+                } catch (err) {
+                    console.error('Bulk shipment sync error:', shipment.id, err);
                 }
             }
 
-            showToast(`Imported ${imported} shipments to activity log`);
-            renderShipmentBillingCards();
-            updateShipmentBillingKPIs();
+            showToast(`Synced ${synced} shipments to activity billing`);
+            refreshShipmentBillingUI();
             await loadStats();
         };
 
