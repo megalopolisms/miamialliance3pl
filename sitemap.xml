@@ -45,7 +45,7 @@
     <!-- Blog Hub -->
     <url>
         <loc>https://miamialliance3pl.com/blog.html</loc>
-        <lastmod>2026-03-10</lastmod>
+        <lastmod>2026-03-12</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
@@ -648,6 +648,30 @@
         <lastmod>2026-03-11</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
+    </url>
+
+    <!-- Blog: In-House Fulfillment vs 3PL Cost Comparison (NEW Mar 12) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/in-house-fulfillment-vs-3pl-cost-comparison-ecommerce-2026.html</loc>
+        <lastmod>2026-03-12</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
+    <!-- Blog: Climate-Controlled Cold Storage 3PL Warehousing Miami (NEW Mar 12) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/climate-controlled-cold-storage-3pl-warehousing-miami.html</loc>
+        <lastmod>2026-03-12</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
+    <!-- Blog: Complete Guide 3PL Onboarding Switching Fulfillment Partners (NEW Mar 12) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/complete-guide-3pl-onboarding-switching-fulfillment-partners.html</loc>
+        <lastmod>2026-03-12</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
     </url>
 
 </urlset>
