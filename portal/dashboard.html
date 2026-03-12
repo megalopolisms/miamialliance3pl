@@ -285,6 +285,11 @@
                         <div class="count" id="total-pending">0</div>
                         <div class="label" id="label-pending" data-i18n="portal.dashboard.pendingActions">Pending Actions</div>
                     </div>
+                    <div class="admin-card" onclick="location.href='#leads'" style="border: 2px solid #10b981;">
+                        <div class="icon">🎯</div>
+                        <div class="count" id="total-leads">0</div>
+                        <div class="label">New Leads</div>
+                    </div>
                 </div>
             </div>
 
@@ -701,6 +706,15 @@
                     if (pickupEl) pickupEl.textContent = pickupsSnap.size;
                 } catch (e) {
                     // Pickup requests collection may not exist yet
+                }
+
+                // Leads count (from lead capture engine)
+                try {
+                    const leadsSnap = await getDocs(collection(db, 'leads'));
+                    const leadsEl = document.getElementById('total-leads');
+                    if (leadsEl) leadsEl.textContent = leadsSnap.size;
+                } catch (e) {
+                    // Leads collection may not exist yet
                 }
 
             } catch (error) {

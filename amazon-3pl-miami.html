@@ -439,20 +439,18 @@
 
         /* Responsive */
         @media (max-width: 768px) {
-            .amazon-hero-grid { grid-template-columns: 1fr; gap: 24px; }
+            .amazon-hero-grid { grid-template-columns: 1fr; gap: 40px; }
             .amazon-hero-stats { grid-template-columns: repeat(3, 1fr); gap: 12px; }
             .amazon-services-grid { grid-template-columns: 1fr; }
             .comparison-grid { grid-template-columns: 1fr; }
-            .amazon-process-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+            .amazon-process-grid { grid-template-columns: 1fr 1fr; }
             .amazon-faq-grid { grid-template-columns: 1fr; }
             .amazon-resources-grid { grid-template-columns: 1fr; }
             .amazon-hero { padding: 80px 0 60px; }
-            .amazon-cta { padding: 48px 0; }
         }
         @media (max-width: 480px) {
             .amazon-process-grid { grid-template-columns: 1fr; }
             .amazon-hero-stats { grid-template-columns: 1fr; }
-            .amazon-hero { padding: 60px 0 40px; }
         }
     </style>
 </head>
@@ -882,7 +880,7 @@
         </a>
     </div>
 
-    <script src="js/main.js"></script>
+    <script src="js/main.js" defer></script>
     <script src="js/lead-capture.js"></script>
 </body>
 </html>

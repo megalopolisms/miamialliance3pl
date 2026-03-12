@@ -374,28 +374,11 @@
                     text-decoration: none;
                 }
 
-                @media (max-width: 768px) {
-                    .chat-window {
-                        width: calc(100vw - 40px);
-                        max-width: 380px;
-                        height: 70vh;
-                        max-height: 500px;
-                        bottom: 70px;
-                    }
-
-                    .quick-reply {
-                        padding: 10px 16px;
-                        font-size: 0.875rem;
-                        min-height: 44px;
-                    }
-                }
-
                 @media (max-width: 480px) {
                     .chat-window {
-                        width: calc(100vw - 24px);
-                        height: calc(70vh - env(safe-area-inset-bottom, 0px));
+                        width: calc(100vw - 40px);
+                        height: 70vh;
                         bottom: 70px;
-                        right: -8px;
                     }
                 }
             </style>

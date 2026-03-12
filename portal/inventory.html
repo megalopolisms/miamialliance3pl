@@ -115,6 +115,14 @@
                             <input type="text" id="item-location" placeholder="A1-01" data-i18n-placeholder="portal.inventory.form.locationPlaceholder">
                         </div>
                         <div class="form-group">
+                            <label for="item-upc">UPC / Barcode</label>
+                            <input type="text" id="item-upc" placeholder="012345678901">
+                        </div>
+                        <div class="form-group">
+                            <label for="item-tags">Tags (comma-separated)</label>
+                            <input type="text" id="item-tags" placeholder="fragile, electronics">
+                        </div>
+                        <div class="form-group">
                             <label for="item-reorder" data-i18n="portal.inventory.form.reorderLevel">Reorder Level</label>
                             <input type="number" id="item-reorder" placeholder="10" min="0">
                         </div>
@@ -175,6 +183,8 @@
                             <th scope="col" data-i18n="portal.inventory.table.productName">Product Name</th>
                             <th scope="col" id="customer-col-header" style="display: none;" data-i18n="portal.inventory.table.customer">Customer</th>
                             <th scope="col" data-i18n="portal.inventory.table.quantity">Quantity</th>
+                            <th scope="col">UPC</th>
+                            <th scope="col">Tags</th>
                             <th scope="col">Warehouse</th>
                             <th scope="col" data-i18n="portal.inventory.table.location">Location</th>
                             <th scope="col" data-i18n="portal.inventory.table.lastUpdated">Last Updated</th>
@@ -183,7 +193,7 @@
                     </thead>
                     <tbody id="inventory-list">
                         <tr>
-                            <td colspan="8" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);" data-i18n="portal.inventory.loading">
+                            <td colspan="10" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);" data-i18n="portal.inventory.loading">
                                 Loading inventory...
                             </td>
                         </tr>
@@ -228,6 +238,14 @@
                     <div class="form-group">
                         <label for="edit-location" data-i18n="portal.inventory.form.location">Location</label>
                         <input type="text" id="edit-location">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-upc">UPC / Barcode</label>
+                        <input type="text" id="edit-upc">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-tags">Tags</label>
+                        <input type="text" id="edit-tags" placeholder="comma-separated">
                     </div>
                     <div class="form-group">
                         <label for="edit-reorder" data-i18n="portal.inventory.form.reorderLevel">Reorder Level</label>
@@ -445,6 +463,8 @@
                 sku: document.getElementById('item-sku').value,
                 name: document.getElementById('item-name').value,
                 quantity: parseInt(document.getElementById('item-qty').value),
+                upc: document.getElementById('item-upc').value.trim() || '',
+                tags: (document.getElementById('item-tags').value || '').split(',').map(t => t.trim()).filter(Boolean),
                 location: document.getElementById('item-location').value || 'Unassigned',
                 warehouse: document.getElementById('item-warehouse').value || 'miami',
                 reorder_level: parseInt(document.getElementById('item-reorder').value) || 10,
@@ -481,6 +501,8 @@
                 sku: document.getElementById('edit-sku').value,
                 name: document.getElementById('edit-name').value,
                 quantity: parseInt(document.getElementById('edit-qty').value),
+                upc: document.getElementById('edit-upc').value.trim() || '',
+                tags: (document.getElementById('edit-tags').value || '').split(',').map(t => t.trim()).filter(Boolean),
                 location: document.getElementById('edit-location').value || 'Unassigned',
                 warehouse: document.getElementById('edit-warehouse').value || 'miami',
                 reorder_level: parseInt(document.getElementById('edit-reorder').value) || 10,
@@ -537,7 +559,7 @@
 
         async function loadInventory() {
             const tbody = document.getElementById('inventory-list');
-            const colspan = isStaff() ? 8 : 7;
+            const colspan = isStaff() ? 10 : 9;
             tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Loading...</td></tr>`;
 
             try {
@@ -577,14 +599,14 @@
                 renderInventory(inventoryData);
             } catch (error) {
                 console.error('Error loading inventory:', error);
-                const colspan = isStaff() ? 8 : 7;
+                const colspan = isStaff() ? 10 : 9;
                 tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Error loading inventory</td></tr>`;
             }
         }
 
         function renderInventory(items) {
             const tbody = document.getElementById('inventory-list');
-            const colspan = isStaff() ? 8 : 7;
+            const colspan = isStaff() ? 10 : 9;
 
             if (items.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">No inventory items found</td></tr>`;
@@ -620,6 +642,10 @@
                 const whLabel = whId === 'biloxi' ? '📍 Biloxi' : '📍 Miami';
                 const whColor = whId === 'biloxi' ? '#8b5cf6' : '#14b8a6';
 
+                const upcVal = item.upc || '';
+                const tagsArr = Array.isArray(item.tags) ? item.tags : (typeof item.tags === 'string' && item.tags ? item.tags.split(',').map(t => t.trim()) : []);
+                const tagsHtml = tagsArr.length > 0 ? tagsArr.map(t => `<span style="background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:8px;font-size:0.7rem;font-weight:600;margin:1px;">${t}</span>`).join(' ') : '<span style="color:var(--color-gray-400);font-size:0.75rem;">—</span>';
+
                 row.innerHTML = `
                     <td><strong>${item.sku}</strong></td>
                     <td>${item.name}</td>
@@ -628,6 +654,8 @@
                         ${item.quantity}
                         ${isLowStock ? '<span style="font-size: var(--font-size-sm); margin-left: 4px;">Low Stock</span>' : ''}
                     </td>
+                    <td style="font-family:monospace;font-size:0.8rem;color:var(--color-gray-600);">${upcVal || '<span style="color:var(--color-gray-400);">—</span>'}</td>
+                    <td style="max-width:150px;">${tagsHtml}</td>
                     <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">${whLabel}</span></td>
                     <td>${item.location}</td>
                     <td>${new Date(item.last_updated).toLocaleDateString()}</td>
@@ -656,6 +684,8 @@
                             document.getElementById('edit-sku').value = item.sku;
                             document.getElementById('edit-name').value = item.name;
                             document.getElementById('edit-qty').value = item.quantity;
+                            document.getElementById('edit-upc').value = item.upc || '';
+                            document.getElementById('edit-tags').value = Array.isArray(item.tags) ? item.tags.join(', ') : (item.tags || '');
                             document.getElementById('edit-location').value = item.location || '';
                             document.getElementById('edit-reorder').value = item.reorder_level || 10;
                             document.getElementById('edit-warehouse').value = item.warehouse || 'miami';

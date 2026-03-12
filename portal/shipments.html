@@ -806,6 +806,404 @@
         @media (max-width: 640px) {
             .dest-form-grid.cols-3 { grid-template-columns: 1fr; }
         }
+
+        /* ================================================
+           DOCUMENT UPLOAD MODAL (Existing Shipments)
+           ================================================ */
+        .doc-upload-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .doc-upload-overlay.active {
+            display: flex;
+        }
+        .doc-upload-modal {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: docModalIn 0.25s ease;
+        }
+        @keyframes docModalIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .doc-upload-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f8fafc;
+        }
+        .doc-upload-modal-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0;
+        }
+        .doc-upload-modal-header .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 4px;
+            line-height: 1;
+        }
+        .doc-upload-modal-header .modal-close-btn:hover {
+            color: #dc2626;
+        }
+        .doc-upload-modal-body {
+            padding: 20px;
+        }
+        .doc-upload-modal-body .modal-tracking-badge {
+            display: inline-block;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        .doc-upload-modal-body .upload-slot {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 20px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: #f8fafc;
+            margin-bottom: 12px;
+        }
+        .doc-upload-modal-body .upload-slot:hover {
+            border-color: #14b8a6;
+            background: #f0fdfa;
+        }
+        .doc-upload-modal-body .upload-slot.has-file {
+            border-color: #14b8a6;
+            border-style: solid;
+            background: #f0fdfa;
+        }
+        .doc-upload-modal-body .upload-slot .slot-icon {
+            font-size: 1.6rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .doc-upload-modal-body .upload-slot .slot-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+        .doc-upload-modal-body .upload-slot .slot-hint {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        .doc-upload-modal-body .upload-slot .slot-formats {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 6px;
+        }
+        .doc-upload-modal-body .upload-slot .slot-format-badge {
+            font-size: 0.62rem;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 10px;
+            background: #e2e8f0;
+            color: #475569;
+            text-transform: uppercase;
+        }
+        .doc-upload-modal-body .slot-preview {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: -4px;
+            margin-bottom: 12px;
+            font-size: 0.8rem;
+        }
+        .doc-upload-modal-body .slot-preview.active {
+            display: flex;
+        }
+        .doc-upload-modal-body .slot-preview .slot-file-name {
+            flex: 1;
+            font-weight: 600;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .doc-upload-modal-body .slot-preview .slot-file-size {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+        .doc-upload-modal-body .slot-preview .slot-remove {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .doc-upload-modal-footer {
+            padding: 12px 20px 16px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .doc-upload-modal-footer .btn-upload-save {
+            background: #14b8a6;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .doc-upload-modal-footer .btn-upload-save:hover {
+            background: #0d9488;
+        }
+        .doc-upload-modal-footer .btn-upload-save:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .doc-upload-modal-footer .btn-upload-cancel {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .doc-upload-modal-footer .btn-upload-cancel:hover {
+            background: #e2e8f0;
+        }
+        .shipment-upload-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.72rem;
+            color: #14b8a6;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: none;
+            background: transparent;
+            transition: all 0.15s;
+        }
+        .shipment-upload-link:hover {
+            background: #f0fdfa;
+            color: #0d9488;
+        }
+
+        /* ================================================
+           INCOMING INVENTORY ITEMS — SKU Entry Section
+           ================================================ */
+        .incoming-items-section {
+            border-top: 2px solid var(--color-gray-200, #e5e7eb);
+            padding-top: var(--spacing-md, 16px);
+            margin-top: var(--spacing-md, 16px);
+        }
+        .incoming-items-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0 0 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .incoming-items-subtitle {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin: 0 0 12px;
+            line-height: 1.4;
+        }
+        .incoming-items-required {
+            font-size: 0.7rem;
+            color: #dc2626;
+            font-weight: 600;
+            background: #fef2f2;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+        .incoming-item-row {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .incoming-item-row:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .incoming-item-row .item-row-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .incoming-item-row .item-row-num {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #14b8a6;
+            background: #f0fdfa;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+        .incoming-item-row .item-remove-btn {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .incoming-item-row .item-remove-btn:hover {
+            background: #fee2e2;
+            transform: scale(1.1);
+        }
+        .incoming-item-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .incoming-item-grid .item-field {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .incoming-item-grid .item-field.full-width {
+            grid-column: 1 / -1;
+        }
+        .incoming-item-grid .item-field label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .incoming-item-grid .item-field label .label-optional {
+            font-size: 0.62rem;
+            color: #94a3b8;
+            font-weight: 500;
+            margin-left: 4px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .incoming-item-grid .item-field .field-hint {
+            font-size: 0.68rem;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        .incoming-item-grid .item-field input {
+            padding: 8px 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            color: #1e293b;
+            transition: border-color 0.2s;
+            background: white;
+        }
+        .incoming-item-grid .item-field input:focus {
+            outline: none;
+            border-color: #14b8a6;
+        }
+        .incoming-item-grid .item-field input::placeholder {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+        .incoming-item-grid .item-field input.field-error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        .incoming-items-add-btn {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .incoming-items-add-btn:hover {
+            border-color: #14b8a6;
+            color: #14b8a6;
+            background: #f0fdfa;
+        }
+        .incoming-items-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #f0fdfa;
+            border: 1px solid #99f6e4;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+        .incoming-items-summary .summary-label {
+            color: #0d9488;
+            font-weight: 600;
+        }
+        .incoming-items-summary .summary-value {
+            color: #1e3a5f;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        @media (max-width: 480px) {
+            .incoming-item-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -906,6 +1304,64 @@
                 </table>
             </div>
         </main>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- DOCUMENT UPLOAD MODAL (for existing shipments)               -->
+    <!-- ============================================================ -->
+    <div id="doc-upload-overlay" class="doc-upload-overlay" role="dialog" aria-modal="true" aria-label="Upload Documents">
+        <div class="doc-upload-modal">
+            <div class="doc-upload-modal-header">
+                <h3>📎 Upload Documents</h3>
+                <button class="modal-close-btn" id="doc-upload-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="doc-upload-modal-body">
+                <div class="modal-tracking-badge" id="doc-upload-tracking">—</div>
+
+                <!-- BOL Upload Slot -->
+                <div class="upload-slot" id="modal-bol-slot" data-type="bol">
+                    <input type="file" id="modal-bol-input" accept=".pdf,.png,.jpg,.jpeg" style="display:none;">
+                    <span class="slot-icon">📄</span>
+                    <div class="slot-label">Bill of Lading (BOL)</div>
+                    <div class="slot-hint">Drop file or click to browse</div>
+                    <div class="slot-formats">
+                        <span class="slot-format-badge">PDF</span>
+                        <span class="slot-format-badge">PNG</span>
+                        <span class="slot-format-badge">JPG</span>
+                    </div>
+                </div>
+                <div class="slot-preview" id="modal-bol-preview">
+                    <span id="modal-bol-icon">📄</span>
+                    <span class="slot-file-name" id="modal-bol-name">—</span>
+                    <span class="slot-file-size" id="modal-bol-size">—</span>
+                    <button type="button" class="slot-remove" id="modal-bol-remove">&times;</button>
+                </div>
+
+                <!-- Invoice Upload Slot -->
+                <div class="upload-slot" id="modal-inv-slot" data-type="invoice">
+                    <input type="file" id="modal-inv-input" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls,.csv,.doc,.docx" style="display:none;">
+                    <span class="slot-icon">🧾</span>
+                    <div class="slot-label">Commercial Invoice</div>
+                    <div class="slot-hint">Drop file or click to browse</div>
+                    <div class="slot-formats">
+                        <span class="slot-format-badge">PDF</span>
+                        <span class="slot-format-badge">XLS</span>
+                        <span class="slot-format-badge">IMG</span>
+                        <span class="slot-format-badge">DOC</span>
+                    </div>
+                </div>
+                <div class="slot-preview" id="modal-inv-preview">
+                    <span id="modal-inv-icon">🧾</span>
+                    <span class="slot-file-name" id="modal-inv-name">—</span>
+                    <span class="slot-file-size" id="modal-inv-size">—</span>
+                    <button type="button" class="slot-remove" id="modal-inv-remove">&times;</button>
+                </div>
+            </div>
+            <div class="doc-upload-modal-footer">
+                <button type="button" class="btn-upload-cancel" id="doc-upload-cancel-btn">Cancel</button>
+                <button type="button" class="btn-upload-save" id="doc-upload-save-btn" disabled>Upload & Save</button>
+            </div>
+        </div>
     </div>
 
     <!-- ============================================================ -->
@@ -1371,6 +1827,31 @@
                             </div>
                         </div>
 
+                        <!-- INCOMING INVENTORY ITEMS — Required SKU Entry -->
+                        <div class="incoming-items-section">
+                            <div class="incoming-items-title">
+                                📋 Incoming Inventory Items
+                                <span class="incoming-items-required">REQUIRED</span>
+                            </div>
+                            <div class="incoming-items-subtitle">
+                                Add each incoming SKU with an itemized quantity. UPC and tags are optional but recommended for inventory matching.
+                                <strong style="display:block;margin-top:4px;color:#1d4ed8;font-size:0.8rem;">💡 Upload a BOL above to auto-populate this section.</strong>
+                            </div>
+
+                            <div id="incoming-items-list">
+                                <!-- Item rows are rendered by JS -->
+                            </div>
+
+                            <button type="button" class="incoming-items-add-btn" id="add-incoming-item-btn">
+                                + Add Another Item
+                            </button>
+
+                            <div class="incoming-items-summary" id="incoming-items-summary" style="display:none;">
+                                <span class="summary-label">Total SKUs: <span id="incoming-sku-count">0</span></span>
+                                <span class="summary-value">Total Units: <span id="incoming-unit-count">0</span></span>
+                            </div>
+                        </div>
+
                         <!-- Error + Create Shipment Button -->
                         <div class="calc-error" id="sc-error" role="alert" aria-live="polite"></div>
 
@@ -1438,7 +1919,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -1968,7 +2449,8 @@
                 }
             },
             destination: { name: '', street: '', city: '', state: '', zip: '' },
-            notes: ''
+            notes: '',
+            incomingItems: [{ sku: '', name: '', qty: 1, upc: '', tags: '' }]
         };
 
         // =====================================================
@@ -2348,6 +2830,7 @@
             };
             sc.destination = { name: '', street: '', city: '', state: '', zip: '' };
             sc.notes = '';
+            sc.incomingItems = [{ sku: '', name: '', qty: 1, upc: '', tags: '' }];
 
             // Reset UI inputs
             document.querySelectorAll('#calc-overlay .package-option').forEach(btn => {
@@ -2405,9 +2888,139 @@
             document.getElementById('packing-list-input').value = '';
             document.getElementById('invoice-input').value = '';
 
+            // Reset incoming items UI
+            renderIncomingItems();
+
             clearError();
             updatePricing();
         }
+
+        // =====================================================
+        // INCOMING INVENTORY ITEMS — Dynamic SKU Entry System
+        // =====================================================
+        function renderIncomingItems() {
+            const container = document.getElementById('incoming-items-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            sc.incomingItems.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'incoming-item-row';
+                row.innerHTML = `
+                    <div class="item-row-header">
+                        <span class="item-row-num">Item #${index + 1}</span>
+                        ${sc.incomingItems.length > 1 ? `<button type="button" class="item-remove-btn" data-index="${index}" title="Remove item">&times;</button>` : ''}
+                    </div>
+                    <div class="incoming-item-grid">
+                        <div class="item-field">
+                            <label>SKU *</label>
+                            <input type="text" class="ii-sku" data-index="${index}" value="${escHtml(item.sku)}" placeholder="e.g. ABC-123">
+                        </div>
+                        <div class="item-field">
+                            <label>Product Name *</label>
+                            <input type="text" class="ii-name" data-index="${index}" value="${escHtml(item.name)}" placeholder="e.g. Widget Pro">
+                        </div>
+                        <div class="item-field">
+                            <label>Quantity *</label>
+                            <input type="number" class="ii-qty" data-index="${index}" value="${item.qty}" min="1" step="1" inputmode="numeric" placeholder="1">
+                        </div>
+                        <div class="item-field">
+                            <label>UPC / Barcode <span class="label-optional">optional</span></label>
+                            <input type="text" class="ii-upc" data-index="${index}" value="${escHtml(item.upc)}" placeholder="e.g. 012345678901">
+                            <div class="field-hint">Used to map this SKU directly into inventory records.</div>
+                        </div>
+                        <div class="item-field full-width">
+                            <label>Tags (comma-separated) <span class="label-optional">optional</span></label>
+                            <input type="text" class="ii-tags" data-index="${index}" value="${escHtml(item.tags)}" placeholder="e.g. fragile, electronics, lot-2024">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+
+            // Bind events
+            container.querySelectorAll('.item-remove-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.index);
+                    sc.incomingItems.splice(idx, 1);
+                    renderIncomingItems();
+                });
+            });
+
+            // Sync inputs back to state
+            container.querySelectorAll('.ii-sku').forEach(inp => {
+                inp.addEventListener('input', () => { sc.incomingItems[parseInt(inp.dataset.index)].sku = inp.value; updateIncomingItemsSummary(); });
+            });
+            container.querySelectorAll('.ii-name').forEach(inp => {
+                inp.addEventListener('input', () => { sc.incomingItems[parseInt(inp.dataset.index)].name = inp.value; });
+            });
+            container.querySelectorAll('.ii-qty').forEach(inp => {
+                inp.addEventListener('input', () => { sc.incomingItems[parseInt(inp.dataset.index)].qty = parseInt(inp.value) || 0; updateIncomingItemsSummary(); });
+            });
+            container.querySelectorAll('.ii-upc').forEach(inp => {
+                inp.addEventListener('input', () => { sc.incomingItems[parseInt(inp.dataset.index)].upc = inp.value; });
+            });
+            container.querySelectorAll('.ii-tags').forEach(inp => {
+                inp.addEventListener('input', () => { sc.incomingItems[parseInt(inp.dataset.index)].tags = inp.value; });
+            });
+
+            updateIncomingItemsSummary();
+        }
+
+        function updateIncomingItemsSummary() {
+            const summaryEl = document.getElementById('incoming-items-summary');
+            const validItems = getIncomingItemsForSave();
+            if (validItems.length > 0) {
+                summaryEl.style.display = 'flex';
+                document.getElementById('incoming-sku-count').textContent = validItems.length;
+                document.getElementById('incoming-unit-count').textContent = validItems.reduce((sum, i) => sum + i.qty, 0);
+            } else {
+                summaryEl.style.display = 'none';
+            }
+        }
+
+        function escHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function normalizeIncomingItem(item) {
+            const rawQty = Number(item && item.qty);
+            const qty = Number.isFinite(rawQty) ? Math.max(0, Math.floor(rawQty)) : 0;
+            const tags = Array.isArray(item && item.tags)
+                ? item.tags.map(t => String(t || '').trim()).filter(Boolean)
+                : String((item && item.tags) || '').split(',').map(t => t.trim()).filter(Boolean);
+
+            return {
+                sku: String((item && item.sku) || '').trim(),
+                name: String((item && item.name) || '').trim(),
+                qty,
+                upc: String((item && item.upc) || '').trim(),
+                tags
+            };
+        }
+
+        function getNormalizedIncomingItems() {
+            return sc.incomingItems.map(normalizeIncomingItem);
+        }
+
+        function getIncomingItemsForSave() {
+            return getNormalizedIncomingItems().filter(i => i.sku && i.name && i.qty > 0);
+        }
+
+        // Add item button
+        document.getElementById('add-incoming-item-btn').addEventListener('click', () => {
+            sc.incomingItems.push({ sku: '', name: '', qty: 1, upc: '', tags: '' });
+            renderIncomingItems();
+            // Focus the new SKU field
+            setTimeout(() => {
+                const skuInputs = document.querySelectorAll('.ii-sku');
+                if (skuInputs.length) skuInputs[skuInputs.length - 1].focus();
+            }, 50);
+        });
+
+        // Initial render
+        renderIncomingItems();
 
         function showError(message) {
             const el = document.getElementById('sc-error');
@@ -2695,6 +3308,55 @@
 
             sc.destination = { name, street, city, state, zip };
             sc.notes = document.getElementById('sc-notes').value.trim();
+
+            // Clear field errors
+            document.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
+
+            const normalizedItems = getNormalizedIncomingItems();
+            let completedItems = 0;
+
+            for (let i = 0; i < normalizedItems.length; i++) {
+                const item = normalizedItems[i];
+                const hasUserInput = !!(item.sku || item.name || item.upc || item.tags.length || item.qty !== 1);
+                if (!hasUserInput) continue;
+
+                if (!item.sku) {
+                    showError(`Item #${i + 1}: SKU is required.`);
+                    const skuInput = document.querySelectorAll('.ii-sku')[i];
+                    if (skuInput) { skuInput.classList.add('field-error'); skuInput.focus(); }
+                    return false;
+                }
+
+                if (!item.name) {
+                    showError(`Item #${i + 1}: Product name is required.`);
+                    const nameInput = document.querySelectorAll('.ii-name')[i];
+                    if (nameInput) { nameInput.classList.add('field-error'); nameInput.focus(); }
+                    return false;
+                }
+
+                if (item.qty < 1) {
+                    showError(`Item #${i + 1}: Quantity must be at least 1.`);
+                    const qtyInput = document.querySelectorAll('.ii-qty')[i];
+                    if (qtyInput) { qtyInput.classList.add('field-error'); qtyInput.focus(); }
+                    return false;
+                }
+
+                completedItems++;
+            }
+
+            if (completedItems === 0) {
+                // If a BOL file was uploaded, allow submission without manual SKU entry —
+                // the BOL itself documents the cargo contents
+                if (bolState.file) {
+                    console.info('No manual SKU entries, but BOL file is attached — allowing submission.');
+                } else {
+                    showError('At least one fully itemized SKU (SKU, name, and quantity) is required. Tip: Upload a BOL to auto-populate.');
+                    const firstSku = document.querySelector('.ii-sku');
+                    if (firstSku) { firstSku.classList.add('field-error'); firstSku.focus(); }
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -2710,6 +3372,7 @@
             const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
             const quoteResult = calculateQuote();
             const d = sc.destination;
+            const incomingItemsForSave = getIncomingItemsForSave();
 
             trackCalcEvent('shipment_submit_attempt', {
                 package_type: sc.packageType,
@@ -2731,8 +3394,10 @@
                 external_tracking: bolState.parsedData?.trackingNumber || null
             } : null;
 
-            // Build cargo items array
-            const cargoItemsData = bolState.cargoItems.map(item => ({
+            // Build cargo items array (hard-capped for performance + payload safety)
+            const allCargoItems = Array.isArray(bolState.cargoItems) ? bolState.cargoItems : [];
+            const cargoItemsWereTrimmed = allCargoItems.length > MAX_CARGO_ITEMS;
+            const cargoItemsData = allCargoItems.slice(0, MAX_CARGO_ITEMS).map(item => ({
                 cargo_id: item.cargo_id,
                 type: item.type,
                 index: item.index,
@@ -2749,6 +3414,19 @@
                 location: null,
                 created_at: new Date().toISOString()
             }));
+            const cargoItemsEmbedded = cargoItemsData.slice(0, EMBEDDED_CARGO_ITEMS_LIMIT).map(item => ({
+                cargo_id: item.cargo_id,
+                type: item.type,
+                index: item.index,
+                weight: item.weight,
+                description: item.description,
+                bol_number: item.bol_number,
+                status: item.status
+            }));
+
+            if (cargoItemsWereTrimmed) {
+                showBOLStatus('warning', `⚠️ Cargo list exceeded ${MAX_CARGO_ITEMS}. Extra items were not included.`);
+            }
 
             const newShipment = {
                 user_id: currentUser.uid,
@@ -2794,8 +3472,12 @@
                 },
                 // BOL / Shipping Label data
                 bol_document: bolDocument,
-                cargo_items: cargoItemsData,
+                cargo_items: cargoItemsEmbedded,
                 cargo_count: cargoItemsData.length,
+                cargo_items_embedded_count: cargoItemsEmbedded.length,
+                cargo_items_truncated: cargoItemsData.length > cargoItemsEmbedded.length || cargoItemsWereTrimmed,
+                // Incoming inventory items (itemized SKUs)
+                incoming_items: incomingItemsForSave,
                 notes: sc.notes || `Shipment: ${sc.quantity} ${sc.packageType}(s), Zone: ${getZoneLabel(sc.shippingZone)}`,
                 // Packing List & Invoice documents
                 packing_list: docsState.packing_list.file ? {
@@ -2814,6 +3496,21 @@
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
+
+            // Firestore has a strict 1 MiB per-document limit; trim embedded cargo preview first, then hard-fail if still too large.
+            let shipmentPayloadSize = estimatePayloadBytes(newShipment);
+            if (shipmentPayloadSize > FIRESTORE_DOC_SAFE_LIMIT_BYTES && Array.isArray(newShipment.cargo_items) && newShipment.cargo_items.length > 0) {
+                newShipment.cargo_items = [];
+                newShipment.cargo_items_embedded_count = 0;
+                newShipment.cargo_items_truncated = cargoItemsData.length > 0 || cargoItemsWereTrimmed;
+                newShipment.cargo_items_omitted_for_size = true;
+                shipmentPayloadSize = estimatePayloadBytes(newShipment);
+            }
+            if (shipmentPayloadSize > FIRESTORE_DOC_HARD_LIMIT_BYTES - 8192) {
+                const payloadErr = new Error('Shipment payload too large. Reduce itemized lines and try again.');
+                payloadErr.code = 'resource-exhausted';
+                throw payloadErr;
+            }
 
             try {
                 const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
@@ -2933,18 +3630,22 @@
                 // Store BOL document metadata
                 if (bolDocument) {
                     try {
+                        // Firestore 1 MiB doc limit — only embed base64 for files < 700KB to stay safe
+                        const safeFileLimit = 716800; // ~700KB raw = ~950KB base64, well under 1 MiB with metadata
+                        const fileData = (bolState.fileDataUrl && bolState.file.size < safeFileLimit) ? bolState.fileDataUrl : null;
                         await addDoc(collection(db, 'bol_documents'), {
                             shipment_id: shipmentRef.id,
                             tracking_number: trackingNumber,
                             user_id: currentUser.uid,
                             ...bolDocument,
-                            // Store file as base64 data URL (for small files < 1MB)
-                            file_data: (bolState.fileDataUrl && bolState.file.size < 1048576) ? bolState.fileDataUrl : null,
+                            file_data: fileData,
+                            file_stored: !!fileData,
                             created_at: new Date().toISOString()
                         });
-                        trackCalcEvent('bol_document_stored', { file_type: bolState.file.type });
+                        trackCalcEvent('bol_document_stored', { file_type: bolState.file.type, file_stored: !!fileData });
                     } catch (bolErr) {
                         console.warn('BOL document storage failed:', bolErr.message);
+                        // Non-blocking — shipment was already created successfully
                     }
                 }
 
@@ -2986,6 +3687,61 @@
                     }
                 }
 
+                // Auto-add incoming items to inventory collection
+                const validItems = incomingItemsForSave;
+                if (validItems.length > 0) {
+                    try {
+                        for (const item of validItems) {
+                            // Check if SKU already exists for this user in this warehouse
+                            const existingQuery = query(
+                                collection(db, 'inventory'),
+                                where('user_id', '==', currentUser.uid),
+                                where('sku', '==', item.sku),
+                                where('warehouse', '==', sc.selectedWarehouse || 'miami')
+                            );
+                            const existingSnap = await getDocs(existingQuery);
+
+                            if (!existingSnap.empty) {
+                                // Update existing inventory item — add quantity
+                                const existingDoc = existingSnap.docs[0];
+                                const existingData = existingDoc.data();
+                                const updatedData = {
+                                    quantity: (existingData.quantity || 0) + item.qty,
+                                    last_updated: new Date().toISOString(),
+                                    last_shipment: trackingNumber
+                                };
+                                if (item.upc && !existingData.upc) updatedData.upc = item.upc;
+                                if (item.tags.length > 0) {
+                                    const oldTags = Array.isArray(existingData.tags)
+                                        ? existingData.tags
+                                        : String(existingData.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+                                    updatedData.tags = [...new Set([...oldTags, ...item.tags])];
+                                }
+                                await setDoc(existingDoc.ref, updatedData, { merge: true });
+                            } else {
+                                // Create new inventory item
+                                await addDoc(collection(db, 'inventory'), {
+                                    user_id: currentUser.uid,
+                                    sku: item.sku,
+                                    name: item.name,
+                                    quantity: item.qty,
+                                    upc: item.upc || '',
+                                    tags: item.tags,
+                                    warehouse: sc.selectedWarehouse || 'miami',
+                                    location: 'Receiving',
+                                    reorder_level: 10,
+                                    source_shipment: trackingNumber,
+                                    last_shipment: trackingNumber,
+                                    last_updated: new Date().toISOString()
+                                });
+                            }
+                        }
+                        trackCalcEvent('inventory_items_synced', { count: validItems.length, tracking_number: trackingNumber });
+                    } catch (invErr) {
+                        console.warn('Inventory sync failed:', invErr.message);
+                    }
+                }
+
                 // GA4 tracking
                 if (window.MA3PLAnalytics) {
                     MA3PLAnalytics.track('shipment_created', {
@@ -3014,8 +3770,20 @@
                 trackCalcEvent('shipment_created_success', { tracking_number: trackingNumber, value: quoteResult.total });
 
             } catch (error) {
-                showError('Error creating shipment: ' + error.message);
-                trackCalcEvent('shipment_create_failed', { error: error.message });
+                console.error('Shipment creation error:', error);
+                // Provide user-friendly error messages
+                let userMsg = 'Error creating shipment. ';
+                if (error.code === 'permission-denied') {
+                    userMsg += 'Permission denied — please log out and log back in.';
+                } else if (error.code === 'resource-exhausted' || (error.message && error.message.includes('exceeds the maximum'))) {
+                    userMsg += 'Data too large. Try uploading a smaller BOL file (under 5MB).';
+                } else if (error.message && error.message.includes('network')) {
+                    userMsg += 'Network error — please check your connection and try again.';
+                } else {
+                    userMsg += error.message || 'Please try again or contact support.';
+                }
+                showError(userMsg);
+                trackCalcEvent('shipment_create_failed', { error: error.message, code: error.code || 'unknown' });
                 createBtn.disabled = false;
                 createBtn.innerHTML = '✓ Create Shipment';
             }
@@ -3065,6 +3833,20 @@
         // =====================================================
         // BOL / SHIPPING LABEL UPLOAD & PARSING SYSTEM
         // =====================================================
+        const MAX_CARGO_ITEMS = 1000;
+        const EMBEDDED_CARGO_ITEMS_LIMIT = 100;
+        const FIRESTORE_DOC_SAFE_LIMIT_BYTES = 950000;
+        const FIRESTORE_DOC_HARD_LIMIT_BYTES = 1048576;
+
+        function estimatePayloadBytes(value) {
+            try {
+                return new TextEncoder().encode(JSON.stringify(value)).length;
+            } catch (err) {
+                console.warn('Payload size estimate failed:', err);
+                return 0;
+            }
+        }
+
         const bolState = {
             file: null,
             fileDataUrl: null,
@@ -3121,7 +3903,7 @@
             });
         }
 
-        function handleDocFile(docType, file, dropzoneId, previewId, nameId, sizeId, iconId) {
+        async function handleDocFile(docType, file, dropzoneId, previewId, nameId, sizeId, iconId) {
             // Max 5MB per document
             if (file.size > 5 * 1024 * 1024) {
                 if (window.MA3PL?.toast) window.MA3PL.toast.warning('File too large. Maximum size is 5MB.');
@@ -3131,10 +3913,19 @@
 
             docsState[docType].file = file;
 
-            // Read as base64 data URL for storage
-            const reader = new FileReader();
-            reader.onload = (e) => { docsState[docType].dataUrl = e.target.result; };
-            reader.readAsDataURL(file);
+            // Read as base64 data URL for storage (await to prevent race condition)
+            try {
+                docsState[docType].dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.onabort = () => reject(new Error('File read cancelled'));
+                    reader.readAsDataURL(file);
+                });
+            } catch (readErr) {
+                console.warn('Doc FileReader error:', readErr);
+                docsState[docType].dataUrl = null; // Will save metadata only
+            }
 
             // Update UI
             document.getElementById(dropzoneId).classList.add('has-file');
@@ -3250,7 +4041,11 @@
                 if (m) {
                     const qty = parseInt(m[1]);
                     if (qty > 0 && qty < 10000) {
-                        data.quantity = qty;
+                        data.quantity = Math.min(qty, MAX_CARGO_ITEMS);
+                        if (qty > MAX_CARGO_ITEMS) {
+                            data.quantityCapped = true;
+                            data.originalQuantity = qty;
+                        }
                         // Determine if pallets or boxes
                         if (/PALLET|PLT|SKID/i.test(m[0])) {
                             data.packageType = 'pallet';
@@ -3333,17 +4128,44 @@
         // PDF TEXT EXTRACTION
         // =====================================================
         async function extractPDFText(file) {
+            // If PDF.js hasn't loaded yet, wait up to 5 seconds for it
             if (!window.pdfjsLib) {
-                throw new Error('PDF.js library not loaded');
+                let waited = 0;
+                while (!window.pdfjsLib && waited < 5000) {
+                    await new Promise(r => setTimeout(r, 500));
+                    waited += 500;
+                }
+                if (!window.pdfjsLib) {
+                    throw new Error('PDF reader could not load. Please refresh the page and try again, or upload a JPG/PNG image instead.');
+                }
+                // Ensure worker is configured
+                if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                }
             }
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let arrayBuffer;
+            try {
+                arrayBuffer = await file.arrayBuffer();
+            } catch (bufErr) {
+                throw new Error('Could not read the file. It may be corrupted or too large. Please try a different file.');
+            }
+            let pdf;
+            try {
+                pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            } catch (pdfErr) {
+                throw new Error('Could not open this PDF. It may be password-protected, corrupted, or in an unsupported format. Try re-saving it or use a JPG/PNG image.');
+            }
             let fullText = '';
             for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => item.str).join(' ');
-                fullText += pageText + '\n';
+                try {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n';
+                } catch (pageErr) {
+                    console.warn(`Could not read page ${i}:`, pageErr);
+                    // Continue with other pages instead of failing entirely
+                }
             }
             return fullText;
         }
@@ -3403,8 +4225,10 @@
         // =====================================================
         function generateCargoItems(data) {
             bolState.cargoItems = [];
-            const qty = data.quantity || sc.quantity || 1;
+            const requestedQty = Number(data.quantity || sc.quantity || 1);
+            const qty = Math.max(1, Math.min(MAX_CARGO_ITEMS, Number.isFinite(requestedQty) ? Math.floor(requestedQty) : 1));
             const type = data.packageType || sc.packageType || 'box';
+            const wasCapped = requestedQty > MAX_CARGO_ITEMS;
 
             for (let i = 0; i < qty; i++) {
                 bolState.cargoItems.push({
@@ -3419,6 +4243,10 @@
             }
 
             renderCargoItems();
+
+            if (wasCapped) {
+                showBOLStatus('warning', `⚠️ Document listed ${requestedQty} items. Generated first ${MAX_CARGO_ITEMS}.`);
+            }
         }
 
         // =====================================================
@@ -3517,6 +4345,23 @@
                 document.getElementById('sc-notes').value = notes.join(' | ');
             }
 
+            // ─── AUTO-POPULATE INCOMING ITEMS FROM BOL DATA ───
+            // When a BOL is parsed, auto-create an incoming item so the user doesn't
+            // have to manually duplicate what the BOL already tells us.
+            const bolSku = data.bolNumber ? ('BOL-' + data.bolNumber.replace(/[^a-zA-Z0-9-]/g, '')) : ('BOL-' + Date.now().toString().slice(-6));
+            const bolProductName = data.description || (data.packageType === 'pallet' ? 'Pallet Shipment' : 'Box Shipment') + (data.bolNumber ? ' (BOL ' + data.bolNumber + ')' : '');
+            const bolQty = data.quantity && data.quantity >= 1 ? Math.floor(data.quantity) : (sc.quantity || 1);
+
+            // Replace the default empty item(s) with BOL-derived item
+            sc.incomingItems = [{
+                sku: bolSku,
+                name: bolProductName,
+                qty: bolQty,
+                upc: '',
+                tags: [data.carrier, data.bolNumber, data.packageType].filter(Boolean).join(', ')
+            }];
+            renderIncomingItems();
+
             // Update 3D viewer
             if (viewer3D && viewer3D.active) {
                 viewer3D.updateDimensions(sc.length, sc.width, sc.height);
@@ -3531,7 +4376,8 @@
                 fields_filled: Object.keys(data).length,
                 has_dimensions: !!(data.length && data.width && data.height),
                 has_weight: !!data.weight,
-                has_destination: !!data.destCity
+                has_destination: !!data.destCity,
+                auto_populated_items: true
             });
         }
 
@@ -3545,18 +4391,30 @@
         const bolExtractedData = document.getElementById('bol-extracted-data');
 
         // Click to browse
-        bolDropzone.addEventListener('click', () => bolFileInput.click());
+        bolDropzone.addEventListener('click', (e) => {
+            // Prevent double-trigger if clicking on the input itself
+            if (e.target === bolFileInput) return;
+            bolFileInput.click();
+        });
 
-        // Drag events
-        bolDropzone.addEventListener('dragover', (e) => {
+        // Drag events — dragenter + dragover both need preventDefault for drop to work in all browsers
+        bolDropzone.addEventListener('dragenter', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             bolDropzone.classList.add('dragover');
         });
-        bolDropzone.addEventListener('dragleave', () => {
+        bolDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            bolDropzone.classList.add('dragover');
+        });
+        bolDropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
             bolDropzone.classList.remove('dragover');
         });
         bolDropzone.addEventListener('drop', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             bolDropzone.classList.remove('dragover');
             const files = e.dataTransfer.files;
             if (files.length > 0) handleBOLFile(files[0]);
@@ -3598,6 +4456,10 @@
 
         // Add cargo item manually
         document.getElementById('cargo-add-btn').addEventListener('click', () => {
+            if (bolState.cargoItems.length >= MAX_CARGO_ITEMS) {
+                showBOLStatus('warning', `⚠️ Maximum of ${MAX_CARGO_ITEMS} cargo items reached.`);
+                return;
+            }
             const type = sc.packageType || 'box';
             bolState.cargoItems.push({
                 cargo_id: generateCargoId(type),
@@ -3615,9 +4477,14 @@
         // HANDLE BOL FILE UPLOAD
         // =====================================================
         async function handleBOLFile(file) {
-            // Validate file type
-            const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
-            if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|png|jpg|jpeg)$/i)) {
+            // Validate file type — accept common MIME types + extension fallback
+            // Some browsers/email clients report application/octet-stream or empty type for PDFs
+            const validMimeTypes = ['application/pdf', 'application/x-pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+            const hasValidMime = validMimeTypes.includes(file.type);
+            const hasValidExt = /\.(pdf|png|jpg|jpeg)$/i.test(file.name);
+            const isOctetStream = file.type === 'application/octet-stream' || file.type === '';
+
+            if (!hasValidMime && !hasValidExt && !isOctetStream) {
                 showBOLStatus('error', '❌ Unsupported file type. Use PDF, PNG, or JPG.');
                 return;
             }
@@ -3637,13 +4504,24 @@
             bolFilePreview.classList.add('active');
             bolDropzone.classList.add('has-file');
 
-            // Store as data URL for Firestore
-            const reader = new FileReader();
-            reader.onload = (e) => { bolState.fileDataUrl = e.target.result; };
-            reader.readAsDataURL(file);
+            // Store as data URL for Firestore (await to prevent race condition)
+            try {
+                bolState.fileDataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => reject(new Error('Failed to read file. Please try again.'));
+                    reader.onabort = () => reject(new Error('File read was cancelled. Please try again.'));
+                    reader.readAsDataURL(file);
+                });
+            } catch (readErr) {
+                console.error('BOL FileReader error:', readErr);
+                showBOLStatus('error', '❌ ' + readErr.message);
+                return;
+            }
 
-            // Parse the document
-            if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+            // Parse the document — detect PDF by MIME type, extension, or octet-stream with .pdf extension
+            const isPDF = file.type === 'application/pdf' || file.type === 'application/x-pdf' || /\.pdf$/i.test(file.name);
+            if (isPDF) {
                 await parsePDFDocument(file);
             } else {
                 // Image file — can't extract text client-side without OCR API
@@ -3798,7 +4676,8 @@
                     if (data.commercial_invoice) {
                         bolCargoHtml += `<span style="font-size:0.75rem;background:#fefce8;color:#854d0e;padding:2px 6px;border-radius:4px;font-weight:600;">🧾 INV</span> `;
                     }
-                    if (!bolCargoHtml) bolCargoHtml = '<span style="color:#94a3b8;font-size:0.8rem;">—</span>';
+                    // Always show upload link
+                    bolCargoHtml += `<button class="shipment-upload-link" data-shipment-id="${docSnap.id}" data-tracking="${data.tracking_number}" title="Upload BOL or Invoice">📤 Upload</button>`;
 
                     row.innerHTML = `
                         <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
@@ -3815,7 +4694,232 @@
                 console.error('Error loading shipments:', error);
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Error loading shipments</td></tr>';
             }
+
+            // ─── Attach upload link listeners after rows render ───
+            document.querySelectorAll('.shipment-upload-link').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openDocUploadModal(btn.dataset.shipmentId, btn.dataset.tracking);
+                });
+            });
         }
+
+        // =====================================================
+        // DOCUMENT UPLOAD MODAL — Upload to Existing Shipments
+        // =====================================================
+        const modalState = { shipmentId: null, tracking: null, bol: { file: null, dataUrl: null }, invoice: { file: null, dataUrl: null } };
+
+        function openDocUploadModal(shipmentId, tracking) {
+            modalState.shipmentId = shipmentId;
+            modalState.tracking = tracking;
+            modalState.bol = { file: null, dataUrl: null };
+            modalState.invoice = { file: null, dataUrl: null };
+
+            document.getElementById('doc-upload-tracking').textContent = '📦 ' + tracking;
+
+            // Reset UI
+            ['bol', 'inv'].forEach(t => {
+                document.getElementById(`modal-${t}-slot`).classList.remove('has-file');
+                document.getElementById(`modal-${t}-preview`).classList.remove('active');
+                document.getElementById(`modal-${t}-input`).value = '';
+            });
+            document.getElementById('doc-upload-save-btn').disabled = true;
+            document.getElementById('doc-upload-save-btn').textContent = 'Upload & Save';
+
+            document.getElementById('doc-upload-overlay').classList.add('active');
+        }
+
+        function closeDocUploadModal() {
+            document.getElementById('doc-upload-overlay').classList.remove('active');
+            modalState.shipmentId = null;
+            modalState.tracking = null;
+        }
+
+        function modalFormatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        function modalGetIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (ext === 'pdf') return '📄';
+            if (['png','jpg','jpeg'].includes(ext)) return '🖼️';
+            if (['xlsx','xls','csv'].includes(ext)) return '📊';
+            if (['doc','docx'].includes(ext)) return '📝';
+            return '📎';
+        }
+
+        function handleModalFile(type, file) {
+            const key = type === 'bol' ? 'bol' : 'invoice';
+            const prefix = type === 'bol' ? 'bol' : 'inv';
+            const maxSize = 5 * 1024 * 1024;
+
+            if (file.size > maxSize) {
+                var t = document.createElement('div'); t.setAttribute('role','status'); t.style.cssText='position:fixed;bottom:24px;right:24px;padding:16px 24px;border-radius:12px;font-weight:500;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,0.15);background:#f59e0b;color:white;'; t.textContent='File too large. Max 5MB.'; document.body.appendChild(t); setTimeout(function(){t.remove();},4000);
+                return;
+            }
+
+            modalState[key].file = file;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                modalState[key].dataUrl = e.target.result;
+                document.getElementById('doc-upload-save-btn').disabled = false;
+            };
+            reader.readAsDataURL(file);
+
+            document.getElementById(`modal-${prefix}-slot`).classList.add('has-file');
+            document.getElementById(`modal-${prefix}-preview`).classList.add('active');
+            document.getElementById(`modal-${prefix}-name`).textContent = file.name;
+            document.getElementById(`modal-${prefix}-size`).textContent = modalFormatSize(file.size);
+            document.getElementById(`modal-${prefix}-icon`).textContent = modalGetIcon(file.name);
+        }
+
+        // Wire up BOL slot
+        const bolSlot = document.getElementById('modal-bol-slot');
+        const bolInput = document.getElementById('modal-bol-input');
+        bolSlot.addEventListener('click', () => bolInput.click());
+        bolInput.addEventListener('change', (e) => { if (e.target.files[0]) handleModalFile('bol', e.target.files[0]); });
+        ['dragenter','dragover'].forEach(ev => bolSlot.addEventListener(ev, (e) => { e.preventDefault(); bolSlot.classList.add('has-file'); }));
+        ['dragleave','drop'].forEach(ev => bolSlot.addEventListener(ev, (e) => { e.preventDefault(); if (ev === 'dragleave') bolSlot.classList.remove('has-file'); }));
+        bolSlot.addEventListener('drop', (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) handleModalFile('bol', e.dataTransfer.files[0]); });
+        document.getElementById('modal-bol-remove').addEventListener('click', (e) => {
+            e.stopPropagation();
+            modalState.bol = { file: null, dataUrl: null };
+            document.getElementById('modal-bol-slot').classList.remove('has-file');
+            document.getElementById('modal-bol-preview').classList.remove('active');
+            bolInput.value = '';
+            if (!modalState.invoice.file) document.getElementById('doc-upload-save-btn').disabled = true;
+        });
+
+        // Wire up Invoice slot
+        const invSlot = document.getElementById('modal-inv-slot');
+        const invInput = document.getElementById('modal-inv-input');
+        invSlot.addEventListener('click', () => invInput.click());
+        invInput.addEventListener('change', (e) => { if (e.target.files[0]) handleModalFile('invoice', e.target.files[0]); });
+        ['dragenter','dragover'].forEach(ev => invSlot.addEventListener(ev, (e) => { e.preventDefault(); invSlot.classList.add('has-file'); }));
+        ['dragleave','drop'].forEach(ev => invSlot.addEventListener(ev, (e) => { e.preventDefault(); if (ev === 'dragleave') invSlot.classList.remove('has-file'); }));
+        invSlot.addEventListener('drop', (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) handleModalFile('invoice', e.dataTransfer.files[0]); });
+        document.getElementById('modal-inv-remove').addEventListener('click', (e) => {
+            e.stopPropagation();
+            modalState.invoice = { file: null, dataUrl: null };
+            document.getElementById('modal-inv-slot').classList.remove('has-file');
+            document.getElementById('modal-inv-preview').classList.remove('active');
+            invInput.value = '';
+            if (!modalState.bol.file) document.getElementById('doc-upload-save-btn').disabled = true;
+        });
+
+        // Close modal
+        document.getElementById('doc-upload-close').addEventListener('click', closeDocUploadModal);
+        document.getElementById('doc-upload-cancel-btn').addEventListener('click', closeDocUploadModal);
+        document.getElementById('doc-upload-overlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeDocUploadModal();
+        });
+
+        // Save uploaded documents to Firestore
+        document.getElementById('doc-upload-save-btn').addEventListener('click', async () => {
+            const saveBtn = document.getElementById('doc-upload-save-btn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Uploading...';
+
+            let successCount = 0;
+            let errorMessages = [];
+
+            try {
+                const shipRef = doc(db, 'shipments', modalState.shipmentId);
+                const updateData = {};
+
+                // BOL document
+                if (modalState.bol.file) {
+                    const bolObj = {
+                        filename: modalState.bol.file.name,
+                        file_type: modalState.bol.file.type,
+                        file_size: modalState.bol.file.size,
+                        uploaded_at: new Date().toISOString()
+                    };
+                    if (modalState.bol.file.size < 700 * 1024 && modalState.bol.dataUrl) {
+                        bolObj.file_data = modalState.bol.dataUrl;
+                    }
+                    updateData.bol_document = bolObj;
+
+                    // Also save to bol_documents collection
+                    try {
+                        await addDoc(collection(db, 'bol_documents'), {
+                            shipment_id: modalState.shipmentId,
+                            tracking_number: modalState.tracking,
+                            user_id: currentUser.uid,
+                            ...bolObj,
+                            file_data: (modalState.bol.file.size < 700 * 1024 && modalState.bol.dataUrl) ? modalState.bol.dataUrl : null,
+                            created_at: new Date().toISOString()
+                        });
+                        successCount++;
+                    } catch (bolErr) {
+                        console.warn('BOL collection write failed:', bolErr.message);
+                        errorMessages.push('BOL archive: ' + bolErr.message);
+                    }
+                }
+
+                // Invoice document
+                if (modalState.invoice.file) {
+                    const invObj = {
+                        filename: modalState.invoice.file.name,
+                        file_type: modalState.invoice.file.type,
+                        file_size: modalState.invoice.file.size,
+                        uploaded_at: new Date().toISOString()
+                    };
+                    if (modalState.invoice.file.size < 1024 * 1024 && modalState.invoice.dataUrl) {
+                        invObj.file_data = modalState.invoice.dataUrl;
+                    }
+                    updateData.commercial_invoice = invObj;
+
+                    // Also save to shipment_documents collection
+                    try {
+                        await addDoc(collection(db, 'shipment_documents'), {
+                            shipment_id: modalState.shipmentId,
+                            tracking_number: modalState.tracking,
+                            user_id: currentUser.uid,
+                            doc_type: 'invoice',
+                            ...invObj,
+                            file_data: (modalState.invoice.file.size < 1024 * 1024 && modalState.invoice.dataUrl) ? modalState.invoice.dataUrl : null,
+                            created_at: new Date().toISOString()
+                        });
+                        successCount++;
+                    } catch (invErr) {
+                        console.warn('Invoice collection write failed:', invErr.message);
+                        errorMessages.push('Invoice archive: ' + invErr.message);
+                    }
+                }
+
+                // Update the shipment document (always runs — attaches metadata to the shipment itself)
+                if (Object.keys(updateData).length > 0) {
+                    await updateDoc(shipRef, updateData);
+                    successCount++;
+                }
+
+                // Success toast
+                var toast = document.createElement('div');
+                toast.setAttribute('role','status');
+                toast.style.cssText='position:fixed;bottom:24px;right:24px;padding:16px 24px;border-radius:12px;font-weight:500;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,0.15);background:#14b8a6;color:white;';
+                toast.textContent = 'Documents uploaded successfully!';
+                document.body.appendChild(toast);
+                setTimeout(function(){ toast.remove(); }, 4000);
+
+                closeDocUploadModal();
+                loadShipments(); // Refresh table to show new badges
+            } catch (err) {
+                console.error('Upload error:', err);
+                var toast = document.createElement('div');
+                toast.setAttribute('role','status');
+                toast.style.cssText='position:fixed;bottom:24px;right:24px;padding:16px 24px;border-radius:12px;font-weight:500;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,0.15);background:#ef4444;color:white;';
+                toast.textContent = 'Upload failed: ' + err.message;
+                document.body.appendChild(toast);
+                setTimeout(function(){ toast.remove(); }, 5000);
+
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Upload & Save';
+            }
+        });
 
     </script>
     <style>@keyframes spin{to{transform:rotate(360deg)}}</style>

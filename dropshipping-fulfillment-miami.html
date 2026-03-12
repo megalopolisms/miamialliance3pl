@@ -456,26 +456,20 @@
 
         /* Responsive */
         @media (max-width: 768px) {
-            .ds-hero-grid { grid-template-columns: 1fr; gap: 24px; }
+            .ds-hero-grid { grid-template-columns: 1fr; gap: 40px; }
             .ds-hero-stats { grid-template-columns: repeat(3, 1fr); gap: 12px; }
             .ds-services-grid { grid-template-columns: 1fr; }
             .ds-comparison-grid { grid-template-columns: 1fr; }
-            .ds-howworks-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+            .ds-howworks-grid { grid-template-columns: 1fr 1fr; }
             .ds-faq-grid { grid-template-columns: 1fr; }
             .ds-resources-grid { grid-template-columns: 1fr; }
-            .ds-platform-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+            .ds-platform-grid { grid-template-columns: repeat(3, 1fr); }
             .ds-hero { padding: 80px 0 60px; }
-            .ds-cta { padding: 48px 0; }
         }
         @media (max-width: 480px) {
             .ds-howworks-grid { grid-template-columns: 1fr; }
             .ds-hero-stats { grid-template-columns: 1fr; }
             .ds-platform-grid { grid-template-columns: repeat(2, 1fr); }
-            .ds-hero { padding: 60px 0 40px; }
-            .ds-resources-grid { grid-template-columns: 1fr; gap: 16px; }
-        }
-        @media (max-width: 374px) {
-            .ds-platform-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -940,7 +934,7 @@
         </a>
     </div>
 
-    <script src="js/main.js"></script>
+    <script src="js/main.js" defer></script>
     <script src="js/lead-capture.js"></script>
 </body>
 </html>

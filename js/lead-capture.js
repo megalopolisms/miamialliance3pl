@@ -132,7 +132,6 @@
     // Animate in
     requestAnimationFrame(() => {
       overlay.classList.add("active");
-      document.body.style.overflow = "hidden";
       trackEvent("popup_shown", { popup_type: "exit_intent" });
     });
   }
@@ -141,7 +140,6 @@
     const overlay = document.getElementById("exit-popup-overlay");
     if (overlay) {
       overlay.classList.remove("active");
-      document.body.style.overflow = "";
       setCooldown(STORAGE_KEY_EXIT);
       setTimeout(() => overlay.remove(), 300);
       trackEvent("popup_closed", { popup_type: "exit_intent" });
