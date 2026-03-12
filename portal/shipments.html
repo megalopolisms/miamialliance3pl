@@ -4823,6 +4823,9 @@
             saveBtn.disabled = true;
             saveBtn.textContent = 'Uploading...';
 
+            let successCount = 0;
+            let errorMessages = [];
+
             try {
                 const shipRef = doc(db, 'shipments', modalState.shipmentId);
                 const updateData = {};
@@ -4841,14 +4844,20 @@
                     updateData.bol_document = bolObj;
 
                     // Also save to bol_documents collection
-                    await addDoc(collection(db, 'bol_documents'), {
-                        shipment_id: modalState.shipmentId,
-                        tracking_number: modalState.tracking,
-                        user_id: currentUser.uid,
-                        ...bolObj,
-                        file_data: (modalState.bol.file.size < 700 * 1024 && modalState.bol.dataUrl) ? modalState.bol.dataUrl : null,
-                        created_at: new Date().toISOString()
-                    });
+                    try {
+                        await addDoc(collection(db, 'bol_documents'), {
+                            shipment_id: modalState.shipmentId,
+                            tracking_number: modalState.tracking,
+                            user_id: currentUser.uid,
+                            ...bolObj,
+                            file_data: (modalState.bol.file.size < 700 * 1024 && modalState.bol.dataUrl) ? modalState.bol.dataUrl : null,
+                            created_at: new Date().toISOString()
+                        });
+                        successCount++;
+                    } catch (bolErr) {
+                        console.warn('BOL collection write failed:', bolErr.message);
+                        errorMessages.push('BOL archive: ' + bolErr.message);
+                    }
                 }
 
                 // Invoice document
@@ -4865,19 +4874,28 @@
                     updateData.commercial_invoice = invObj;
 
                     // Also save to shipment_documents collection
-                    await addDoc(collection(db, 'shipment_documents'), {
-                        shipment_id: modalState.shipmentId,
-                        tracking_number: modalState.tracking,
-                        user_id: currentUser.uid,
-                        doc_type: 'invoice',
-                        ...invObj,
-                        file_data: (modalState.invoice.file.size < 1024 * 1024 && modalState.invoice.dataUrl) ? modalState.invoice.dataUrl : null,
-                        created_at: new Date().toISOString()
-                    });
+                    try {
+                        await addDoc(collection(db, 'shipment_documents'), {
+                            shipment_id: modalState.shipmentId,
+                            tracking_number: modalState.tracking,
+                            user_id: currentUser.uid,
+                            doc_type: 'invoice',
+                            ...invObj,
+                            file_data: (modalState.invoice.file.size < 1024 * 1024 && modalState.invoice.dataUrl) ? modalState.invoice.dataUrl : null,
+                            created_at: new Date().toISOString()
+                        });
+                        successCount++;
+                    } catch (invErr) {
+                        console.warn('Invoice collection write failed:', invErr.message);
+                        errorMessages.push('Invoice archive: ' + invErr.message);
+                    }
                 }
 
-                // Update the shipment document
-                await updateDoc(shipRef, updateData);
+                // Update the shipment document (always runs — attaches metadata to the shipment itself)
+                if (Object.keys(updateData).length > 0) {
+                    await updateDoc(shipRef, updateData);
+                    successCount++;
+                }
 
                 // Success toast
                 var toast = document.createElement('div');
