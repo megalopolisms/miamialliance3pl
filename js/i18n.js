@@ -107,16 +107,22 @@
     // Apply Spanish (or any non-en language)
     document.documentElement.lang = lang;
 
-    // data-i18n → textContent
+    // data-i18n → textContent (auto-detects HTML and uses innerHTML when needed)
+    var HTML_TAG_RE = /<[a-z][\s\S]*?>/i;
     var els = document.querySelectorAll("[data-i18n]");
     for (var i = 0; i < els.length; i++) {
       var key = els[i].getAttribute("data-i18n");
       if (dict[key]) {
-        // Store original if not already stored
+        // Store original as innerHTML so we preserve any embedded HTML
         if (!els[i].hasAttribute("data-i18n-original")) {
-          els[i].setAttribute("data-i18n-original", els[i].textContent);
+          els[i].setAttribute("data-i18n-original", els[i].innerHTML);
         }
-        els[i].textContent = dict[key];
+        // Auto-detect HTML tags in translation value
+        if (HTML_TAG_RE.test(dict[key])) {
+          els[i].innerHTML = dict[key];
+        } else {
+          els[i].textContent = dict[key];
+        }
       }
     }
 
@@ -173,7 +179,8 @@
 
     var els = document.querySelectorAll("[data-i18n-original]");
     for (var i = 0; i < els.length; i++) {
-      els[i].textContent = els[i].getAttribute("data-i18n-original");
+      // Restore using innerHTML since originals may contain HTML
+      els[i].innerHTML = els[i].getAttribute("data-i18n-original");
     }
 
     var htmlEls = document.querySelectorAll("[data-i18n-original-html]");
