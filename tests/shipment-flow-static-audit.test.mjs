@@ -39,6 +39,10 @@ test('admin document views can resolve URL-backed files without compound query d
     assert.match(adminShipmentsHtml, /pickDocumentSource/);
     assert.match(adminShipmentsHtml, /Unsafe or invalid document link/);
     assert.match(adminShipmentsHtml, /query\(collection\(db, 'shipment_documents'\), where\('shipment_id', '==', shipmentId\)\)/);
+    assert.match(adminShipmentsHtml, /data-doc-action="view"/);
+    assert.match(adminShipmentsHtml, /data-doc-download="true"/);
+    assert.doesNotMatch(adminShipmentsHtml, /panel-doc-btn view" onclick=/);
+    assert.doesNotMatch(adminShipmentsHtml, /doc-download-btn" onclick=/);
     assert.match(adminPanelHtml, /pickDocumentSource/);
     assert.match(adminPanelHtml, /url: data\.url \|\| null/);
     assert.match(adminPanelHtml, /url: data\.commercial_invoice\.url \|\| null/);

@@ -2517,10 +2517,21 @@
                         </div>
                     </div>
                     <div class="panel-doc-actions">
-                        <button class="panel-doc-btn view" onclick='viewDocument(${JSON.stringify(shipment.id)}, ${JSON.stringify(d.type)})'>View</button>
+                        <button
+                            class="panel-doc-btn view"
+                            data-doc-action="view"
+                            data-shipment-id="${escapeHtml(shipment.id)}"
+                            data-doc-type="${escapeHtml(d.type)}"
+                        >View</button>
                     </div>
                 </div>
             `).join('');
+
+            container.querySelectorAll('[data-doc-action="view"]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    viewDocument(button.dataset.shipmentId, button.dataset.docType);
+                });
+            });
         }
 
         // ============================================================
@@ -2755,7 +2766,6 @@
                 const isImage = resolvedFileType.startsWith('image/');
                 const isPdf = resolvedFileType === 'application/pdf';
                 const safeDocSource = escapeHtml(docSource);
-                const downloadArgs = `${JSON.stringify(docSource)}, ${JSON.stringify(resolvedFilename)}`;
 
                 if (isImage) {
                     previewHtml = `<img src="${safeDocSource}" alt="${escapeHtml(resolvedFilename)}" />`;
@@ -2767,12 +2777,12 @@
                             <div class="icon">${meta.icon}</div>
                             <p><strong>${escapeHtml(resolvedFilename)}</strong></p>
                             <p>Preview not available for this file type.</p>
-                            <button class="doc-download-btn" onclick='downloadDoc(${downloadArgs})'>Download File</button>
+                            <button class="doc-download-btn" data-doc-download="true">Download File</button>
                         </div>
                     `;
                 }
                 if (isImage || isPdf) {
-                    previewHtml += `<button class="doc-download-btn" onclick='downloadDoc(${downloadArgs})'>Download ${escapeHtml(resolvedFilename)}</button>`;
+                    previewHtml += `<button class="doc-download-btn" data-doc-download="true">Download ${escapeHtml(resolvedFilename)}</button>`;
                 }
             } else {
                 previewHtml = `
@@ -2798,6 +2808,9 @@
             `;
 
             body.innerHTML = previewHtml;
+            body.querySelectorAll('[data-doc-download="true"]').forEach((button) => {
+                button.addEventListener('click', () => downloadDoc(docSource, resolvedFilename));
+            });
             document.getElementById('doc-viewer-overlay').classList.add('active');
         };
 
