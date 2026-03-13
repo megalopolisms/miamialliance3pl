@@ -45,7 +45,7 @@
     <!-- Blog Hub -->
     <url>
         <loc>https://miamialliance3pl.com/blog.html</loc>
-        <lastmod>2026-03-12</lastmod>
+        <lastmod>2026-03-13</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
@@ -685,6 +685,14 @@
     <!-- Blog: Customs Bonded Warehouse Miami Guide (NEW Mar 13) -->
     <url>
         <loc>https://miamialliance3pl.com/blog/customs-bonded-warehouse-miami-guide.html</loc>
+        <lastmod>2026-03-13</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
+    <!-- Blog: Inventory Management Best Practices 3PL Warehouse (NEW Mar 13) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/inventory-management-best-practices-3pl-warehouse-2026.html</loc>
         <lastmod>2026-03-13</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.90</priority>
