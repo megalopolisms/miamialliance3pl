@@ -28,6 +28,12 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Check if the current user's inventory is locked by admin
+    function isInventoryLocked() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.inventory_locked == true;
+    }
+
     // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isStaff());
@@ -45,11 +51,13 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Inventory collection
+    // Inventory collection (with admin lock support)
     match /inventory/{itemId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
-      allow create: if isAuthenticated();
-      allow update: if isStaff() || resource.data.user_id == request.auth.uid;
+      // Staff can always create; customers can create only if their inventory is NOT locked
+      allow create: if isStaff() || (isAuthenticated() && !isInventoryLocked());
+      // Staff can always update; customers can update their own items only if NOT locked
+      allow update: if isStaff() || (resource.data.user_id == request.auth.uid && !isInventoryLocked());
       allow delete: if isAdmin();
     }
 
