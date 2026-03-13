@@ -413,7 +413,7 @@
         <div class="modal">
             <div class="modal-header">
                 <h2 data-i18n="portal.customers.editTitle">Edit Customer</h2>
-                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+                <button class="modal-close" id="close-edit-modal-btn">&times;</button>
             </div>
             <form id="edit-customer-form">
                 <input type="hidden" id="edit-customer-id">
@@ -438,7 +438,7 @@
                     <div class="readonly-value" id="edit-shipments-count">0</div>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeEditModal()" data-i18n="portal.customers.form.cancel">Cancel</button>
+                    <button type="button" class="btn-cancel" id="cancel-edit-modal-btn" data-i18n="portal.customers.form.cancel">Cancel</button>
                     <button type="submit" class="btn-save" id="save-btn" data-i18n="portal.customers.form.save">Save Changes</button>
                 </div>
             </form>
@@ -453,6 +453,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { escapeHtml } from '../js/shipments-portal-utils.mjs';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -473,6 +474,16 @@
         const db = getFirestore(app);
 
         let allCustomers = [];
+
+        function setBadgeText(element, text, badgeText) {
+            if (!element) return;
+            element.textContent = '';
+            element.append(document.createTextNode(String(text || '')));
+            const badge = document.createElement('span');
+            badge.className = 'admin-badge';
+            badge.textContent = badgeText;
+            element.append(' ', badge);
+        }
 
         // Check authentication and role
         onAuthStateChanged(auth, async (user) => {
@@ -516,9 +527,9 @@
 
             const userNameEl = document.getElementById('user-name');
             if (isAdmin) {
-                userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
+                setBadgeText(userNameEl, userName, 'ADMIN');
             } else if (isEmployee) {
-                userNameEl.innerHTML = `${userName} <span class="admin-badge">EMPLOYEE</span>`;
+                setBadgeText(userNameEl, userName, 'EMPLOYEE');
             }
 
             loadCustomers();
@@ -583,12 +594,14 @@
 
             } catch (error) {
                 console.error('Error loading customers:', error);
-                document.getElementById('customers-list').innerHTML = `
+                const container = document.getElementById('customers-list');
+                container.innerHTML = `
                     <div class="empty-state">
                         <div class="icon">❌</div>
-                        <p>Error loading customers: ${error.message}</p>
+                        <p id="customers-load-error"></p>
                     </div>
                 `;
+                document.getElementById('customers-load-error').textContent = `Error loading customers: ${error.message}`;
             }
         }
 
@@ -625,39 +638,56 @@
             // Store shipment counts globally for modal access
             window.customerShipmentCounts = shipmentCounts;
 
-            container.innerHTML = customers.map(customer => `
-                <div class="customer-card">
-                    <div class="customer-header">
-                        <div>
-                            <div class="customer-name">${customer.name || customer.email || 'Unknown'}</div>
-                            <div class="customer-company">${customer.company_name || 'No company'}</div>
+            container.innerHTML = customers.map((customer) => {
+                const badgeClass = customer.role === 'admin'
+                    ? 'badge-pending'
+                    : customer.role === 'employee'
+                        ? 'badge-in_transit'
+                        : 'badge-delivered';
+                const badgeLabel = customer.role === 'admin'
+                    ? 'Admin'
+                    : customer.role === 'employee'
+                        ? 'Employee'
+                        : 'Customer';
+
+                return `
+                    <div class="customer-card">
+                        <div class="customer-header">
+                            <div>
+                                <div class="customer-name">${escapeHtml(customer.name || customer.email || 'Unknown')}</div>
+                                <div class="customer-company">${escapeHtml(customer.company_name || 'No company')}</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <button class="btn-edit" data-customer-id="${escapeHtml(customer.id)}">Edit</button>
+                                <span class="badge ${badgeClass}">${badgeLabel}</span>
+                            </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <button class="btn-edit" onclick="openEditModal('${customer.id}')">Edit</button>
-                            <span class="badge ${customer.role === 'admin' ? 'badge-pending' : customer.role === 'employee' ? 'badge-in_transit' : 'badge-delivered'}">${customer.role === 'admin' ? 'Admin' : customer.role === 'employee' ? 'Employee' : 'Customer'}</span>
+                        <div class="customer-meta">
+                            <span>📧 ${escapeHtml(customer.email || 'No email')}</span>
+                            <span>📞 ${escapeHtml(customer.phone || 'No phone')}</span>
+                            <span>📅 Joined: ${escapeHtml(toDateLabel(customer.created_at))}</span>
+                        </div>
+                        <div class="customer-stats">
+                            <div class="stat-item">
+                                <div class="value">${shipmentCounts[customer.id] || 0}</div>
+                                <div class="label">Shipments</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="value">${escapeHtml(customer.id.substring(0, 8))}...</div>
+                                <div class="label">User ID</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="customer-meta">
-                        <span>📧 ${customer.email || 'No email'}</span>
-                        <span>📞 ${customer.phone || 'No phone'}</span>
-                        <span>📅 Joined: ${toDateLabel(customer.created_at)}</span>
-                    </div>
-                    <div class="customer-stats">
-                        <div class="stat-item">
-                            <div class="value">${shipmentCounts[customer.id] || 0}</div>
-                            <div class="label">Shipments</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="value">${customer.id.substring(0, 8)}...</div>
-                            <div class="label">User ID</div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+
+            container.querySelectorAll('[data-customer-id]').forEach((button) => {
+                button.addEventListener('click', () => openEditModal(button.dataset.customerId));
+            });
         }
 
         // Search functionality
-        window.searchCustomers = function() {
+        function searchCustomers() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const filtered = allCustomers.filter(c =>
                 (c.name && c.name.toLowerCase().includes(searchTerm)) ||
@@ -665,7 +695,8 @@
                 (c.company_name && c.company_name.toLowerCase().includes(searchTerm))
             );
             displayCustomers(filtered);
-        };
+        }
+        window.searchCustomers = searchCustomers;
 
         // Search on Enter key
         document.getElementById('search-input').addEventListener('keypress', (e) => {
@@ -673,11 +704,13 @@
         });
 
         // Toast notification function
-        window.showToast = function(message, type = 'success') {
+        function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span> ${message}`;
+            const icon = document.createElement('span');
+            icon.textContent = type === 'success' ? '✓' : '✕';
+            toast.append(icon, ` ${message}`);
             container.appendChild(toast);
 
             // Auto-remove after 3 seconds
@@ -685,10 +718,11 @@
                 toast.style.animation = 'slideOut 0.3s ease-out forwards';
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
-        };
+        }
+        window.showToast = showToast;
 
         // Open edit modal
-        window.openEditModal = function(customerId) {
+        function openEditModal(customerId) {
             const customer = allCustomers.find(c => c.id === customerId);
             if (!customer) {
                 showToast('Customer not found', 'error');
@@ -705,13 +739,18 @@
 
             // Show modal
             document.getElementById('edit-modal').classList.add('active');
-        };
+        }
+        window.openEditModal = openEditModal;
 
         // Close edit modal
-        window.closeEditModal = function() {
+        function closeEditModal() {
             document.getElementById('edit-modal').classList.remove('active');
             document.getElementById('edit-customer-form').reset();
-        };
+        }
+        window.closeEditModal = closeEditModal;
+
+        document.getElementById('close-edit-modal-btn').addEventListener('click', closeEditModal);
+        document.getElementById('cancel-edit-modal-btn').addEventListener('click', closeEditModal);
 
         // Close modal on overlay click
         document.getElementById('edit-modal').addEventListener('click', (e) => {

@@ -272,6 +272,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { escapeHtml } from '../js/shipments-portal-utils.mjs';
 
         const firebaseConfig = {
             apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
@@ -616,8 +617,13 @@
             tbody.innerHTML = '';
             items.forEach((item) => {
                 const isLowStock = item.quantity <= (item.reorder_level || 10);
-                const customerName = customersMap[item.user_id] || 'Unknown';
+                const customerName = escapeHtml(customersMap[item.user_id] || 'Unknown');
                 const row = document.createElement('tr');
+                const safeName = escapeHtml(item.name || 'Unnamed item');
+                const safeSku = escapeHtml(item.sku || '—');
+                const safeLocation = escapeHtml(item.location || '—');
+                const safeDate = item.last_updated ? escapeHtml(new Date(item.last_updated).toLocaleDateString()) : 'N/A';
+                const safeUpc = escapeHtml(item.upc || '');
 
                 // Build customer column HTML for staff
                 const customerCol = isStaff() ? `<td style="color: var(--color-gray-600); font-size: var(--font-size-sm);">${customerName}</td>` : '';
@@ -627,10 +633,10 @@
                 if (isStaff()) {
                     actionsHtml = `
                         <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-                            <button class="btn-qty-minus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Decrease quantity" aria-label="Decrease quantity for ${item.name}">-</button>
-                            <button class="btn-qty-plus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Increase quantity" aria-label="Increase quantity for ${item.name}">+</button>
-                            <button class="btn-edit" data-id="${item.id}" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Edit ${item.name}">Edit</button>
-                            <button class="btn-delete" data-id="${item.id}" data-name="${item.name}" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Delete ${item.name}">Delete</button>
+                            <button class="btn-qty-minus" data-id="${escapeHtml(item.id)}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Decrease quantity" aria-label="Decrease quantity for ${safeName}">-</button>
+                            <button class="btn-qty-plus" data-id="${escapeHtml(item.id)}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Increase quantity" aria-label="Increase quantity for ${safeName}">+</button>
+                            <button class="btn-edit" data-id="${escapeHtml(item.id)}" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Edit ${safeName}">Edit</button>
+                            <button class="btn-delete" data-id="${escapeHtml(item.id)}" data-name="${safeName}" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Delete ${safeName}">Delete</button>
                         </div>
                     `;
                 } else {
@@ -642,23 +648,24 @@
                 const whLabel = whId === 'biloxi' ? '📍 Biloxi' : '📍 Miami';
                 const whColor = whId === 'biloxi' ? '#8b5cf6' : '#14b8a6';
 
-                const upcVal = item.upc || '';
                 const tagsArr = Array.isArray(item.tags) ? item.tags : (typeof item.tags === 'string' && item.tags ? item.tags.split(',').map(t => t.trim()) : []);
-                const tagsHtml = tagsArr.length > 0 ? tagsArr.map(t => `<span style="background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:8px;font-size:0.7rem;font-weight:600;margin:1px;">${t}</span>`).join(' ') : '<span style="color:var(--color-gray-400);font-size:0.75rem;">—</span>';
+                const tagsHtml = tagsArr.length > 0
+                    ? tagsArr.map((tag) => `<span style="background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:8px;font-size:0.7rem;font-weight:600;margin:1px;">${escapeHtml(tag)}</span>`).join(' ')
+                    : '<span style="color:var(--color-gray-400);font-size:0.75rem;">—</span>';
 
                 row.innerHTML = `
-                    <td><strong>${item.sku}</strong></td>
-                    <td>${item.name}</td>
+                    <td><strong>${safeSku}</strong></td>
+                    <td>${safeName}</td>
                     ${customerCol}
                     <td style="color: ${isLowStock ? 'var(--color-accent)' : 'inherit'}; font-weight: ${isLowStock ? '600' : '400'};">
                         ${item.quantity}
                         ${isLowStock ? '<span style="font-size: var(--font-size-sm); margin-left: 4px;">Low Stock</span>' : ''}
                     </td>
-                    <td style="font-family:monospace;font-size:0.8rem;color:var(--color-gray-600);">${upcVal || '<span style="color:var(--color-gray-400);">—</span>'}</td>
+                    <td style="font-family:monospace;font-size:0.8rem;color:var(--color-gray-600);">${safeUpc || '<span style="color:var(--color-gray-400);">—</span>'}</td>
                     <td style="max-width:150px;">${tagsHtml}</td>
                     <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">${whLabel}</span></td>
-                    <td>${item.location}</td>
-                    <td>${new Date(item.last_updated).toLocaleDateString()}</td>
+                    <td>${safeLocation}</td>
+                    <td>${safeDate}</td>
                     <td>${actionsHtml}</td>
                 `;
                 tbody.appendChild(row);
