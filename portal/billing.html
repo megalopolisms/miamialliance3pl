@@ -313,12 +313,12 @@
             </div>
             <div id="invoice-preview" class="invoice-preview"></div>
             <div class="payment-methods" id="payment-section" style="display: none;">
-                <div class="payment-method" onclick="selectPayment('stripe')">
+                <div class="payment-method" onclick="selectPayment('stripe', this)">
                     <div class="icon">💳</div>
                     <div><strong data-i18n="portal.billing.modal.creditCard">Credit Card</strong></div>
                     <div style="font-size: 0.8rem; color: var(--color-gray-500);" data-i18n="portal.billing.modal.stripeDesc">Pay securely with Stripe</div>
                 </div>
-                <div class="payment-method" onclick="selectPayment('ach')">
+                <div class="payment-method" onclick="selectPayment('ach', this)">
                     <div class="icon">🏦</div>
                     <div><strong data-i18n="portal.billing.modal.bankTransfer">Bank Transfer</strong></div>
                     <div style="font-size: 0.8rem; color: var(--color-gray-500);" data-i18n="portal.billing.modal.achDesc">ACH / Wire Transfer</div>
@@ -498,7 +498,7 @@
             }
         }
 
-        window.viewInvoice = async function(invoiceId, showPayment = false) {
+        async function viewInvoice(invoiceId, showPayment = false) {
             const docSnap = await getDoc(doc(db, 'invoices', invoiceId));
             if (!docSnap.exists()) return;
 
@@ -516,7 +516,7 @@
             }
 
             document.getElementById('invoice-modal').classList.add('show');
-        };
+        }
 
         function renderInvoicePreview(inv) {
             const preview = document.getElementById('invoice-preview');
@@ -568,19 +568,19 @@
             `;
         }
 
-        window.closeModal = function() {
+        function closeModal() {
             document.getElementById('invoice-modal').classList.remove('show');
             currentInvoice = null;
             selectedPaymentMethod = null;
-        };
+        }
 
-        window.selectPayment = function(method) {
+        function selectPayment(method, paymentElement = null) {
             selectedPaymentMethod = method;
             document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
-            event.currentTarget.classList.add('selected');
-        };
+            paymentElement?.classList.add('selected');
+        }
 
-        window.processPayment = async function() {
+        async function processPayment() {
             if (!selectedPaymentMethod) {
                 showToast('Please select a payment method', 'warning');
                 return;
@@ -621,9 +621,9 @@
             } else if (selectedPaymentMethod === 'ach') {
                 showToast('Bank transfer details: Reference ' + currentInvoice.invoice_number + '. See invoice footer for bank details.', 'info');
             }
-        };
+        }
 
-        window.printInvoice = function() {
+        function printInvoice() {
             const content = document.getElementById('invoice-preview').innerHTML;
             const win = window.open('', '_blank');
             win.document.write(`
@@ -641,7 +641,7 @@
             `);
             win.document.close();
             win.print();
-        };
+        }
 
         // ── Activity Detail for Customer Transparency ──
         const ACTIVITY_LABELS = {
@@ -708,14 +708,21 @@
             }
         }
 
-        window.openPaymentModal = function() {
+        function openPaymentModal() {
             // Open first outstanding invoice for payment
             const firstCard = document.querySelector('#outstanding-invoices .invoice-card');
             if (firstCard) {
                 const btn = firstCard.querySelector('.btn-pay');
                 if (btn) btn.click();
             }
-        };
+        }
+
+        window.viewInvoice = viewInvoice;
+        window.closeModal = closeModal;
+        window.selectPayment = selectPayment;
+        window.processPayment = processPayment;
+        window.printInvoice = printInvoice;
+        window.openPaymentModal = openPaymentModal;
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
             await signOut(auth);

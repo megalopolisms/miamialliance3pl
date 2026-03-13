@@ -798,7 +798,7 @@
         }
 
         // Create a new contract (admin)
-        window.createContract = async function() {
+        async function createContract() {
             const clientSelect = document.getElementById('new-client-select');
             const selectedOption = clientSelect.options[clientSelect.selectedIndex];
             const clientId = clientSelect.value;
@@ -841,10 +841,10 @@
                 console.error('Error creating contract:', e);
                 showPortalToast('Error creating contract: ' + e.message, 'error');
             }
-        };
+        }
 
         // Delete contract (admin)
-        window.deleteContract = async function(contractId) {
+        async function deleteContract(contractId) {
             if (!confirm('Are you sure you want to delete this contract? This cannot be undone.')) return;
             try {
                 await deleteDoc(doc(db, 'contracts', contractId));
@@ -853,10 +853,10 @@
                 console.error('Error deleting contract:', e);
                 showPortalToast('Error deleting contract: ' + e.message, 'error');
             }
-        };
+        }
 
         // Submit contract request (customer)
-        window.submitContractRequest = async function() {
+        async function submitContractRequest() {
             const company = document.getElementById('req-company').value;
             const contact = document.getElementById('req-contact').value;
             const email = document.getElementById('req-email').value;
@@ -887,7 +887,7 @@
                 console.error('Error submitting request:', e);
                 showPortalToast('Error submitting request: ' + e.message, 'error');
             }
-        };
+        }
 
         // Filter contracts
         document.getElementById('filter-status')?.addEventListener('change', function() {
@@ -907,35 +907,45 @@
         }
 
         // View my contract (customer)
-        window.viewMyContract = function() {
+        function viewMyContract() {
             window.open('../contract-template.html', '_blank');
-        };
+        }
 
         // Print blank contract
-        window.printBlankContract = function() {
+        function printBlankContract() {
             const w = window.open('../contract-template.html', '_blank');
             w.addEventListener('load', () => {
                 setTimeout(() => w.print(), 500);
             });
-        };
+        }
 
         // Modal controls
-        window.openRequestModal = function() {
+        function openRequestModal() {
             document.getElementById('request-modal').classList.add('active');
-        };
-        window.closeRequestModal = function() {
+        }
+        function closeRequestModal() {
             document.getElementById('request-modal').classList.remove('active');
-        };
-        window.openNewContractModal = function() {
+        }
+        function openNewContractModal() {
             // Auto-generate contract number
             document.getElementById('new-contract-num').value = generateContractNumber();
             // Set default start date to today
             document.getElementById('new-start-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('new-contract-modal').classList.add('active');
-        };
-        window.closeNewContractModal = function() {
+        }
+        function closeNewContractModal() {
             document.getElementById('new-contract-modal').classList.remove('active');
-        };
+        }
+
+        window.createContract = createContract;
+        window.deleteContract = deleteContract;
+        window.submitContractRequest = submitContractRequest;
+        window.viewMyContract = viewMyContract;
+        window.printBlankContract = printBlankContract;
+        window.openRequestModal = openRequestModal;
+        window.closeRequestModal = closeRequestModal;
+        window.openNewContractModal = openNewContractModal;
+        window.closeNewContractModal = closeNewContractModal;
 
         // Close modals on outside click
         document.querySelectorAll('.modal-overlay').forEach(modal => {

@@ -1920,8 +1920,8 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -3417,6 +3417,11 @@
             const uploadedAt = new Date().toISOString();
             const inlineData = getInlineFileData(file.size, dataUrl, inlineLimit);
             const uploadResult = await uploadDocumentToStorage({ file, shipmentId, trackingNumber, docType });
+
+            if (uploadResult.error && !inlineData) {
+                throw new Error(`File upload is temporarily unavailable for files larger than ${Math.floor(inlineLimit / 1024)} KB. Please retry with a smaller file or contact support.`);
+            }
+
             const metadata = buildDocumentMetadata({
                 file,
                 uploadedAt,
@@ -3432,6 +3437,19 @@
                 metadata,
                 uploadError: uploadResult.error
             };
+        }
+
+        async function cleanupUploadedDocumentRecords(records = []) {
+            for (const record of records) {
+                const storagePath = record?.metadata?.storage_path;
+                if (!storagePath) continue;
+
+                try {
+                    await deleteObject(storageRef(storage, storagePath));
+                } catch (cleanupError) {
+                    console.warn('Stored document cleanup failed:', cleanupError);
+                }
+            }
         }
 
         document.getElementById('sc-create-btn').addEventListener('click', async () => {
@@ -3457,29 +3475,52 @@
                 value: quoteResult.total
             });
 
-            // Build BOL document reference
-            const bolDocument = bolState.file ? buildDocumentMetadata({
-                file: bolState.file,
-                uploadedAt: createdAtIso,
-                inlineData: getInlineFileData(bolState.file.size, bolState.fileDataUrl, 716800),
-                extra: {
-                    parsed_data: bolState.parsedData || null,
-                    bol_number: bolState.parsedData?.bolNumber || null,
-                    carrier: bolState.parsedData?.carrier || null,
-                    po_number: bolState.parsedData?.poNumber || null,
-                    external_tracking: bolState.parsedData?.trackingNumber || null
-                }
-            }) : null;
-            const packingListDocument = docsState.packing_list.file ? buildDocumentMetadata({
-                file: docsState.packing_list.file,
-                uploadedAt: createdAtIso,
-                inlineData: getInlineFileData(docsState.packing_list.file.size, docsState.packing_list.dataUrl)
-            }) : null;
-            const commercialInvoiceDocument = docsState.invoice.file ? buildDocumentMetadata({
-                file: docsState.invoice.file,
-                uploadedAt: createdAtIso,
-                inlineData: getInlineFileData(docsState.invoice.file.size, docsState.invoice.dataUrl)
-            }) : null;
+            const shipmentRef = doc(collection(db, 'shipments'));
+            let bolRecord = null;
+            let packingListRecord = null;
+            let invoiceRecord = null;
+            const uploadedDocumentRecords = [];
+
+            if (bolState.file) {
+                bolRecord = await buildPersistedDocument({
+                    file: bolState.file,
+                    dataUrl: bolState.fileDataUrl,
+                    shipmentId: shipmentRef.id,
+                    trackingNumber,
+                    docType: 'bol_document',
+                    inlineLimit: 716800,
+                    extra: {
+                        parsed_data: bolState.parsedData || null,
+                        bol_number: bolState.parsedData?.bolNumber || null,
+                        carrier: bolState.parsedData?.carrier || null,
+                        po_number: bolState.parsedData?.poNumber || null,
+                        external_tracking: bolState.parsedData?.trackingNumber || null
+                    }
+                });
+                uploadedDocumentRecords.push(bolRecord);
+            }
+
+            if (docsState.packing_list.file) {
+                packingListRecord = await buildPersistedDocument({
+                    file: docsState.packing_list.file,
+                    dataUrl: docsState.packing_list.dataUrl,
+                    shipmentId: shipmentRef.id,
+                    trackingNumber,
+                    docType: 'packing_list'
+                });
+                uploadedDocumentRecords.push(packingListRecord);
+            }
+
+            if (docsState.invoice.file) {
+                invoiceRecord = await buildPersistedDocument({
+                    file: docsState.invoice.file,
+                    dataUrl: docsState.invoice.dataUrl,
+                    shipmentId: shipmentRef.id,
+                    trackingNumber,
+                    docType: 'commercial_invoice'
+                });
+                uploadedDocumentRecords.push(invoiceRecord);
+            }
 
             // Build cargo items array (hard-capped for performance + payload safety)
             const allCargoItems = Array.isArray(bolState.cargoItems) ? bolState.cargoItems : [];
@@ -3558,7 +3599,7 @@
                     storage_days: PRICING.storageDays
                 },
                 // BOL / Shipping Label data
-                bol_document: bolDocument,
+                bol_document: bolRecord?.metadata || null,
                 cargo_items: cargoItemsEmbedded,
                 cargo_count: cargoItemsData.length,
                 cargo_items_embedded_count: cargoItemsEmbedded.length,
@@ -3567,8 +3608,8 @@
                 incoming_items: incomingItemsForSave,
                 notes: sc.notes || `Shipment: ${sc.quantity} ${sc.packageType}(s), Zone: ${getZoneLabel(sc.shippingZone)}`,
                 // Packing List & Invoice documents
-                packing_list: packingListDocument,
-                commercial_invoice: commercialInvoiceDocument,
+                packing_list: packingListRecord?.metadata || null,
+                commercial_invoice: invoiceRecord?.metadata || null,
                 status: 'pending',
                 created_at: createdAtIso,
                 updated_at: createdAtIso
@@ -3590,7 +3631,58 @@
                     throw payloadErr;
                 }
 
-                const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
+                const createBatch = writeBatch(db);
+                createBatch.set(shipmentRef, newShipment);
+
+                if (bolRecord) {
+                    createBatch.set(doc(collection(db, 'bol_documents')), stripUndefinedValues({
+                        shipment_id: shipmentRef.id,
+                        tracking_number: trackingNumber,
+                        user_id: currentUser.uid,
+                        ...bolRecord.metadata,
+                        file_data: bolRecord.inlineData,
+                        file_stored: !!bolRecord.inlineData || !!bolRecord.metadata?.url,
+                        created_at: bolRecord.uploadedAt
+                    }));
+                }
+
+                if (packingListRecord) {
+                    createBatch.set(doc(collection(db, 'shipment_documents')), stripUndefinedValues({
+                        shipment_id: shipmentRef.id,
+                        tracking_number: trackingNumber,
+                        user_id: currentUser.uid,
+                        doc_type: 'packing_list',
+                        ...packingListRecord.metadata,
+                        file_data: packingListRecord.inlineData,
+                        created_at: packingListRecord.uploadedAt
+                    }));
+                }
+
+                if (invoiceRecord) {
+                    createBatch.set(doc(collection(db, 'shipment_documents')), stripUndefinedValues({
+                        shipment_id: shipmentRef.id,
+                        tracking_number: trackingNumber,
+                        user_id: currentUser.uid,
+                        doc_type: 'commercial_invoice',
+                        ...invoiceRecord.metadata,
+                        file_data: invoiceRecord.inlineData,
+                        created_at: invoiceRecord.uploadedAt
+                    }));
+                }
+
+                try {
+                    await createBatch.commit();
+                } catch (shipmentWriteError) {
+                    await cleanupUploadedDocumentRecords(uploadedDocumentRecords);
+                    throw shipmentWriteError;
+                }
+
+                if (bolRecord) {
+                    trackCalcEvent('bol_document_stored', {
+                        file_type: bolState.file.type,
+                        file_stored: !!bolRecord.inlineData || !!bolRecord.metadata?.url
+                    });
+                }
 
                 // Log detailed billable events
                 try {
@@ -3702,102 +3794,6 @@
                     } catch (cargoErr) {
                         console.warn('Cargo items storage failed:', cargoErr.message);
                     }
-                }
-
-                const shipmentDocumentUpdates = {};
-
-                if (bolState.file) {
-                    try {
-                        const bolRecord = await buildPersistedDocument({
-                            file: bolState.file,
-                            dataUrl: bolState.fileDataUrl,
-                            shipmentId: shipmentRef.id,
-                            trackingNumber,
-                            docType: 'bol_document',
-                            inlineLimit: 716800,
-                            extra: {
-                                parsed_data: bolState.parsedData || null,
-                                bol_number: bolState.parsedData?.bolNumber || null,
-                                carrier: bolState.parsedData?.carrier || null,
-                                po_number: bolState.parsedData?.poNumber || null,
-                                external_tracking: bolState.parsedData?.trackingNumber || null
-                            }
-                        });
-
-                        shipmentDocumentUpdates.bol_document = bolRecord.metadata;
-                        await addDoc(collection(db, 'bol_documents'), stripUndefinedValues({
-                            shipment_id: shipmentRef.id,
-                            tracking_number: trackingNumber,
-                            user_id: currentUser.uid,
-                            ...bolRecord.metadata,
-                            file_data: bolRecord.inlineData,
-                            file_stored: !!bolRecord.inlineData || !!bolRecord.metadata?.url,
-                            created_at: bolRecord.uploadedAt
-                        }));
-                        trackCalcEvent('bol_document_stored', {
-                            file_type: bolState.file.type,
-                            file_stored: !!bolRecord.inlineData || !!bolRecord.metadata?.url
-                        });
-                    } catch (bolErr) {
-                        console.warn('BOL document storage failed:', bolErr.message);
-                    }
-                }
-
-                if (docsState.packing_list.file) {
-                    try {
-                        const packingListRecord = await buildPersistedDocument({
-                            file: docsState.packing_list.file,
-                            dataUrl: docsState.packing_list.dataUrl,
-                            shipmentId: shipmentRef.id,
-                            trackingNumber,
-                            docType: 'packing_list'
-                        });
-
-                        shipmentDocumentUpdates.packing_list = packingListRecord.metadata;
-                        await addDoc(collection(db, 'shipment_documents'), stripUndefinedValues({
-                            shipment_id: shipmentRef.id,
-                            tracking_number: trackingNumber,
-                            user_id: currentUser.uid,
-                            doc_type: 'packing_list',
-                            ...packingListRecord.metadata,
-                            file_data: packingListRecord.inlineData,
-                            created_at: packingListRecord.uploadedAt
-                        }));
-                    } catch (docErr) {
-                        console.warn('Packing list storage failed:', docErr.message);
-                    }
-                }
-
-                if (docsState.invoice.file) {
-                    try {
-                        const invoiceRecord = await buildPersistedDocument({
-                            file: docsState.invoice.file,
-                            dataUrl: docsState.invoice.dataUrl,
-                            shipmentId: shipmentRef.id,
-                            trackingNumber,
-                            docType: 'commercial_invoice'
-                        });
-
-                        shipmentDocumentUpdates.commercial_invoice = invoiceRecord.metadata;
-                        await addDoc(collection(db, 'shipment_documents'), stripUndefinedValues({
-                            shipment_id: shipmentRef.id,
-                            tracking_number: trackingNumber,
-                            user_id: currentUser.uid,
-                            doc_type: 'commercial_invoice',
-                            ...invoiceRecord.metadata,
-                            file_data: invoiceRecord.inlineData,
-                            created_at: invoiceRecord.uploadedAt
-                        }));
-                    } catch (docErr) {
-                        console.warn('Invoice storage failed:', docErr.message);
-                    }
-                }
-
-                if (Object.keys(shipmentDocumentUpdates).length > 0) {
-                    await updateDoc(shipmentRef, stripUndefinedValues({
-                        ...shipmentDocumentUpdates,
-                        updated_at: new Date().toISOString()
-                    }));
                 }
 
                 // Auto-add incoming items to inventory collection
@@ -4803,15 +4799,17 @@
             saveBtn.disabled = true;
             saveBtn.textContent = 'Uploading...';
 
-            let successCount = 0;
             let uploadSucceeded = false;
+            const stagedRecords = [];
 
             try {
                 const shipRef = doc(db, 'shipments', modalState.shipmentId);
                 const updateData = {};
+                let bolRecord = null;
+                let invoiceRecord = null;
 
                 if (modalState.bol.file) {
-                    const bolRecord = await buildPersistedDocument({
+                    bolRecord = await buildPersistedDocument({
                         file: modalState.bol.file,
                         dataUrl: modalState.bol.dataUrl,
                         shipmentId: modalState.shipmentId,
@@ -4819,9 +4817,33 @@
                         docType: 'bol_document',
                         inlineLimit: 716800
                     });
+                    stagedRecords.push(bolRecord);
                     updateData.bol_document = bolRecord.metadata;
+                }
 
-                    await addDoc(collection(db, 'bol_documents'), stripUndefinedValues({
+                if (modalState.invoice.file) {
+                    invoiceRecord = await buildPersistedDocument({
+                        file: modalState.invoice.file,
+                        dataUrl: modalState.invoice.dataUrl,
+                        shipmentId: modalState.shipmentId,
+                        trackingNumber: modalState.tracking,
+                        docType: 'commercial_invoice'
+                    });
+                    stagedRecords.push(invoiceRecord);
+                    updateData.commercial_invoice = invoiceRecord.metadata;
+                }
+
+                const uploadBatch = writeBatch(db);
+
+                if (Object.keys(updateData).length > 0) {
+                    uploadBatch.update(shipRef, stripUndefinedValues({
+                        ...updateData,
+                        updated_at: new Date().toISOString()
+                    }));
+                }
+
+                if (bolRecord) {
+                    uploadBatch.set(doc(collection(db, 'bol_documents')), stripUndefinedValues({
                         shipment_id: modalState.shipmentId,
                         tracking_number: modalState.tracking,
                         user_id: currentUser.uid,
@@ -4830,20 +4852,10 @@
                         file_stored: !!bolRecord.inlineData || !!bolRecord.metadata?.url,
                         created_at: bolRecord.uploadedAt
                     }));
-                    successCount++;
                 }
 
-                if (modalState.invoice.file) {
-                    const invoiceRecord = await buildPersistedDocument({
-                        file: modalState.invoice.file,
-                        dataUrl: modalState.invoice.dataUrl,
-                        shipmentId: modalState.shipmentId,
-                        trackingNumber: modalState.tracking,
-                        docType: 'commercial_invoice'
-                    });
-                    updateData.commercial_invoice = invoiceRecord.metadata;
-
-                    await addDoc(collection(db, 'shipment_documents'), stripUndefinedValues({
+                if (invoiceRecord) {
+                    uploadBatch.set(doc(collection(db, 'shipment_documents')), stripUndefinedValues({
                         shipment_id: modalState.shipmentId,
                         tracking_number: modalState.tracking,
                         user_id: currentUser.uid,
@@ -4852,22 +4864,16 @@
                         file_data: invoiceRecord.inlineData,
                         created_at: invoiceRecord.uploadedAt
                     }));
-                    successCount++;
                 }
 
-                if (Object.keys(updateData).length > 0) {
-                    await updateDoc(shipRef, stripUndefinedValues({
-                        ...updateData,
-                        updated_at: new Date().toISOString()
-                    }));
-                    successCount++;
-                }
+                await uploadBatch.commit();
                 uploadSucceeded = true;
 
+                const uploadedDocCount = [bolRecord, invoiceRecord].filter(Boolean).length;
                 var toast = document.createElement('div');
                 toast.setAttribute('role','status');
                 toast.style.cssText='position:fixed;bottom:24px;right:24px;padding:16px 24px;border-radius:12px;font-weight:500;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,0.15);background:#14b8a6;color:white;';
-                toast.textContent = successCount > 1 ? 'Documents uploaded successfully!' : 'Document uploaded successfully!';
+                toast.textContent = uploadedDocCount > 1 ? 'Documents uploaded successfully!' : 'Document uploaded successfully!';
                 document.body.appendChild(toast);
                 setTimeout(function(){ toast.remove(); }, 4000);
 
@@ -4875,6 +4881,9 @@
                 loadShipments(); // Refresh table to show new badges
             } catch (err) {
                 console.error('Upload error:', err);
+                if (!uploadSucceeded) {
+                    await cleanupUploadedDocumentRecords(stagedRecords);
+                }
                 var toast = document.createElement('div');
                 toast.setAttribute('role','status');
                 toast.style.cssText='position:fixed;bottom:24px;right:24px;padding:16px 24px;border-radius:12px;font-weight:500;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,0.15);background:#ef4444;color:white;';

@@ -12,6 +12,8 @@
 - Dashboard: [portal/dashboard.html](/Users/yuri/miamialliance3pl/portal/dashboard.html)
 - Public contact form: [contact.html](/Users/yuri/miamialliance3pl/contact.html)
 - Admin billing: [portal/admin-billing.html](/Users/yuri/miamialliance3pl/portal/admin-billing.html)
+- Customer billing: [portal/billing.html](/Users/yuri/miamialliance3pl/portal/billing.html)
+- Contracts portal: [portal/contracts.html](/Users/yuri/miamialliance3pl/portal/contracts.html)
 - Invoices: [portal/invoices.html](/Users/yuri/miamialliance3pl/portal/invoices.html)
 - Storage log: [portal/storage-log.html](/Users/yuri/miamialliance3pl/portal/storage-log.html)
 - Team admin: [portal/team.html](/Users/yuri/miamialliance3pl/portal/team.html)
@@ -53,6 +55,12 @@
 11. Several other admin/client pages had the same module-scope handler bug.
     Result: some tabs, invoice actions, and storage-log functions relied on `window.*` exports but were also called as bare identifiers inside module scripts, which could break depending on the call path.
 
+12. Shipment document uploads could still partially persist.
+    Result: customer shipment creation and post-create upload could write one document, fail the next, and leave Firestore or Storage in a split state.
+
+13. The customer billing payment selector still depended on implicit `event`, and contract modals still depended on `window.*` only.
+    Result: payment method selection and contract modal close/submit actions could break in module scope depending on browser/runtime path.
+
 ## Fixes
 
 - Replaced customer shipment loading with a query-plan approach:
@@ -76,6 +84,10 @@
 - Reworked pickup-request uploads to use safe storage paths, Storage attempt + inline fallback, and explicit failure when neither path can retain the file.
 - Updated the admin pickup viewer to resolve safe document sources from `url` or `file_data`.
 - Fixed module-scope handler binding on admin billing, invoices, and storage log so tab/action functions work both from inline HTML handlers and internal module calls.
+- Reworked shipment creation and post-create shipment uploads to stage all document records first, fail fast when a file cannot be persisted, and batch Firestore writes so partial document saves do not occur.
+- Added best-effort cleanup of uploaded Storage objects when document staging succeeds but Firestore persistence fails.
+- Fixed customer billing payment selection to use explicit element context instead of implicit global `event`.
+- Fixed contracts modal and action bindings so internal module calls resolve the same local functions exported to `window`.
 - Applied the same escaping pass to additional customer/admin screens already under modification: team, tracking, invoices, admin billing, and storage log.
 - Added Firebase Storage rules for `shipment_uploads/<userId>/...`.
 
@@ -100,6 +112,8 @@
 - Admin billing tabs and generated invoice preview actions
 - Invoice modal actions and invoice list refresh actions
 - Storage log tabs and auto-count actions
+- Billing payment method cards and pay button flow
+- Contracts modal open/close and submit/create actions
 
 ## Tests Added
 
@@ -116,6 +130,8 @@ node --test /Users/yuri/miamialliance3pl/tests/*.mjs
 Result: 14 tests passed.
 
 Second pass result: 25 tests passed.
+
+Current pass result: 27 tests passed.
 
 ## Residual Risk
 

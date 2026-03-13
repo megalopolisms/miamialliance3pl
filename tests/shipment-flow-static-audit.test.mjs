@@ -11,6 +11,8 @@ const dashboardHtml = readFileSync(new URL('../portal/dashboard.html', import.me
 const pickupsHtml = readFileSync(new URL('../portal/pickups.html', import.meta.url), 'utf8');
 const adminPickupsHtml = readFileSync(new URL('../portal/admin-pickups.html', import.meta.url), 'utf8');
 const adminBillingHtml = readFileSync(new URL('../portal/admin-billing.html', import.meta.url), 'utf8');
+const billingHtml = readFileSync(new URL('../portal/billing.html', import.meta.url), 'utf8');
+const contractsHtml = readFileSync(new URL('../portal/contracts.html', import.meta.url), 'utf8');
 const invoicesHtml = readFileSync(new URL('../portal/invoices.html', import.meta.url), 'utf8');
 const storageLogHtml = readFileSync(new URL('../portal/storage-log.html', import.meta.url), 'utf8');
 const contactHtml = readFileSync(new URL('../contact.html', import.meta.url), 'utf8');
@@ -40,6 +42,11 @@ test('shipments portal uses resilient load flow and corrected invoice semantics'
     assert.match(shipmentsHtml, /<option value="processing">Processing<\/option>/);
     assert.match(shipmentsHtml, /doc_type: 'commercial_invoice'/);
     assert.doesNotMatch(shipmentsHtml, /doc_type: 'invoice'/);
+    assert.match(shipmentsHtml, /const shipmentRef = doc\(collection\(db, 'shipments'\)\);/);
+    assert.match(shipmentsHtml, /const createBatch = writeBatch\(db\);/);
+    assert.match(shipmentsHtml, /const uploadBatch = writeBatch\(db\);/);
+    assert.match(shipmentsHtml, /await cleanupUploadedDocumentRecords\(uploadedDocumentRecords\)/);
+    assert.match(shipmentsHtml, /await cleanupUploadedDocumentRecords\(stagedRecords\)/);
     assert.match(shipmentsHtml, /let creationSucceeded = false;/);
     assert.match(shipmentsHtml, /finally \{\s*if \(!creationSucceeded\)/);
 });
@@ -145,6 +152,25 @@ test('admin billing uses local function bindings for tab and preview actions', (
     assert.match(adminBillingHtml, /window\.loadHistory = loadHistory/);
     assert.match(adminBillingHtml, /function previewInvoiceActivities\(\)/);
     assert.match(adminBillingHtml, /window\.previewInvoiceActivities = previewInvoiceActivities/);
+});
+
+test('billing page passes explicit payment context and uses local handler bindings', () => {
+    assert.match(billingHtml, /onclick="selectPayment\('stripe', this\)"/);
+    assert.match(billingHtml, /onclick="selectPayment\('ach', this\)"/);
+    assert.match(billingHtml, /function selectPayment\(method, paymentElement = null\)/);
+    assert.match(billingHtml, /paymentElement\?\.classList\.add\('selected'\)/);
+    assert.match(billingHtml, /window\.selectPayment = selectPayment/);
+});
+
+test('contracts page keeps modal actions available in module scope and internal calls', () => {
+    assert.match(contractsHtml, /async function createContract\(\)/);
+    assert.match(contractsHtml, /window\.createContract = createContract/);
+    assert.match(contractsHtml, /async function submitContractRequest\(\)/);
+    assert.match(contractsHtml, /window\.submitContractRequest = submitContractRequest/);
+    assert.match(contractsHtml, /function closeRequestModal\(\)/);
+    assert.match(contractsHtml, /window\.closeRequestModal = closeRequestModal/);
+    assert.match(contractsHtml, /function closeNewContractModal\(\)/);
+    assert.match(contractsHtml, /window\.closeNewContractModal = closeNewContractModal/);
 });
 
 test('invoices page keeps modal and invoice actions bound in module scope', () => {
