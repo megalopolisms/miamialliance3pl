@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Customer Portal Login | Miami Alliance 3PL</title>
+    <meta name="description" content="Log in to the Miami Alliance 3PL customer portal to manage shipments, track orders, and view inventory.">
+    <meta name="author" content="Miami Alliance 3PL">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://miamialliance3pl.com/login.html">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KTW0F25ZM1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-KTW0F25ZM1');
+    </script>
+    <script src="js/analytics.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-page">
+    <div class="login-card">
+        <a href="index.html" class="logo">
+            <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+        </a>
+
+        <h1 data-i18n="login.title">Customer Portal</h1>
+
+        <!-- Google Sign In Button -->
+        <button id="google-signin" class="btn btn-google" style="width: 100%; margin-bottom: var(--spacing-md); background: white; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18l-2.909-2.26c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.44 15.983 5.485 18 9.003 18z" fill="#34A853"/>
+                <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.002 0 5.485 0 2.44 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+            </svg>
+            <span data-i18n="login.google">Sign in with Google</span>
+        </button>
+
+        <div style="text-align: center; margin-bottom: var(--spacing-md); color: var(--color-gray-500); font-size: var(--font-size-sm);" data-i18n="login.or">or</div>
+
+        <!-- Login Form -->
+        <form id="login-form" style="display: block;">
+            <div class="form-group">
+                <label for="login-email" data-i18n="login.email">Email Address</label>
+                <input type="email" id="login-email" name="email" required placeholder="your@email.com" data-i18n-placeholder="login.email.ph" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="login-password" data-i18n="login.password">Password</label>
+                <input type="password" id="login-password" name="password" required placeholder="Your password" data-i18n-placeholder="login.password.ph" autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn btn-primary" data-i18n="login.signin">Sign In</button>
+        </form>
+
+        <!-- Signup Form (hidden by default) -->
+        <form id="signup-form" style="display: none;">
+            <div class="form-group">
+                <label for="signup-name" data-i18n="login.signup.name">Full Name</label>
+                <input type="text" id="signup-name" name="name" required placeholder="John Smith" data-i18n-placeholder="login.signup.name.ph" autocomplete="name">
+            </div>
+            <div class="form-group">
+                <label for="signup-company" data-i18n="login.signup.company">Company Name</label>
+                <input type="text" id="signup-company" name="company" required placeholder="Your Company" data-i18n-placeholder="login.signup.company.ph" autocomplete="organization">
+            </div>
+            <div class="form-group">
+                <label for="signup-email" data-i18n="login.signup.email">Email Address</label>
+                <input type="email" id="signup-email" name="email" required placeholder="your@email.com" data-i18n-placeholder="login.signup.email.ph" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="signup-phone" data-i18n="login.signup.phone">Phone Number</label>
+                <input type="tel" id="signup-phone" name="phone" placeholder="(786) 873-8819" autocomplete="tel">
+            </div>
+            <div class="form-group">
+                <label for="signup-password" data-i18n="login.signup.password">Password</label>
+                <input type="password" id="signup-password" name="password" required placeholder="Create a password" minlength="8" data-i18n-placeholder="login.signup.password.ph" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+                <label for="signup-confirm" data-i18n="login.signup.confirm">Confirm Password</label>
+                <input type="password" id="signup-confirm" name="confirm" required placeholder="Confirm your password" data-i18n-placeholder="login.signup.confirm.ph" autocomplete="new-password">
+            </div>
+
+            <!-- Terms of Service Agreement Checkbox -->
+            <div class="form-group" style="margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <input type="checkbox" id="agree-terms" name="agree-terms" required
+                           style="width: auto; min-width: 18px; height: 18px; margin-top: 3px; cursor: pointer; accent-color: var(--color-accent);">
+                    <label for="agree-terms" style="margin-bottom: 0; cursor: pointer; font-size: var(--font-size-sm); line-height: 1.5; color: var(--color-gray-600);">
+                        I have read and agree to the
+                        <a href="terms.html" target="_blank" rel="noopener" style="color: var(--color-accent); font-weight: 600; text-decoration: underline;">Terms of Service &amp; Client Agreement</a>
+                        and
+                        <a href="privacy.html" target="_blank" rel="noopener" style="color: var(--color-accent); font-weight: 600; text-decoration: underline;">Privacy Policy</a>.
+                        I understand this constitutes a binding agreement under Florida law.
+                    </label>
+                </div>
+                <p id="terms-error" style="display: none; color: #ef4444; font-size: var(--font-size-xs); margin-top: 6px; margin-left: 28px;">
+                    You must accept the Terms of Service to create an account.
+                </p>
+            </div>
+
+            <button type="submit" class="btn btn-primary" data-i18n="login.signup.submit">Create Account</button>
+        </form>
+
+        <!-- Reset Password Form (hidden by default) -->
+        <form id="reset-form" style="display: none;">
+            <p style="margin-bottom: var(--spacing-md); color: var(--color-gray-600); font-size: var(--font-size-sm);" data-i18n="login.reset.desc">Enter your email address and we'll send you a link to reset your password.</p>
+            <div class="form-group">
+                <label for="reset-email" data-i18n="login.reset.email">Email Address</label>
+                <input type="email" id="reset-email" name="email" required placeholder="your@email.com" data-i18n-placeholder="login.reset.email.ph" autocomplete="email">
+            </div>
+            <button type="submit" class="btn btn-primary" data-i18n="login.reset.submit">Send Reset Link</button>
+        </form>
+
+        <!-- Toggle Links -->
+        <div class="login-footer" id="login-footer">
+            <p><span data-i18n="login.signup.prompt">Don't have an account?</span> <a href="#" id="show-signup" data-i18n="login.signup.link">Sign up</a></p>
+            <p><a href="#" id="show-reset" data-i18n="login.forgot">Forgot password?</a></p>
+        </div>
+        <div class="login-footer" id="signup-footer" style="display: none;">
+            <p><span data-i18n="login.signup.existing">Already have an account?</span> <a href="#" id="show-login-from-signup" data-i18n="login.signup.existing.link">Sign in</a></p>
+        </div>
+        <div class="login-footer" id="reset-footer" style="display: none;">
+            <p><a href="#" id="show-login-from-reset" data-i18n="login.reset.back">Back to Sign In</a></p>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+            <a href="index.html" style="font-size: var(--font-size-sm); color: var(--color-gray-500);" data-i18n-html="login.backtosite">&larr; Back to Website</a>
+            <span style="margin: 0 8px; color: var(--color-gray-300);">|</span>
+            <a href="blog.html" style="font-size: var(--font-size-sm); color: var(--color-gray-500);">Blog</a>
+            <span style="margin: 0 8px; color: var(--color-gray-300);">|</span>
+            <a href="terms.html" style="font-size: var(--font-size-sm); color: var(--color-gray-500);">Terms</a>
+            <span style="margin: 0 8px; color: var(--color-gray-300);">|</span>
+            <a href="privacy.html" style="font-size: var(--font-size-sm); color: var(--color-gray-500);">Privacy</a>
+        </div>
+    </div>
+
+    <!-- Terms Acceptance Modal (for Google Sign-In new users) -->
+    <div id="terms-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 16px; padding: 32px; max-width: 520px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25);">
+            <h2 style="font-size: 1.25rem; color: #1e3a5f; margin-bottom: 16px; text-align: center;">Terms of Service Agreement</h2>
+            <p style="color: #555; font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px;">
+                Before we create your account, please review and accept our Terms of Service. By continuing, you agree to a binding contract under Florida law with Miami Alliance 3PL LLC.
+            </p>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px; max-height: 200px; overflow-y: auto; font-size: 0.8rem; color: #666; line-height: 1.6;">
+                <strong>Key Terms Summary:</strong><br>
+                &bull; Liability limited to $0.50/lb or declared value (whichever is less)<br>
+                &bull; Claims must be filed within 30 days of discovery<br>
+                &bull; Invoices due Net 15; 1.5%/month late fee<br>
+                &bull; Florida law governs; Miami-Dade County venue<br>
+                &bull; Warehouse lien applies per FL Statute &sect; 677.209<br>
+                &bull; 30-day notice for termination<br>
+                <a href="terms.html" target="_blank" rel="noopener" style="color: #10b981; font-weight: 600;">Read full Terms of Service &rarr;</a>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px;">
+                <input type="checkbox" id="modal-agree-terms"
+                       style="width: auto; min-width: 18px; height: 18px; margin-top: 3px; cursor: pointer; accent-color: #10b981;">
+                <label for="modal-agree-terms" style="cursor: pointer; font-size: 0.85rem; line-height: 1.5; color: #555;">
+                    I have read and agree to the
+                    <a href="terms.html" target="_blank" rel="noopener" style="color: #10b981; font-weight: 600;">Terms of Service</a>
+                    and
+                    <a href="privacy.html" target="_blank" rel="noopener" style="color: #10b981; font-weight: 600;">Privacy Policy</a>.
+                </label>
+            </div>
+            <p id="modal-terms-error" style="display: none; color: #ef4444; font-size: 0.75rem; margin-bottom: 12px; margin-left: 28px;">
+                You must accept the Terms of Service to create an account.
+            </p>
+            <div style="display: flex; gap: 12px;">
+                <button id="modal-cancel" style="flex: 1; padding: 12px; border: 1px solid #e2e8f0; background: white; border-radius: 8px; cursor: pointer; font-size: 0.9rem; color: #666;">
+                    Cancel
+                </button>
+                <button id="modal-accept" style="flex: 1; padding: 12px; border: none; background: #1e3a5f; color: white; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600;">
+                    I Accept &amp; Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/lang/es.js"></script>
+    <script src="js/i18n.js"></script>
+
+    <!-- Toast notification helper -->
+    <script>
+        function showLoginToast(message, type) {
+            var existing = document.querySelector('.login-toast');
+            if (existing) existing.remove();
+            var toast = document.createElement('div');
+            toast.className = 'login-toast';
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            var bg = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#3b82f6';
+            toast.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-12px);background:' + bg + ';color:white;padding:14px 24px;border-radius:12px;font-weight:500;z-index:10000;box-shadow:0 8px 24px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.3s,transform 0.3s;max-width:90%;text-align:center;font-size:0.9rem;';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            requestAnimationFrame(function() {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+            });
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(-12px)';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 5000);
+        }
+    </script>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, browserLocalPersistence, setPersistence } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-KTW0F25ZM1"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Fallback admin emails (for initial setup)
+        const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+
+        // Google Auth Provider
+        const googleProvider = new GoogleAuthProvider();
+        let authFlowInProgress = false;
+
+        // Check for pending invite and return role
+        async function checkPendingInvite(email) {
+            try {
+                const inviteDoc = await getDoc(doc(db, 'pending_invites', email.toLowerCase()));
+                if (inviteDoc.exists()) {
+                    const inviteData = inviteDoc.data();
+                    // Try to delete the invite after use (non-fatal if permission denied)
+                    try {
+                        await deleteDoc(doc(db, 'pending_invites', email.toLowerCase()));
+                    } catch (deleteErr) {
+                        console.log('Invite cleanup deferred (will be cleaned by admin)');
+                    }
+                    return { role: inviteData.role, name: inviteData.name };
+                }
+            } catch (e) {
+                // Invite check failed (non-fatal)
+                console.log('Pending invite check skipped:', e.message);
+            }
+            return null;
+        }
+
+        // Check if already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user && !authFlowInProgress) {
+                window.location.href = 'portal/dashboard.html';
+            }
+        });
+
+        // Helper: Show terms modal and return promise that resolves when user accepts or rejects
+        function showTermsModal() {
+            return new Promise((resolve, reject) => {
+                const modal = document.getElementById('terms-modal');
+                const checkbox = document.getElementById('modal-agree-terms');
+                const errorEl = document.getElementById('modal-terms-error');
+                const acceptBtn = document.getElementById('modal-accept');
+                const cancelBtn = document.getElementById('modal-cancel');
+
+                modal.style.display = 'flex';
+                checkbox.checked = false;
+                errorEl.style.display = 'none';
+
+                const cleanup = () => {
+                    modal.style.display = 'none';
+                    acceptBtn.removeEventListener('click', onAccept);
+                    cancelBtn.removeEventListener('click', onCancel);
+                };
+
+                const onAccept = () => {
+                    if (!checkbox.checked) {
+                        errorEl.style.display = 'block';
+                        return;
+                    }
+                    cleanup();
+                    resolve(true);
+                };
+
+                const onCancel = () => {
+                    cleanup();
+                    resolve(false);
+                };
+
+                acceptBtn.addEventListener('click', onAccept);
+                cancelBtn.addEventListener('click', onCancel);
+            });
+        }
+
+        // Google Sign-In handler
+        document.getElementById('google-signin').addEventListener('click', async () => {
+            authFlowInProgress = true;
+            try {
+                // Set persistence FIRST to ensure auth state survives redirect
+                await setPersistence(auth, browserLocalPersistence);
+
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
+
+                // Google login success
+
+                const isFallbackAdmin = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+
+                // Check if user exists in Firestore, if not create profile
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (!userDoc.exists()) {
+                    // NEW USER: Show terms acceptance modal before creating profile
+                    const accepted = await showTermsModal();
+                    if (!accepted) {
+                        // User declined — sign them out and abort
+                        await auth.signOut();
+                        authFlowInProgress = false;
+                        return;
+                    }
+
+                    // Check for pending invite
+                    const invite = await checkPendingInvite(user.email);
+                    const role = invite?.role || (isFallbackAdmin ? 'admin' : 'customer');
+
+                    // Force token refresh before Firestore write
+                    await user.getIdToken(true);
+
+                    const profileData = {
+                        name: invite?.name || user.displayName || '',
+                        email: user.email,
+                        company_name: '',
+                        phone: user.phoneNumber || '',
+                        role: role,
+                        created_at: new Date().toISOString(),
+                        terms_accepted: true,
+                        terms_version: '1.0',
+                        terms_accepted_at: new Date().toISOString(),
+                        privacy_policy_accepted: true
+                    };
+
+                    try {
+                        await setDoc(doc(db, 'users', user.uid), profileData);
+                    } catch (fsError) {
+                        console.error('Google profile creation failed, retrying...', fsError);
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await user.getIdToken(true);
+                        await setDoc(doc(db, 'users', user.uid), profileData);
+                    }
+                } else if (isFallbackAdmin && !userDoc.data().role) {
+                    await setDoc(doc(db, 'users', user.uid), { role: 'admin' }, { merge: true });
+                }
+
+                // Small delay to ensure auth state is persisted
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Track Google sign-in in GA4
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.trackLogin('google');
+                }
+
+                window.location.href = 'portal/dashboard.html';
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                showLoginToast('Google sign-in failed. Please try again.', 'error');
+                authFlowInProgress = false;
+            }
+        });
+
+        // Form elements
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const resetForm = document.getElementById('reset-form');
+        const loginFooter = document.getElementById('login-footer');
+        const signupFooter = document.getElementById('signup-footer');
+        const resetFooter = document.getElementById('reset-footer');
+
+        // Toggle forms
+        document.getElementById('show-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+            resetForm.style.display = 'none';
+            loginFooter.style.display = 'none';
+            signupFooter.style.display = 'block';
+            resetFooter.style.display = 'none';
+        });
+
+        document.getElementById('show-reset').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'none';
+            resetForm.style.display = 'block';
+            loginFooter.style.display = 'none';
+            signupFooter.style.display = 'none';
+            resetFooter.style.display = 'block';
+        });
+
+        document.getElementById('show-login-from-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            resetForm.style.display = 'none';
+            loginFooter.style.display = 'block';
+            signupFooter.style.display = 'none';
+            resetFooter.style.display = 'none';
+        });
+
+        document.getElementById('show-login-from-reset').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            resetForm.style.display = 'none';
+            loginFooter.style.display = 'block';
+            signupFooter.style.display = 'none';
+            resetFooter.style.display = 'none';
+        });
+
+        // Login handler
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            authFlowInProgress = true;
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Profile recovery: if Auth user exists but Firestore profile is missing, create it now
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (!userDocSnap.exists()) {
+                    const isFallbackAdmin = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+                    const invite = await checkPendingInvite(user.email);
+                    const role = invite?.role || (isFallbackAdmin ? 'admin' : 'customer');
+
+                    await setDoc(userDocRef, {
+                        name: invite?.name || user.displayName || '',
+                        email: user.email,
+                        company_name: '',
+                        phone: user.phoneNumber || '',
+                        role: role,
+                        created_at: new Date().toISOString(),
+                        terms_accepted: true,
+                        terms_version: '1.0',
+                        terms_accepted_at: new Date().toISOString(),
+                        privacy_policy_accepted: true,
+                        recovered_profile: true
+                    });
+                    console.log('Profile recovered for user:', user.email);
+                }
+
+                // Track email login in GA4
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.trackLogin('email');
+                }
+                window.location.href = 'portal/dashboard.html';
+            } catch (error) {
+                showLoginToast('Login failed. Please check your credentials.', 'error');
+                authFlowInProgress = false;
+            }
+        });
+
+        // Signup handler
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            authFlowInProgress = true;
+            const name = document.getElementById('signup-name').value;
+            const company = document.getElementById('signup-company').value;
+            const email = document.getElementById('signup-email').value;
+            const phone = document.getElementById('signup-phone').value;
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+
+            if (password !== confirm) {
+                showLoginToast('Passwords do not match.', 'error');
+                authFlowInProgress = false;
+                return;
+            }
+
+            // Validate Terms of Service acceptance
+            const agreeCheckbox = document.getElementById('agree-terms');
+            const termsError = document.getElementById('terms-error');
+            if (!agreeCheckbox.checked) {
+                termsError.style.display = 'block';
+                agreeCheckbox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                authFlowInProgress = false;
+                return;
+            }
+            termsError.style.display = 'none';
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const newUser = userCredential.user;
+
+                // Wait briefly for auth token to propagate before Firestore write
+                await new Promise(resolve => setTimeout(resolve, 500));
+                // Force token refresh to ensure Firestore sees valid auth
+                await newUser.getIdToken(true);
+
+                // Save user data to Firestore with agreement acceptance record
+                const profileData = {
+                    name: name,
+                    company_name: company,
+                    email: email,
+                    phone: phone,
+                    role: 'customer',
+                    created_at: new Date().toISOString(),
+                    terms_accepted: true,
+                    terms_version: '1.0',
+                    terms_accepted_at: new Date().toISOString(),
+                    privacy_policy_accepted: true
+                };
+
+                try {
+                    await setDoc(doc(db, 'users', newUser.uid), profileData);
+                } catch (fsError) {
+                    console.error('Firestore profile creation failed, retrying...', fsError);
+                    // Retry once after another short delay
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await newUser.getIdToken(true);
+                    await setDoc(doc(db, 'users', newUser.uid), profileData);
+                }
+
+                // Track signup and agreement acceptance in GA4
+                if (window.MA3PLAnalytics) {
+                    MA3PLAnalytics.trackSignup('email');
+                    if (typeof MA3PLAnalytics.trackEvent === 'function') {
+                        MA3PLAnalytics.trackEvent('terms_accepted', { version: '1.0', method: 'email_signup' });
+                    }
+                }
+
+                window.location.href = 'portal/dashboard.html';
+            } catch (error) {
+                console.error('Signup error:', error);
+                showLoginToast('Signup failed. ' + error.message, 'error');
+                authFlowInProgress = false;
+            }
+        });
+
+        // Reset password handler
+        resetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('reset-email').value;
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showLoginToast('Password reset email sent! Check your inbox.', 'success');
+                // Show login form
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                resetForm.style.display = 'none';
+                loginFooter.style.display = 'block';
+                signupFooter.style.display = 'none';
+                resetFooter.style.display = 'none';
+            } catch (error) {
+                showLoginToast('Error: ' + error.message, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

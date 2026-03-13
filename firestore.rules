@@ -7,90 +7,33 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function authEmail() {
-      return isAuthenticated() ? request.auth.token.email : '';
-    }
-
-    function authEmailLower() {
-      return authEmail().lower();
-    }
-
-    function isBootstrapAdmin() {
-      return isAuthenticated() && authEmailLower() in [
-        'ceo@usglatam.com',
-        'yuri@megalopolisms.com',
-        'admin@miamialliance3pl.com'
-      ];
-    }
-
-    function userDocPath(uid) {
-      return /databases/$(database)/documents/users/$(uid);
-    }
-
-    function userRole(uid) {
-      return exists(userDocPath(uid)) ? get(userDocPath(uid)).data.role : null;
-    }
-
-    function myRole() {
-      return isAuthenticated() ? userRole(request.auth.uid) : null;
-    }
-
     function isAdmin() {
-      return isBootstrapAdmin() || myRole() == 'admin';
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     function isStaff() {
-      return isBootstrapAdmin() || myRole() in ['admin', 'employee'];
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'employee'];
     }
 
     function isJorge() {
-      return authEmailLower() == 'ceo@usglatam.com';
+      return isAuthenticated() &&
+        request.auth.token.email == 'ceo@usglatam.com';
     }
 
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function pendingInvitePath(email) {
-      return /databases/$(database)/documents/pending_invites/$(email);
-    }
-
-    function hasPendingInviteForEmail(email) {
-      return exists(pendingInvitePath(email));
-    }
-
-    function pendingInviteRole(email) {
-      return hasPendingInviteForEmail(email) ? get(pendingInvitePath(email)).data.role : null;
-    }
-
-    function canSelfCreateUserWithRole(role, emailLower) {
-      return role == 'customer'
-        || (role == 'admin' && isBootstrapAdmin())
-        || (
-          role in ['employee', 'admin']
-          && hasPendingInviteForEmail(emailLower)
-          && pendingInviteRole(emailLower) == role
-        );
-    }
-
-    function canSelfUpdateUser() {
-      return request.resource.data.role == resource.data.role
-        && request.resource.data.email == resource.data.email;
-    }
-
     // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isStaff());
-      allow create: if isAuthenticated()
-        && userId == request.auth.uid
-        && request.resource.data.email is string
-        && request.resource.data.role in ['customer', 'employee', 'admin']
-        && request.resource.data.email.lower() == authEmailLower()
-        && canSelfCreateUserWithRole(
-          request.resource.data.role,
-          request.resource.data.email.lower()
-        );
-      allow update: if isAdmin() || (isOwner(userId) && canSelfUpdateUser());
+      // Allow admins to create any user doc, AND allow users to create their OWN profile (self-registration)
+      allow create: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+      allow update: if isAdmin() || isOwner(userId);
       allow delete: if isAdmin();
     }
 
@@ -146,6 +89,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Leads — captured from exit-intent popup, newsletter, and other lead gen forms
+    match /leads/{leadId} {
+      allow read: if isStaff();
+      allow create: if true; // Public submissions (no auth required for lead capture)
+      allow update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
     // BOL Documents — uploaded Bills of Lading and Shipping Labels
     match /bol_documents/{docId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
@@ -154,7 +105,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Shipment Documents — packing lists and commercial invoices
+    // Shipment Documents — uploaded Invoices, Packing Lists, and other shipment docs
     match /shipment_documents/{docId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
       allow create: if isAuthenticated();
@@ -200,10 +151,11 @@ service cloud.firestore {
 
     // Pending invites — used during signup to auto-assign roles
     match /pending_invites/{email} {
-      allow read: if isAdmin() || (isAuthenticated() && authEmailLower() == email.lower());
+      allow read: if isAuthenticated() && request.auth.token.email == email;
       allow create: if isAdmin();
       allow update: if isAdmin();
-      allow delete: if isAdmin() || (isAuthenticated() && authEmailLower() == email.lower());
+      // Allow admin OR the invited user themselves to consume (delete) their invite
+      allow delete: if isAdmin() || (isAuthenticated() && request.auth.token.email == email);
     }
   }
 }

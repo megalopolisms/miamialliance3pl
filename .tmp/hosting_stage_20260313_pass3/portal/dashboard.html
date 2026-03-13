@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Dashboard | Miami Alliance 3PL Portal</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/style.css?v=8">
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KTW0F25ZM1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-KTW0F25ZM1');
+    </script>
+    <script src="../js/analytics.js"></script>
+    <style>
+        .admin-badge {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .welcome-hero {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .welcome-hero h1 {
+            font-size: var(--font-size-3xl);
+            margin-bottom: var(--spacing-xs);
+        }
+        .welcome-hero p {
+            opacity: 0.9;
+            font-size: var(--font-size-lg);
+        }
+        .admin-section {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .admin-section h2 {
+            color: #92400e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+        .admin-card {
+            background: white;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .admin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        .admin-card .icon {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-xs);
+        }
+        .admin-card .label {
+            font-weight: 600;
+            color: var(--color-gray-700);
+        }
+        .admin-card .count {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .analytics-section {
+            margin-bottom: var(--spacing-xl);
+        }
+        .analytics-section h2 {
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--spacing-md);
+            color: var(--color-gray-900);
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        .chart-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-gray-200);
+        }
+        .chart-card h3 {
+            font-size: var(--font-size-lg);
+            color: var(--color-gray-800);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--color-gray-100);
+        }
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+        .metric-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-gray-600);
+        }
+        .metric-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .metric-value {
+            font-weight: 600;
+            color: var(--color-gray-800);
+        }
+        .trend-up {
+            color: #10b981;
+        }
+        .trend-down {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="../index.html" class="logo">
+                <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
+            </a>
+            <button class="nav-toggle sidebar-toggle" aria-label="Toggle sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><span id="user-name" class="nav-link">Welcome</span></li>
+                <li><a href="#" id="logout-btn" class="nav-link btn btn-outline" data-i18n="portal.sidebar.logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="portal-sidebar">
+            <nav role="navigation" aria-label="Main navigation">
+                <a href="dashboard.html" class="portal-nav-item active" aria-current="page">
+                    <span aria-hidden="true">📊</span> <span data-i18n="portal.sidebar.dashboard">Dashboard</span>
+                </a>
+                <a href="shipments.html" class="portal-nav-item">
+                    <span aria-hidden="true">🚚</span> <span data-i18n="portal.sidebar.shipments">Shipments</span>
+                </a>
+                <a href="pickups.html" class="portal-nav-item">
+                    <span aria-hidden="true">🏗️</span> <span>Pickup & Delivery</span>
+                </a>
+                <a href="tracking.html" class="portal-nav-item">
+                    <span aria-hidden="true">🔍</span> <span data-i18n="portal.sidebar.tracking">Tracking</span>
+                </a>
+                <a href="inventory.html" class="portal-nav-item">
+                    <span aria-hidden="true">📦</span> <span data-i18n="portal.sidebar.inventory">Inventory</span>
+                </a>
+                <a href="billing.html" class="portal-nav-item">
+                    <span aria-hidden="true">💵</span> <span data-i18n="portal.sidebar.billing">Billing</span>
+                </a>
+                <a href="contracts.html" class="portal-nav-item">
+                    <span aria-hidden="true">📄</span> <span>Contracts</span>
+                </a>
+                <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true" data-i18n="portal.sidebar.staffLabel">Staff</div>
+                    <a href="customers.html" class="portal-nav-item" id="nav-all-users">
+                        <span aria-hidden="true">👥</span> <span data-i18n="portal.sidebar.allCustomers">All Customers</span>
+                    </a>
+                    <a href="admin-shipments.html" class="portal-nav-item" id="nav-all-shipments">
+                        <span aria-hidden="true">📋</span> <span data-i18n="portal.sidebar.allShipments">All Shipments</span>
+                    </a>
+                </div>
+                <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" aria-hidden="true" data-i18n="portal.sidebar.adminLabel">Admin</div>
+                    <a href="admin-panel.html" class="portal-nav-item">
+                        <span>🛡️</span> <span>Admin Control Panel</span>
+                    </a>                    <a href="admin-pickups.html" class="portal-nav-item">
+                        <span aria-hidden="true">🚛</span> <span>All Pickup Requests</span>
+                    </a>
+                    <a href="admin-billing.html" class="portal-nav-item"><span>📝</span> <span>Activity Billing</span></a>
+                    <a href="invoices.html" class="portal-nav-item">
+                        <span aria-hidden="true">💵</span> <span data-i18n="portal.sidebar.invoices">Invoices</span>
+                    </a>
+                    <a href="storage-log.html" class="portal-nav-item">
+                        <span aria-hidden="true">📊</span> <span data-i18n="portal.sidebar.storagelog">Storage Log</span>
+                    </a>
+                    <a href="pricing.html" class="portal-nav-item">
+                        <span aria-hidden="true">💰</span> <span data-i18n="portal.sidebar.pricing">Pricing</span>
+                    </a>
+                    <a href="settings.html" class="portal-nav-item">
+                        <span aria-hidden="true">⚙️</span> <span data-i18n="portal.sidebar.settings">Settings</span>
+                    </a>
+                    <a href="team.html" class="portal-nav-item">
+                        <span aria-hidden="true">👔</span> <span data-i18n="portal.sidebar.team">Manage Team</span>
+                    </a>
+                    <a href="changelog.html" class="portal-nav-item">
+                        <span aria-hidden="true">📝</span> <span data-i18n="portal.sidebar.changelog">Changelog</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="portal-main">
+            <!-- Welcome Hero -->
+            <div class="welcome-hero">
+                <h1 id="welcome-title" data-i18n="portal.dashboard.welcomeTitle">Welcome back!</h1>
+                <p id="welcome-subtitle" data-i18n="portal.dashboard.welcomeSubtitle">Here's what's happening with your logistics today.</p>
+                <p id="jorge-quote" style="display: none; margin-top: var(--spacing-md); font-style: italic; opacity: 0.8; font-size: var(--font-size-lg);">"Do or do not ship. There is no try." - Master Yoda, Logistics Division</p>
+            </div>
+
+            <!-- Admin Section (hidden by default) -->
+            <div id="admin-section" class="admin-section" style="display: none;">
+                <h2 id="admin-title" data-i18n="portal.dashboard.adminTitle">👑 Admin Dashboard</h2>
+                <p id="admin-subtitle" style="color: #92400e; margin-bottom: var(--spacing-sm);" data-i18n="portal.dashboard.adminSubtitle">You have full access to manage all customers and shipments.</p>
+                <div class="admin-grid">
+                    <div class="admin-card" onclick="location.href='#users'">
+                        <div class="icon">👥</div>
+                        <div class="count" id="total-users">0</div>
+                        <div class="label" id="label-users" data-i18n="portal.dashboard.totalCustomers">Total Customers</div>
+                    </div>
+                    <div class="admin-card" onclick="location.href='#shipments'">
+                        <div class="icon" id="icon-shipments">📦</div>
+                        <div class="count" id="total-shipments">0</div>
+                        <div class="label" id="label-shipments" data-i18n="portal.dashboard.totalShipments">Total Shipments</div>
+                    </div>
+                    <div class="admin-card" onclick="location.href='#inventory'">
+                        <div class="icon" id="icon-inventory">🏭</div>
+                        <div class="count" id="total-inventory">0</div>
+                        <div class="label" id="label-inventory" data-i18n="portal.dashboard.inventoryItems">Inventory Items</div>
+                    </div>
+                    <div class="admin-card" onclick="location.href='admin-pickups.html'">
+                        <div class="icon">🚛</div>
+                        <div class="count" id="total-pickups">0</div>
+                        <div class="label" data-i18n="portal.dashboard.pickupRequests">Pickup Requests</div>
+                    </div>
+                    <div class="admin-card" onclick="location.href='#pending'">
+                        <div class="icon" id="icon-pending">⏳</div>
+                        <div class="count" id="total-pending">0</div>
+                        <div class="label" id="label-pending" data-i18n="portal.dashboard.pendingActions">Pending Actions</div>
+                    </div>
+                    <div class="admin-card" onclick="location.href='#leads'" style="border: 2px solid #10b981;">
+                        <div class="icon">🎯</div>
+                        <div class="count" id="total-leads">0</div>
+                        <div class="label">New Leads</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="dashboard-stats">
+                <div class="dashboard-card">
+                    <h3 data-i18n="portal.dashboard.pendingShipments">Pending Shipments</h3>
+                    <div class="value" id="pending-count">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3 data-i18n="portal.dashboard.inTransit">In Transit</h3>
+                    <div class="value" id="transit-count">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3 data-i18n="portal.dashboard.delivered30">Delivered (30 days)</h3>
+                    <div class="value" id="delivered-count">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3 data-i18n="portal.dashboard.inventoryItemsCard">Inventory Items</h3>
+                    <div class="value" id="inventory-count">0</div>
+                </div>
+            </div>
+
+            <!-- Warehouse Location Breakdown (Staff only) -->
+            <div id="warehouse-breakdown" style="display: none; margin-bottom: var(--spacing-xl);">
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);">📍 Warehouse Locations</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+                    <div class="dashboard-card" style="border-left: 4px solid #14b8a6;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-sm);">
+                            <h3 style="margin: 0; color: var(--color-gray-900);">📍 Miami, FL</h3>
+                            <span style="background: linear-gradient(135deg, #14b8a6, #0d9488); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Medley</span>
+                        </div>
+                        <p style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">8780 NW 100th ST, Medley, FL 33178</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm);">
+                            <div>
+                                <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">Shipments</div>
+                                <div style="font-size: var(--font-size-xl); font-weight: 700; color: var(--color-primary);" id="miami-shipments">0</div>
+                            </div>
+                            <div>
+                                <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">Inventory</div>
+                                <div style="font-size: var(--font-size-xl); font-weight: 700; color: var(--color-primary);" id="miami-inventory">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-card" style="border-left: 4px solid #8b5cf6;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-sm);">
+                            <h3 style="margin: 0; color: var(--color-gray-900);">📍 Biloxi, MS</h3>
+                            <span style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Gulf Coast</span>
+                        </div>
+                        <p style="font-size: var(--font-size-sm); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">1606 Beach Blvd, Biloxi, MS 39531</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm);">
+                            <div>
+                                <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">Shipments</div>
+                                <div style="font-size: var(--font-size-xl); font-weight: 700; color: #8b5cf6;" id="biloxi-shipments">0</div>
+                            </div>
+                            <div>
+                                <div style="font-size: var(--font-size-xs); color: var(--color-gray-500);">Inventory</div>
+                                <div style="font-size: var(--font-size-xl); font-weight: 700; color: #8b5cf6;" id="biloxi-inventory">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div style="margin-bottom: var(--spacing-xl);">
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.dashboard.quickActions">Quick Actions</h2>
+                <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                    <a href="shipments.html?new=1" class="btn btn-primary" data-i18n="portal.dashboard.createShipment">+ Create Shipment</a>
+                    <a href="pickups.html?new=1" class="btn btn-primary" style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);" data-i18n="portal.dashboard.newPickup">🚛 New Pickup / Delivery</a>
+                    <a href="tracking.html" class="btn btn-outline" data-i18n="portal.dashboard.trackPackage">Track Package</a>
+                    <a href="inventory.html" class="btn btn-outline" data-i18n="portal.dashboard.viewInventory">View Inventory</a>
+                </div>
+            </div>
+
+            <!-- Analytics Section (Staff only) -->
+            <div id="analytics-section" class="analytics-section" style="display: none;">
+                <h2 data-i18n="portal.dashboard.analyticsOverview">📈 Analytics Overview</h2>
+                <div class="charts-grid">
+                    <!-- Shipment Status Chart -->
+                    <div class="chart-card">
+                        <h3 data-i18n="portal.dashboard.chartShipmentStatus">📊 Shipment Status</h3>
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Trends Chart -->
+                    <div class="chart-card">
+                        <h3 data-i18n="portal.dashboard.chartMonthlyShipments">📅 Monthly Shipments</h3>
+                        <div class="chart-container">
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Top Customers (Admin only) -->
+                    <div class="chart-card" id="customers-chart-card" style="display: none;">
+                        <h3 data-i18n="portal.dashboard.chartTopCustomers">👥 Top Customers</h3>
+                        <div class="chart-container">
+                            <canvas id="customersChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Revenue by Service -->
+                    <div class="chart-card" id="services-chart-card" style="display: none;">
+                        <h3 data-i18n="portal.dashboard.chartInventoryByType">💰 Inventory by Type</h3>
+                        <div class="chart-container">
+                            <canvas id="inventoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="chart-card" style="margin-top: var(--spacing-lg);">
+                    <h3 data-i18n="portal.dashboard.keyMetrics">📋 Key Performance Metrics</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg);">
+                        <div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #10b981;"></span> <span data-i18n="portal.dashboard.metricOnTime">On-Time Delivery</span></span>
+                                <span class="metric-value" id="metric-ontime">--</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #3b82f6;"></span> <span data-i18n="portal.dashboard.metricTransit">Avg. Transit Time</span></span>
+                                <span class="metric-value" id="metric-transit">--</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #f59e0b;"></span> <span data-i18n="portal.dashboard.metricActive">Active Shipments</span></span>
+                                <span class="metric-value" id="metric-active">--</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #8b5cf6;"></span> <span data-i18n="portal.dashboard.metricWarehouse">Warehouse Utilization</span></span>
+                                <span class="metric-value" id="metric-warehouse">--</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #ec4899;"></span> <span data-i18n="portal.dashboard.metricThisMonth">This Month</span></span>
+                                <span class="metric-value" id="metric-month">--</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label"><span class="metric-dot" style="background: #06b6d4;"></span> <span data-i18n="portal.dashboard.metricPallets">Total Pallets</span></span>
+                                <span class="metric-value" id="metric-pallets">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Shipments -->
+            <div>
+                <h2 style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-md); color: var(--color-gray-900);" data-i18n="portal.dashboard.recentShipments">Recent Shipments</h2>
+                <div class="table-wrapper">
+                    <table class="data-table" role="table" aria-label="Recent shipments list">
+                        <thead>
+                            <tr>
+                                <th scope="col" data-i18n="portal.table.tracking">Tracking #</th>
+                                <th scope="col">Warehouse</th>
+                                <th scope="col" data-i18n="portal.table.destination">Destination</th>
+                                <th scope="col" data-i18n="portal.table.status">Status</th>
+                                <th scope="col" data-i18n="portal.table.date">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-shipments">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">
+                                    <span data-i18n="portal.dashboard.noShipments">No shipments yet.</span> <a href="shipments.html?new=1" style="color: var(--color-accent);" data-i18n="portal.dashboard.createFirst">Create your first shipment</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- i18n -->
+    <script src="../js/lang/es.js"></script>
+    <script src="../js/i18n.js"></script>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, orderBy, limit, getDocs, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+            authDomain: "miamialliance3pl.firebaseapp.com",
+            projectId: "miamialliance3pl",
+            storageBucket: "miamialliance3pl.firebasestorage.app",
+            messagingSenderId: "657614666588",
+            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+            measurementId: "G-KTW0F25ZM1"
+        };
+
+        // Fallback admin emails (for initial setup before Firestore roles exist)
+        const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+
+        // Fun quotes for special users
+        const JORGE_QUOTES = [
+            '"Do or do not ship. There is no try." - Master Yoda, Logistics Division',
+            '"I find your lack of tracking numbers disturbing." - Darth Vader',
+            '"May the freight be with you." - Obi-Wan Kenobi',
+            '"It\'s over Anakin! I have the high ground shipping rates!" - Obi-Wan',
+            '"This is the way... to your warehouse." - The Mandalorian',
+            '"I am your shipper." - Darth Vader',
+            '"These aren\'t the packages you\'re looking for." - Obi-Wan',
+            '"The Force is strong with this shipment." - Yoda',
+            '"Help me Miami Alliance 3PL, you\'re my only hope." - Princess Leia',
+            '"Punch it, Chewie! We got a delivery to make!" - Han Solo'
+        ];
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let userRole = 'customer'; // customer, employee, admin
+
+        // Check authentication
+        let authChecked = false;
+        onAuthStateChanged(auth, async (user) => {
+            if (authChecked) return;
+            authChecked = true;
+
+            if (!user) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    window.location.href = '../login.html';
+                    return;
+                }
+                user = currentUser;
+            }
+
+            let userName = user.displayName || user.email;
+            const userEmail = user.email.toLowerCase();
+
+            // Get user data from Firestore (includes role)
+            let userData = null;
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                    if (userData.name) userName = userData.name;
+                    if (userData.role) userRole = userData.role;
+                } else {
+                    // Profile recovery: Auth user exists but Firestore profile missing
+                    // This can happen if registration was interrupted or rules blocked the initial write
+                    const isFallbackAdmin = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
+                    const recoveredRole = isFallbackAdmin ? 'admin' : 'customer';
+                    const recoveredData = {
+                        name: user.displayName || '',
+                        email: user.email,
+                        company_name: '',
+                        phone: user.phoneNumber || '',
+                        role: recoveredRole,
+                        created_at: new Date().toISOString(),
+                        terms_accepted: true,
+                        terms_version: '1.0',
+                        terms_accepted_at: new Date().toISOString(),
+                        privacy_policy_accepted: true,
+                        recovered_profile: true
+                    };
+                    await setDoc(doc(db, 'users', user.uid), recoveredData);
+                    userData = recoveredData;
+                    userRole = recoveredRole;
+                    if (recoveredData.name) userName = recoveredData.name;
+                    console.log('Profile recovered for:', user.email);
+                }
+            } catch (e) {
+                console.error('User doc fetch/recovery failed:', e);
+            }
+
+            // Fallback: Check hardcoded admin emails if no Firestore role
+            if (!userData?.role && FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail)) {
+                userRole = 'admin';
+            }
+
+            // Determine access levels
+            const isAdmin = userRole === 'admin';
+            const isEmployee = userRole === 'employee';
+            const isStaff = isAdmin || isEmployee;
+            const isJorge = FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
+
+            // Update welcome message
+            const welcomeTitle = document.getElementById('welcome-title');
+            const welcomeSubtitle = document.getElementById('welcome-subtitle');
+            const userNameEl = document.getElementById('user-name');
+
+            if (isJorge && isAdmin) {
+                welcomeTitle.innerHTML = `Welcome back, Jedi Master ${userName}! ⚔️ <span class="admin-badge">SITH LORD</span>`;
+                welcomeSubtitle.textContent = "The Force is strong with you. Your galactic logistics empire awaits.";
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">🌟 JEDI</span>`;
+
+                const quoteEl = document.getElementById('jorge-quote');
+                quoteEl.textContent = JORGE_QUOTES[Math.floor(Math.random() * JORGE_QUOTES.length)];
+                quoteEl.style.display = 'block';
+
+                document.getElementById('admin-section').style.display = 'block';
+                document.getElementById('employee-nav').style.display = 'block';
+                document.getElementById('admin-nav').style.display = 'block';
+                document.getElementById('admin-title').innerHTML = '⚔️ Galactic Command Center';
+                document.getElementById('admin-subtitle').textContent = 'Execute Order 66... or just manage some shipments. Your call, my lord.';
+
+                document.getElementById('label-users').textContent = 'Rebel Allies';
+                document.getElementById('label-shipments').textContent = 'Cargo Runs';
+                document.getElementById('icon-shipments').textContent = '🚀';
+                document.getElementById('label-inventory').textContent = 'Kyber Crystals';
+                document.getElementById('icon-inventory').textContent = '💎';
+                document.getElementById('label-pending').textContent = 'Missions Pending';
+                document.getElementById('icon-pending').textContent = '🎯';
+
+                loadAdminStats();
+                loadAnalytics(true);
+            } else if (isAdmin) {
+                welcomeTitle.innerHTML = `Welcome back, ${userName}! <span class="admin-badge">ADMIN</span>`;
+                welcomeSubtitle.textContent = "You have full admin access to manage all customers and operations.";
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
+
+                document.getElementById('admin-section').style.display = 'block';
+                document.getElementById('employee-nav').style.display = 'block';
+                document.getElementById('admin-nav').style.display = 'block';
+
+                loadAdminStats();
+                loadAnalytics(true);
+            } else if (isEmployee) {
+                welcomeTitle.innerHTML = `Welcome back, ${userName}! <span class="admin-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">EMPLOYEE</span>`;
+                welcomeSubtitle.textContent = "Ready to help our customers with their logistics needs.";
+                userNameEl.innerHTML = `${userName} <span class="admin-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">STAFF</span>`;
+
+                document.getElementById('admin-section').style.display = 'block';
+                document.getElementById('employee-nav').style.display = 'block';
+
+                loadAdminStats();
+                loadAnalytics(false);
+            } else {
+                welcomeTitle.textContent = `Welcome back, ${userName}!`;
+                userNameEl.textContent = `Welcome, ${userName}`;
+            }
+
+            // Initialize column preferences for recent shipments table
+            if (window.ColumnPrefs) {
+                var labelFns = ColumnPrefs.firestoreLabels({ doc, getDoc, setDoc, db }, 'dashboard-recent');
+                new ColumnPrefs({
+                    table: document.querySelector('.data-table'),
+                    tableId: 'dashboard-recent',
+                    canRename: userEmail === 'ceo@usglatam.com',
+                    loadGlobalLabels: labelFns.load,
+                    saveGlobalLabels: labelFns.save
+                });
+            }
+
+            // Load dashboard data
+            loadDashboardData(user.uid, isStaff);
+        });
+
+        // Logout handler
+        document.getElementById('logout-btn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = '../login.html';
+        });
+
+        async function loadAdminStats() {
+            try {
+                // Total users
+                const usersSnap = await getDocs(collection(db, 'users'));
+                document.getElementById('total-users').textContent = usersSnap.size;
+
+                // Total shipments + warehouse breakdown
+                const shipmentsSnap = await getDocs(collection(db, 'shipments'));
+                document.getElementById('total-shipments').textContent = shipmentsSnap.size;
+
+                let miamiShipments = 0, biloxiShipments = 0;
+                shipmentsSnap.forEach(d => {
+                    const wh = d.data().warehouse || d.data().warehouseId || 'miami';
+                    if (wh === 'biloxi') biloxiShipments++;
+                    else miamiShipments++;
+                });
+
+                // Total inventory + warehouse breakdown
+                const inventorySnap = await getDocs(collection(db, 'inventory'));
+                document.getElementById('total-inventory').textContent = inventorySnap.size;
+
+                let miamiInventory = 0, biloxiInventory = 0;
+                inventorySnap.forEach(d => {
+                    const wh = d.data().warehouse || d.data().warehouseId || 'miami';
+                    if (wh === 'biloxi') biloxiInventory++;
+                    else miamiInventory++;
+                });
+
+                // Update warehouse breakdown widget
+                const whBreakdown = document.getElementById('warehouse-breakdown');
+                if (whBreakdown) {
+                    whBreakdown.style.display = 'block';
+                    document.getElementById('miami-shipments').textContent = miamiShipments;
+                    document.getElementById('biloxi-shipments').textContent = biloxiShipments;
+                    document.getElementById('miami-inventory').textContent = miamiInventory;
+                    document.getElementById('biloxi-inventory').textContent = biloxiInventory;
+                }
+
+                // Pending shipments (all)
+                const pendingQuery = query(collection(db, 'shipments'), where('status', '==', 'pending'));
+                const pendingSnap = await getDocs(pendingQuery);
+                document.getElementById('total-pending').textContent = pendingSnap.size;
+
+                // Pickup requests count
+                try {
+                    const pickupsSnap = await getDocs(collection(db, 'pickup_requests'));
+                    const pickupEl = document.getElementById('total-pickups');
+                    if (pickupEl) pickupEl.textContent = pickupsSnap.size;
+                } catch (e) {
+                    // Pickup requests collection may not exist yet
+                }
+
+                // Leads count (from lead capture engine)
+                try {
+                    const leadsSnap = await getDocs(collection(db, 'leads'));
+                    const leadsEl = document.getElementById('total-leads');
+                    if (leadsEl) leadsEl.textContent = leadsSnap.size;
+                } catch (e) {
+                    // Leads collection may not exist yet
+                }
+
+            } catch (error) {
+                console.error('Error loading admin stats:', error);
+            }
+        }
+
+        // Chart instances
+        let statusChart, trendsChart, customersChart, inventoryChart;
+
+        async function loadAnalytics(isAdmin) {
+            try {
+                // Show analytics section
+                document.getElementById('analytics-section').style.display = 'block';
+
+                // Show admin-only charts
+                if (isAdmin) {
+                    document.getElementById('customers-chart-card').style.display = 'block';
+                    document.getElementById('services-chart-card').style.display = 'block';
+                }
+
+                // Fetch all shipments for analytics
+                const shipmentsSnap = await getDocs(collection(db, 'shipments'));
+                const shipments = [];
+                shipmentsSnap.forEach(doc => shipments.push({ id: doc.id, ...doc.data() }));
+
+                // Fetch inventory
+                const inventorySnap = await getDocs(collection(db, 'inventory'));
+                const inventory = [];
+                inventorySnap.forEach(doc => inventory.push({ id: doc.id, ...doc.data() }));
+
+                // Fetch users for customer chart
+                const usersSnap = await getDocs(collection(db, 'users'));
+                const users = {};
+                usersSnap.forEach(doc => {
+                    const data = doc.data();
+                    users[doc.id] = data.company_name || data.name || data.email || 'Unknown';
+                });
+
+                // 1. Status Chart (Doughnut)
+                const statusCounts = {
+                    pending: 0,
+                    in_transit: 0,
+                    delivered: 0,
+                    cancelled: 0
+                };
+                shipments.forEach(s => {
+                    if (statusCounts[s.status] !== undefined) statusCounts[s.status]++;
+                });
+
+                const statusCtx = document.getElementById('statusChart').getContext('2d');
+                statusChart = new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending', 'In Transit', 'Delivered', 'Cancelled'],
+                        datasets: [{
+                            data: [statusCounts.pending, statusCounts.in_transit, statusCounts.delivered, statusCounts.cancelled],
+                            backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+
+                // 2. Monthly Trends (Bar Chart)
+                const monthlyData = {};
+                const now = new Date();
+                for (let i = 5; i >= 0; i--) {
+                    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const key = d.toLocaleString('default', { month: 'short' });
+                    monthlyData[key] = 0;
+                }
+
+                shipments.forEach(s => {
+                    if (s.created_at) {
+                        const date = new Date(s.created_at);
+                        const key = date.toLocaleString('default', { month: 'short' });
+                        if (monthlyData[key] !== undefined) monthlyData[key]++;
+                    }
+                });
+
+                const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+                trendsChart = new Chart(trendsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(monthlyData),
+                        datasets: [{
+                            label: 'Shipments',
+                            data: Object.values(monthlyData),
+                            backgroundColor: '#1e3a5f',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                        }
+                    }
+                });
+
+                // 3. Top Customers Chart (Admin only)
+                if (isAdmin) {
+                    const customerShipments = {};
+                    shipments.forEach(s => {
+                        const customerId = s.user_id;
+                        const name = users[customerId] || 'Unknown';
+                        customerShipments[name] = (customerShipments[name] || 0) + 1;
+                    });
+
+                    const sortedCustomers = Object.entries(customerShipments)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5);
+
+                    const customersCtx = document.getElementById('customersChart').getContext('2d');
+                    customersChart = new Chart(customersCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: sortedCustomers.map(c => c[0]),
+                            datasets: [{
+                                label: 'Shipments',
+                                data: sortedCustomers.map(c => c[1]),
+                                backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'],
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            indexAxis: 'y',
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { beginAtZero: true, ticks: { stepSize: 1 } }
+                            }
+                        }
+                    });
+
+                    // 4. Inventory by Type (Pie)
+                    const inventoryTypes = {};
+                    inventory.forEach(item => {
+                        const type = item.category || item.type || 'Other';
+                        inventoryTypes[type] = (inventoryTypes[type] || 0) + (item.quantity || 1);
+                    });
+
+                    const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+                    inventoryChart = new Chart(inventoryCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: Object.keys(inventoryTypes).length > 0 ? Object.keys(inventoryTypes) : ['No Data'],
+                            datasets: [{
+                                data: Object.keys(inventoryTypes).length > 0 ? Object.values(inventoryTypes) : [1],
+                                backgroundColor: ['#1e3a5f', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom' }
+                            }
+                        }
+                    });
+                }
+
+                // Update Key Metrics
+                const delivered = shipments.filter(s => s.status === 'delivered').length;
+                const total = shipments.length;
+                const onTimeRate = total > 0 ? Math.round((delivered / total) * 100) : 0;
+                document.getElementById('metric-ontime').textContent = onTimeRate + '%';
+
+                const activeShipments = shipments.filter(s => s.status === 'pending' || s.status === 'in_transit').length;
+                document.getElementById('metric-active').textContent = activeShipments;
+
+                document.getElementById('metric-transit').textContent = '2-3 days';
+
+                const totalInventory = inventory.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                const warehouseUtil = Math.min(Math.round((totalInventory / 1000) * 100), 100);
+                document.getElementById('metric-warehouse').textContent = warehouseUtil + '%';
+
+                // This month shipments
+                const thisMonth = new Date().getMonth();
+                const thisMonthShipments = shipments.filter(s => {
+                    if (s.created_at) {
+                        return new Date(s.created_at).getMonth() === thisMonth;
+                    }
+                    return false;
+                }).length;
+                document.getElementById('metric-month').textContent = thisMonthShipments + ' shipments';
+
+                // Total pallets (estimate from inventory)
+                const totalPallets = Math.ceil(totalInventory / 48);
+                document.getElementById('metric-pallets').textContent = totalPallets;
+
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        async function loadDashboardData(userId, isStaff = false) {
+            try {
+                const shipmentsRef = collection(db, 'shipments');
+
+                if (isStaff) {
+                    // Admins see all shipments
+                    const pendingQuery = query(shipmentsRef, where('status', '==', 'pending'));
+                    const pendingSnap = await getDocs(pendingQuery);
+                    document.getElementById('pending-count').textContent = pendingSnap.size;
+
+                    const transitQuery = query(shipmentsRef, where('status', '==', 'in_transit'));
+                    const transitSnap = await getDocs(transitQuery);
+                    document.getElementById('transit-count').textContent = transitSnap.size;
+
+                    const deliveredQuery = query(shipmentsRef, where('status', '==', 'delivered'));
+                    const deliveredSnap = await getDocs(deliveredQuery);
+                    document.getElementById('delivered-count').textContent = deliveredSnap.size;
+
+                    const inventorySnap = await getDocs(collection(db, 'inventory'));
+                    document.getElementById('inventory-count').textContent = inventorySnap.size;
+
+                    // Recent shipments (all)
+                    const recentQuery = query(shipmentsRef, orderBy('created_at', 'desc'), limit(5));
+                    const recentSnap = await getDocs(recentQuery);
+                    displayRecentShipments(recentSnap);
+
+                } else {
+                    // Regular users see only their shipments
+                    const pendingQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'pending'));
+                    const pendingSnap = await getDocs(pendingQuery);
+                    document.getElementById('pending-count').textContent = pendingSnap.size;
+
+                    const transitQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'in_transit'));
+                    const transitSnap = await getDocs(transitQuery);
+                    document.getElementById('transit-count').textContent = transitSnap.size;
+
+                    const deliveredQuery = query(shipmentsRef, where('user_id', '==', userId), where('status', '==', 'delivered'));
+                    const deliveredSnap = await getDocs(deliveredQuery);
+                    document.getElementById('delivered-count').textContent = deliveredSnap.size;
+
+                    const inventoryQuery = query(collection(db, 'inventory'), where('user_id', '==', userId));
+                    const inventorySnap = await getDocs(inventoryQuery);
+                    document.getElementById('inventory-count').textContent = inventorySnap.size;
+
+                    // Recent shipments (user's only)
+                    const recentQuery = query(shipmentsRef, where('user_id', '==', userId), orderBy('created_at', 'desc'), limit(5));
+                    const recentSnap = await getDocs(recentQuery);
+                    displayRecentShipments(recentSnap);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        function displayRecentShipments(snapshot) {
+            const tbody = document.getElementById('recent-shipments');
+            if (snapshot.size > 0) {
+                tbody.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const whId = data.warehouse || data.warehouseId || 'miami';
+                    const whLabel = whId === 'biloxi' ? '📍 Biloxi' : '📍 Miami';
+                    const whColor = whId === 'biloxi' ? '#8b5cf6' : '#14b8a6';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent);">${data.tracking_number || 'N/A'}</a></td>
+                        <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">${whLabel}</span></td>
+                        <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
+                        <td><span class="badge badge-${data.status}">${(data.status || 'unknown').replace('_', ' ')}</span></td>
+                        <td>${data.created_at ? new Date(data.created_at).toLocaleDateString() : 'N/A'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+    </script>
+    <script src="../js/column-prefs.js"></script>
+    <script src="../js/main.js?v=3"></script>
+</body>
+</html>

@@ -960,12 +960,16 @@
                         </p>
 
                         <!-- Upload Zone -->
-                        <div class="upload-zone" id="upload-zone">
+                        <div class="upload-zone" id="upload-zone"
+                             ondragover="handleDragOver(event)"
+                             ondragleave="handleDragLeave(event)"
+                             ondrop="handleDrop(event)"
+                             onclick="document.getElementById('file-input').click()">
                             <div class="upload-icon">📄</div>
                             <div class="upload-text">Drag & drop your BOL or Invoice here</div>
                             <div class="upload-hint">or click to browse — PDF, PNG, JPG (max 10MB)</div>
                         </div>
-                        <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg" style="display: none;">
+                        <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg" style="display: none;" onchange="handleFileSelect(event)">
 
                         <!-- Upload Preview -->
                         <div class="upload-preview" id="upload-preview">
@@ -974,7 +978,7 @@
                                 <div class="file-name" id="file-name">document.pdf</div>
                                 <div class="file-size" id="file-size">2.3 MB</div>
                             </div>
-                            <button type="button" class="file-remove" id="file-remove-btn">✕</button>
+                            <button type="button" class="file-remove" onclick="removeFile()">✕</button>
                         </div>
 
                         <!-- Document Type -->
@@ -982,7 +986,7 @@
                             <label>Document Type <span class="required">*</span></label>
                             <select id="doc-type" name="doc_type">
                                 <option value="bol">Bill of Lading (BOL)</option>
-                                <option value="commercial_invoice">Commercial Invoice</option>
+                                <option value="invoice">Invoice</option>
                                 <option value="packing_list">Packing List</option>
                                 <option value="other">Other</option>
                             </select>
@@ -1058,7 +1062,7 @@
 
                         <div class="step-actions">
                             <button type="button" class="btn-step btn-step-back" onclick="goToStep(3)">← Back</button>
-                            <button type="button" class="btn-step btn-step-submit" id="btn-submit">
+                            <button type="button" class="btn-step btn-step-submit" onclick="submitRequest()" id="btn-submit">
                                 ✓ Submit Request
                             </button>
                         </div>
@@ -1072,7 +1076,6 @@
     <!-- Firebase + Portal JS -->
     <script type="module">
         import { initFirebase, onAuthChange, signOutUser, getUserRole, isStaff, isAdmin, getSettings } from '../js/firebase.js';
-        import { MAX_INLINE_FILE_BYTES, buildDocumentMetadata, getInlineFileData, sanitizeStoragePathSegment } from '../js/shipments-portal-utils.mjs';
 
         // ============================================================
         // STATE
@@ -1082,9 +1085,7 @@
         let selectedServiceType = null;
         let palletCount = 1;
         let uploadedFile = null;
-        let uploadedFileDataUrl = null;
         let currentStep = 1;
-        const PICKUP_INLINE_LIMIT = MAX_INLINE_FILE_BYTES;
 
         // Pricing defaults (can be overridden by admin settings)
         let PRICING = {
@@ -1161,19 +1162,6 @@
                 await signOutUser();
                 window.location.href = '../login.html';
             });
-
-            const uploadZone = document.getElementById('upload-zone');
-            const fileInput = document.getElementById('file-input');
-            const fileRemoveBtn = document.getElementById('file-remove-btn');
-            const submitBtn = document.getElementById('btn-submit');
-
-            uploadZone?.addEventListener('click', () => fileInput?.click());
-            uploadZone?.addEventListener('dragover', handleDragOver);
-            uploadZone?.addEventListener('dragleave', handleDragLeave);
-            uploadZone?.addEventListener('drop', handleDrop);
-            fileInput?.addEventListener('change', handleFileSelect);
-            fileRemoveBtn?.addEventListener('click', removeFile);
-            submitBtn?.addEventListener('click', submitRequest);
         });
 
         // ============================================================
@@ -1362,83 +1350,6 @@
             if (files.length > 0) processFile(files[0]);
         }
 
-        function readFileAsDataUrl(file) {
-            if (!file) return Promise.resolve(null);
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
-                reader.onerror = () => reject(reader.error || new Error('Failed to read file'));
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function buildPickupStoragePath(userId, docType, fileName) {
-            const safeUserId = sanitizeStoragePathSegment(userId, 'user');
-            const safeDocType = sanitizeStoragePathSegment(docType || 'document', 'document');
-            const safeFileName = sanitizeStoragePathSegment(fileName || 'upload', 'file');
-            return `pickup_documents/${safeUserId}/${safeDocType}/${Date.now()}-${safeFileName}`;
-        }
-
-        async function uploadPickupDocumentToStorage({ file, userId, docType }) {
-            if (!file) return { url: null, storagePath: null, error: null };
-
-            try {
-                const { getStorage, ref, uploadBytes, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js');
-                const { app } = await initFirebase();
-                const storage = getStorage(app);
-                const storagePath = buildPickupStoragePath(userId, docType, file.name);
-                const fileRef = ref(storage, storagePath);
-
-                await uploadBytes(fileRef, file, {
-                    contentType: file.type || 'application/octet-stream',
-                    customMetadata: {
-                        user_id: userId || '',
-                        doc_type: docType || '',
-                        source: 'pickup_request'
-                    }
-                });
-
-                return {
-                    url: await getDownloadURL(fileRef),
-                    storagePath,
-                    error: null
-                };
-            } catch (error) {
-                console.warn('[Pickups] Storage upload failed:', error);
-                return { url: null, storagePath: null, error };
-            }
-        }
-
-        async function buildPickupDocument(file, docType) {
-            if (!file) return null;
-
-            const dataUrl = uploadedFileDataUrl || await readFileAsDataUrl(file);
-            const inlineData = getInlineFileData(file.size, dataUrl, PICKUP_INLINE_LIMIT);
-            const uploadResult = await uploadPickupDocumentToStorage({
-                file,
-                userId: currentUser?.uid || 'anonymous',
-                docType
-            });
-
-            if (uploadResult.error && !inlineData) {
-                throw new Error(`File upload is temporarily unavailable for files larger than ${Math.floor(PICKUP_INLINE_LIMIT / 1024)} KB. Please retry with a smaller file or contact support.`);
-            }
-
-            uploadedFileDataUrl = dataUrl;
-
-            return buildDocumentMetadata({
-                file,
-                uploadedAt: new Date().toISOString(),
-                url: uploadResult.url,
-                storagePath: uploadResult.storagePath,
-                inlineData,
-                extra: {
-                    type: docType || 'other',
-                    storage_error: uploadResult.error ? String(uploadResult.error.message || uploadResult.error) : undefined
-                }
-            });
-        }
-
         function processFile(file) {
             // Validate by MIME and extension (some clients send generic/empty MIME types)
             const normalizedType = (file.type || '').toLowerCase();
@@ -1457,7 +1368,6 @@
             }
 
             uploadedFile = file;
-            uploadedFileDataUrl = null;
 
             // Show preview
             const preview = document.getElementById('upload-preview');
@@ -1476,7 +1386,6 @@
 
         function removeFile() {
             uploadedFile = null;
-            uploadedFileDataUrl = null;
             document.getElementById('upload-preview').classList.remove('active');
             document.getElementById('upload-zone').style.display = '';
             document.getElementById('doc-type-group').style.display = 'none';
@@ -1543,9 +1452,25 @@
 
             try {
                 const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const { ref, uploadBytes, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js');
+                const { getStorage } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js');
                 const { db } = await initFirebase();
-                const documentType = document.getElementById('doc-type').value || 'other';
-                const persistedDocument = uploadedFile ? await buildPickupDocument(uploadedFile, documentType) : null;
+                const storage = getStorage();
+
+                let fileUrl = null;
+                let fileName = null;
+                let fileType = null;
+
+                // Upload file if present
+                if (uploadedFile) {
+                    const timestamp = Date.now();
+                    const storagePath = `pickup_documents/${currentUser.uid}/${timestamp}_${uploadedFile.name}`;
+                    const storageRef = ref(storage, storagePath);
+                    await uploadBytes(storageRef, uploadedFile);
+                    fileUrl = await getDownloadURL(storageRef);
+                    fileName = uploadedFile.name;
+                    fileType = document.getElementById('doc-type').value;
+                }
 
                 // Build request data
                 const total = calculatePrice(palletCount);
@@ -1576,7 +1501,11 @@
                         preferred_time: document.getElementById('preferred-time').value
                     },
                     special_instructions: document.getElementById('special-instructions').value || null,
-                    document: persistedDocument,
+                    document: fileUrl ? {
+                        url: fileUrl,
+                        name: fileName,
+                        type: fileType
+                    } : null,
                     status: 'pending',
                     admin_notes: null,
                     admin_price_override: null,
@@ -1691,7 +1620,6 @@
             selectedServiceType = null;
             palletCount = 1;
             uploadedFile = null;
-            uploadedFileDataUrl = null;
             currentStep = 1;
 
             document.querySelectorAll('.service-type-card').forEach(c => c.classList.remove('selected'));
@@ -1725,6 +1653,7 @@
         import '../js/portal.js';
     </script>
     <script src="../js/lang/es.js"></script>
+    <script src="../js/lang/pt-br.js"></script>
     <script src="../js/i18n.js"></script>
 </body>
 </html>

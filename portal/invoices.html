@@ -409,7 +409,9 @@
     <script src="https://js.stripe.com/v3/"></script>
 
     <script src="../js/column-prefs.js"></script>
+    <script src="../js/billing-engine.js"></script>
     <script src="../js/lang/es.js"></script>
+    <script src="../js/lang/pt-br.js"></script>
     <script src="../js/i18n.js"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -431,17 +433,14 @@
         const db = getFirestore(app);
 
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
-
-        // XSS prevention helper
-        function escapeHTML(str) {
-            if (str === null || str === undefined) return '';
-            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-        }
+        const BillingEngine = window.MA3PLBillingEngine;
 
         let customers = [];
         let pricingData = {};
+        let customerRateIndex = new Map();
         let currentInvoice = null;
         let lineItems = [];
+        let invoiceDraftSources = null;
 
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
@@ -514,9 +513,10 @@
         async function loadPricing() {
             const doc_ = await getDoc(doc(db, 'settings', 'pricing'));
             pricingData = doc_.exists() ? doc_.data() : {};
+            customerRateIndex = BillingEngine.buildCustomerRateIndex(pricingData);
         }
 
-        async function loadInvoices() {
+        window.loadInvoices = async function() {
             const customerId = document.getElementById('filter-customer').value;
             const status = document.getElementById('filter-status').value;
             const month = document.getElementById('filter-month').value;
@@ -559,12 +559,12 @@
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><strong>${escapeHTML(d.invoice_number)}</strong></td>
-                        <td>${escapeHTML(d.customer_name || 'Unknown')}</td>
-                        <td>${escapeHTML(d.billing_period_start)} to ${escapeHTML(d.billing_period_end)}</td>
+                        <td><strong>${d.invoice_number}</strong></td>
+                        <td>${d.customer_name || 'Unknown'}</td>
+                        <td>${d.billing_period_start} to ${d.billing_period_end}</td>
                         <td>$${d.total?.toFixed(2) || '0.00'}</td>
-                        <td><span class="badge badge-${escapeHTML(d.status)}">${escapeHTML(d.status?.toUpperCase())}</span></td>
-                        <td>${escapeHTML(d.due_date || '-')}</td>
+                        <td><span class="badge badge-${d.status}">${d.status.toUpperCase()}</span></td>
+                        <td>${d.due_date || '-'}</td>
                         <td class="actions-cell">
                             <button class="btn-sm btn-view" onclick="viewInvoice('${doc.id}')">View</button>
                             ${d.status === 'draft' ? `<button class="btn-sm btn-send" onclick="sendInvoiceById('${doc.id}')">Send</button>` : ''}
@@ -579,8 +579,7 @@
             document.getElementById('stat-pending').textContent = pendingCount;
             document.getElementById('stat-overdue').textContent = overdueCount;
             document.getElementById('stat-paid').textContent = '$' + paidThisMonth.toFixed(2);
-        }
-        window.loadInvoices = loadInvoices;
+        };
 
         function generateInvoiceNumber() {
             const now = new Date();
@@ -597,23 +596,145 @@
             document.getElementById('inv-due-date').value = dueDate.toISOString().split('T')[0];
         }
 
-        function openCreateModal() {
+        function getInvoiceSourceLabel(sourceType, count) {
+            const labels = {
+                activity_log: count === 1 ? 'activity entry' : 'activity entries',
+                storage_snapshot: count === 1 ? 'storage snapshot' : 'storage snapshots',
+                billable_event: count === 1 ? 'legacy event' : 'legacy events',
+                auto_shipment: count === 1 ? 'shipment charge' : 'shipment charges'
+            };
+            return `${count} ${labels[sourceType] || 'items'}`;
+        }
+
+        function getEntryDate(entry) {
+            return (entry.date || entry.created_at || '').split('T')[0] || '';
+        }
+
+        function isWithinPeriod(dateValue, periodStart, periodEnd) {
+            if (!dateValue) return true;
+            return dateValue >= periodStart && dateValue <= periodEnd;
+        }
+
+        async function buildInvoiceDraftSources(customerId, periodStart, periodEnd) {
+            const [activitySnap, storageSnap, eventsSnap, shipmentSnap] = await Promise.all([
+                getDocs(query(
+                    collection(db, 'activity_log'),
+                    where('customer_id', '==', customerId),
+                    where('billed', '==', false),
+                    where('date', '>=', periodStart),
+                    where('date', '<=', periodEnd),
+                    orderBy('date', 'asc')
+                )),
+                getDocs(query(
+                    collection(db, 'storage_snapshots'),
+                    where('customer_id', '==', customerId),
+                    where('date', '>=', periodStart),
+                    where('date', '<=', periodEnd)
+                )),
+                getDocs(query(
+                    collection(db, 'billable_events'),
+                    where('customer_id', '==', customerId),
+                    where('invoiced', '==', false)
+                )),
+                getDocs(query(
+                    collection(db, 'shipments'),
+                    where('user_id', '==', customerId),
+                    where('created_at', '>=', periodStart),
+                    where('created_at', '<=', periodEnd + 'T23:59:59'),
+                    orderBy('created_at', 'asc')
+                ))
+            ]);
+
+            const activityEntries = [];
+            const syncedShipmentIds = new Set();
+            activitySnap.forEach((activityDoc) => {
+                const activity = { id: activityDoc.id, ...activityDoc.data() };
+                activityEntries.push({
+                    ...activity,
+                    source_type: 'activity_log',
+                    source_id: activityDoc.id
+                });
+                if (activity.source_shipment_id) syncedShipmentIds.add(activity.source_shipment_id);
+            });
+
+            const storageSnapshots = [];
+            storageSnap.forEach((snapshotDoc) => {
+                storageSnapshots.push({ id: snapshotDoc.id, ...snapshotDoc.data() });
+            });
+            const storageEntries = BillingEngine.buildStorageSnapshotEntries(storageSnapshots, {
+                pricingData,
+                customerRateIndex,
+                customerId
+            });
+
+            const legacyEvents = [];
+            eventsSnap.forEach((eventDoc) => {
+                legacyEvents.push({ id: eventDoc.id, ...eventDoc.data() });
+            });
+            const legacyEventEntries = BillingEngine.buildBillableEventEntries(
+                legacyEvents.filter((event) => {
+                    if (event.shipment_id) return false;
+                    return isWithinPeriod(getEntryDate(event), periodStart, periodEnd);
+                })
+            );
+
+            const autoShipmentRefs = [];
+            const autoShipmentEntries = [];
+            shipmentSnap.forEach((shipmentDoc) => {
+                const shipment = { id: shipmentDoc.id, ...shipmentDoc.data() };
+                const status = shipment.billing_status || 'pending';
+                if (status === 'invoiced') return;
+                if (syncedShipmentIds.has(shipment.id)) return;
+
+                const customer = customers.find((row) => row.id === shipment.user_id);
+                const customerName = customer?.company_name || customer?.name || customer?.email || 'Unknown';
+                const shipmentEntries = BillingEngine.buildShipmentActivityEntries(shipment, {
+                    pricingData,
+                    customerRateIndex,
+                    customerName
+                }).map((entry) => ({
+                    ...entry,
+                    source_type: 'auto_shipment',
+                    source_id: `${shipment.id}:${entry.source_charge_key || entry.billing_item_id}`
+                }));
+
+                autoShipmentEntries.push(...shipmentEntries);
+                autoShipmentRefs.push({ shipment, entries: shipmentEntries });
+            });
+
+            const entries = [
+                ...activityEntries,
+                ...storageEntries,
+                ...legacyEventEntries,
+                ...autoShipmentEntries
+            ];
+
+            return {
+                entries,
+                lineItems: BillingEngine.groupInvoiceEntries(entries),
+                activityEntries,
+                storageEntries,
+                legacyEventEntries,
+                autoShipmentRefs
+            };
+        }
+
+        window.openCreateModal = function() {
             lineItems = [];
+            invoiceDraftSources = null;
             document.getElementById('line-items-container').innerHTML = '';
             generateInvoiceNumber();
             document.getElementById('inv-customer').value = '';
             document.getElementById('inv-notes').value = '';
             updateTotals();
             document.getElementById('create-modal').classList.add('show');
-        }
-        window.openCreateModal = openCreateModal;
+        };
 
-        function closeModal(id) {
+        window.closeModal = function(id) {
             document.getElementById(id).classList.remove('show');
-        }
-        window.closeModal = closeModal;
+        };
 
-        async function loadCustomerData() {
+        window.loadCustomerData = async function() {
             const customerId = document.getElementById('inv-customer').value;
             if (!customerId) return;
 
@@ -624,53 +745,11 @@
             lineItems = [];
             document.getElementById('line-items-container').innerHTML = '<p>Loading billable items...</p>';
 
-            // 1. Get storage snapshots for the period
             try {
-                const storageQuery = query(
-                    collection(db, 'storage_snapshots'),
-                    where('customer_id', '==', customerId),
-                    where('date', '>=', start),
-                    where('date', '<=', end)
-                );
-                const storageSnap = await getDocs(storageQuery);
-
-                let totalPalletDays = 0;
-                storageSnap.forEach(doc => {
-                    totalPalletDays += doc.data().pallet_count || 0;
-                });
-
-                if (totalPalletDays > 0) {
-                    const rate = pricingData?.storage?.palletDaily || 0.50;
-                    lineItems.push({
-                        category: 'storage',
-                        description: 'Pallet Storage',
-                        quantity: totalPalletDays,
-                        unit: 'pallet-days',
-                        rate: rate,
-                        amount: totalPalletDays * rate
-                    });
-                }
-
-                // 2. Get billable events
-                const eventsQuery = query(
-                    collection(db, 'billable_events'),
-                    where('customer_id', '==', customerId),
-                    where('invoiced', '==', false)
-                );
-                const eventsSnap = await getDocs(eventsQuery);
-
-                eventsSnap.forEach(doc => {
-                    const e = doc.data();
-                    lineItems.push({
-                        category: e.event_type,
-                        description: e.description,
-                        quantity: e.quantity,
-                        unit: e.unit,
-                        rate: e.rate,
-                        amount: e.quantity * e.rate,
-                        event_id: doc.id
-                    });
-                });
+                invoiceDraftSources = await buildInvoiceDraftSources(customerId, start, end);
+                lineItems = invoiceDraftSources.lineItems.map((item) => ({
+                    ...item
+                }));
 
                 renderLineItems();
                 updateTotals();
@@ -679,8 +758,7 @@
                 console.error(err);
                 document.getElementById('line-items-container').innerHTML = '<p style="color: red;">Error loading data</p>';
             }
-        }
-        window.loadCustomerData = loadCustomerData;
+        };
 
         window.calculateInvoice = loadCustomerData;
 
@@ -697,8 +775,8 @@
                 const div = document.createElement('div');
                 div.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr 80px 100px 100px 40px; gap: 8px; margin-bottom: 8px; align-items: center;';
                 div.innerHTML = `
-                    <input type="text" value="${escapeHTML(item.description)}" onchange="updateLineItem(${idx}, 'description', this.value)" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
-                    <input type="text" value="${escapeHTML(item.unit)}" onchange="updateLineItem(${idx}, 'unit', this.value)" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
+                    <input type="text" value="${item.description}" onchange="updateLineItem(${idx}, 'description', this.value)" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
+                    <input type="text" value="${item.unit}" onchange="updateLineItem(${idx}, 'unit', this.value)" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
                     <input type="number" value="${item.quantity}" onchange="updateLineItem(${idx}, 'quantity', parseFloat(this.value))" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
                     <input type="number" step="0.01" value="${item.rate}" onchange="updateLineItem(${idx}, 'rate', parseFloat(this.value))" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
                     <span style="font-weight: 600;">$${item.amount.toFixed(2)}</span>
@@ -708,24 +786,22 @@
             });
         }
 
-        function updateLineItem(idx, field, value) {
+        window.updateLineItem = function(idx, field, value) {
             lineItems[idx][field] = value;
             if (field === 'quantity' || field === 'rate') {
                 lineItems[idx].amount = lineItems[idx].quantity * lineItems[idx].rate;
             }
             renderLineItems();
             updateTotals();
-        }
-        window.updateLineItem = updateLineItem;
+        };
 
-        function removeLineItem(idx) {
+        window.removeLineItem = function(idx) {
             lineItems.splice(idx, 1);
             renderLineItems();
             updateTotals();
-        }
-        window.removeLineItem = removeLineItem;
+        };
 
-        function addLineItem() {
+        window.addLineItem = function() {
             lineItems.push({
                 category: 'custom',
                 description: 'Custom Service',
@@ -735,8 +811,7 @@
                 amount: 0
             });
             renderLineItems();
-        }
-        window.addLineItem = addLineItem;
+        };
 
         function updateTotals() {
             const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
@@ -754,16 +829,26 @@
             await saveInvoice('draft');
         });
 
-        async function saveAndSend() {
+        window.saveAndSend = async function() {
             await saveInvoice('sent');
-        }
-        window.saveAndSend = saveAndSend;
+        };
 
         async function saveInvoice(status) {
             const customerId = document.getElementById('inv-customer').value;
             const customer = customers.find(c => c.id === customerId);
 
             const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
+            const sourceCounts = invoiceDraftSources ? {
+                activityEntries: invoiceDraftSources.activityEntries.length,
+                storageEntries: invoiceDraftSources.storageEntries.length,
+                legacyEventEntries: invoiceDraftSources.legacyEventEntries.length,
+                autoShipmentEntries: invoiceDraftSources.autoShipmentRefs.reduce((sum, row) => sum + row.entries.length, 0)
+            } : {
+                activityEntries: 0,
+                storageEntries: 0,
+                legacyEventEntries: 0,
+                autoShipmentEntries: 0
+            };
 
             const invoice = {
                 invoice_number: document.getElementById('inv-number').value,
@@ -782,6 +867,10 @@
                 amount_paid: 0,
                 status: status,
                 notes: document.getElementById('inv-notes').value,
+                source: 'comprehensive_billing',
+                activity_count: sourceCounts.activityEntries + sourceCounts.autoShipmentEntries,
+                storage_snapshot_count: sourceCounts.storageEntries,
+                billable_event_count: sourceCounts.legacyEventEntries,
                 created_at: new Date().toISOString(),
                 created_by: auth.currentUser.uid
             };
@@ -793,33 +882,103 @@
             try {
                 const docRef = await addDoc(collection(db, 'invoices'), invoice);
 
-                // Mark billable events as invoiced
-                for (const item of lineItems) {
-                    if (item.event_id) {
-                        await updateDoc(doc(db, 'billable_events', item.event_id), {
+                if (invoiceDraftSources) {
+                    for (const activity of invoiceDraftSources.activityEntries) {
+                        await updateDoc(doc(db, 'activity_log', activity.id), {
+                            billed: true,
+                            invoice_id: docRef.id
+                        });
+                    }
+
+                    for (const snapshotEntry of invoiceDraftSources.storageEntries) {
+                        await updateDoc(doc(db, 'storage_snapshots', snapshotEntry.source_id), {
+                            billed: true,
+                            invoice_id: docRef.id
+                        });
+                    }
+
+                    for (const eventEntry of invoiceDraftSources.legacyEventEntries) {
+                        await updateDoc(doc(db, 'billable_events', eventEntry.source_id), {
                             invoiced: true,
                             invoice_id: docRef.id
                         });
+                    }
+
+                    const invoicedShipmentIds = new Set();
+                    for (const shipmentRef of invoiceDraftSources.autoShipmentRefs) {
+                        const createdIds = [];
+                        for (const entry of shipmentRef.entries) {
+                            const activityRef = await addDoc(collection(db, 'activity_log'), {
+                                ...entry,
+                                logged_by: auth.currentUser.uid,
+                                logged_by_name: auth.currentUser.email,
+                                logged_by_email: auth.currentUser.email,
+                                billed: true,
+                                invoice_id: docRef.id,
+                                created_at: new Date().toISOString()
+                            });
+                            createdIds.push(activityRef.id);
+                        }
+
+                        await updateDoc(doc(db, 'shipments', shipmentRef.shipment.id), {
+                            billing_status: 'invoiced',
+                            billing_invoice_id: docRef.id,
+                            billing_activity_ids: createdIds,
+                            billing_invoiced_at: new Date().toISOString()
+                        });
+                        invoicedShipmentIds.add(shipmentRef.shipment.id);
+                    }
+
+                    const sourcedShipmentIds = new Set(
+                        invoiceDraftSources.activityEntries
+                            .map((entry) => entry.source_shipment_id)
+                            .filter(Boolean)
+                    );
+                    for (const shipmentId of sourcedShipmentIds) {
+                        if (invoicedShipmentIds.has(shipmentId)) continue;
+                        await updateDoc(doc(db, 'shipments', shipmentId), {
+                            billing_status: 'invoiced',
+                            billing_invoice_id: docRef.id,
+                            billing_invoiced_at: new Date().toISOString()
+                        });
+                    }
+
+                    const allShipmentIds = new Set([
+                        ...Array.from(invoicedShipmentIds),
+                        ...Array.from(sourcedShipmentIds)
+                    ]);
+                    for (const shipmentId of allShipmentIds) {
+                        const relatedEventsSnap = await getDocs(query(
+                            collection(db, 'billable_events'),
+                            where('shipment_id', '==', shipmentId)
+                        ));
+                        for (const eventDoc of relatedEventsSnap.docs) {
+                            if (eventDoc.data().invoiced) continue;
+                            await updateDoc(eventDoc.ref, {
+                                invoiced: true,
+                                invoice_id: docRef.id
+                            });
+                        }
                     }
                 }
 
                 showToast('Invoice saved successfully!');
                 closeModal('create-modal');
+                invoiceDraftSources = null;
                 loadInvoices();
             } catch (err) {
                 showToast('Error: ' + err.message, 'error');
             }
         }
 
-        async function viewInvoice(invoiceId) {
+        window.viewInvoice = async function(invoiceId) {
             const docSnap = await getDoc(doc(db, 'invoices', invoiceId));
             if (!docSnap.exists()) return;
 
             currentInvoice = { id: invoiceId, ...docSnap.data() };
             renderInvoicePreview(currentInvoice);
             document.getElementById('view-modal').classList.add('show');
-        }
-        window.viewInvoice = viewInvoice;
+        };
 
         function renderInvoicePreview(inv) {
             const preview = document.getElementById('invoice-preview');
@@ -831,18 +990,18 @@
                     </div>
                     <div style="text-align: right;">
                         <h1 style="font-size: 2rem; color: var(--color-gray-800);">INVOICE</h1>
-                        <p><strong>${escapeHTML(inv.invoice_number)}</strong></p>
-                        <p>Date: ${escapeHTML(inv.created_at?.split('T')[0])}</p>
-                        <p>Due: ${escapeHTML(inv.due_date)}</p>
+                        <p><strong>${inv.invoice_number}</strong></p>
+                        <p>Date: ${inv.created_at?.split('T')[0]}</p>
+                        <p>Due: ${inv.due_date}</p>
                     </div>
                 </div>
                 <div style="margin-bottom: var(--spacing-lg);">
                     <strong>Bill To:</strong><br>
-                    ${escapeHTML(inv.customer_name)}<br>
-                    ${escapeHTML(inv.customer_email || '')}
+                    ${inv.customer_name}<br>
+                    ${inv.customer_email || ''}
                 </div>
                 <div style="margin-bottom: var(--spacing-md);">
-                    <strong>Billing Period:</strong> ${escapeHTML(inv.billing_period_start)} to ${escapeHTML(inv.billing_period_end)}
+                    <strong>Billing Period:</strong> ${inv.billing_period_start} to ${inv.billing_period_end}
                 </div>
                 <table class="line-items-table">
                     <thead>
@@ -857,9 +1016,9 @@
                     <tbody>
                         ${inv.line_items?.map(item => `
                             <tr>
-                                <td>${escapeHTML(item.description)}</td>
+                                <td>${item.description}</td>
                                 <td>${item.quantity}</td>
-                                <td>${escapeHTML(item.unit)}</td>
+                                <td>${item.unit}</td>
                                 <td>$${item.rate?.toFixed(2)}</td>
                                 <td>$${item.amount?.toFixed(2)}</td>
                             </tr>
@@ -873,7 +1032,7 @@
                     ${inv.amount_paid > 0 ? `<div class="row"><span>Paid:</span> <span>-$${inv.amount_paid?.toFixed(2)}</span></div>` : ''}
                     ${inv.amount_paid > 0 ? `<div class="row"><span>Balance:</span> <span>$${(inv.total - inv.amount_paid).toFixed(2)}</span></div>` : ''}
                 </div>
-                ${inv.notes ? `<div style="margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);"><strong>Notes:</strong><br>${escapeHTML(inv.notes)}</div>` : ''}
+                ${inv.notes ? `<div style="margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);"><strong>Notes:</strong><br>${inv.notes}</div>` : ''}
             `;
 
             // Update button states
@@ -881,7 +1040,7 @@
             document.getElementById('btn-mark-paid').style.display = (inv.status === 'sent' || inv.status === 'overdue') ? 'inline-block' : 'none';
         }
 
-        function printInvoice() {
+        window.printInvoice = function() {
             const content = document.getElementById('invoice-preview').innerHTML;
             const win = window.open('', '_blank');
             win.document.write(`
@@ -899,10 +1058,9 @@
             `);
             win.document.close();
             win.print();
-        }
-        window.printInvoice = printInvoice;
+        };
 
-        async function sendInvoice() {
+        window.sendInvoice = async function() {
             if (!currentInvoice) return;
             await updateDoc(doc(db, 'invoices', currentInvoice.id), {
                 status: 'sent',
@@ -911,20 +1069,18 @@
             showToast('Invoice sent!');
             closeModal('view-modal');
             loadInvoices();
-        }
-        window.sendInvoice = sendInvoice;
+        };
 
-        async function sendInvoiceById(id) {
+        window.sendInvoiceById = async function(id) {
             await updateDoc(doc(db, 'invoices', id), {
                 status: 'sent',
                 sent_at: new Date().toISOString()
             });
             showToast('Invoice sent!');
             loadInvoices();
-        }
-        window.sendInvoiceById = sendInvoiceById;
+        };
 
-        async function markAsPaid() {
+        window.markAsPaid = async function() {
             if (!currentInvoice) return;
             await updateDoc(doc(db, 'invoices', currentInvoice.id), {
                 status: 'paid',
@@ -934,10 +1090,9 @@
             showToast('Invoice marked as paid!');
             closeModal('view-modal');
             loadInvoices();
-        }
-        window.markAsPaid = markAsPaid;
+        };
 
-        async function markPaidById(id) {
+        window.markPaidById = async function(id) {
             const docSnap = await getDoc(doc(db, 'invoices', id));
             const data = docSnap.data();
             await updateDoc(doc(db, 'invoices', id), {
@@ -947,8 +1102,7 @@
             });
             showToast('Invoice marked as paid!');
             loadInvoices();
-        }
-        window.markPaidById = markPaidById;
+        };
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
             await signOut(auth);

@@ -78,9 +78,6 @@
             padding: var(--spacing-md);
             border-radius: var(--radius-md);
             text-align: center;
-            text-decoration: none;
-            color: inherit;
-            display: block;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
         }
@@ -263,36 +260,36 @@
                 <h2 id="admin-title" data-i18n="portal.dashboard.adminTitle">👑 Admin Dashboard</h2>
                 <p id="admin-subtitle" style="color: #92400e; margin-bottom: var(--spacing-sm);" data-i18n="portal.dashboard.adminSubtitle">You have full access to manage all customers and shipments.</p>
                 <div class="admin-grid">
-                    <a class="admin-card" href="customers.html">
+                    <div class="admin-card" onclick="location.href='#users'">
                         <div class="icon">👥</div>
                         <div class="count" id="total-users">0</div>
                         <div class="label" id="label-users" data-i18n="portal.dashboard.totalCustomers">Total Customers</div>
-                    </a>
-                    <a class="admin-card" href="admin-shipments.html">
+                    </div>
+                    <div class="admin-card" onclick="location.href='#shipments'">
                         <div class="icon" id="icon-shipments">📦</div>
                         <div class="count" id="total-shipments">0</div>
                         <div class="label" id="label-shipments" data-i18n="portal.dashboard.totalShipments">Total Shipments</div>
-                    </a>
-                    <a class="admin-card" href="inventory.html">
+                    </div>
+                    <div class="admin-card" onclick="location.href='#inventory'">
                         <div class="icon" id="icon-inventory">🏭</div>
                         <div class="count" id="total-inventory">0</div>
                         <div class="label" id="label-inventory" data-i18n="portal.dashboard.inventoryItems">Inventory Items</div>
-                    </a>
-                    <a class="admin-card" href="admin-pickups.html">
+                    </div>
+                    <div class="admin-card" onclick="location.href='admin-pickups.html'">
                         <div class="icon">🚛</div>
                         <div class="count" id="total-pickups">0</div>
                         <div class="label" data-i18n="portal.dashboard.pickupRequests">Pickup Requests</div>
-                    </a>
-                    <a class="admin-card" href="admin-shipments.html?status=pending">
+                    </div>
+                    <div class="admin-card" onclick="location.href='#pending'">
                         <div class="icon" id="icon-pending">⏳</div>
                         <div class="count" id="total-pending">0</div>
                         <div class="label" id="label-pending" data-i18n="portal.dashboard.pendingActions">Pending Actions</div>
-                    </a>
-                    <a class="admin-card" href="admin-panel.html?tab=leads" style="border: 2px solid #10b981;">
+                    </div>
+                    <div class="admin-card" onclick="location.href='#leads'" style="border: 2px solid #10b981;">
                         <div class="icon">🎯</div>
                         <div class="count" id="total-leads">0</div>
                         <div class="label">New Leads</div>
-                    </a>
+                    </div>
                 </div>
             </div>
 
@@ -472,6 +469,7 @@
 
     <!-- i18n -->
     <script src="../js/lang/es.js"></script>
+    <script src="../js/lang/pt-br.js"></script>
     <script src="../js/i18n.js"></script>
 
     <!-- Firebase SDK -->
@@ -479,7 +477,6 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, query, where, orderBy, limit, getDocs, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        import { escapeHtml, formatShipmentStatus, normalizeShipmentStatus } from '../js/shipments-portal-utils.mjs';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -514,22 +511,6 @@
         const db = getFirestore(app);
 
         let userRole = 'customer'; // customer, employee, admin
-
-        function setBadgeText(element, text, badgeText, badgeStyle = '') {
-            if (!element) return;
-            element.textContent = '';
-            element.append(document.createTextNode(String(text || '')));
-            const badge = document.createElement('span');
-            badge.className = 'admin-badge';
-            if (badgeStyle) badge.style.cssText = badgeStyle;
-            badge.textContent = badgeText;
-            element.append(' ', badge);
-        }
-
-        function normalizeBadgeKey(value, fallback = 'unknown') {
-            const normalized = normalizeShipmentStatus(value || fallback);
-            return normalized === 'unknown' ? fallback : normalized;
-        }
 
         // Check authentication
         let authChecked = false;
@@ -603,9 +584,9 @@
             const userNameEl = document.getElementById('user-name');
 
             if (isJorge && isAdmin) {
-                setBadgeText(welcomeTitle, `Welcome back, Jedi Master ${userName}! ⚔️`, 'SITH LORD');
+                welcomeTitle.innerHTML = `Welcome back, Jedi Master ${userName}! ⚔️ <span class="admin-badge">SITH LORD</span>`;
                 welcomeSubtitle.textContent = "The Force is strong with you. Your galactic logistics empire awaits.";
-                setBadgeText(userNameEl, userName, '🌟 JEDI');
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">🌟 JEDI</span>`;
 
                 const quoteEl = document.getElementById('jorge-quote');
                 quoteEl.textContent = JORGE_QUOTES[Math.floor(Math.random() * JORGE_QUOTES.length)];
@@ -614,7 +595,7 @@
                 document.getElementById('admin-section').style.display = 'block';
                 document.getElementById('employee-nav').style.display = 'block';
                 document.getElementById('admin-nav').style.display = 'block';
-                document.getElementById('admin-title').textContent = '⚔️ Galactic Command Center';
+                document.getElementById('admin-title').innerHTML = '⚔️ Galactic Command Center';
                 document.getElementById('admin-subtitle').textContent = 'Execute Order 66... or just manage some shipments. Your call, my lord.';
 
                 document.getElementById('label-users').textContent = 'Rebel Allies';
@@ -628,9 +609,9 @@
                 loadAdminStats();
                 loadAnalytics(true);
             } else if (isAdmin) {
-                setBadgeText(welcomeTitle, `Welcome back, ${userName}!`, 'ADMIN');
+                welcomeTitle.innerHTML = `Welcome back, ${userName}! <span class="admin-badge">ADMIN</span>`;
                 welcomeSubtitle.textContent = "You have full admin access to manage all customers and operations.";
-                setBadgeText(userNameEl, userName, 'ADMIN');
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
 
                 document.getElementById('admin-section').style.display = 'block';
                 document.getElementById('employee-nav').style.display = 'block';
@@ -639,9 +620,9 @@
                 loadAdminStats();
                 loadAnalytics(true);
             } else if (isEmployee) {
-                setBadgeText(welcomeTitle, `Welcome back, ${userName}!`, 'EMPLOYEE', 'background: linear-gradient(135deg, #3b82f6, #1d4ed8);');
+                welcomeTitle.innerHTML = `Welcome back, ${userName}! <span class="admin-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">EMPLOYEE</span>`;
                 welcomeSubtitle.textContent = "Ready to help our customers with their logistics needs.";
-                setBadgeText(userNameEl, userName, 'STAFF', 'background: linear-gradient(135deg, #3b82f6, #1d4ed8);');
+                userNameEl.innerHTML = `${userName} <span class="admin-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">STAFF</span>`;
 
                 document.getElementById('admin-section').style.display = 'block';
                 document.getElementById('employee-nav').style.display = 'block';
@@ -1009,14 +990,13 @@
                     const whId = data.warehouse || data.warehouseId || 'miami';
                     const whLabel = whId === 'biloxi' ? '📍 Biloxi' : '📍 Miami';
                     const whColor = whId === 'biloxi' ? '#8b5cf6' : '#14b8a6';
-                    const statusKey = normalizeBadgeKey(data.status);
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><a href="tracking.html?id=${encodeURIComponent(data.tracking_number || '')}" style="color: var(--color-accent);">${escapeHtml(data.tracking_number || 'N/A')}</a></td>
+                        <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent);">${data.tracking_number || 'N/A'}</a></td>
                         <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">${whLabel}</span></td>
-                        <td>${escapeHtml(data.destination?.city || 'N/A')}, ${escapeHtml(data.destination?.state || '')}</td>
-                        <td><span class="badge badge-${statusKey}">${escapeHtml(formatShipmentStatus(statusKey))}</span></td>
-                        <td>${escapeHtml(data.created_at ? new Date(data.created_at).toLocaleDateString() : 'N/A')}</td>
+                        <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
+                        <td><span class="badge badge-${data.status}">${(data.status || 'unknown').replace('_', ' ')}</span></td>
+                        <td>${data.created_at ? new Date(data.created_at).toLocaleDateString() : 'N/A'}</td>
                     `;
                     tbody.appendChild(row);
                 });

@@ -84,50 +84,69 @@
 </head>
 <body>
     <header class="header">
-        <nav class="nav container">
+        <nav class="nav container" role="navigation" aria-label="Main navigation">
             <a href="index.html" class="logo">
                 <img src="assets/logo.jpg" alt="Miami 3PL warehouse and fulfillment center logo - Miami Alliance 3PL" class="nav-logo-img" width="40" height="40">
                 <span class="logo-text">MIAMI ALLIANCE <span class="logo-accent">3PL</span></span>
             </a>
+            <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-nav-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="main-nav-menu" role="menubar">
+                <li role="none"><a href="index.html" class="nav-link" role="menuitem" data-i18n="nav.home">Home</a></li>
+                <li role="none"><a href="services.html" class="nav-link" role="menuitem" data-i18n="nav.services">Services</a></li>
+                <li role="none"><a href="quote.html" class="nav-link" role="menuitem" data-i18n="nav.quote">Instant Quote</a></li>
+                <li role="none"><a href="blog.html" class="nav-link" role="menuitem" data-i18n="nav.blog">Blog</a></li>
+                <li role="none"><a href="about.html" class="nav-link" role="menuitem" data-i18n="nav.about">About</a></li>
+                <li role="none"><a href="faq.html" class="nav-link" role="menuitem">FAQ</a></li>
+                <li role="none"><a href="contact.html" class="nav-link" role="menuitem" data-i18n="nav.contact">Contact</a></li>
+                <li role="none"><a href="login.html" class="nav-link btn btn-outline" role="menuitem" data-i18n="nav.portal">Customer Portal</a></li>
+            </ul>
         </nav>
     </header>
     <main id="main-content" class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
         <article>
-            <h1 style="text-align: center; margin-bottom: 2rem;">Amazon FBA Prep Services in Miami</h1>
+            <h1 style="text-align: center; margin-bottom: 2rem;" data-i18n="fbaprep.title">Amazon FBA Prep Services in Miami</h1>
 
-            <p>Selling on Amazon is a great way to grow your business, but preparing your products for FBA can be a major headache. That's where we come in. At Miami Alliance 3PL, we offer a full range of Amazon FBA prep services to help you save time and money.</p>
+            <p data-i18n="fbaprep.intro">Selling on Amazon is a great way to grow your business, but preparing your products for FBA can be a major headache. That's where we come in. At Miami Alliance 3PL, we offer a full range of Amazon FBA prep services to help you save time and money.</p>
 
-            <h2>Our FBA Prep Services Include:</h2>
+            <h2 data-i18n="fbaprep.services.title">Our FBA Prep Services Include:</h2>
             <ul>
-                <li><strong>FNSKU Labeling:</strong> We'll print and apply FNSKU labels to all of your products, ensuring they are compliant with Amazon's requirements.</li>
-                <li><strong>Poly Bagging:</strong> We can poly bag your products to protect them from dust and damage during transit.</li>
-                <li><strong>Bundling and Kitting:</strong> Want to sell your products as a bundle? We can create custom bundles and kits to your exact specifications.</li>
-                <li><strong>Inspection and Quality Control:</strong> We'll inspect your products for damage and ensure they meet Amazon's quality standards.</li>
-                <li><strong>Same-Day Shipping to Amazon Fulfillment Centers:</strong> Our Miami warehouse is strategically located to provide fast and cost-effective shipping to Amazon fulfillment centers across the country.</li>
+                <li data-i18n-html="fbaprep.services.fnsku"><strong>FNSKU Labeling:</strong> We'll print and apply FNSKU labels to all of your products, ensuring they are compliant with Amazon's requirements.</li>
+                <li data-i18n-html="fbaprep.services.polybag"><strong>Poly Bagging:</strong> We can poly bag your products to protect them from dust and damage during transit.</li>
+                <li data-i18n-html="fbaprep.services.bundling"><strong>Bundling and Kitting:</strong> Want to sell your products as a bundle? We can create custom bundles and kits to your exact specifications.</li>
+                <li data-i18n-html="fbaprep.services.inspection"><strong>Inspection and Quality Control:</strong> We'll inspect your products for damage and ensure they meet Amazon's quality standards.</li>
+                <li data-i18n-html="fbaprep.services.shipping"><strong>Same-Day Shipping to Amazon Fulfillment Centers:</strong> Our Miami warehouse is strategically located to provide fast and cost-effective shipping to Amazon fulfillment centers across the country.</li>
             </ul>
 
-            <h2>Why Choose Miami Alliance 3PL for FBA Prep?</h2>
+            <h2 data-i18n="fbaprep.why.title">Why Choose Miami Alliance 3PL for FBA Prep?</h2>
             <ul>
-                <li><strong>Local Expertise:</strong> We're based in Miami and have extensive experience working with local Amazon sellers.</li>
-                <li><strong>Fast Turnaround Times:</strong> We can typically prep and ship your products within 24-48 hours of receiving them.</li>
-                <li><strong>Transparent Pricing:</strong> Our FBA prep services are affordably priced, with no hidden fees.</li>
-                <li><strong>Flexible Solutions:</strong> We can create a custom prep plan that's tailored to your specific needs.</li>
+                <li data-i18n-html="fbaprep.why.expertise"><strong>Local Expertise:</strong> We're based in Miami and have extensive experience working with local Amazon sellers.</li>
+                <li data-i18n-html="fbaprep.why.turnaround"><strong>Fast Turnaround Times:</strong> We can typically prep and ship your products within 24-48 hours of receiving them.</li>
+                <li data-i18n-html="fbaprep.why.pricing"><strong>Transparent Pricing:</strong> Our FBA prep services are affordably priced, with no hidden fees.</li>
+                <li data-i18n-html="fbaprep.why.flexible"><strong>Flexible Solutions:</strong> We can create a custom prep plan that's tailored to your specific needs.</li>
             </ul>
 
-            <h2>Get Started Today</h2>
-            <p>Ready to streamline your FBA prep process? Contact us today for a free quote. We'll help you save time and money so you can focus on what you do best: growing your Amazon business.</p>
+            <h2 data-i18n="fbaprep.cta.title">Get Started Today</h2>
+            <p data-i18n="fbaprep.cta.text">Ready to streamline your FBA prep process? Contact us today for a free quote. We'll help you save time and money so you can focus on what you do best: growing your Amazon business.</p>
 
             <div style="text-align: center; margin-top: 3rem;">
-                <a href="quote.html" class="btn btn-primary btn-large">Get a Free Quote for FBA Prep</a>
+                <a href="quote.html" class="btn btn-primary btn-large" data-i18n="fbaprep.cta.button">Get a Free Quote for FBA Prep</a>
             </div>
         </article>
     </main>
     <footer class="footer">
         <div class="container">
             <div class="footer-bottom">
-                <p>&copy; 2026 Miami Alliance 3PL. All rights reserved.</p>
+                <p data-i18n-html="footer.copyright">&copy; 2026 Miami Alliance 3PL. All rights reserved.</p>
             </div>
         </div>
     </footer>
+    <script src="js/main.js" defer></script>
+    <script src="js/lang/es.js"></script>
+    <script src="js/lang/pt-br.js"></script>
+    <script src="js/i18n.js"></script>
 </body>
 </html>

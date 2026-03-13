@@ -1815,7 +1815,6 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc, updateDoc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        import { escapeHtml, pickDocumentSource } from '../js/shipments-portal-utils.mjs';
 
         // ============================================================
         // FIREBASE CONFIGURATION
@@ -2512,26 +2511,15 @@
                     <div class="panel-doc-left">
                         <span class="panel-doc-icon">${d.icon}</span>
                         <div>
-                            <div class="panel-doc-name">${escapeHtml(d.label)}</div>
-                            <div class="panel-doc-size">${escapeHtml(d.data.filename || 'Unknown file')} &middot; ${escapeHtml(formatDocSize(d.data.file_size))}</div>
+                            <div class="panel-doc-name">${d.label}</div>
+                            <div class="panel-doc-size">${d.data.filename || 'Unknown file'} &middot; ${formatDocSize(d.data.file_size)}</div>
                         </div>
                     </div>
                     <div class="panel-doc-actions">
-                        <button
-                            class="panel-doc-btn view"
-                            data-doc-action="view"
-                            data-shipment-id="${escapeHtml(shipment.id)}"
-                            data-doc-type="${escapeHtml(d.type)}"
-                        >View</button>
+                        <button class="panel-doc-btn view" onclick="viewDocument('${shipment.id}', '${d.type}')">View</button>
                     </div>
                 </div>
             `).join('');
-
-            container.querySelectorAll('[data-doc-action="view"]').forEach((button) => {
-                button.addEventListener('click', () => {
-                    viewDocument(button.dataset.shipmentId, button.dataset.docType);
-                });
-            });
         }
 
         // ============================================================
@@ -2721,7 +2709,7 @@
 
             const meta = docTypeLabels[docType] || { label: docType, icon: '📎', cssClass: '' };
             let docData = null;
-            let archiveDoc = null;
+            let fileData = null;
 
             if (docType === 'bol') docData = shipment.bol_document;
             else if (docType === 'packing_list') docData = shipment.packing_list;
@@ -2738,21 +2726,15 @@
                 if (docType === 'bol') {
                     docsQuery = query(collection(db, 'bol_documents'), where('shipment_id', '==', shipmentId));
                 } else {
-                    docsQuery = query(collection(db, 'shipment_documents'), where('shipment_id', '==', shipmentId));
+                    docsQuery = query(collection(db, 'shipment_documents'), where('shipment_id', '==', shipmentId), where('doc_type', '==', docType));
                 }
                 const snap = await getDocs(docsQuery);
                 if (!snap.empty) {
-                    archiveDoc = snap.docs
-                        .map((entry) => entry.data())
-                        .find((entry) => docType === 'bol' || entry.doc_type === docType) || null;
+                    fileData = snap.docs[0].data().file_data || null;
                 }
             } catch (e) {
                 console.warn('Could not load file data:', e.message);
             }
-
-            const docSource = pickDocumentSource(archiveDoc, docData);
-            const resolvedFileType = archiveDoc?.file_type || docData.file_type || '';
-            const resolvedFilename = archiveDoc?.filename || docData.filename || 'document';
 
             // Build viewer header
             const title = document.getElementById('doc-viewer-title');
@@ -2762,55 +2744,51 @@
             const body = document.getElementById('doc-viewer-body');
             let previewHtml = '';
 
-            if (docSource) {
-                const isImage = resolvedFileType.startsWith('image/');
-                const isPdf = resolvedFileType === 'application/pdf';
-                const safeDocSource = escapeHtml(docSource);
+            if (fileData) {
+                const isImage = docData.file_type?.startsWith('image/');
+                const isPdf = docData.file_type === 'application/pdf';
 
                 if (isImage) {
-                    previewHtml = `<img src="${safeDocSource}" alt="${escapeHtml(resolvedFilename)}" />`;
+                    previewHtml = `<img src="${fileData}" alt="${docData.filename}" />`;
                 } else if (isPdf) {
-                    previewHtml = `<iframe src="${safeDocSource}" title="${escapeHtml(resolvedFilename)}"></iframe>`;
+                    previewHtml = `<iframe src="${fileData}" title="${docData.filename}"></iframe>`;
                 } else {
                     previewHtml = `
                         <div class="doc-viewer-no-preview">
                             <div class="icon">${meta.icon}</div>
-                            <p><strong>${escapeHtml(resolvedFilename)}</strong></p>
+                            <p><strong>${docData.filename}</strong></p>
                             <p>Preview not available for this file type.</p>
-                            <button class="doc-download-btn" data-doc-download="true">Download File</button>
+                            <button class="doc-download-btn" onclick="downloadDoc('${fileData}', '${docData.filename}')">Download File</button>
                         </div>
                     `;
                 }
                 if (isImage || isPdf) {
-                    previewHtml += `<button class="doc-download-btn" data-doc-download="true">Download ${escapeHtml(resolvedFilename)}</button>`;
+                    previewHtml += `<button class="doc-download-btn" onclick="downloadDoc('${fileData}', '${docData.filename}')">Download ${docData.filename}</button>`;
                 }
             } else {
                 previewHtml = `
                     <div class="doc-viewer-no-preview">
                         <div class="icon">${meta.icon}</div>
-                        <p><strong>${escapeHtml(resolvedFilename)}</strong></p>
-                        <p>Document file is unavailable. Metadata only.</p>
+                        <p><strong>${docData.filename}</strong></p>
+                        <p>File data not stored (file was larger than 1MB). Metadata only.</p>
                     </div>
                 `;
             }
 
             previewHtml += `
                 <div class="doc-viewer-info">
-                    <div class="doc-info-item"><span class="label">Filename: </span><span class="value">${escapeHtml(resolvedFilename || '--')}</span></div>
-                    <div class="doc-info-item"><span class="label">Type: </span><span class="value">${escapeHtml(resolvedFileType || '--')}</span></div>
-                    <div class="doc-info-item"><span class="label">Size: </span><span class="value">${formatDocSize(archiveDoc?.file_size || docData.file_size)}</span></div>
-                    <div class="doc-info-item"><span class="label">Uploaded: </span><span class="value">${(archiveDoc?.uploaded_at || docData.uploaded_at) ? new Date(archiveDoc?.uploaded_at || docData.uploaded_at).toLocaleString() : '--'}</span></div>
-                    ${docData.bol_number ? `<div class="doc-info-item"><span class="label">BOL #: </span><span class="value">${escapeHtml(docData.bol_number)}</span></div>` : ''}
-                    ${docData.carrier ? `<div class="doc-info-item"><span class="label">Carrier: </span><span class="value">${escapeHtml(docData.carrier)}</span></div>` : ''}
-                    ${docData.po_number ? `<div class="doc-info-item"><span class="label">PO #: </span><span class="value">${escapeHtml(docData.po_number)}</span></div>` : ''}
-                    ${docData.external_tracking ? `<div class="doc-info-item"><span class="label">Tracking: </span><span class="value">${escapeHtml(docData.external_tracking)}</span></div>` : ''}
+                    <div class="doc-info-item"><span class="label">Filename: </span><span class="value">${docData.filename || '--'}</span></div>
+                    <div class="doc-info-item"><span class="label">Type: </span><span class="value">${docData.file_type || '--'}</span></div>
+                    <div class="doc-info-item"><span class="label">Size: </span><span class="value">${formatDocSize(docData.file_size)}</span></div>
+                    <div class="doc-info-item"><span class="label">Uploaded: </span><span class="value">${docData.uploaded_at ? new Date(docData.uploaded_at).toLocaleString() : '--'}</span></div>
+                    ${docData.bol_number ? `<div class="doc-info-item"><span class="label">BOL #: </span><span class="value">${docData.bol_number}</span></div>` : ''}
+                    ${docData.carrier ? `<div class="doc-info-item"><span class="label">Carrier: </span><span class="value">${docData.carrier}</span></div>` : ''}
+                    ${docData.po_number ? `<div class="doc-info-item"><span class="label">PO #: </span><span class="value">${docData.po_number}</span></div>` : ''}
+                    ${docData.external_tracking ? `<div class="doc-info-item"><span class="label">Tracking: </span><span class="value">${docData.external_tracking}</span></div>` : ''}
                 </div>
             `;
 
             body.innerHTML = previewHtml;
-            body.querySelectorAll('[data-doc-download="true"]').forEach((button) => {
-                button.addEventListener('click', () => downloadDoc(docSource, resolvedFilename));
-            });
             document.getElementById('doc-viewer-overlay').classList.add('active');
         };
 
@@ -2826,15 +2804,9 @@
         });
 
         window.downloadDoc = function(dataUrl, filename) {
-            const safeSource = pickDocumentSource(dataUrl);
-            if (!safeSource) {
-                showToast('Unsafe or invalid document link.', 'warning');
-                return;
-            }
             const a = document.createElement('a');
-            a.href = safeSource;
+            a.href = dataUrl;
             a.download = filename || 'document';
-            a.rel = 'noopener noreferrer';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -2908,6 +2880,7 @@
     </script>
     <script src="../js/main.js"></script>
     <script src="../js/lang/es.js"></script>
+    <script src="../js/lang/pt-br.js"></script>
     <script src="../js/i18n.js"></script>
 </body>
 </html>

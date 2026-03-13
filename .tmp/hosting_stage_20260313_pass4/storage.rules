@@ -1,0 +1,38 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function userDocPath(uid) {
+      return /databases/(default)/documents/users/$(uid);
+    }
+
+    function myRole() {
+      return isAuthenticated() && firestore.exists(userDocPath(request.auth.uid))
+        ? firestore.get(userDocPath(request.auth.uid)).data.role
+        : null;
+    }
+
+    function isBootstrapAdmin() {
+      return isAuthenticated() && request.auth.token.email in [
+        'ceo@usglatam.com',
+        'yuri@megalopolisms.com',
+        'admin@miamialliance3pl.com'
+      ];
+    }
+
+    function isStaff() {
+      return isBootstrapAdmin() || myRole() in ['admin', 'employee'];
+    }
+
+    match /shipment_uploads/{userId}/{allPaths=**} {
+      allow read, write: if isAuthenticated() && (request.auth.uid == userId || isStaff());
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

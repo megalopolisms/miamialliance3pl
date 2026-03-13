@@ -1,0 +1,1115 @@
+(function (global) {
+  "use strict";
+
+  var QuoteEngine = global.MA3PLQuoteEngine || null;
+  var BASE_PRICING = QuoteEngine
+    ? QuoteEngine.PRICING
+    : {
+        dimensionalFactor: 139,
+        storagePerCubicFtDay: 0.025,
+        handlingFee: 3.5,
+        pickAndPack: 1.25,
+        palletStoragePerDay: 0.75,
+        palletHandling: 15.0,
+        palletPickPack: 5.0,
+        blackWrapping: 7.0,
+        storageDays: 30,
+        minStorage: 5.0,
+        shippingZones: {
+          local: 0.45,
+          regional: 0.65,
+          national: 0.85,
+          none: 0,
+          dropship: 0,
+        },
+        dropShipRates: {
+          envelope: 1.5,
+          small: 3.0,
+          medium: 5.0,
+          large: 20.0,
+        },
+        fbaPrep: {
+          fnskuLabeling: { rate: 0.3, label: "FNSKU Labeling", unit: "unit" },
+          polyBagging: { rate: 0.5, label: "Poly Bagging", unit: "unit" },
+          bubbleWrapping: {
+            rate: 1.0,
+            label: "Bubble Wrapping",
+            unit: "unit",
+          },
+          bundling: { rate: 2.0, label: "Bundling / Kitting", unit: "bundle" },
+          boxLabels: { rate: 3.0, label: "Box Content Labels", unit: "box" },
+          inspectionQC: { rate: 0.15, label: "Inspection & QC", unit: "unit" },
+        },
+      };
+
+  var BILLING_ITEMS = Object.freeze({
+    storage: {
+      label: "Storage",
+      defaultUnit: "pallet-days",
+      icon: "🏭",
+      ratePath: "storage.palletDaily",
+      fallbackRate: 0.75,
+      quoteKey: "storage",
+      calculatorItem: true,
+    },
+    handling: {
+      label: "Handling",
+      defaultUnit: "orders",
+      icon: "📥",
+      ratePath: "handling.receiving",
+      fallbackRate: 15.0,
+      quoteKey: "handling",
+      calculatorItem: true,
+    },
+    pick_pack: {
+      label: "Pick & Pack",
+      defaultUnit: "orders",
+      icon: "📋",
+      ratePath: "handling.pickpack",
+      fallbackRate: 8.0,
+      quoteKey: "pick_pack",
+      calculatorItem: true,
+    },
+    shipping: {
+      label: "Shipping / Outbound",
+      defaultUnit: "shipments",
+      icon: "🚚",
+      ratePath: null,
+      fallbackRate: 45.0,
+      quoteKey: "shipping",
+      calculatorItem: true,
+    },
+    wrapping: {
+      label: "Black Wrapping",
+      defaultUnit: "pallets",
+      icon: "⬛",
+      ratePath: "handling.wrapping",
+      fallbackRate: 7.0,
+      quoteKey: "wrapping",
+      calculatorItem: true,
+    },
+    dropship: {
+      label: "Drop Ship (Units)",
+      defaultUnit: "units",
+      icon: "📬",
+      ratePath: null,
+      fallbackRate: 0,
+      quoteKey: "dropship",
+      calculatorItem: true,
+    },
+    receiving: {
+      label: "Receiving / Intake",
+      defaultUnit: "pallets",
+      icon: "📥",
+      ratePath: "handling.receiving",
+      fallbackRate: 15.0,
+      quoteKey: "handling",
+      calculatorItem: false,
+    },
+    labeling: {
+      label: "Labeling",
+      defaultUnit: "items",
+      icon: "🏷️",
+      ratePath: "handling.labeling",
+      fallbackRate: 0.15,
+      quoteKey: "handling",
+      calculatorItem: false,
+    },
+    palletizing: {
+      label: "Palletizing",
+      defaultUnit: "pallets",
+      icon: "📦",
+      ratePath: "handling.palletizing",
+      fallbackRate: 10.0,
+      quoteKey: "handling",
+      calculatorItem: false,
+    },
+    unloading: {
+      label: "Unloading",
+      defaultUnit: "hours",
+      icon: "⬇️",
+      ratePath: "handling.unloading",
+      fallbackRate: 45.0,
+      quoteKey: "handling",
+      calculatorItem: false,
+    },
+    loading: {
+      label: "Loading",
+      defaultUnit: "hours",
+      icon: "⬆️",
+      ratePath: "handling.loading",
+      fallbackRate: 45.0,
+      quoteKey: "handling",
+      calculatorItem: false,
+    },
+    kitting: {
+      label: "Kitting / Assembly",
+      defaultUnit: "kits",
+      icon: "🔧",
+      ratePath: "additional.kitting",
+      fallbackRate: 5.0,
+      quoteKey: "extra",
+      calculatorItem: false,
+    },
+    returns: {
+      label: "Returns Processing",
+      defaultUnit: "items",
+      icon: "🔄",
+      ratePath: "additional.returns",
+      fallbackRate: 2.0,
+      quoteKey: "extra",
+      calculatorItem: false,
+    },
+    rush: {
+      label: "Rush Handling",
+      defaultUnit: "orders",
+      icon: "⚡",
+      ratePath: "additional.rush",
+      fallbackRate: 25.0,
+      quoteKey: "extra",
+      calculatorItem: false,
+    },
+    pickup_delivery: {
+      label: "Pickup / Delivery",
+      defaultUnit: "trips",
+      icon: "🚛",
+      ratePath: null,
+      fallbackRate: 120.0,
+      quoteKey: "extra",
+      calculatorItem: false,
+    },
+    container_drayage: {
+      label: "Container Drayage",
+      defaultUnit: "containers",
+      icon: "🚢",
+      ratePath: null,
+      fallbackRate: 250.0,
+      quoteKey: "extra",
+      calculatorItem: false,
+    },
+    custom: {
+      label: "Custom Service",
+      defaultUnit: "units",
+      icon: "✏️",
+      ratePath: null,
+      fallbackRate: 0,
+      quoteKey: "extra",
+      calculatorItem: false,
+    },
+  });
+
+  var QUOTE_KEYS = Object.freeze([
+    "storage",
+    "handling",
+    "pick_pack",
+    "shipping",
+    "wrapping",
+    "dropship",
+  ]);
+
+  function parseFiniteNumber(value) {
+    var parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function toNumber(value, fallback) {
+    var parsed = parseFiniteNumber(value);
+    return parsed === null ? fallback : parsed;
+  }
+
+  function roundCurrency(value) {
+    return Math.round(toNumber(value, 0) * 100) / 100;
+  }
+
+  function roundQuantity(value) {
+    return Math.round(toNumber(value, 0) * 10000) / 10000;
+  }
+
+  function getNestedValue(obj, path) {
+    if (!obj || !path) return undefined;
+    return path.split(".").reduce(function (acc, key) {
+      return acc && acc[key] !== undefined ? acc[key] : undefined;
+    }, obj);
+  }
+
+  function normalizeServiceKey(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+
+  function mapServiceToItem(serviceValue) {
+    var key = normalizeServiceKey(serviceValue);
+    var directMap = {
+      storage: "storage",
+      pallet_storage_daily: "storage",
+      pallet_storage: "storage",
+      receiving: "receiving",
+      handling: "handling",
+      pick_and_pack: "pick_pack",
+      pick_pack: "pick_pack",
+      shipping: "shipping",
+      outbound_shipping: "shipping",
+      wrapping: "wrapping",
+      black_wrapping: "wrapping",
+      drop_ship: "dropship",
+      dropship: "dropship",
+      labeling: "labeling",
+      palletizing: "palletizing",
+      unloading: "unloading",
+      loading: "loading",
+      kitting: "kitting",
+      returns_processing: "returns",
+      returns: "returns",
+      rush_handling: "rush",
+      pickup_delivery: "pickup_delivery",
+      container_drayage: "container_drayage",
+      custom_service: "custom",
+    };
+
+    if (directMap[key]) return directMap[key];
+    if (key.indexOf("pick") !== -1 && key.indexOf("pack") !== -1) {
+      return "pick_pack";
+    }
+    if (key.indexOf("drop") !== -1 && key.indexOf("ship") !== -1) {
+      return "dropship";
+    }
+    if (key.indexOf("wrap") !== -1) return "wrapping";
+    if (key.indexOf("receiv") !== -1) return "receiving";
+    if (key.indexOf("storag") !== -1) return "storage";
+    return null;
+  }
+
+  function buildCustomerRateIndex(pricingData) {
+    var index = new Map();
+    var rates = Array.isArray(pricingData && pricingData.customerRates)
+      ? pricingData.customerRates
+      : [];
+
+    rates.forEach(function (row) {
+      var customerId = row && row.customerId;
+      var itemKey = mapServiceToItem(row && row.service);
+      var rate = parseFiniteNumber(row && row.rate);
+
+      if (!customerId || !itemKey || rate === null) return;
+
+      if (!index.has(customerId)) {
+        index.set(customerId, new Map());
+      }
+
+      var customerMap = index.get(customerId);
+      var entry = {
+        rate: rate,
+        unit: String((row && row.unit) || "").trim(),
+        sourceService: (row && row.service) || itemKey,
+      };
+
+      customerMap.set(itemKey, entry);
+
+      var quoteKey = BILLING_ITEMS[itemKey] && BILLING_ITEMS[itemKey].quoteKey;
+      if (quoteKey && quoteKey !== "extra" && !customerMap.has(quoteKey)) {
+        customerMap.set(quoteKey, entry);
+      }
+    });
+
+    return index;
+  }
+
+  function resolveCustomerRate(customerRateIndex, customerId, activityType) {
+    if (!customerRateIndex || !customerId || !activityType) return null;
+    var customerMap = customerRateIndex.get(customerId);
+    if (!customerMap) return null;
+
+    if (customerMap.has(activityType)) {
+      return customerMap.get(activityType);
+    }
+
+    var quoteKey = getQuoteCategory(activityType);
+    if (quoteKey && quoteKey !== "extra" && customerMap.has(quoteKey)) {
+      return customerMap.get(quoteKey);
+    }
+
+    return null;
+  }
+
+  function getRateMeta(pricingData, customerRateIndex, activityType, customerId) {
+    var item = BILLING_ITEMS[activityType];
+    if (!item) {
+      return { rate: 0, source: "unknown", path: null, customerRate: null };
+    }
+
+    var customerRate = resolveCustomerRate(
+      customerRateIndex,
+      customerId,
+      activityType,
+    );
+    if (customerRate) {
+      return {
+        rate: toNumber(customerRate.rate, 0),
+        source: "customer",
+        path: null,
+        customerRate: customerRate,
+      };
+    }
+
+    if (item.ratePath) {
+      var value = getNestedValue(pricingData, item.ratePath);
+      if (parseFiniteNumber(value) !== null) {
+        return {
+          rate: toNumber(value, 0),
+          source: "pricing",
+          path: item.ratePath,
+          customerRate: null,
+        };
+      }
+    }
+
+    return {
+      rate: toNumber(item.fallbackRate, 0),
+      source: "fallback",
+      path: item.ratePath || null,
+      customerRate: null,
+    };
+  }
+
+  function getQuoteCategory(activityType) {
+    return (BILLING_ITEMS[activityType] && BILLING_ITEMS[activityType].quoteKey) || "extra";
+  }
+
+  function getActivityLabel(activityType) {
+    return (BILLING_ITEMS[activityType] && BILLING_ITEMS[activityType].label) || activityType;
+  }
+
+  function getActivityIcon(activityType) {
+    return (BILLING_ITEMS[activityType] && BILLING_ITEMS[activityType].icon) || "📝";
+  }
+
+  function getQuoteCategoryLabel(quoteKey) {
+    var labels = {
+      storage: "Storage",
+      handling: "Handling",
+      pick_pack: "Pick & Pack",
+      shipping: "Shipping",
+      wrapping: "Black Wrapping",
+      dropship: "Drop Ship",
+      extra: "Extra / Unquoted",
+    };
+    return labels[quoteKey] || quoteKey;
+  }
+
+  function getCubicFeetFromPackage(pkg) {
+    if (!pkg) return 0;
+    if (parseFiniteNumber(pkg.cubic_ft) !== null) {
+      return toNumber(pkg.cubic_ft, 0);
+    }
+    var length = toNumber(pkg.length, 0);
+    var width = toNumber(pkg.width, 0);
+    var height = toNumber(pkg.height, 0);
+    if (length > 0 && width > 0 && height > 0) {
+      return (length * width * height) / 1728;
+    }
+    return 0;
+  }
+
+  function getBillableWeightFromPackage(pkg) {
+    if (!pkg) return 0;
+    if (parseFiniteNumber(pkg.billable_weight) !== null) {
+      return toNumber(pkg.billable_weight, 0);
+    }
+
+    var weight = toNumber(pkg.weight, 0);
+    var length = toNumber(pkg.length, 0);
+    var width = toNumber(pkg.width, 0);
+    var height = toNumber(pkg.height, 0);
+    var dimWeight =
+      length > 0 && width > 0 && height > 0
+        ? (length * width * height) / BASE_PRICING.dimensionalFactor
+        : 0;
+
+    return Math.max(weight, dimWeight);
+  }
+
+  function getQuoteAmount(shipment, key) {
+    var quote = (shipment && shipment.quote_estimate) || {};
+    if (key === "pick_pack") {
+      return toNumber(quote.pick_pack, toNumber(quote.pickPack, 0));
+    }
+    return toNumber(quote[key], 0);
+  }
+
+  function normalizeLineOverride(rawOverride, legacyRate) {
+    var overrideObject =
+      rawOverride && typeof rawOverride === "object" && !Array.isArray(rawOverride)
+        ? rawOverride
+        : {};
+    var overrideRate =
+      parseFiniteNumber(overrideObject.rate) !== null
+        ? toNumber(overrideObject.rate, 0)
+        : parseFiniteNumber(rawOverride) !== null
+          ? toNumber(rawOverride, 0)
+          : parseFiniteNumber(legacyRate) !== null
+            ? toNumber(legacyRate, 0)
+            : null;
+    var overrideAmount =
+      parseFiniteNumber(overrideObject.amount) !== null
+        ? toNumber(overrideObject.amount, 0)
+        : null;
+
+    return {
+      rate: overrideRate,
+      amount: overrideAmount,
+      note: String(overrideObject.note || "").trim(),
+    };
+  }
+
+  function getShipmentOverrides(shipment) {
+    var detailOverrides =
+      shipment && shipment.billing_override_detail
+        ? shipment.billing_override_detail
+        : {};
+    var legacyOverrides =
+      shipment && shipment.billing_override ? shipment.billing_override : {};
+    var keys = {};
+    Object.keys(detailOverrides).forEach(function (key) {
+      keys[key] = true;
+    });
+    Object.keys(legacyOverrides).forEach(function (key) {
+      keys[key] = true;
+    });
+
+    var overrides = {};
+    Object.keys(keys).forEach(function (key) {
+      overrides[key] = normalizeLineOverride(detailOverrides[key], legacyOverrides[key]);
+    });
+    return overrides;
+  }
+
+  function getStorageFallbackRate(pkgType, pricingData, rateMeta) {
+    if (pkgType === "pallet") {
+      return toNumber(rateMeta && rateMeta.rate, BASE_PRICING.palletStoragePerDay);
+    }
+
+    var monthlyRate = getNestedValue(pricingData, "storage.cubicFoot");
+    if (parseFiniteNumber(monthlyRate) !== null && toNumber(monthlyRate, 0) > 0) {
+      return toNumber(monthlyRate, 0) / 30;
+    }
+
+    return BASE_PRICING.storagePerCubicFtDay;
+  }
+
+  function getBoxStorageMinimum(pricingData) {
+    var minMonthly = getNestedValue(pricingData, "storage.minMonthly");
+    if (parseFiniteNumber(minMonthly) !== null) {
+      return toNumber(minMonthly, BASE_PRICING.minStorage);
+    }
+    return BASE_PRICING.minStorage;
+  }
+
+  function getShippingRate(zone) {
+    var safeZone = zone || "regional";
+    if (BASE_PRICING.shippingZones[safeZone] !== undefined) {
+      return BASE_PRICING.shippingZones[safeZone];
+    }
+    return BASE_PRICING.shippingZones.regional;
+  }
+
+  function getDropshipUnits(dropShipQty) {
+    var sizes = dropShipQty || {};
+    return (
+      toNumber(sizes.envelope, 0) +
+      toNumber(sizes.small, 0) +
+      toNumber(sizes.medium, 0) +
+      toNumber(sizes.large, 0)
+    );
+  }
+
+  function buildFbaPrepDetail(shipment) {
+    var fbaPrep = shipment && shipment.fba_prep;
+    var services = (fbaPrep && fbaPrep.services) || {};
+    var parts = [];
+    var totalQty = 0;
+
+    Object.keys(services).forEach(function (key) {
+      var service = services[key] || {};
+      var qty = toNumber(service.qty, 0);
+      if (qty <= 0) return;
+
+      totalQty += qty;
+      var catalog = BASE_PRICING.fbaPrep[key] || {};
+      parts.push((catalog.label || key) + ": " + qty);
+    });
+
+    return {
+      detail: parts.length ? parts.join(" • ") : "Amazon FBA preparation",
+      quantity: totalQty || 1,
+      unit: totalQty ? "service units" : "service bundle",
+    };
+  }
+
+  function buildShipmentCharges(shipment, options) {
+    var pricingData = (options && options.pricingData) || {};
+    var customerRateIndex =
+      (options && options.customerRateIndex) || buildCustomerRateIndex(pricingData);
+    var customerId =
+      (options && options.customerId) || shipment.user_id || shipment.customer_id || null;
+    var pkg = shipment.package || {};
+    var quote = shipment.quote_estimate || {};
+    var pkgType = pkg.type === "pallet" ? "pallet" : "box";
+    var qty = Math.max(toNumber(pkg.quantity, 1), 1);
+    var storageDays = Math.max(
+      toNumber(quote.storage_days, BASE_PRICING.storageDays),
+      1,
+    );
+    var cubicFt = getCubicFeetFromPackage(pkg);
+    var billableWeight = getBillableWeightFromPackage(pkg);
+    var zone = shipment.shipping_zone || "regional";
+    var dropShipQty = shipment.dropship_qty || {};
+    var overrides = (options && options.overrides) || getShipmentOverrides(shipment);
+    var charges = [];
+
+    function addCharge(config) {
+      if (!config) return;
+      config.quantity = roundQuantity(config.quantity);
+      config.rate = roundQuantity(config.rate);
+      config.amount = roundCurrency(config.amount);
+      config.quoteAmount = roundCurrency(config.quoteAmount);
+      charges.push(config);
+    }
+
+    (function addStorageCharge() {
+      var quoteAmount = getQuoteAmount(shipment, "storage");
+      var rateMeta = getRateMeta(pricingData, customerRateIndex, "storage", customerId);
+      var quantity = pkgType === "pallet" ? qty * storageDays : cubicFt * qty * storageDays;
+      var unit = pkgType === "pallet" ? "pallet-days" : "cubic-ft-days";
+      var override = overrides.storage || normalizeLineOverride();
+      var baseRate =
+        quantity > 0 && quoteAmount > 0
+          ? quoteAmount / quantity
+          : getStorageFallbackRate(pkgType, pricingData, rateMeta);
+      var rate = override.rate !== null ? override.rate : baseRate;
+      var amount;
+
+      if (override.amount !== null) {
+        amount = override.amount;
+      } else if (override.rate !== null || quoteAmount <= 0) {
+        amount = quantity * rate;
+        if (pkgType !== "pallet") {
+          amount = Math.max(amount, getBoxStorageMinimum(pricingData));
+        }
+      } else {
+        amount = quoteAmount;
+      }
+
+      if (override.amount !== null && quantity > 0 && override.rate === null) {
+        rate = amount / quantity;
+      }
+
+      addCharge({
+        key: "storage",
+        billingItemKey: "storage",
+        label: "Storage",
+        quantity: quantity,
+        unit: unit,
+        rate: rate,
+        amount: amount,
+        quoteAmount: quoteAmount,
+        rateMeta: rateMeta,
+        override: override,
+        detail:
+          pkgType === "pallet"
+            ? qty +
+              " pallet(s) x " +
+              storageDays +
+              " days x $" +
+              roundQuantity(rate).toFixed(2) +
+              "/day"
+            : cubicFt.toFixed(2) +
+              " cf x " +
+              storageDays +
+              " days x $" +
+              roundQuantity(rate).toFixed(3) +
+              "/cf/day x " +
+              qty,
+      });
+    })();
+
+    (function addHandlingCharge() {
+      var quoteAmount = getQuoteAmount(shipment, "handling");
+      var rateMeta = getRateMeta(pricingData, customerRateIndex, "handling", customerId);
+      var override = overrides.handling || normalizeLineOverride();
+      var quantity = qty;
+      var unit = pkgType === "pallet" ? "pallets" : "units";
+      var baseRate =
+        quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
+      var rate = override.rate !== null ? override.rate : baseRate;
+      var amount =
+        override.amount !== null
+          ? override.amount
+          : override.rate !== null || quoteAmount <= 0
+            ? quantity * rate
+            : quoteAmount;
+
+      if (override.amount !== null && quantity > 0 && override.rate === null) {
+        rate = amount / quantity;
+      }
+
+      addCharge({
+        key: "handling",
+        billingItemKey: "handling",
+        label: "Handling / Receiving",
+        quantity: quantity,
+        unit: unit,
+        rate: rate,
+        amount: amount,
+        quoteAmount: quoteAmount,
+        rateMeta: rateMeta,
+        override: override,
+        detail: quantity + " " + unit + " x $" + roundQuantity(rate).toFixed(2),
+      });
+    })();
+
+    (function addPickPackCharge() {
+      var quoteAmount = getQuoteAmount(shipment, "pick_pack");
+      var rateMeta = getRateMeta(pricingData, customerRateIndex, "pick_pack", customerId);
+      var override = overrides.pick_pack || normalizeLineOverride();
+      var quantity = qty;
+      var unit = pkgType === "pallet" ? "pallets" : "items";
+      var baseRate =
+        quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
+      var rate = override.rate !== null ? override.rate : baseRate;
+      var amount =
+        override.amount !== null
+          ? override.amount
+          : override.rate !== null || quoteAmount <= 0
+            ? quantity * rate
+            : quoteAmount;
+
+      if (override.amount !== null && quantity > 0 && override.rate === null) {
+        rate = amount / quantity;
+      }
+
+      addCharge({
+        key: "pick_pack",
+        billingItemKey: "pick_pack",
+        label: "Pick & Pack",
+        quantity: quantity,
+        unit: unit,
+        rate: rate,
+        amount: amount,
+        quoteAmount: quoteAmount,
+        rateMeta: rateMeta,
+        override: override,
+        detail: quantity + " " + unit + " x $" + roundQuantity(rate).toFixed(2),
+      });
+    })();
+
+    if (zone !== "none" && zone !== "dropship") {
+      (function addShippingCharge() {
+        var quoteAmount = getQuoteAmount(shipment, "shipping");
+        var rateMeta = getRateMeta(pricingData, customerRateIndex, "shipping", customerId);
+        var override = overrides.shipping || normalizeLineOverride();
+        var quantity = Math.max(roundQuantity(billableWeight * qty), 1);
+        var unit = "lb";
+        var baseRate =
+          quantity > 0 && quoteAmount > 0
+            ? quoteAmount / quantity
+            : getShippingRate(zone);
+        var rate = override.rate !== null ? override.rate : baseRate;
+        var amount =
+          override.amount !== null
+            ? override.amount
+            : override.rate !== null || quoteAmount <= 0
+              ? quantity * rate
+              : quoteAmount;
+
+        if (override.amount !== null && quantity > 0 && override.rate === null) {
+          rate = amount / quantity;
+        }
+
+        addCharge({
+          key: "shipping",
+          billingItemKey: "shipping",
+          label: "Shipping",
+          quantity: quantity,
+          unit: unit,
+          rate: rate,
+          amount: amount,
+          quoteAmount: quoteAmount,
+          rateMeta: rateMeta,
+          override: override,
+          detail:
+            zone +
+            " zone, " +
+            billableWeight.toFixed(1) +
+            " billable lbs x " +
+            qty,
+        });
+      })();
+    }
+
+    if (zone === "dropship") {
+      (function addDropshipCharge() {
+        var quoteAmount = getQuoteAmount(shipment, "dropship");
+        var rateMeta = getRateMeta(pricingData, customerRateIndex, "dropship", customerId);
+        var override = overrides.dropship || normalizeLineOverride();
+        var quantity = Math.max(getDropshipUnits(dropShipQty), 1);
+        var unit = "units";
+        var baseRate;
+        var amount;
+
+        if (quoteAmount > 0) {
+          baseRate = quoteAmount / quantity;
+          amount = quoteAmount;
+        } else {
+          baseRate = 0;
+          amount =
+            toNumber(dropShipQty.envelope, 0) * BASE_PRICING.dropShipRates.envelope +
+            toNumber(dropShipQty.small, 0) * BASE_PRICING.dropShipRates.small +
+            toNumber(dropShipQty.medium, 0) * BASE_PRICING.dropShipRates.medium +
+            toNumber(dropShipQty.large, 0) * BASE_PRICING.dropShipRates.large;
+          if (amount > 0 && quantity > 0) {
+            baseRate = amount / quantity;
+          }
+        }
+
+        var rate = override.rate !== null ? override.rate : baseRate;
+        if (override.amount !== null) {
+          amount = override.amount;
+        } else if (override.rate !== null || quoteAmount <= 0) {
+          amount = quantity * rate;
+        }
+
+        if (override.amount !== null && quantity > 0 && override.rate === null) {
+          rate = amount / quantity;
+        }
+
+        addCharge({
+          key: "dropship",
+          billingItemKey: "dropship",
+          label: "Drop Ship",
+          quantity: quantity,
+          unit: unit,
+          rate: rate,
+          amount: amount,
+          quoteAmount: quoteAmount,
+          rateMeta: rateMeta,
+          override: override,
+          detail:
+            "Env:" +
+            toNumber(dropShipQty.envelope, 0) +
+            " Sm:" +
+            toNumber(dropShipQty.small, 0) +
+            " Md:" +
+            toNumber(dropShipQty.medium, 0) +
+            " Lg:" +
+            toNumber(dropShipQty.large, 0),
+        });
+      })();
+    }
+
+    if (shipment.black_wrapping) {
+      (function addWrappingCharge() {
+        var quoteAmount = getQuoteAmount(shipment, "wrapping");
+        var rateMeta = getRateMeta(pricingData, customerRateIndex, "wrapping", customerId);
+        var override = overrides.wrapping || normalizeLineOverride();
+        var quantity = qty;
+        var unit = "pallets";
+        var baseRate =
+          quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
+        var rate = override.rate !== null ? override.rate : baseRate;
+        var amount =
+          override.amount !== null
+            ? override.amount
+            : override.rate !== null || quoteAmount <= 0
+              ? quantity * rate
+              : quoteAmount;
+
+        if (override.amount !== null && quantity > 0 && override.rate === null) {
+          rate = amount / quantity;
+        }
+
+        addCharge({
+          key: "wrapping",
+          billingItemKey: "wrapping",
+          label: "Black Wrapping",
+          quantity: quantity,
+          unit: unit,
+          rate: rate,
+          amount: amount,
+          quoteAmount: quoteAmount,
+          rateMeta: rateMeta,
+          override: override,
+          detail: quantity + " " + unit + " x $" + roundQuantity(rate).toFixed(2),
+        });
+      })();
+    }
+
+    if (shipment.fba_prep || getQuoteAmount(shipment, "fba_prep") > 0) {
+      (function addFbaPrepCharge() {
+        var quoteAmount = getQuoteAmount(shipment, "fba_prep");
+        var rateMeta = getRateMeta(pricingData, customerRateIndex, "custom", customerId);
+        var override = overrides.fba_prep || normalizeLineOverride();
+        var fbaDetail = buildFbaPrepDetail(shipment);
+        var quantity = fbaDetail.quantity;
+        var unit = fbaDetail.unit;
+        var baseRate =
+          quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : quoteAmount || 0;
+        var rate = override.rate !== null ? override.rate : baseRate;
+        var amount =
+          override.amount !== null
+            ? override.amount
+            : override.rate !== null || quoteAmount <= 0
+              ? quantity * rate
+              : quoteAmount;
+
+        if (override.amount !== null && quantity > 0 && override.rate === null) {
+          rate = amount / quantity;
+        }
+
+        if (amount > 0 || override.amount !== null || override.rate !== null) {
+          addCharge({
+            key: "fba_prep",
+            billingItemKey: "custom",
+            label: "FBA Prep Services",
+            quantity: quantity,
+            unit: unit,
+            rate: rate,
+            amount: amount,
+            quoteAmount: quoteAmount,
+            rateMeta: rateMeta,
+            override: override,
+            detail: fbaDetail.detail,
+          });
+        }
+      })();
+    }
+
+    return charges.filter(function (charge) {
+      return charge.amount > 0 || charge.override.amount !== null || charge.override.rate !== null;
+    });
+  }
+
+  function getOriginalShipmentTotal(shipment) {
+    var quote = (shipment && shipment.quote_estimate) || {};
+    return roundCurrency(
+      toNumber(quote.total, 0) ||
+        (toNumber(quote.storage, 0) +
+          toNumber(quote.handling, 0) +
+          toNumber(quote.pick_pack, toNumber(quote.pickPack, 0)) +
+          toNumber(quote.shipping, 0) +
+          toNumber(quote.wrapping, 0) +
+          toNumber(quote.dropship, 0) +
+          toNumber(quote.fba_prep, 0)),
+    );
+  }
+
+  function buildShipmentActivityEntries(shipment, options) {
+    var charges = buildShipmentCharges(shipment, options);
+    var tracking = shipment.tracking_number || shipment.id || "shipment";
+    var customerName =
+      (options && options.customerName) ||
+      shipment.customer_name ||
+      shipment.user_name ||
+      "Unknown";
+    var createdAt =
+      (shipment.created_at && String(shipment.created_at)) || new Date().toISOString();
+    var baseDate = createdAt.split("T")[0];
+
+    return charges.map(function (charge) {
+      var itemKey = charge.billingItemKey || charge.key;
+      var rateSource = "quote";
+      if (charge.override.amount !== null) {
+        rateSource = "manual_amount_override";
+      } else if (charge.override.rate !== null) {
+        rateSource = "manual_rate_override";
+      } else if (charge.quoteAmount > 0) {
+        rateSource = "shipment_quote";
+      } else if (charge.rateMeta && charge.rateMeta.source) {
+        rateSource = charge.rateMeta.source;
+      }
+
+      return {
+        customer_id: shipment.user_id || shipment.customer_id || null,
+        customer_name: customerName,
+        warehouse: shipment.warehouse || "miami",
+        date: baseDate,
+        activity_type: itemKey,
+        billing_item_id: itemKey,
+        billing_item_label: charge.label,
+        quote_category: getQuoteCategory(itemKey),
+        calculator_item: Boolean(BILLING_ITEMS[itemKey] && BILLING_ITEMS[itemKey].calculatorItem),
+        description: charge.label + " - Shipment " + tracking,
+        quantity: charge.quantity,
+        unit: charge.unit,
+        rate: charge.rate,
+        amount: charge.amount,
+        rate_source: rateSource,
+        pricing_rate_path: charge.rateMeta ? charge.rateMeta.path || null : null,
+        pricing_rate_default: charge.rateMeta ? toNumber(charge.rateMeta.rate, 0) : 0,
+        customer_rate_applied: Boolean(
+          charge.rateMeta && charge.rateMeta.source === "customer",
+        ),
+        reference: tracking,
+        notes: charge.override.note
+          ? "Shipment " + tracking + " - " + charge.override.note
+          : "Shipment-derived billing entry",
+        source_shipment_id: shipment.id || null,
+        source_shipment_tracking: tracking,
+        source_charge_key: charge.key,
+        quote_amount: charge.quoteAmount,
+        override_note: charge.override.note || "",
+        billed: false,
+        invoice_id: null,
+        created_at: new Date().toISOString(),
+      };
+    });
+  }
+
+  function buildStorageSnapshotEntries(snapshots, options) {
+    var pricingData = (options && options.pricingData) || {};
+    var customerRateIndex =
+      (options && options.customerRateIndex) || buildCustomerRateIndex(pricingData);
+    var customerId = options && options.customerId;
+    var rateMeta = getRateMeta(pricingData, customerRateIndex, "storage", customerId);
+    var rate = toNumber(rateMeta.rate, BASE_PRICING.palletStoragePerDay);
+
+    return (snapshots || [])
+      .filter(function (snapshot) {
+        return !snapshot.billed && !snapshot.invoiced && toNumber(snapshot.pallet_count, 0) > 0;
+      })
+      .map(function (snapshot) {
+        var quantity = toNumber(snapshot.pallet_count, 0);
+        return {
+          source_type: "storage_snapshot",
+          source_id: snapshot.id,
+          customer_id: snapshot.customer_id || customerId,
+          date: snapshot.date,
+          activity_type: "storage",
+          billing_item_id: "storage",
+          billing_item_label: getActivityLabel("storage"),
+          quote_category: "storage",
+          description: "Storage Snapshot - " + snapshot.date,
+          quantity: quantity,
+          unit: "pallet-days",
+          rate: rate,
+          amount: roundCurrency(quantity * rate),
+          rate_source: rateMeta.source,
+          pricing_rate_path: rateMeta.path || null,
+          pricing_rate_default: rate,
+          customer_rate_applied: rateMeta.source === "customer",
+          reference: snapshot.date,
+          notes: snapshot.notes || "",
+          billed: false,
+        };
+      });
+  }
+
+  function buildBillableEventEntries(events) {
+    return (events || [])
+      .filter(function (event) {
+        return !event.invoiced;
+      })
+      .map(function (event) {
+        var amount =
+          parseFiniteNumber(event.amount) !== null
+            ? toNumber(event.amount, 0)
+            : toNumber(event.quantity, 0) * toNumber(event.rate, 0);
+        var itemKey = event.billing_item_id || event.event_type || "custom";
+        return {
+          source_type: "billable_event",
+          source_id: event.id,
+          customer_id: event.customer_id,
+          date:
+            (event.created_at && String(event.created_at).split("T")[0]) ||
+            event.date ||
+            null,
+          activity_type: itemKey,
+          billing_item_id: itemKey,
+          billing_item_label: getActivityLabel(itemKey),
+          quote_category: getQuoteCategory(itemKey),
+          description: event.description || getActivityLabel(itemKey),
+          quantity: toNumber(event.quantity, 0),
+          unit: event.unit || (BILLING_ITEMS[itemKey] && BILLING_ITEMS[itemKey].defaultUnit) || "units",
+          rate: toNumber(event.rate, 0),
+          amount: roundCurrency(amount),
+          reference: event.shipment_id || "",
+          notes: event.notes || "",
+          billed: false,
+        };
+      });
+  }
+
+  function groupInvoiceEntries(entries) {
+    var grouped = {};
+
+    (entries || []).forEach(function (entry) {
+      var itemKey = entry.billing_item_id || entry.activity_type || "custom";
+      var key = [
+        itemKey,
+        entry.description || getActivityLabel(itemKey),
+        entry.unit || "",
+        roundQuantity(entry.rate).toFixed(6),
+      ].join("|");
+
+      if (!grouped[key]) {
+        grouped[key] = {
+          category: entry.quote_category || getQuoteCategory(itemKey),
+          billing_item_id: itemKey,
+          description: entry.description || getActivityLabel(itemKey),
+          unit: entry.unit || "units",
+          rate: roundQuantity(entry.rate),
+          quantity: 0,
+          amount: 0,
+          entry_count: 0,
+          source_refs: [],
+        };
+      }
+
+      grouped[key].quantity += toNumber(entry.quantity, 0);
+      grouped[key].amount += toNumber(entry.amount, 0);
+      grouped[key].entry_count += 1;
+      grouped[key].source_refs.push({
+        type: entry.source_type || "activity_log",
+        id: entry.source_id || entry.id || null,
+      });
+    });
+
+    return Object.keys(grouped)
+      .map(function (key) {
+        var row = grouped[key];
+        row.quantity = roundQuantity(row.quantity);
+        row.amount = roundCurrency(row.amount);
+        return row;
+      })
+      .sort(function (a, b) {
+        return b.amount - a.amount;
+      });
+  }
+
+  global.MA3PLBillingEngine = {
+    BASE_PRICING: BASE_PRICING,
+    BILLING_ITEMS: BILLING_ITEMS,
+    QUOTE_KEYS: QUOTE_KEYS,
+    normalizeServiceKey: normalizeServiceKey,
+    mapServiceToItem: mapServiceToItem,
+    buildCustomerRateIndex: buildCustomerRateIndex,
+    resolveCustomerRate: resolveCustomerRate,
+    getRateMeta: getRateMeta,
+    getQuoteCategory: getQuoteCategory,
+    getActivityLabel: getActivityLabel,
+    getActivityIcon: getActivityIcon,
+    getQuoteCategoryLabel: getQuoteCategoryLabel,
+    getShipmentOverrides: getShipmentOverrides,
+    buildShipmentCharges: buildShipmentCharges,
+    getOriginalShipmentTotal: getOriginalShipmentTotal,
+    buildShipmentActivityEntries: buildShipmentActivityEntries,
+    buildStorageSnapshotEntries: buildStorageSnapshotEntries,
+    buildBillableEventEntries: buildBillableEventEntries,
+    groupInvoiceEntries: groupInvoiceEntries,
+    roundCurrency: roundCurrency,
+    roundQuantity: roundQuantity,
+  };
+})(window);

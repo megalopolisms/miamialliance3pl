@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Contact Miami Alliance 3PL | Best Miami 3PL - Free Warehouse Quote</title>
     <meta name="description" content="Contact Miami Alliance 3PL, the best Miami 3PL provider, for warehousing, fulfillment, and logistics services. Request a free custom quote or speak with our team. 8780 NW 100th ST, Medley, FL 33178.">
-    <meta name="keywords" content="contact Miami 3PL, Miami 3PL contact, best Miami 3PL quote, logistics quote Miami, warehousing quote Florida, 3PL pricing Miami, warehouse services quote, fulfillment quote Miami, Miami 3PL phone number, Miami 3PL near me, 3PL warehouse Medley FL">
+    <meta name="keywords" content="contact Miami 3PL, Miami 3PL contact, best Miami 3PL quote, logistics quote Miami, warehousing quote Florida, 3PL pricing Miami, warehouse services quote, fulfillment quote Miami, Miami 3PL phone number, Miami 3PL near me, 3PL warehouse Medley FL, free 3PL consultation Miami, 3PL onboarding quote, climate controlled warehouse quote Miami, fulfillment pricing no minimums">
     <meta name="author" content="Miami Alliance 3PL">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://miamialliance3pl.com/contact.html">
@@ -374,22 +374,19 @@
     <script src="js/main.js" defer></script>
     <script src="js/lead-capture.js"></script>
     <script>
-        var contactFirebaseConfig = {
-            apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
-            authDomain: "miamialliance3pl.firebaseapp.com",
-            projectId: "miamialliance3pl",
-            storageBucket: "miamialliance3pl.firebasestorage.app",
-            messagingSenderId: "657614666588",
-            appId: "1:657614666588:web:20e50484fe5d90b5aa5f99"
-        };
-        var contactQuoteRequestSaverPromise = null;
-
-        function showContactToast(message, background) {
+        // Contact form submission handler
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Track in GA4
+            if (window.MA3PLAnalytics) {
+                MA3PLAnalytics.trackFormSubmit('contact_form', true);
+            }
+            // Show success toast instead of alert()
             var toast = document.createElement('div');
             toast.setAttribute('role', 'status');
             toast.setAttribute('aria-live', 'polite');
-            toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:' + background + ';color:white;padding:16px 24px;border-radius:12px;font-weight:500;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.15);opacity:0;transform:translateY(12px);transition:opacity 0.3s,transform 0.3s;max-width:360px;';
-            toast.textContent = message;
+            toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#10b981;color:white;padding:16px 24px;border-radius:12px;font-weight:500;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.15);opacity:0;transform:translateY(12px);transition:opacity 0.3s,transform 0.3s;max-width:360px;';
+            toast.textContent = 'Thank you for your message! We will get back to you within 24 hours.';
             document.body.appendChild(toast);
             requestAnimationFrame(function() {
                 toast.style.opacity = '1';
@@ -400,79 +397,11 @@
                 toast.style.transform = 'translateY(12px)';
                 setTimeout(function() { toast.remove(); }, 300);
             }, 4000);
-        }
-
-        async function saveContactQuoteRequest(formData) {
-            if (!contactQuoteRequestSaverPromise) {
-                contactQuoteRequestSaverPromise = Promise.all([
-                    import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js'),
-                    import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js')
-                ]).then(function(modules) {
-                    var appModule = modules[0];
-                    var firestoreModule = modules[1];
-                    var app = appModule.getApps().length ? appModule.getApp() : appModule.initializeApp(contactFirebaseConfig);
-                    var db = firestoreModule.getFirestore(app);
-
-                    return function saveRequest(data) {
-                        return firestoreModule.addDoc(firestoreModule.collection(db, 'quote_requests'), data);
-                    };
-                });
-            }
-
-            var saveRequest = await contactQuoteRequestSaverPromise;
-            return saveRequest(formData);
-        }
-
-        // Contact form submission handler
-        document.getElementById('contact-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            var form = this;
-            var submitBtn = form.querySelector('button[type="submit"]');
-            var originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Sending...';
-            submitBtn.disabled = true;
-
-            // Collect form data
-            var formData = {
-                name: form.querySelector('#name')?.value || '',
-                email: form.querySelector('#email')?.value || '',
-                phone: form.querySelector('#phone')?.value || '',
-                company: form.querySelector('#company')?.value || '',
-                service: form.querySelector('#service')?.value || '',
-                volume: form.querySelector('#volume')?.value || '',
-                message: form.querySelector('#message')?.value || '',
-                source: 'contact_form',
-                created_at: new Date().toISOString(),
-                status: 'new'
-            };
-
-            var submitted = false;
-
-            try {
-                await saveContactQuoteRequest(formData);
-                submitted = true;
-            } catch (err) {
-                console.error('Firestore save failed:', err);
-                if (window.MA3PLAnalytics) {
-                    MA3PLAnalytics.trackFormSubmit('contact_form', false);
-                }
-                showContactToast('We could not submit your request. Please try again or call us at (786) 873-8819.', '#ef4444');
-            } finally {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }
-
-            if (!submitted) return;
-
-            if (window.MA3PLAnalytics) {
-                MA3PLAnalytics.trackFormSubmit('contact_form', true);
-            }
-
-            showContactToast('Thank you for your message! We will get back to you within 24 hours.', '#10b981');
-            form.reset();
+            this.reset();
         });
     </script>
     <script src="js/lang/es.js"></script>
+    <script src="js/lang/pt-br.js"></script>
     <script src="js/i18n.js"></script>
 </body>
 </html>

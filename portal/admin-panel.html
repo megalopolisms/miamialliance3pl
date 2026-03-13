@@ -1265,7 +1265,6 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, query, orderBy, where, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        import { escapeHtml, formatShipmentStatus, normalizeShipmentStatus, pickDocumentSource } from '../js/shipments-portal-utils.mjs';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -1312,42 +1311,6 @@
             if (typeof value.toDate === 'function') return value.toDate();
             const parsed = new Date(value);
             return Number.isNaN(parsed.getTime()) ? null : parsed;
-        }
-
-        function setBadgeText(element, text, badgeText, badgeStyle = '') {
-            if (!element) return;
-            element.textContent = '';
-            element.append(document.createTextNode(String(text || '')));
-            const badge = document.createElement('span');
-            badge.className = 'admin-badge';
-            if (badgeStyle) badge.style.cssText = badgeStyle;
-            badge.textContent = badgeText;
-            element.append(' ', badge);
-        }
-
-        function normalizeBadgeKey(value, fallback = 'pending') {
-            const normalized = normalizeShipmentStatus(value || fallback);
-            return normalized === 'unknown' ? fallback : normalized;
-        }
-
-        function formatMoney(value, fallback = '0.00') {
-            const numeric = Number(value);
-            return Number.isFinite(numeric) ? numeric.toFixed(2) : fallback;
-        }
-
-        function buildDetailDocumentRow(label, icon, documentMeta, fallbackSource) {
-            const source = pickDocumentSource(documentMeta, fallbackSource);
-            if (!documentMeta && !source) return '';
-
-            const filename = escapeHTML(documentMeta?.filename || (source ? 'View Document' : 'Uploaded'));
-            const sizeHtml = documentMeta?.file_size
-                ? ` <span style="color: var(--color-gray-500); font-size: 0.8rem;">(${formatFileSize(documentMeta.file_size)})</span>`
-                : '';
-            const linkHtml = source
-                ? ` <a href="${escapeHTML(source)}" target="_blank" rel="noopener noreferrer" style="color: var(--color-accent);">View Document</a>`
-                : ' <span style="color: var(--color-gray-500); font-size: 0.8rem;">Stored in shipment metadata</span>';
-
-            return `<div><strong>${label}:</strong> <span style="color: var(--color-accent); font-weight: 600;">${icon} ${filename}</span>${sizeHtml}${linkHtml}</div>`;
         }
 
         // ===== TOAST =====
@@ -1417,7 +1380,7 @@
             }
 
             // Update UI
-            setBadgeText(document.getElementById('user-name'), userData?.name || user.email, 'ADMIN');
+            document.getElementById('user-name').innerHTML = (userData?.name || user.email) + ' <span class="admin-badge">ADMIN</span>';
             document.getElementById('employee-nav').style.display = 'block';
             document.getElementById('admin-nav').style.display = 'block';
 
@@ -1527,8 +1490,6 @@
                         filename: data.filename || 'Document',
                         file_type: data.file_type,
                         file_size: data.file_size,
-                        url: data.url || null,
-                        storage_path: data.storage_path || null,
                         file_data: data.file_data || null,
                         shipment_id: data.shipment_id,
                         tracking_number: data.tracking_number,
@@ -1556,8 +1517,6 @@
                                 filename: data.packing_list.filename || ('Packing List - ' + (data.tracking_number || d.id)),
                                 file_type: data.packing_list.file_type,
                                 file_size: data.packing_list.file_size,
-                                url: data.packing_list.url || null,
-                                storage_path: data.packing_list.storage_path || null,
                                 shipment_id: d.id,
                                 tracking_number: data.tracking_number,
                                 user_id: data.user_id,
@@ -1588,8 +1547,6 @@
                                 filename: data.commercial_invoice.filename || ('Invoice - ' + (data.tracking_number || d.id)),
                                 file_type: data.commercial_invoice.file_type,
                                 file_size: data.commercial_invoice.file_size,
-                                url: data.commercial_invoice.url || null,
-                                storage_path: data.commercial_invoice.storage_path || null,
                                 shipment_id: d.id,
                                 tracking_number: data.tracking_number,
                                 user_id: data.user_id,
@@ -1693,28 +1650,21 @@
                 return;
             }
 
-            container.innerHTML = list.map((s) => {
+            container.innerHTML = list.map(s => {
                 const user = usersMap[s.user_id] || {};
-                const customerName = escapeHTML(user.company_name || user.name || user.email || 'Unknown');
-                const date = escapeHTML(s.created_at ? new Date(s.created_at).toLocaleDateString() : 'N/A');
-                const dest = escapeHTML(s.destination ? `${s.destination.city || ''}, ${s.destination.state || ''}`.replace(/^,\s*|,\s*$/g, '').trim() || 'N/A' : 'N/A');
-                const origin = escapeHTML(s.origin ? `${s.origin.city || ''}, ${s.origin.state || ''}`.replace(/^,\s*|,\s*$/g, '').trim() || 'N/A' : 'N/A');
-                const statusKey = normalizeBadgeKey(s.status);
-                const statusLabel = escapeHTML(formatShipmentStatus(statusKey).toUpperCase());
-                const trackingLabel = escapeHTML(s.tracking_number || s.id.slice(0, 8));
-                const palletCount = escapeHTML(s.pallets || s.items?.length || '?');
-                const estimateHtml = s.estimated_cost
-                    ? `<span style="color: var(--color-gray-600); font-size: var(--font-size-sm);">Est: $${formatMoney(s.estimated_cost)}</span>`
-                    : '';
+                const customerName = user.company_name || user.name || user.email || 'Unknown';
+                const date = s.created_at ? new Date(s.created_at).toLocaleDateString() : 'N/A';
+                const dest = s.destination ? `${s.destination.city || ''}, ${s.destination.state || ''}` : 'N/A';
+                const origin = s.origin ? `${s.origin.city || ''}, ${s.origin.state || ''}` : 'N/A';
 
                 return `
                     <div class="request-card">
                         <div class="request-header">
                             <div>
-                                <div class="request-id">${trackingLabel}</div>
+                                <div class="request-id">${s.tracking_number || s.id.slice(0, 8)}</div>
                                 <div class="request-customer">👤 ${customerName}</div>
                             </div>
-                            <span class="badge badge-${statusKey}">${statusLabel}</span>
+                            <span class="badge badge-${s.status || 'pending'}">${(s.status || 'pending').replace(/_/g, ' ').toUpperCase()}</span>
                         </div>
                         <div class="request-details">
                             <div class="detail-group">
@@ -1727,7 +1677,7 @@
                             </div>
                             <div class="detail-group">
                                 <h4>Items</h4>
-                                <p>${palletCount} pallets</p>
+                                <p>${s.pallets || s.items?.length || '?'} pallets</p>
                             </div>
                             <div class="detail-group">
                                 <h4>Date</h4>
@@ -1735,25 +1685,18 @@
                             </div>
                         </div>
                         <div class="request-actions">
-                            <select class="status-select" data-shipment-status-id="${escapeHTML(s.id)}">
-                                <option value="pending" ${statusKey === 'pending' ? 'selected' : ''}>Pending</option>
-                                <option value="processing" ${statusKey === 'processing' ? 'selected' : ''}>Processing</option>
-                                <option value="in_transit" ${statusKey === 'in_transit' ? 'selected' : ''}>In Transit</option>
-                                <option value="delivered" ${statusKey === 'delivered' ? 'selected' : ''}>Delivered</option>
-                                <option value="cancelled" ${statusKey === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            <select class="status-select" onchange="updateShipmentStatus('${s.id}', this.value)">
+                                <option value="pending" ${s.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="processing" ${s.status === 'processing' ? 'selected' : ''}>Processing</option>
+                                <option value="in_transit" ${s.status === 'in_transit' ? 'selected' : ''}>In Transit</option>
+                                <option value="delivered" ${s.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="cancelled" ${s.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                             </select>
-                            <button class="btn-action btn-view" data-shipment-view-id="${escapeHTML(s.id)}">View Details</button>
-                            ${estimateHtml}
+                            <button class="btn-action btn-view" onclick="viewShipmentDetail('${s.id}')">View Details</button>
+                            ${s.estimated_cost ? `<span style="color: var(--color-gray-600); font-size: var(--font-size-sm);">Est: $${parseFloat(s.estimated_cost).toFixed(2)}</span>` : ''}
                         </div>
                     </div>`;
             }).join('');
-
-            container.querySelectorAll('[data-shipment-status-id]').forEach((select) => {
-                select.addEventListener('change', () => window.updateShipmentStatus(select.dataset.shipmentStatusId, select.value));
-            });
-            container.querySelectorAll('[data-shipment-view-id]').forEach((button) => {
-                button.addEventListener('click', () => window.viewShipmentDetail(button.dataset.shipmentViewId));
-            });
         }
 
         window.filterShipments = function() {
@@ -1787,30 +1730,31 @@
             }
         };
 
+        // XSS prevention helper
         function escapeHTML(str) {
-            return escapeHtml(str);
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
         }
 
         window.viewShipmentDetail = function(shipmentId) {
             const s = allShipments.find(s => s.id === shipmentId);
             if (!s) return;
             const user = usersMap[s.user_id] || {};
-            const statusKey = normalizeBadgeKey(s.status);
             const html = `
                 <div style="display: grid; gap: var(--spacing-md);">
                     <div><strong>Tracking #:</strong> ${escapeHTML(s.tracking_number || 'N/A')}</div>
                     <div><strong>Customer:</strong> ${escapeHTML(user.company_name || user.name || user.email || 'Unknown')}</div>
-                    <div><strong>Status:</strong> <span class="badge badge-${statusKey}">${escapeHTML(formatShipmentStatus(statusKey))}</span></div>
+                    <div><strong>Status:</strong> <span class="badge badge-${escapeHTML(s.status)}">${escapeHTML((s.status || 'pending').replace(/_/g, ' '))}</span></div>
                     <div><strong>Origin:</strong> ${s.origin ? `${escapeHTML(s.origin.address || '')}, ${escapeHTML(s.origin.city || '')}, ${escapeHTML(s.origin.state || '')} ${escapeHTML(s.origin.zip || '')}` : 'N/A'}</div>
                     <div><strong>Destination:</strong> ${s.destination ? `${escapeHTML(s.destination.address || '')}, ${escapeHTML(s.destination.city || '')}, ${escapeHTML(s.destination.state || '')} ${escapeHTML(s.destination.zip || '')}` : 'N/A'}</div>
                     <div><strong>Pallets:</strong> ${escapeHTML(s.pallets || 'N/A')}</div>
                     <div><strong>Weight:</strong> ${s.weight ? escapeHTML(s.weight) + ' lbs' : 'N/A'}</div>
-                    <div><strong>Est. Cost:</strong> ${s.estimated_cost ? '$' + formatMoney(s.estimated_cost) : 'N/A'}</div>
+                    <div><strong>Est. Cost:</strong> ${s.estimated_cost ? '$' + parseFloat(s.estimated_cost).toFixed(2) : 'N/A'}</div>
                     <div><strong>Services:</strong> ${s.services ? (Array.isArray(s.services) ? escapeHTML(s.services.join(', ')) : escapeHTML(s.services)) : 'N/A'}</div>
                     <div><strong>Notes:</strong> ${escapeHTML(s.notes || s.special_instructions || 'None')}</div>
                     <div><strong>Created:</strong> ${s.created_at ? new Date(s.created_at).toLocaleString() : 'N/A'}</div>
-                    ${buildDetailDocumentRow('Packing List', '📋', s.packing_list, s.packing_list_url)}
-                    ${buildDetailDocumentRow('Invoice', '🧾', s.commercial_invoice, s.invoice_url)}
+                    ${s.packing_list ? `<div><strong>Packing List:</strong> <span style="color: var(--color-accent); font-weight: 600;">📋 ${escapeHTML(s.packing_list.filename || 'Uploaded')}</span> <span style="color: var(--color-gray-500); font-size: 0.8rem;">(${s.packing_list.file_size ? formatFileSize(s.packing_list.file_size) : ''})</span></div>` : (s.packing_list_url ? `<div><strong>Packing List:</strong> <a href="${escapeHTML(s.packing_list_url)}" target="_blank" style="color: var(--color-accent);">View Document</a></div>` : '')}
+                    ${s.commercial_invoice ? `<div><strong>Invoice:</strong> <span style="color: var(--color-accent); font-weight: 600;">🧾 ${escapeHTML(s.commercial_invoice.filename || 'Uploaded')}</span> <span style="color: var(--color-gray-500); font-size: 0.8rem;">(${s.commercial_invoice.file_size ? formatFileSize(s.commercial_invoice.file_size) : ''})</span></div>` : (s.invoice_url ? `<div><strong>Invoice:</strong> <a href="${escapeHTML(s.invoice_url)}" target="_blank" style="color: var(--color-accent);">View Document</a></div>` : '')}
                 </div>`;
             openModal('Shipment ' + escapeHTML(s.tracking_number || s.id.slice(0, 8)), html);
         };
@@ -1830,30 +1774,27 @@
                 return;
             }
 
-            container.innerHTML = list.map((p) => {
+            container.innerHTML = list.map(p => {
                 const user = usersMap[p.user_id] || {};
-                const customerName = escapeHTML(user.company_name || user.name || p.customer_name || user.email || 'Unknown');
-                const date = escapeHTML(p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A');
-                const scheduledDate = escapeHTML(p.scheduled_date || p.pickup_date || 'Not scheduled');
-                const pallets = escapeHTML(p.pallets || p.pallet_count || '?');
+                const customerName = user.company_name || user.name || p.customer_name || user.email || 'Unknown';
+                const date = p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A';
+                const scheduledDate = p.scheduled_date || p.pickup_date || 'Not scheduled';
+                const pallets = p.pallets || p.pallet_count || '?';
                 const total = p.total_cost || p.estimated_cost || 0;
-                const statusKey = normalizeBadgeKey(p.status);
-                const statusLabel = escapeHTML(formatShipmentStatus(statusKey).toUpperCase());
-                const typeLabel = escapeHTML((p.type || p.request_type || 'pickup').replace(/_/g, ' '));
 
                 return `
                     <div class="request-card">
                         <div class="request-header">
                             <div>
-                                <div class="request-id">${escapeHTML(p.request_number || p.id.slice(0, 8))}</div>
+                                <div class="request-id">${p.request_number || p.id.slice(0, 8)}</div>
                                 <div class="request-customer">👤 ${customerName}</div>
                             </div>
-                            <span class="badge badge-${statusKey}">${statusLabel}</span>
+                            <span class="badge badge-${p.status || 'pending'}">${(p.status || 'pending').replace(/_/g, ' ').toUpperCase()}</span>
                         </div>
                         <div class="request-details">
                             <div class="detail-group">
                                 <h4>Type</h4>
-                                <p>${typeLabel}</p>
+                                <p>${(p.type || p.request_type || 'pickup').replace(/_/g, ' ')}</p>
                             </div>
                             <div class="detail-group">
                                 <h4>Pallets</h4>
@@ -1865,28 +1806,21 @@
                             </div>
                             <div class="detail-group">
                                 <h4>Est. Cost</h4>
-                                <p>$${formatMoney(total)}</p>
+                                <p>$${parseFloat(total).toFixed(2)}</p>
                             </div>
                         </div>
                         <div class="request-actions">
-                            <select class="status-select" data-pickup-status-id="${escapeHTML(p.id)}">
-                                <option value="pending" ${statusKey === 'pending' ? 'selected' : ''}>Pending</option>
-                                <option value="scheduled" ${statusKey === 'scheduled' ? 'selected' : ''}>Scheduled</option>
-                                <option value="in_progress" ${statusKey === 'in_progress' ? 'selected' : ''}>In Progress</option>
-                                <option value="completed" ${statusKey === 'completed' ? 'selected' : ''}>Completed</option>
-                                <option value="cancelled" ${statusKey === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            <select class="status-select" onchange="updatePickupStatus('${p.id}', this.value)">
+                                <option value="pending" ${p.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="scheduled" ${p.status === 'scheduled' ? 'selected' : ''}>Scheduled</option>
+                                <option value="in_progress" ${p.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="completed" ${p.status === 'completed' ? 'selected' : ''}>Completed</option>
+                                <option value="cancelled" ${p.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                             </select>
-                            <button class="btn-action btn-view" data-pickup-view-id="${escapeHTML(p.id)}">View Details</button>
+                            <button class="btn-action btn-view" onclick="viewPickupDetail('${p.id}')">View Details</button>
                         </div>
                     </div>`;
             }).join('');
-
-            container.querySelectorAll('[data-pickup-status-id]').forEach((select) => {
-                select.addEventListener('change', () => window.updatePickupStatus(select.dataset.pickupStatusId, select.value));
-            });
-            container.querySelectorAll('[data-pickup-view-id]').forEach((button) => {
-                button.addEventListener('click', () => window.viewPickupDetail(button.dataset.pickupViewId));
-            });
         }
 
         window.filterPickups = function() {
@@ -1923,23 +1857,22 @@
             const p = allPickups.find(p => p.id === pickupId);
             if (!p) return;
             const user = usersMap[p.user_id] || {};
-            const statusKey = normalizeBadgeKey(p.status);
             const html = `
                 <div style="display: grid; gap: var(--spacing-md);">
-                    <div><strong>Request #:</strong> ${escapeHTML(p.request_number || p.id.slice(0, 8))}</div>
-                    <div><strong>Customer:</strong> ${escapeHTML(user.company_name || user.name || user.email || 'Unknown')}</div>
-                    <div><strong>Type:</strong> ${escapeHTML((p.type || p.request_type || 'pickup').replace(/_/g, ' '))}</div>
-                    <div><strong>Status:</strong> <span class="badge badge-${statusKey}">${escapeHTML(formatShipmentStatus(statusKey))}</span></div>
-                    <div><strong>Pallets:</strong> ${escapeHTML(p.pallets || p.pallet_count || 'N/A')}</div>
-                    <div><strong>Pickup Address:</strong> ${escapeHTML(p.pickup_address || p.origin_address || 'N/A')}</div>
-                    <div><strong>Delivery Address:</strong> ${escapeHTML(p.delivery_address || p.destination_address || 'N/A')}</div>
-                    <div><strong>Scheduled Date:</strong> ${escapeHTML(p.scheduled_date || p.pickup_date || 'Not scheduled')}</div>
-                    <div><strong>Time Window:</strong> ${escapeHTML(p.time_window || p.preferred_time || 'N/A')}</div>
-                    <div><strong>Est. Cost:</strong> $${formatMoney(p.total_cost || p.estimated_cost || 0)}</div>
-                    <div><strong>Notes:</strong> ${escapeHTML(p.notes || p.special_instructions || 'None')}</div>
+                    <div><strong>Request #:</strong> ${p.request_number || p.id.slice(0, 8)}</div>
+                    <div><strong>Customer:</strong> ${user.company_name || user.name || user.email || 'Unknown'}</div>
+                    <div><strong>Type:</strong> ${(p.type || p.request_type || 'pickup').replace(/_/g, ' ')}</div>
+                    <div><strong>Status:</strong> <span class="badge badge-${p.status}">${(p.status || 'pending').replace(/_/g, ' ')}</span></div>
+                    <div><strong>Pallets:</strong> ${p.pallets || p.pallet_count || 'N/A'}</div>
+                    <div><strong>Pickup Address:</strong> ${p.pickup_address || p.origin_address || 'N/A'}</div>
+                    <div><strong>Delivery Address:</strong> ${p.delivery_address || p.destination_address || 'N/A'}</div>
+                    <div><strong>Scheduled Date:</strong> ${p.scheduled_date || p.pickup_date || 'Not scheduled'}</div>
+                    <div><strong>Time Window:</strong> ${p.time_window || p.preferred_time || 'N/A'}</div>
+                    <div><strong>Est. Cost:</strong> $${parseFloat(p.total_cost || p.estimated_cost || 0).toFixed(2)}</div>
+                    <div><strong>Notes:</strong> ${p.notes || p.special_instructions || 'None'}</div>
                     <div><strong>Created:</strong> ${p.created_at ? new Date(p.created_at).toLocaleString() : 'N/A'}</div>
                 </div>`;
-            openModal('Pickup Request ' + escapeHTML(p.request_number || p.id.slice(0, 8)), html);
+            openModal('Pickup Request ' + (p.request_number || p.id.slice(0, 8)), html);
         };
 
         // ===== RENDER QUOTES =====
@@ -1959,32 +1892,30 @@
                 return;
             }
 
-            container.innerHTML = list.map((q) => {
-                const date = escapeHTML(q.created_at ? new Date(q.created_at).toLocaleDateString() : 'N/A');
-                const statusKey = normalizeBadgeKey(q.status, 'new');
-                const statusLabel = escapeHTML(formatShipmentStatus(statusKey).toUpperCase());
+            container.innerHTML = list.map(q => {
+                const date = q.created_at ? new Date(q.created_at).toLocaleDateString() : 'N/A';
 
                 return `
                     <div class="request-card">
                         <div class="request-header">
                             <div>
-                                <div class="request-id">${escapeHTML(q.company_name || q.name || q.email || 'Quote')}</div>
-                                <div class="request-customer">📧 ${escapeHTML(q.email || 'N/A')} | 📞 ${escapeHTML(q.phone || 'N/A')}</div>
+                                <div class="request-id">${q.company_name || q.name || q.email || 'Quote'}</div>
+                                <div class="request-customer">📧 ${q.email || 'N/A'} | 📞 ${q.phone || 'N/A'}</div>
                             </div>
-                            <span class="badge badge-${statusKey}">${statusLabel}</span>
+                            <span class="badge badge-${q.status || 'new'}">${(q.status || 'new').replace(/_/g, ' ').toUpperCase()}</span>
                         </div>
                         <div class="request-details">
                             <div class="detail-group">
                                 <h4>Service Requested</h4>
-                                <p>${escapeHTML(q.service_type || q.services || 'General inquiry')}</p>
+                                <p>${q.service_type || q.services || 'General inquiry'}</p>
                             </div>
                             <div class="detail-group">
                                 <h4>Pallets/Volume</h4>
-                                <p>${escapeHTML(q.pallets || q.volume || 'N/A')}</p>
+                                <p>${q.pallets || q.volume || 'N/A'}</p>
                             </div>
                             <div class="detail-group">
                                 <h4>Est. Budget</h4>
-                                <p>${q.estimated_budget ? '$' + formatMoney(q.estimated_budget) : 'Not specified'}</p>
+                                <p>${q.estimated_budget ? '$' + q.estimated_budget : 'Not specified'}</p>
                             </div>
                             <div class="detail-group">
                                 <h4>Date</h4>
@@ -1992,24 +1923,17 @@
                             </div>
                         </div>
                         <div class="request-actions">
-                            <select class="status-select" data-quote-status-id="${escapeHTML(q.id)}">
-                                <option value="new" ${statusKey === 'new' ? 'selected' : ''}>New</option>
-                                <option value="in_progress" ${statusKey === 'in_progress' ? 'selected' : ''}>In Progress</option>
-                                <option value="quoted" ${statusKey === 'quoted' ? 'selected' : ''}>Quoted</option>
-                                <option value="accepted" ${statusKey === 'accepted' ? 'selected' : ''}>Accepted</option>
-                                <option value="declined" ${statusKey === 'declined' ? 'selected' : ''}>Declined</option>
+                            <select class="status-select" onchange="updateQuoteStatus('${q.id}', this.value)">
+                                <option value="new" ${q.status === 'new' || !q.status ? 'selected' : ''}>New</option>
+                                <option value="in_progress" ${q.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="quoted" ${q.status === 'quoted' ? 'selected' : ''}>Quoted</option>
+                                <option value="accepted" ${q.status === 'accepted' ? 'selected' : ''}>Accepted</option>
+                                <option value="declined" ${q.status === 'declined' ? 'selected' : ''}>Declined</option>
                             </select>
-                            <button class="btn-action btn-view" data-quote-view-id="${escapeHTML(q.id)}">View Details</button>
+                            <button class="btn-action btn-view" onclick="viewQuoteDetail('${q.id}')">View Details</button>
                         </div>
                     </div>`;
             }).join('');
-
-            container.querySelectorAll('[data-quote-status-id]').forEach((select) => {
-                select.addEventListener('change', () => window.updateQuoteStatus(select.dataset.quoteStatusId, select.value));
-            });
-            container.querySelectorAll('[data-quote-view-id]').forEach((button) => {
-                button.addEventListener('click', () => window.viewQuoteDetail(button.dataset.quoteViewId));
-            });
         }
 
         window.filterQuotes = function() {
@@ -2044,19 +1968,18 @@
         window.viewQuoteDetail = function(quoteId) {
             const q = allQuotes.find(q => q.id === quoteId);
             if (!q) return;
-            const statusKey = normalizeBadgeKey(q.status, 'new');
             const html = `
                 <div style="display: grid; gap: var(--spacing-md);">
-                    <div><strong>Company:</strong> ${escapeHTML(q.company_name || 'N/A')}</div>
-                    <div><strong>Contact:</strong> ${escapeHTML(q.name || 'N/A')}</div>
-                    <div><strong>Email:</strong> ${escapeHTML(q.email || 'N/A')}</div>
-                    <div><strong>Phone:</strong> ${escapeHTML(q.phone || 'N/A')}</div>
-                    <div><strong>Service:</strong> ${escapeHTML(q.service_type || q.services || 'General')}</div>
-                    <div><strong>Pallets:</strong> ${escapeHTML(q.pallets || 'N/A')}</div>
-                    <div><strong>Volume:</strong> ${escapeHTML(q.volume || 'N/A')}</div>
-                    <div><strong>Frequency:</strong> ${escapeHTML(q.frequency || 'N/A')}</div>
-                    <div><strong>Message:</strong> ${escapeHTML(q.message || q.notes || 'None')}</div>
-                    <div><strong>Status:</strong> <span class="badge badge-${statusKey}">${escapeHTML(formatShipmentStatus(statusKey))}</span></div>
+                    <div><strong>Company:</strong> ${q.company_name || 'N/A'}</div>
+                    <div><strong>Contact:</strong> ${q.name || 'N/A'}</div>
+                    <div><strong>Email:</strong> ${q.email || 'N/A'}</div>
+                    <div><strong>Phone:</strong> ${q.phone || 'N/A'}</div>
+                    <div><strong>Service:</strong> ${q.service_type || q.services || 'General'}</div>
+                    <div><strong>Pallets:</strong> ${q.pallets || 'N/A'}</div>
+                    <div><strong>Volume:</strong> ${q.volume || 'N/A'}</div>
+                    <div><strong>Frequency:</strong> ${q.frequency || 'N/A'}</div>
+                    <div><strong>Message:</strong> ${q.message || q.notes || 'None'}</div>
+                    <div><strong>Status:</strong> <span class="badge badge-${q.status || 'new'}">${(q.status || 'new').replace(/_/g, ' ')}</span></div>
                     <div><strong>Created:</strong> ${q.created_at ? new Date(q.created_at).toLocaleString() : 'N/A'}</div>
                 </div>`;
             openModal('Quote Request', html);
@@ -2079,31 +2002,26 @@
                 shipmentCounts[s.user_id] = (shipmentCounts[s.user_id] || 0) + 1;
             });
 
-            tbody.innerHTML = list.map((c) => {
+            tbody.innerHTML = list.map(c => {
                 const joinedDate = parseFirestoreDate(c.created_at);
                 const joined = joinedDate ? joinedDate.toLocaleDateString() : 'N/A';
                 const role = c.role || 'customer';
                 const shipCount = shipmentCounts[c.id] || 0;
-                const roleBadge = role === 'admin' ? 'approved' : role === 'employee' ? 'in_progress' : 'pending';
 
                 return `
                     <tr>
-                        <td class="company-name">${escapeHTML(c.company_name || '-')}</td>
-                        <td>${escapeHTML(c.name || c.email || '-')}</td>
-                        <td>${escapeHTML(c.email || '-')}</td>
-                        <td><span class="badge badge-${roleBadge}">${escapeHTML(role)}</span></td>
-                        <td>${escapeHTML(shipCount)}</td>
+                        <td class="company-name">${c.company_name || '-'}</td>
+                        <td>${c.name || c.email || '-'}</td>
+                        <td>${c.email || '-'}</td>
+                        <td><span class="badge badge-${role === 'admin' ? 'approved' : role === 'employee' ? 'in_progress' : 'pending'}">${role}</span></td>
+                        <td>${shipCount}</td>
                         <td>--</td>
-                        <td>${escapeHTML(joined)}</td>
+                        <td>${joined}</td>
                         <td>
-                            <button class="btn-action btn-view" data-customer-view-id="${escapeHTML(c.id)}" style="padding: 4px 12px; font-size: 0.75rem;">View</button>
+                            <button class="btn-action btn-view" onclick="viewCustomerDetail('${c.id}')" style="padding: 4px 12px; font-size: 0.75rem;">View</button>
                         </td>
                     </tr>`;
             }).join('');
-
-            tbody.querySelectorAll('[data-customer-view-id]').forEach((button) => {
-                button.addEventListener('click', () => window.viewCustomerDetail(button.dataset.customerViewId));
-            });
         }
 
         window.filterCustomers = function() {
@@ -2124,7 +2042,6 @@
             const shipments = allShipments.filter(s => s.user_id === customerId);
             const pickups = allPickups.filter(p => p.user_id === customerId);
             const joinedAt = parseFirestoreDate(c.created_at);
-            const roleBadge = (c.role || 'customer') === 'admin' ? 'approved' : (c.role || 'customer') === 'employee' ? 'in_progress' : 'pending';
 
             let shipmentsHtml = '<p style="color: var(--color-gray-500);">No shipments</p>';
             if (shipments.length > 0) {
@@ -2132,8 +2049,8 @@
                     '<tr style="border-bottom: 1px solid #eee;"><th style="text-align:left; padding: 4px 8px;">Tracking</th><th>Status</th><th>Date</th></tr>' +
                     shipments.slice(0, 10).map(s => `
                         <tr style="border-bottom: 1px solid #f3f3f3;">
-                            <td style="padding: 4px 8px; font-family: monospace; color: var(--color-accent);">${escapeHTML(s.tracking_number || s.id.slice(0, 8))}</td>
-                            <td><span class="badge badge-${normalizeBadgeKey(s.status)}">${escapeHTML(formatShipmentStatus(normalizeBadgeKey(s.status)))}</span></td>
+                            <td style="padding: 4px 8px; font-family: monospace; color: var(--color-accent);">${s.tracking_number || s.id.slice(0, 8)}</td>
+                            <td><span class="badge badge-${s.status}">${(s.status || '').replace(/_/g, ' ')}</span></td>
                             <td>${s.created_at ? new Date(s.created_at).toLocaleDateString() : 'N/A'}</td>
                         </tr>`).join('') +
                     '</table>' +
@@ -2142,18 +2059,18 @@
 
             const html = `
                 <div style="display: grid; gap: var(--spacing-md);">
-                    <div><strong>Company:</strong> ${escapeHTML(c.company_name || 'N/A')}</div>
-                    <div><strong>Name:</strong> ${escapeHTML(c.name || c.email || 'N/A')}</div>
-                    <div><strong>Email:</strong> ${escapeHTML(c.email || 'N/A')}</div>
-                    <div><strong>Phone:</strong> ${escapeHTML(c.phone || 'N/A')}</div>
-                    <div><strong>Role:</strong> <span class="badge badge-${roleBadge}">${escapeHTML(c.role || 'customer')}</span></div>
+                    <div><strong>Company:</strong> ${c.company_name || 'N/A'}</div>
+                    <div><strong>Name:</strong> ${c.name || c.email || 'N/A'}</div>
+                    <div><strong>Email:</strong> ${c.email || 'N/A'}</div>
+                    <div><strong>Phone:</strong> ${c.phone || 'N/A'}</div>
+                    <div><strong>Role:</strong> <span class="badge badge-${(c.role || 'customer') === 'admin' ? 'approved' : 'pending'}">${c.role || 'customer'}</span></div>
                     <div><strong>Joined:</strong> ${joinedAt ? joinedAt.toLocaleString() : 'N/A'}</div>
                     <hr style="border: none; border-top: 1px solid var(--color-gray-200);">
                     <div><strong>Shipments (${shipments.length}):</strong></div>
                     ${shipmentsHtml}
                     <div><strong>Pickup Requests:</strong> ${pickups.length}</div>
                 </div>`;
-            openModal('Customer: ' + escapeHTML(c.company_name || c.name || c.email), html);
+            openModal('Customer: ' + (c.company_name || c.name || c.email), html);
         };
 
         // ===== RENDER DOCUMENTS =====
@@ -2192,23 +2109,19 @@
                 };
                 const icon = iconMap[d.type] || '📄';
 
-                const viewUrl = pickDocumentSource(d);
+                const viewUrl = d.url || d.file_data || null;
                 const sizeStr = d.file_size ? ` (${formatFileSize(d.file_size)})` : '';
-                const filename = escapeHTML(d.filename || d.name || 'Untitled Document');
-                const metaLine = escapeHTML(`👤 ${customerName} | ${typeLabel} | ${d.tracking_number ? 'Shipment: ' + d.tracking_number + ' | ' : ''}${date}`);
-                const safeViewUrl = viewUrl ? escapeHTML(viewUrl) : null;
-                const safeDownloadName = escapeHTML(d.filename || 'document');
 
                 return `
                     <div class="doc-card">
                         <div class="doc-icon">${icon}</div>
                         <div class="doc-info">
-                            <h4>${filename}${sizeStr}</h4>
-                            <p>${metaLine}</p>
+                            <h4>${d.filename || d.name || 'Untitled Document'}${sizeStr}</h4>
+                            <p>👤 ${customerName} | ${typeLabel} | ${d.tracking_number ? 'Shipment: ' + d.tracking_number + ' | ' : ''}${date}</p>
                         </div>
                         <div class="doc-actions">
-                            ${safeViewUrl ? `<a href="${safeViewUrl}" target="_blank" rel="noopener noreferrer" class="btn-action btn-view" style="text-decoration: none;">View</a>` : '<span style="color: var(--color-gray-400); font-size: 0.8rem;">Metadata only</span>'}
-                            ${safeViewUrl ? `<a href="${safeViewUrl}" download="${safeDownloadName}" class="btn-action btn-secondary" style="text-decoration: none;">Download</a>` : ''}
+                            ${viewUrl ? `<a href="${viewUrl}" target="_blank" class="btn-action btn-view" style="text-decoration: none;">View</a>` : '<span style="color: var(--color-gray-400); font-size: 0.8rem;">Metadata only</span>'}
+                            ${viewUrl ? `<a href="${viewUrl}" download="${d.filename || 'document'}" class="btn-action btn-secondary" style="text-decoration: none;">Download</a>` : ''}
                         </div>
                     </div>`;
             }).join('');
@@ -2453,41 +2366,28 @@
                 return;
             }
 
-            container.innerHTML = items.map((item) => {
+            container.innerHTML = items.map(item => {
                 const typeIcon = item.type === 'shipment' ? '📦' : item.type === 'pickup' ? '🚛' : '📋';
                 const typeLabel = item.type.charAt(0).toUpperCase() + item.type.slice(1);
-                const costDisplay = item.cost > 0 ? `$${formatMoney(item.cost)}` : 'TBD';
+                const costDisplay = item.cost > 0 ? `$${item.cost.toFixed(2)}` : 'TBD';
 
                 return `
                     <div class="new-request-item">
                         <div class="req-info">
                             <div>
-                                <span class="req-type-badge ${escapeHTML(item.type)}">${typeIcon} ${escapeHTML(typeLabel)}</span>
-                                <span class="req-customer">${escapeHTML(item.customer)}</span>
+                                <span class="req-type-badge ${item.type}">${typeIcon} ${typeLabel}</span>
+                                <span class="req-customer">${item.customer}</span>
                             </div>
-                            <div class="req-meta">${escapeHTML(item.description)} | Submitted: ${escapeHTML(item.dateStr)}</div>
+                            <div class="req-meta">${item.description} | Submitted: ${item.dateStr}</div>
                         </div>
                         <div class="req-actions">
                             <span class="req-cost">${costDisplay}</span>
-                            <button class="btn-approve-sm" data-request-action="approve" data-request-type="${escapeHTML(item.type)}" data-request-id="${escapeHTML(item.id)}">Approve</button>
-                            <button class="btn-price-sm" data-request-action="view" data-request-type="${escapeHTML(item.type)}" data-request-id="${escapeHTML(item.id)}">View/Edit</button>
-                            <button class="btn-reject-sm" data-request-action="reject" data-request-type="${escapeHTML(item.type)}" data-request-id="${escapeHTML(item.id)}">Reject</button>
+                            <button class="btn-approve-sm" onclick="approveNewRequest('${item.type}', '${item.id}')">Approve</button>
+                            <button class="btn-price-sm" onclick="viewNewRequest('${item.type}', '${item.id}')">View/Edit</button>
+                            <button class="btn-reject-sm" onclick="rejectNewRequest('${item.type}', '${item.id}')">Reject</button>
                         </div>
                     </div>`;
             }).join('');
-
-            container.querySelectorAll('[data-request-action]').forEach((button) => {
-                button.addEventListener('click', () => {
-                    const { requestAction, requestType, requestId } = button.dataset;
-                    if (requestAction === 'approve') {
-                        window.approveNewRequest(requestType, requestId);
-                    } else if (requestAction === 'view') {
-                        window.viewNewRequest(requestType, requestId);
-                    } else if (requestAction === 'reject') {
-                        window.rejectNewRequest(requestType, requestId);
-                    }
-                });
-            });
         }
 
         window.approveNewRequest = async function(type, id) {
@@ -2692,22 +2592,18 @@
                 return;
             }
 
-            tbody.innerHTML = allDailyTasks.map((t) => {
+            tbody.innerHTML = allDailyTasks.map(t => {
                 return `
                     <tr>
-                        <td>${escapeHTML(t.task_date || 'N/A')}</td>
-                        <td style="font-weight: 600; color: var(--color-primary);">${escapeHTML(t.customer_name || 'Unknown')}</td>
-                        <td>${escapeHTML(t.description || '')}</td>
-                        <td>${escapeHTML(t.time_spent || '-')}</td>
-                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHTML(t.notes || '')}">${escapeHTML(t.notes || '-')}</td>
-                        <td style="color: var(--color-gray-500);">${escapeHTML(t.logged_by || '-')}</td>
-                        <td><button class="btn-delete-task" data-delete-task-id="${escapeHTML(t.id)}" title="Delete">&#x2715;</button></td>
+                        <td>${t.task_date || 'N/A'}</td>
+                        <td style="font-weight: 600; color: var(--color-primary);">${t.customer_name || 'Unknown'}</td>
+                        <td>${t.description || ''}</td>
+                        <td>${t.time_spent || '-'}</td>
+                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${(t.notes || '').replace(/"/g, '&quot;')}">${t.notes || '-'}</td>
+                        <td style="color: var(--color-gray-500);">${t.logged_by || '-'}</td>
+                        <td><button class="btn-delete-task" onclick="deleteDailyTask('${t.id}')" title="Delete">&#x2715;</button></td>
                     </tr>`;
             }).join('');
-
-            tbody.querySelectorAll('[data-delete-task-id]').forEach((button) => {
-                button.addEventListener('click', () => window.deleteDailyTask(button.dataset.deleteTaskId));
-            });
         }
 
         // ===== LOGOUT =====
@@ -2723,6 +2619,7 @@
         });
     </script>
     <script src="../js/lang/es.js"></script>
+    <script src="../js/lang/pt-br.js"></script>
     <script src="../js/i18n.js"></script>
     <script src="../js/main.js?v=3"></script>
 </body>

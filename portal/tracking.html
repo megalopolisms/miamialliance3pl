@@ -152,6 +152,7 @@
 
     <!-- i18n -->
     <script src="../js/lang/es.js"></script>
+    <script src="../js/lang/pt-br.js"></script>
     <script src="../js/i18n.js"></script>
 
     <!-- Firebase SDK -->
@@ -173,12 +174,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
-        // XSS prevention helper
-        function escapeHTML(str) {
-            if (str === null || str === undefined) return '';
-            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-        }
 
         // Fallback admin emails (used only if Firestore role check fails)
         const FALLBACK_ADMIN_EMAILS = [
@@ -318,14 +313,14 @@
             }
 
             document.getElementById('result-origin').innerHTML = `
-                ${escapeHTML(data.origin.street)}<br>
-                ${escapeHTML(data.origin.city)}, ${escapeHTML(data.origin.state)} ${escapeHTML(data.origin.zip)}
+                ${data.origin.street}<br>
+                ${data.origin.city}, ${data.origin.state} ${data.origin.zip}
             `;
 
             document.getElementById('result-destination').innerHTML = `
-                ${escapeHTML(data.destination.name)}<br>
-                ${escapeHTML(data.destination.street)}<br>
-                ${escapeHTML(data.destination.city)}, ${escapeHTML(data.destination.state)} ${escapeHTML(data.destination.zip)}
+                ${data.destination.name}<br>
+                ${data.destination.street}<br>
+                ${data.destination.city}, ${data.destination.state} ${data.destination.zip}
             `;
 
             document.getElementById('result-package').innerHTML = `

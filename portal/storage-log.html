@@ -207,9 +207,9 @@
 
             <!-- Tabs -->
             <div class="tabs">
-                <button class="tab active" onclick="showTab('record', this)" data-i18n="portal.storagelog.tab.record">Record Snapshot</button>
-                <button class="tab" onclick="showTab('history', this)" data-i18n="portal.storagelog.tab.history">History</button>
-                <button class="tab" onclick="showTab('summary', this)" data-i18n="portal.storagelog.tab.summary">Monthly Summary</button>
+                <button class="tab active" onclick="showTab('record')" data-i18n="portal.storagelog.tab.record">Record Snapshot</button>
+                <button class="tab" onclick="showTab('history')" data-i18n="portal.storagelog.tab.history">History</button>
+                <button class="tab" onclick="showTab('summary')" data-i18n="portal.storagelog.tab.summary">Monthly Summary</button>
             </div>
 
             <!-- Record Tab -->
@@ -338,6 +338,7 @@
     <div id="toast" class="toast"></div>
 
     <script src="../js/lang/es.js"></script>
+    <script src="../js/lang/pt-br.js"></script>
     <script src="../js/i18n.js"></script>
     <script src="../js/column-prefs.js"></script>
     <script type="module">
@@ -360,13 +361,6 @@
         const db = getFirestore(app);
 
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
-
-        // XSS prevention helper
-        function escapeHTML(str) {
-            if (str === null || str === undefined) return '';
-            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-        }
-
         let customers = [];
         let inventoryByCustomer = {};
         let pricingData = {};
@@ -379,20 +373,15 @@
         }
 
         // Tab switching
-        function showTab(tab, tabButton) {
+        window.showTab = function(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tab).style.display = 'block';
-            if (tabButton) {
-                tabButton.classList.add('active');
-            } else {
-                document.querySelector(`.tab[onclick*="showTab('${tab}'"]`)?.classList.add('active');
-            }
+            event.target.classList.add('active');
 
             if (tab === 'history') loadHistory();
             if (tab === 'summary') loadSummary();
-        }
-        window.showTab = showTab;
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
@@ -492,7 +481,7 @@
             document.getElementById('auto-pallet-count').textContent = totalPallets;
         }
 
-        function useAutoCount() {
+        window.useAutoCount = function() {
             const customerId = document.getElementById('snapshot-customer').value;
             if (!customerId) {
                 showToast('Please select a customer first', 'error');
@@ -502,8 +491,7 @@
             const pallets = Math.ceil(inv.quantity / 48);
             document.getElementById('snapshot-pallets').value = pallets;
             showToast('Auto-count applied: ' + pallets + ' pallets');
-        }
-        window.useAutoCount = useAutoCount;
+        };
 
         // Save snapshot
         document.getElementById('snapshot-form').addEventListener('submit', async (e) => {
@@ -537,7 +525,7 @@
         });
 
         // Record all customers automatically
-        async function recordAllCustomers() {
+        window.recordAllCustomers = async function() {
             const date = document.getElementById('snapshot-date').value;
             if (!date) {
                 showToast('Please select a date', 'error');
@@ -566,11 +554,10 @@
                 }
             }
             showToast(`Recorded snapshots for ${count} customers`);
-        }
-        window.recordAllCustomers = recordAllCustomers;
+        };
 
         // Load history
-        async function loadHistory() {
+        window.loadHistory = async function() {
             const customerId = document.getElementById('history-customer').value;
             const month = document.getElementById('history-month').value;
 
@@ -604,13 +591,13 @@
                     const d = doc.data();
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${escapeHTML(d.date)}</td>
-                        <td>${escapeHTML(d.customer_name || 'Unknown')}</td>
+                        <td>${d.date}</td>
+                        <td>${d.customer_name || 'Unknown'}</td>
                         <td>${d.pallet_count}</td>
                         <td>${d.container_count || 0}</td>
                         <td>${d.box_count || 0}</td>
                         <td>${d.sqft || 0}</td>
-                        <td>${d.recorded_by === 'system' ? '🤖 Auto' : escapeHTML(d.recorded_by_email || 'Staff')}</td>
+                        <td>${d.recorded_by === 'system' ? '🤖 Auto' : d.recorded_by_email || 'Staff'}</td>
                     `;
                     tbody.appendChild(row);
                 });
@@ -618,11 +605,10 @@
                 console.error(err);
                 showToast('Error loading history', 'error');
             }
-        }
-        window.loadHistory = loadHistory;
+        };
 
         // Load summary
-        async function loadSummary() {
+        window.loadSummary = async function() {
             const customerId = document.getElementById('summary-customer').value;
             const month = document.getElementById('summary-month').value;
 
@@ -678,8 +664,7 @@
                 console.error(err);
                 showToast('Error loading summary', 'error');
             }
-        }
-        window.loadSummary = loadSummary;
+        };
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
             await signOut(auth);

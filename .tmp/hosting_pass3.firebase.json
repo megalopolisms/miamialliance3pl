@@ -1,0 +1,7 @@
+{
+  "hosting": {
+    "public": "hosting_stage_20260313_pass3",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "functions/**"],
+    "rewrites": []
+  }
+}
