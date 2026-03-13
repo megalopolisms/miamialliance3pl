@@ -1,7 +1,7 @@
 /**
  * Miami Alliance 3PL — Internationalization Engine
  * Lightweight, zero-dependency i18n with language switcher
- * Supports: English (en) + Spanish (es)
+ * Supports: English (en) + Spanish (es) + Portuguese (pt-br)
  * Built by Symbio for Master Jorge
  */
 (function () {
@@ -9,7 +9,7 @@
 
   var STORAGE_KEY = "ma3pl_lang";
   var DEFAULT_LANG = "en";
-  var SUPPORTED = ["en", "es"];
+  var SUPPORTED = ["en", "es", "pt-br"];
 
   // ── Flag SVGs (inline, no external deps) ────────────────────────────
   var FLAGS = {
@@ -36,11 +36,18 @@
       '<rect width="60" height="30" fill="#c60b1e"/>' +
       '<rect y="7.5" width="60" height="15" fill="#ffc400"/>' +
       "</svg>",
+    "pt-br":
+      '<svg viewBox="0 0 60 30" width="24" height="12" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="60" height="30" fill="#009c3b"/>' +
+      '<polygon points="30,2 58,15 30,28 2,15" fill="#ffdf00"/>' +
+      '<circle cx="30" cy="15" r="7" fill="#002776"/>' +
+      '<path d="M23,15 Q30,10 37,15" stroke="#fff" stroke-width="0.8" fill="none"/>' +
+      "</svg>",
   };
 
   // ── Detect initial language ─────────────────────────────────────────
-  // Rule: check user preferred browser language first; only Spanish gets es.
-  // Every non-Spanish language falls back to English.
+  // Rule: check user preferred browser language first.
+  // Spanish gets es, Portuguese gets pt-br. Everything else falls back to English.
   function getBrowserPreferredLang() {
     var preferred = "";
     if (navigator.languages && navigator.languages.length > 0) {
@@ -51,6 +58,7 @@
 
     preferred = String(preferred).toLowerCase();
     if (preferred.indexOf("es") === 0) return "es";
+    if (preferred.indexOf("pt") === 0) return "pt-br";
     return DEFAULT_LANG;
   }
 
@@ -63,15 +71,19 @@
     return getBrowserPreferredLang();
   }
 
-  // ── Toggle dual-content blocks (.lang-en / .lang-es) ────────────────
+  // ── Toggle dual-content blocks (.lang-en / .lang-es / .lang-pt-br) ──
   function toggleLangContent(lang) {
     var enBlocks = document.querySelectorAll(".lang-en");
     var esBlocks = document.querySelectorAll(".lang-es");
+    var ptBlocks = document.querySelectorAll(".lang-pt-br");
     for (var i = 0; i < enBlocks.length; i++) {
       enBlocks[i].style.display = lang === "en" ? "" : "none";
     }
     for (var j = 0; j < esBlocks.length; j++) {
       esBlocks[j].style.display = lang === "es" ? "" : "none";
+    }
+    for (var k = 0; k < ptBlocks.length; k++) {
+      ptBlocks[k].style.display = lang === "pt-br" ? "" : "none";
     }
   }
 
@@ -166,9 +178,7 @@
 
     var htmlEls = document.querySelectorAll("[data-i18n-original-html]");
     for (var j = 0; j < htmlEls.length; j++) {
-      htmlEls[j].innerHTML = htmlEls[j].getAttribute(
-        "data-i18n-original-html",
-      );
+      htmlEls[j].innerHTML = htmlEls[j].getAttribute("data-i18n-original-html");
     }
 
     var phEls = document.querySelectorAll("[data-i18n-original-ph]");
@@ -211,6 +221,13 @@
       '" data-lang="es" title="Español" aria-label="Cambiar a Español">' +
       FLAGS.es +
       '<span class="lang-label">ES</span>' +
+      "</button>" +
+      '<span class="lang-divider">|</span>' +
+      '<button class="lang-btn' +
+      (currentLang === "pt-br" ? " active" : "") +
+      '" data-lang="pt-br" title="Português" aria-label="Mudar para Português">' +
+      FLAGS["pt-br"] +
+      '<span class="lang-label">PT</span>' +
       "</button>" +
       "</div>";
 
