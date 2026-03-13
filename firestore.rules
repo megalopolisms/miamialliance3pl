@@ -154,6 +154,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Shipment Documents — packing lists and commercial invoices
+    match /shipment_documents/{docId} {
+      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
+      allow create: if isAuthenticated();
+      allow update: if isStaff() || resource.data.user_id == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
     // Activity Log — daily warehouse task entries for activity-based billing
     match /activity_log/{entryId} {
       allow read: if isAuthenticated() && (resource.data.customer_id == request.auth.uid || isStaff());

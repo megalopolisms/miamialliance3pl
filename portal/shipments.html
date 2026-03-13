@@ -1274,6 +1274,7 @@
                 <select id="status-filter" style="padding: 0.5rem 1rem; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md);">
                     <option value="all" data-i18n="portal.shipments.filterAll">All Shipments</option>
                     <option value="pending" data-i18n="portal.shipments.filterPending">Pending</option>
+                    <option value="processing">Processing</option>
                     <option value="picked_up" data-i18n="portal.shipments.filterPickedUp">Picked Up</option>
                     <option value="in_transit" data-i18n="portal.shipments.filterInTransit">In Transit</option>
                     <option value="delivered" data-i18n="portal.shipments.filterDelivered">Delivered</option>
@@ -1920,9 +1921,22 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+        import {
+            MAX_INLINE_FILE_BYTES,
+            buildDocumentMetadata,
+            buildShipmentQueryPlan,
+            buildShipmentRowHtml,
+            escapeHtml,
+            filterShipmentsForPlan,
+            getInlineFileData,
+            sanitizeStoragePathSegment,
+            stripUndefinedValues
+        } from '../js/shipments-portal-utils.mjs';
+        import { parseBOLText as parseBOLTextFromUtils } from '../js/bol-parser-utils.mjs';
 
         const firebaseConfig = {
             apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
@@ -1937,6 +1951,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         // Fallback admin emails
         const FALLBACK_ADMIN_EMAILS = [
@@ -3360,6 +3375,65 @@
             return true;
         }
 
+        function buildUploadPath(userId, shipmentId, trackingNumber, docType, filename) {
+            const safeUserId = sanitizeStoragePathSegment(userId || 'anonymous', 'anonymous');
+            const safeShipmentId = sanitizeStoragePathSegment(shipmentId || 'shipment', 'shipment');
+            const safeTracking = sanitizeStoragePathSegment(trackingNumber || safeShipmentId, safeShipmentId);
+            const safeDocType = sanitizeStoragePathSegment(docType || 'document', 'document');
+            const safeFilename = sanitizeStoragePathSegment(filename || `${safeDocType}.bin`, `${safeDocType}.bin`);
+            return `shipment_uploads/${safeUserId}/${safeTracking}/${safeShipmentId}/${safeDocType}/${Date.now()}-${safeFilename}`;
+        }
+
+        async function uploadDocumentToStorage({ file, shipmentId, trackingNumber, docType }) {
+            if (!file || !currentUser?.uid) {
+                return { url: null, storagePath: null, error: null };
+            }
+
+            const path = buildUploadPath(currentUser.uid, shipmentId, trackingNumber, docType, file.name);
+            const fileRef = storageRef(storage, path);
+
+            try {
+                await uploadBytes(fileRef, file, {
+                    contentType: file.type || 'application/octet-stream',
+                    customMetadata: {
+                        shipment_id: shipmentId,
+                        tracking_number: trackingNumber || '',
+                        doc_type: docType,
+                        user_id: currentUser.uid
+                    }
+                });
+
+                const url = await getDownloadURL(fileRef);
+                return { url, storagePath: path, error: null };
+            } catch (error) {
+                console.warn(`Storage upload failed for ${docType}:`, error);
+                return { url: null, storagePath: null, error };
+            }
+        }
+
+        async function buildPersistedDocument({ file, dataUrl, shipmentId, trackingNumber, docType, inlineLimit = MAX_INLINE_FILE_BYTES, extra = {} }) {
+            if (!file) return null;
+
+            const uploadedAt = new Date().toISOString();
+            const inlineData = getInlineFileData(file.size, dataUrl, inlineLimit);
+            const uploadResult = await uploadDocumentToStorage({ file, shipmentId, trackingNumber, docType });
+            const metadata = buildDocumentMetadata({
+                file,
+                uploadedAt,
+                url: uploadResult.url,
+                storagePath: uploadResult.storagePath,
+                inlineData,
+                extra
+            });
+
+            return {
+                uploadedAt,
+                inlineData,
+                metadata,
+                uploadError: uploadResult.error
+            };
+        }
+
         document.getElementById('sc-create-btn').addEventListener('click', async () => {
             if (!currentUser) { showError('Please log in first.'); return; }
             if (!validateForm()) return;
@@ -3370,9 +3444,11 @@
             createBtn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Creating...';
 
             const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
+            const createdAtIso = new Date().toISOString();
             const quoteResult = calculateQuote();
             const d = sc.destination;
             const incomingItemsForSave = getIncomingItemsForSave();
+            let creationSucceeded = false;
 
             trackCalcEvent('shipment_submit_attempt', {
                 package_type: sc.packageType,
@@ -3382,17 +3458,28 @@
             });
 
             // Build BOL document reference
-            const bolDocument = bolState.file ? {
-                filename: bolState.file.name,
-                file_type: bolState.file.type,
-                file_size: bolState.file.size,
-                uploaded_at: new Date().toISOString(),
-                parsed_data: bolState.parsedData || null,
-                bol_number: bolState.parsedData?.bolNumber || null,
-                carrier: bolState.parsedData?.carrier || null,
-                po_number: bolState.parsedData?.poNumber || null,
-                external_tracking: bolState.parsedData?.trackingNumber || null
-            } : null;
+            const bolDocument = bolState.file ? buildDocumentMetadata({
+                file: bolState.file,
+                uploadedAt: createdAtIso,
+                inlineData: getInlineFileData(bolState.file.size, bolState.fileDataUrl, 716800),
+                extra: {
+                    parsed_data: bolState.parsedData || null,
+                    bol_number: bolState.parsedData?.bolNumber || null,
+                    carrier: bolState.parsedData?.carrier || null,
+                    po_number: bolState.parsedData?.poNumber || null,
+                    external_tracking: bolState.parsedData?.trackingNumber || null
+                }
+            }) : null;
+            const packingListDocument = docsState.packing_list.file ? buildDocumentMetadata({
+                file: docsState.packing_list.file,
+                uploadedAt: createdAtIso,
+                inlineData: getInlineFileData(docsState.packing_list.file.size, docsState.packing_list.dataUrl)
+            }) : null;
+            const commercialInvoiceDocument = docsState.invoice.file ? buildDocumentMetadata({
+                file: docsState.invoice.file,
+                uploadedAt: createdAtIso,
+                inlineData: getInlineFileData(docsState.invoice.file.size, docsState.invoice.dataUrl)
+            }) : null;
 
             // Build cargo items array (hard-capped for performance + payload safety)
             const allCargoItems = Array.isArray(bolState.cargoItems) ? bolState.cargoItems : [];
@@ -3480,39 +3567,29 @@
                 incoming_items: incomingItemsForSave,
                 notes: sc.notes || `Shipment: ${sc.quantity} ${sc.packageType}(s), Zone: ${getZoneLabel(sc.shippingZone)}`,
                 // Packing List & Invoice documents
-                packing_list: docsState.packing_list.file ? {
-                    filename: docsState.packing_list.file.name,
-                    file_type: docsState.packing_list.file.type,
-                    file_size: docsState.packing_list.file.size,
-                    uploaded_at: new Date().toISOString()
-                } : null,
-                commercial_invoice: docsState.invoice.file ? {
-                    filename: docsState.invoice.file.name,
-                    file_type: docsState.invoice.file.type,
-                    file_size: docsState.invoice.file.size,
-                    uploaded_at: new Date().toISOString()
-                } : null,
+                packing_list: packingListDocument,
+                commercial_invoice: commercialInvoiceDocument,
                 status: 'pending',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
+                created_at: createdAtIso,
+                updated_at: createdAtIso
             };
 
-            // Firestore has a strict 1 MiB per-document limit; trim embedded cargo preview first, then hard-fail if still too large.
-            let shipmentPayloadSize = estimatePayloadBytes(newShipment);
-            if (shipmentPayloadSize > FIRESTORE_DOC_SAFE_LIMIT_BYTES && Array.isArray(newShipment.cargo_items) && newShipment.cargo_items.length > 0) {
-                newShipment.cargo_items = [];
-                newShipment.cargo_items_embedded_count = 0;
-                newShipment.cargo_items_truncated = cargoItemsData.length > 0 || cargoItemsWereTrimmed;
-                newShipment.cargo_items_omitted_for_size = true;
-                shipmentPayloadSize = estimatePayloadBytes(newShipment);
-            }
-            if (shipmentPayloadSize > FIRESTORE_DOC_HARD_LIMIT_BYTES - 8192) {
-                const payloadErr = new Error('Shipment payload too large. Reduce itemized lines and try again.');
-                payloadErr.code = 'resource-exhausted';
-                throw payloadErr;
-            }
-
             try {
+                // Firestore has a strict 1 MiB per-document limit; trim embedded cargo preview first, then hard-fail if still too large.
+                let shipmentPayloadSize = estimatePayloadBytes(newShipment);
+                if (shipmentPayloadSize > FIRESTORE_DOC_SAFE_LIMIT_BYTES && Array.isArray(newShipment.cargo_items) && newShipment.cargo_items.length > 0) {
+                    newShipment.cargo_items = [];
+                    newShipment.cargo_items_embedded_count = 0;
+                    newShipment.cargo_items_truncated = cargoItemsData.length > 0 || cargoItemsWereTrimmed;
+                    newShipment.cargo_items_omitted_for_size = true;
+                    shipmentPayloadSize = estimatePayloadBytes(newShipment);
+                }
+                if (shipmentPayloadSize > FIRESTORE_DOC_HARD_LIMIT_BYTES - 8192) {
+                    const payloadErr = new Error('Shipment payload too large. Reduce itemized lines and try again.');
+                    payloadErr.code = 'resource-exhausted';
+                    throw payloadErr;
+                }
+
                 const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
 
                 // Log detailed billable events
@@ -3627,64 +3704,100 @@
                     }
                 }
 
-                // Store BOL document metadata
-                if (bolDocument) {
+                const shipmentDocumentUpdates = {};
+
+                if (bolState.file) {
                     try {
-                        // Firestore 1 MiB doc limit — only embed base64 for files < 700KB to stay safe
-                        const safeFileLimit = 716800; // ~700KB raw = ~950KB base64, well under 1 MiB with metadata
-                        const fileData = (bolState.fileDataUrl && bolState.file.size < safeFileLimit) ? bolState.fileDataUrl : null;
-                        await addDoc(collection(db, 'bol_documents'), {
+                        const bolRecord = await buildPersistedDocument({
+                            file: bolState.file,
+                            dataUrl: bolState.fileDataUrl,
+                            shipmentId: shipmentRef.id,
+                            trackingNumber,
+                            docType: 'bol_document',
+                            inlineLimit: 716800,
+                            extra: {
+                                parsed_data: bolState.parsedData || null,
+                                bol_number: bolState.parsedData?.bolNumber || null,
+                                carrier: bolState.parsedData?.carrier || null,
+                                po_number: bolState.parsedData?.poNumber || null,
+                                external_tracking: bolState.parsedData?.trackingNumber || null
+                            }
+                        });
+
+                        shipmentDocumentUpdates.bol_document = bolRecord.metadata;
+                        await addDoc(collection(db, 'bol_documents'), stripUndefinedValues({
                             shipment_id: shipmentRef.id,
                             tracking_number: trackingNumber,
                             user_id: currentUser.uid,
-                            ...bolDocument,
-                            file_data: fileData,
-                            file_stored: !!fileData,
-                            created_at: new Date().toISOString()
+                            ...bolRecord.metadata,
+                            file_data: bolRecord.inlineData,
+                            file_stored: !!bolRecord.inlineData || !!bolRecord.metadata?.url,
+                            created_at: bolRecord.uploadedAt
+                        }));
+                        trackCalcEvent('bol_document_stored', {
+                            file_type: bolState.file.type,
+                            file_stored: !!bolRecord.inlineData || !!bolRecord.metadata?.url
                         });
-                        trackCalcEvent('bol_document_stored', { file_type: bolState.file.type, file_stored: !!fileData });
                     } catch (bolErr) {
                         console.warn('BOL document storage failed:', bolErr.message);
-                        // Non-blocking — shipment was already created successfully
                     }
                 }
 
-                // Store Packing List document
                 if (docsState.packing_list.file) {
                     try {
-                        await addDoc(collection(db, 'shipment_documents'), {
+                        const packingListRecord = await buildPersistedDocument({
+                            file: docsState.packing_list.file,
+                            dataUrl: docsState.packing_list.dataUrl,
+                            shipmentId: shipmentRef.id,
+                            trackingNumber,
+                            docType: 'packing_list'
+                        });
+
+                        shipmentDocumentUpdates.packing_list = packingListRecord.metadata;
+                        await addDoc(collection(db, 'shipment_documents'), stripUndefinedValues({
                             shipment_id: shipmentRef.id,
                             tracking_number: trackingNumber,
                             user_id: currentUser.uid,
                             doc_type: 'packing_list',
-                            filename: docsState.packing_list.file.name,
-                            file_type: docsState.packing_list.file.type,
-                            file_size: docsState.packing_list.file.size,
-                            file_data: (docsState.packing_list.dataUrl && docsState.packing_list.file.size < 1048576) ? docsState.packing_list.dataUrl : null,
-                            created_at: new Date().toISOString()
-                        });
+                            ...packingListRecord.metadata,
+                            file_data: packingListRecord.inlineData,
+                            created_at: packingListRecord.uploadedAt
+                        }));
                     } catch (docErr) {
                         console.warn('Packing list storage failed:', docErr.message);
                     }
                 }
 
-                // Store Invoice document
                 if (docsState.invoice.file) {
                     try {
-                        await addDoc(collection(db, 'shipment_documents'), {
+                        const invoiceRecord = await buildPersistedDocument({
+                            file: docsState.invoice.file,
+                            dataUrl: docsState.invoice.dataUrl,
+                            shipmentId: shipmentRef.id,
+                            trackingNumber,
+                            docType: 'commercial_invoice'
+                        });
+
+                        shipmentDocumentUpdates.commercial_invoice = invoiceRecord.metadata;
+                        await addDoc(collection(db, 'shipment_documents'), stripUndefinedValues({
                             shipment_id: shipmentRef.id,
                             tracking_number: trackingNumber,
                             user_id: currentUser.uid,
                             doc_type: 'commercial_invoice',
-                            filename: docsState.invoice.file.name,
-                            file_type: docsState.invoice.file.type,
-                            file_size: docsState.invoice.file.size,
-                            file_data: (docsState.invoice.dataUrl && docsState.invoice.file.size < 1048576) ? docsState.invoice.dataUrl : null,
-                            created_at: new Date().toISOString()
-                        });
+                            ...invoiceRecord.metadata,
+                            file_data: invoiceRecord.inlineData,
+                            created_at: invoiceRecord.uploadedAt
+                        }));
                     } catch (docErr) {
                         console.warn('Invoice storage failed:', docErr.message);
                     }
+                }
+
+                if (Object.keys(shipmentDocumentUpdates).length > 0) {
+                    await updateDoc(shipmentRef, stripUndefinedValues({
+                        ...shipmentDocumentUpdates,
+                        updated_at: new Date().toISOString()
+                    }));
                 }
 
                 // Auto-add incoming items to inventory collection
@@ -3766,6 +3879,7 @@
                 document.querySelector('#calc-body .quote-tool').style.display = 'none';
                 document.getElementById('success-tracking').textContent = trackingNumber;
                 document.getElementById('calc-success').classList.add('active');
+                creationSucceeded = true;
 
                 trackCalcEvent('shipment_created_success', { tracking_number: trackingNumber, value: quoteResult.total });
 
@@ -3784,8 +3898,11 @@
                 }
                 showError(userMsg);
                 trackCalcEvent('shipment_create_failed', { error: error.message, code: error.code || 'unknown' });
-                createBtn.disabled = false;
-                createBtn.innerHTML = '✓ Create Shipment';
+            } finally {
+                if (!creationSucceeded) {
+                    createBtn.disabled = false;
+                    createBtn.innerHTML = '✓ Create Shipment';
+                }
             }
         });
 
@@ -3973,155 +4090,7 @@
         // BOL TEXT PARSER — Extracts structured data from text
         // =====================================================
         function parseBOLText(text) {
-            const data = {};
-            const upper = text.toUpperCase();
-
-            // BOL Number / PRO Number
-            const bolPatterns = [
-                /(?:BOL|B\/L|BILL\s*OF\s*LADING)\s*(?:#|NO\.?|NUMBER)?\s*[:.]?\s*([A-Z0-9\-]{4,20})/i,
-                /(?:PRO)\s*(?:#|NO\.?|NUMBER)?\s*[:.]?\s*([A-Z0-9\-]{4,20})/i,
-                /(?:REFERENCE|REF)\s*(?:#|NO\.?)?\s*[:.]?\s*([A-Z0-9\-]{4,20})/i
-            ];
-            for (const pat of bolPatterns) {
-                const m = text.match(pat);
-                if (m) { data.bolNumber = m[1].trim(); break; }
-            }
-
-            // PO Number
-            const poMatch = text.match(/(?:PO|P\.O\.?|PURCHASE\s*ORDER)\s*(?:#|NO\.?)?\s*[:.]?\s*([A-Z0-9\-]{3,20})/i);
-            if (poMatch) data.poNumber = poMatch[1].trim();
-
-            // Carrier
-            const carrierPatterns = [
-                /(?:CARRIER|TRUCKING|TRANSPORT)\s*(?:NAME)?\s*[:.]?\s*([A-Za-z\s&]+?)(?:\s{2,}|\n|$)/i,
-                /(?:SHIPPED\s*(?:VIA|BY))\s*[:.]?\s*([A-Za-z\s&]+?)(?:\s{2,}|\n|$)/i
-            ];
-            for (const pat of carrierPatterns) {
-                const m = text.match(pat);
-                if (m) { data.carrier = m[1].trim().substring(0, 50); break; }
-            }
-
-            // Tracking Number (common carrier formats)
-            const trackingPatterns = [
-                /(?:TRACKING|TRACK)\s*(?:#|NO\.?)?\s*[:.]?\s*([A-Z0-9]{10,30})/i,
-                /(?:1Z[A-Z0-9]{16})/i,                    // UPS
-                /(?:\d{12,22})/,                            // FedEx / USPS
-                /(?:SCAC|TRAILER)\s*(?:#|NO\.?)?\s*[:.]?\s*([A-Z0-9\-]{4,15})/i
-            ];
-            for (const pat of trackingPatterns) {
-                const m = text.match(pat);
-                if (m) {
-                    data.trackingNumber = (m[1] || m[0]).trim();
-                    break;
-                }
-            }
-
-            // Weight
-            const weightPatterns = [
-                /(?:TOTAL\s*)?(?:GROSS\s*)?WEIGHT\s*[:.]?\s*([\d,]+(?:\.\d+)?)\s*(?:LBS?|POUNDS?|KGS?)/i,
-                /(\d{2,6}(?:\.\d+)?)\s*(?:LBS?|POUNDS?)\s*(?:TOTAL|GROSS)?/i
-            ];
-            for (const pat of weightPatterns) {
-                const m = text.match(pat);
-                if (m) {
-                    const w = parseFloat(m[1].replace(/,/g, ''));
-                    if (w > 0 && w < 100000) { data.weight = w; break; }
-                }
-            }
-
-            // Number of Pieces / Pallets / Boxes
-            const piecesPatterns = [
-                /(\d+)\s*(?:PALLETS?|PLTS?|SKIDS?)/i,
-                /(?:PALLETS?|PLTS?|SKIDS?)\s*[:.]?\s*(\d+)/i,
-                /(\d+)\s*(?:PIECES?|PCS?|PKGS?|PACKAGES?|CARTONS?|BOXES?|CTN)/i,
-                /(?:PIECES?|PCS?|PKGS?|QTY)\s*[:.]?\s*(\d+)/i
-            ];
-            for (const pat of piecesPatterns) {
-                const m = text.match(pat);
-                if (m) {
-                    const qty = parseInt(m[1]);
-                    if (qty > 0 && qty < 10000) {
-                        data.quantity = Math.min(qty, MAX_CARGO_ITEMS);
-                        if (qty > MAX_CARGO_ITEMS) {
-                            data.quantityCapped = true;
-                            data.originalQuantity = qty;
-                        }
-                        // Determine if pallets or boxes
-                        if (/PALLET|PLT|SKID/i.test(m[0])) {
-                            data.packageType = 'pallet';
-                        } else {
-                            data.packageType = 'box';
-                        }
-                        break;
-                    }
-                }
-            }
-
-            // Dimensions
-            const dimPatterns = [
-                /(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)\s*(?:IN|INCHES?|")?/i,
-                /(?:DIMENSIONS?|DIM|SIZE)\s*[:.]?\s*(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)/i
-            ];
-            for (const pat of dimPatterns) {
-                const m = text.match(pat);
-                if (m) {
-                    data.length = parseFloat(m[1]);
-                    data.width = parseFloat(m[2]);
-                    data.height = parseFloat(m[3]);
-                    break;
-                }
-            }
-
-            // Shipper Name/Address
-            const shipperMatch = text.match(/(?:SHIPPER|SHIP\s*FROM|FROM|ORIGIN)\s*[:.]?\s*\n?\s*([^\n]{5,60})/i);
-            if (shipperMatch) data.shipperName = shipperMatch[1].trim();
-
-            // Consignee / Ship To
-            const consigneePatterns = [
-                /(?:CONSIGNEE|SHIP\s*TO|DELIVER\s*TO|TO)\s*[:.]?\s*\n?\s*([^\n]{5,60})/i,
-                /(?:RECIPIENT|RECEIVER)\s*[:.]?\s*\n?\s*([^\n]{5,60})/i
-            ];
-            for (const pat of consigneePatterns) {
-                const m = text.match(pat);
-                if (m) { data.consigneeName = m[1].trim(); break; }
-            }
-
-            // Address extraction (look for state + zip pattern)
-            const addressMatches = text.match(/([A-Za-z\s]+),?\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)/g);
-            if (addressMatches && addressMatches.length > 0) {
-                // Last match is usually the destination
-                const lastAddr = addressMatches[addressMatches.length - 1];
-                const addrParts = lastAddr.match(/([A-Za-z\s]+?),?\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)/);
-                if (addrParts) {
-                    data.destCity = addrParts[1].trim();
-                    data.destState = addrParts[2];
-                    data.destZip = addrParts[3];
-                }
-                // If there are 2+ addresses, first is origin, second is destination
-                if (addressMatches.length >= 2) {
-                    const destAddr = addressMatches[addressMatches.length - 1];
-                    const destParts = destAddr.match(/([A-Za-z\s]+?),?\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)/);
-                    if (destParts) {
-                        data.destCity = destParts[1].trim();
-                        data.destState = destParts[2];
-                        data.destZip = destParts[3];
-                    }
-                }
-            }
-
-            // Street address (look for common patterns)
-            const streetMatch = text.match(/(\d+\s+[A-Za-z0-9\s.]+(?:ST|STREET|AVE|AVENUE|BLVD|BOULEVARD|RD|ROAD|DR|DRIVE|LN|LANE|WAY|CT|COURT|PL|PLACE|HWY|HIGHWAY|PKWY|PARKWAY)\.?(?:\s+(?:STE|SUITE|APT|UNIT|#)\s*[A-Z0-9\-]+)?)/i);
-            if (streetMatch) data.destStreet = streetMatch[1].trim();
-
-            // Description of goods
-            const descMatch = text.match(/(?:DESCRIPTION|COMMODITY|GOODS|CONTENTS)\s*(?:OF\s*GOODS?)?\s*[:.]?\s*\n?\s*([^\n]{5,100})/i);
-            if (descMatch) data.description = descMatch[1].trim();
-
-            // Freight class
-            const classMatch = text.match(/(?:CLASS|FREIGHT\s*CLASS|NMFC)\s*[:.]?\s*(\d{2,3}(?:\.\d)?)/i);
-            if (classMatch) data.freightClass = classMatch[1];
-
-            return data;
+            return parseBOLTextFromUtils(text, { maxCargoItems: MAX_CARGO_ITEMS });
         }
 
         // =====================================================
@@ -4204,7 +4173,7 @@
                     foundCount++;
                     html += `<div class="bol-data-row">
                         <span class="bol-data-label">${f.label}</span>
-                        <span class="bol-data-value">${val}</span>
+                        <span class="bol-data-value">${escapeHtml(val)}</span>
                     </div>`;
                 }
             }
@@ -4266,11 +4235,11 @@
             for (const item of bolState.cargoItems) {
                 const icon = item.type === 'pallet' ? '🏗️' : '📦';
                 const weightStr = item.weight ? `${item.weight} lbs` : 'TBD';
-                html += `<div class="cargo-item-card" data-cargo-id="${item.cargo_id}">
+                html += `<div class="cargo-item-card" data-cargo-id="${escapeHtml(item.cargo_id)}">
                     <span class="cargo-item-icon">${icon}</span>
                     <div class="cargo-item-details">
-                        <div class="cargo-item-id">${item.cargo_id}</div>
-                        <div class="cargo-item-desc">${item.type === 'pallet' ? 'Pallet' : 'Box'} #${item.index} • ${weightStr}${item.description ? ' • ' + item.description.substring(0, 40) : ''}</div>
+                        <div class="cargo-item-id">${escapeHtml(item.cargo_id)}</div>
+                        <div class="cargo-item-desc">${item.type === 'pallet' ? 'Pallet' : 'Box'} #${escapeHtml(item.index)} • ${escapeHtml(weightStr)}${item.description ? ' • ' + escapeHtml(item.description.substring(0, 40)) : ''}</div>
                     </div>
                     <span class="cargo-item-status">Awaiting</span>
                 </div>`;
@@ -4632,62 +4601,65 @@
         // =====================================================
         // LOAD SHIPMENTS TABLE
         // =====================================================
+        function buildShipmentQueryForPlanStep(planStep) {
+            const constraints = [collection(db, 'shipments')];
+
+            (planStep?.filters || []).forEach(([field, operator, value]) => {
+                constraints.push(where(field, operator, value));
+            });
+
+            if (planStep?.orderBy) {
+                constraints.push(orderBy(planStep.orderBy[0], planStep.orderBy[1]));
+            }
+
+            return query(...constraints);
+        }
+
+        function isShipmentQueryFallbackError(error) {
+            const message = String(error?.message || '').toLowerCase();
+            return error?.code === 'failed-precondition' || message.includes('requires an index');
+        }
+
         async function loadShipments() {
             const tbody = document.getElementById('shipments-list');
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Loading...</td></tr>';
 
             try {
                 const statusFilter = document.getElementById('status-filter').value;
-                let q;
-                if (isStaff) {
-                    if (statusFilter === 'all') {
-                        q = query(collection(db, 'shipments'), orderBy('created_at', 'desc'));
-                    } else {
-                        q = query(collection(db, 'shipments'), where('status', '==', statusFilter), orderBy('created_at', 'desc'));
+                const plan = buildShipmentQueryPlan({
+                    isStaffUser: isStaff,
+                    statusFilter,
+                    currentUserId: currentUser?.uid || null
+                });
+
+                let snapshot;
+                try {
+                    snapshot = await getDocs(buildShipmentQueryForPlanStep(plan.primary));
+                } catch (primaryError) {
+                    if (!isShipmentQueryFallbackError(primaryError) || !plan.fallback) {
+                        throw primaryError;
                     }
-                } else {
-                    if (statusFilter === 'all') {
-                        q = query(collection(db, 'shipments'), where('user_id', '==', currentUser.uid), orderBy('created_at', 'desc'));
-                    } else {
-                        q = query(collection(db, 'shipments'), where('user_id', '==', currentUser.uid), where('status', '==', statusFilter), orderBy('created_at', 'desc'));
-                    }
+                    console.warn('Falling back to client-side shipment sorting/filtering:', primaryError.message);
+                    snapshot = await getDocs(buildShipmentQueryForPlanStep(plan.fallback));
                 }
-                const snapshot = await getDocs(q);
-                if (snapshot.empty) {
+
+                const shipments = filterShipmentsForPlan(
+                    snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })),
+                    plan
+                );
+
+                if (shipments.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">No shipments found</td></tr>';
                     return;
                 }
+
                 tbody.innerHTML = '';
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
+                shipments.forEach((shipment) => {
                     const row = document.createElement('tr');
-
-                    // BOL / Cargo / Docs column
-                    let bolCargoHtml = '';
-                    if (data.bol_document) {
-                        bolCargoHtml += `<span style="font-size:0.75rem;background:#eff6ff;color:#1d4ed8;padding:2px 6px;border-radius:4px;font-weight:600;">📄 BOL</span> `;
-                    }
-                    if (data.cargo_count && data.cargo_count > 0) {
-                        bolCargoHtml += `<span style="font-size:0.75rem;background:#f0fdfa;color:#0d9488;padding:2px 6px;border-radius:4px;font-weight:600;">📦 ${data.cargo_count} item${data.cargo_count > 1 ? 's' : ''}</span> `;
-                    }
-                    if (data.packing_list) {
-                        bolCargoHtml += `<span style="font-size:0.75rem;background:#f0fdf4;color:#166534;padding:2px 6px;border-radius:4px;font-weight:600;">📋 PL</span> `;
-                    }
-                    if (data.commercial_invoice) {
-                        bolCargoHtml += `<span style="font-size:0.75rem;background:#fefce8;color:#854d0e;padding:2px 6px;border-radius:4px;font-weight:600;">🧾 INV</span> `;
-                    }
-                    // Always show upload link
-                    bolCargoHtml += `<button class="shipment-upload-link" data-shipment-id="${docSnap.id}" data-tracking="${data.tracking_number}" title="Upload BOL or Invoice">📤 Upload</button>`;
-
-                    row.innerHTML = `
-                        <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
-                        <td>${data.destination?.name || 'N/A'}</td>
-                        <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
-                        <td>${bolCargoHtml}</td>
-                        <td style="text-transform: capitalize;">${data.service_type || data.shipping_zone || ''}</td>
-                        <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
-                        <td>${new Date(data.created_at).toLocaleDateString()}</td>
-                    `;
+                    row.innerHTML = buildShipmentRowHtml(shipment, {
+                        includeUploadButton: true,
+                        shipmentId: shipment.id
+                    });
                     tbody.appendChild(row);
                 });
             } catch (error) {
@@ -4750,7 +4722,7 @@
             return '📎';
         }
 
-        function handleModalFile(type, file) {
+        async function handleModalFile(type, file) {
             const key = type === 'bol' ? 'bol' : 'invoice';
             const prefix = type === 'bol' ? 'bol' : 'inv';
             const maxSize = 5 * 1024 * 1024;
@@ -4762,12 +4734,20 @@
 
             modalState[key].file = file;
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                modalState[key].dataUrl = e.target.result;
-                document.getElementById('doc-upload-save-btn').disabled = false;
-            };
-            reader.readAsDataURL(file);
+            try {
+                modalState[key].dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.onabort = () => reject(new Error('File read cancelled'));
+                    reader.readAsDataURL(file);
+                });
+            } catch (readErr) {
+                console.warn('Modal FileReader error:', readErr);
+                modalState[key].dataUrl = null;
+            }
+
+            document.getElementById('doc-upload-save-btn').disabled = false;
 
             document.getElementById(`modal-${prefix}-slot`).classList.add('has-file');
             document.getElementById(`modal-${prefix}-preview`).classList.add('active');
@@ -4824,84 +4804,70 @@
             saveBtn.textContent = 'Uploading...';
 
             let successCount = 0;
-            let errorMessages = [];
+            let uploadSucceeded = false;
 
             try {
                 const shipRef = doc(db, 'shipments', modalState.shipmentId);
                 const updateData = {};
 
-                // BOL document
                 if (modalState.bol.file) {
-                    const bolObj = {
-                        filename: modalState.bol.file.name,
-                        file_type: modalState.bol.file.type,
-                        file_size: modalState.bol.file.size,
-                        uploaded_at: new Date().toISOString()
-                    };
-                    if (modalState.bol.file.size < 700 * 1024 && modalState.bol.dataUrl) {
-                        bolObj.file_data = modalState.bol.dataUrl;
-                    }
-                    updateData.bol_document = bolObj;
+                    const bolRecord = await buildPersistedDocument({
+                        file: modalState.bol.file,
+                        dataUrl: modalState.bol.dataUrl,
+                        shipmentId: modalState.shipmentId,
+                        trackingNumber: modalState.tracking,
+                        docType: 'bol_document',
+                        inlineLimit: 716800
+                    });
+                    updateData.bol_document = bolRecord.metadata;
 
-                    // Also save to bol_documents collection
-                    try {
-                        await addDoc(collection(db, 'bol_documents'), {
-                            shipment_id: modalState.shipmentId,
-                            tracking_number: modalState.tracking,
-                            user_id: currentUser.uid,
-                            ...bolObj,
-                            file_data: (modalState.bol.file.size < 700 * 1024 && modalState.bol.dataUrl) ? modalState.bol.dataUrl : null,
-                            created_at: new Date().toISOString()
-                        });
-                        successCount++;
-                    } catch (bolErr) {
-                        console.warn('BOL collection write failed:', bolErr.message);
-                        errorMessages.push('BOL archive: ' + bolErr.message);
-                    }
-                }
-
-                // Invoice document
-                if (modalState.invoice.file) {
-                    const invObj = {
-                        filename: modalState.invoice.file.name,
-                        file_type: modalState.invoice.file.type,
-                        file_size: modalState.invoice.file.size,
-                        uploaded_at: new Date().toISOString()
-                    };
-                    if (modalState.invoice.file.size < 1024 * 1024 && modalState.invoice.dataUrl) {
-                        invObj.file_data = modalState.invoice.dataUrl;
-                    }
-                    updateData.commercial_invoice = invObj;
-
-                    // Also save to shipment_documents collection
-                    try {
-                        await addDoc(collection(db, 'shipment_documents'), {
-                            shipment_id: modalState.shipmentId,
-                            tracking_number: modalState.tracking,
-                            user_id: currentUser.uid,
-                            doc_type: 'invoice',
-                            ...invObj,
-                            file_data: (modalState.invoice.file.size < 1024 * 1024 && modalState.invoice.dataUrl) ? modalState.invoice.dataUrl : null,
-                            created_at: new Date().toISOString()
-                        });
-                        successCount++;
-                    } catch (invErr) {
-                        console.warn('Invoice collection write failed:', invErr.message);
-                        errorMessages.push('Invoice archive: ' + invErr.message);
-                    }
-                }
-
-                // Update the shipment document (always runs — attaches metadata to the shipment itself)
-                if (Object.keys(updateData).length > 0) {
-                    await updateDoc(shipRef, updateData);
+                    await addDoc(collection(db, 'bol_documents'), stripUndefinedValues({
+                        shipment_id: modalState.shipmentId,
+                        tracking_number: modalState.tracking,
+                        user_id: currentUser.uid,
+                        ...bolRecord.metadata,
+                        file_data: bolRecord.inlineData,
+                        file_stored: !!bolRecord.inlineData || !!bolRecord.metadata?.url,
+                        created_at: bolRecord.uploadedAt
+                    }));
                     successCount++;
                 }
 
-                // Success toast
+                if (modalState.invoice.file) {
+                    const invoiceRecord = await buildPersistedDocument({
+                        file: modalState.invoice.file,
+                        dataUrl: modalState.invoice.dataUrl,
+                        shipmentId: modalState.shipmentId,
+                        trackingNumber: modalState.tracking,
+                        docType: 'commercial_invoice'
+                    });
+                    updateData.commercial_invoice = invoiceRecord.metadata;
+
+                    await addDoc(collection(db, 'shipment_documents'), stripUndefinedValues({
+                        shipment_id: modalState.shipmentId,
+                        tracking_number: modalState.tracking,
+                        user_id: currentUser.uid,
+                        doc_type: 'commercial_invoice',
+                        ...invoiceRecord.metadata,
+                        file_data: invoiceRecord.inlineData,
+                        created_at: invoiceRecord.uploadedAt
+                    }));
+                    successCount++;
+                }
+
+                if (Object.keys(updateData).length > 0) {
+                    await updateDoc(shipRef, stripUndefinedValues({
+                        ...updateData,
+                        updated_at: new Date().toISOString()
+                    }));
+                    successCount++;
+                }
+                uploadSucceeded = true;
+
                 var toast = document.createElement('div');
                 toast.setAttribute('role','status');
                 toast.style.cssText='position:fixed;bottom:24px;right:24px;padding:16px 24px;border-radius:12px;font-weight:500;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,0.15);background:#14b8a6;color:white;';
-                toast.textContent = 'Documents uploaded successfully!';
+                toast.textContent = successCount > 1 ? 'Documents uploaded successfully!' : 'Document uploaded successfully!';
                 document.body.appendChild(toast);
                 setTimeout(function(){ toast.remove(); }, 4000);
 
@@ -4915,9 +4881,11 @@
                 toast.textContent = 'Upload failed: ' + err.message;
                 document.body.appendChild(toast);
                 setTimeout(function(){ toast.remove(); }, 5000);
-
-                saveBtn.disabled = false;
-                saveBtn.textContent = 'Upload & Save';
+            } finally {
+                if (!uploadSucceeded) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Upload & Save';
+                }
             }
         });
 
