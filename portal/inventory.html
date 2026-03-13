@@ -88,6 +88,22 @@
                 <button id="new-item-btn" class="btn btn-primary" style="display: none;" data-i18n="portal.inventory.addItem">+ Add Item</button>
             </div>
 
+            <!-- Locked Banner (shown to customers when admin has locked their inventory) -->
+            <div id="locked-banner" style="display: none; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: var(--spacing-md); color: #92400e; font-weight: 500;">
+                🔒 Your inventory has been locked by the warehouse administrator. Please contact us to request changes.
+            </div>
+
+            <!-- Admin Inventory Lock Controls -->
+            <div id="admin-lock-controls" style="display: none; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 16px; margin-bottom: var(--spacing-md); align-items: center; gap: 12px; flex-wrap: wrap;">
+                <span style="font-weight: 600; color: var(--color-gray-700);">🛡️ Inventory Lock:</span>
+                <select id="lock-customer-select" style="padding: 6px 10px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: 0.85rem;">
+                    <option value="">-- Select Customer --</option>
+                </select>
+                <button id="lock-inventory-btn" class="btn" style="background: #dc2626; color: white; font-size: 0.85rem; padding: 6px 16px; border-radius: 6px; display: none; cursor: pointer;">🔒 Lock Inventory</button>
+                <button id="unlock-inventory-btn" class="btn" style="background: #16a34a; color: white; font-size: 0.85rem; padding: 6px 16px; border-radius: 6px; display: none; cursor: pointer;">🔓 Unlock Inventory</button>
+                <span id="lock-status-indicator" style="font-size: 0.85rem; font-weight: 600;"></span>
+            </div>
+
             <!-- Toast Notification -->
             <div id="toast" role="status" aria-live="polite" style="display: none; position: fixed; bottom: 20px; right: 20px; padding: 16px 24px; border-radius: var(--radius-md); color: white; font-weight: 500; z-index: 3000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: opacity 0.3s ease;">
             </div>
@@ -299,6 +315,8 @@
         let currentUserRole = null;
         let inventoryData = [];
         let customersMap = {}; // Map of user_id -> customer name for staff view
+        let inventoryLocked = false; // Whether current customer's inventory is locked by admin
+        let customersLockMap = {}; // Map of user_id -> lock status (admin view)
 
         // Helper to check if user is staff (admin or employee)
         function isStaff() {
@@ -321,22 +339,32 @@
             }, 3000);
         }
 
-        // Load customers list for staff
+        // Load customers list for staff (also populates lock status)
         async function loadCustomers() {
             if (!isStaff()) return;
 
             try {
                 const usersSnapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'customer')));
                 const customerSelect = document.getElementById('item-customer');
+                const lockCustomerSelect = document.getElementById('lock-customer-select');
                 customerSelect.innerHTML = '<option value="">-- Select Customer --</option>';
+                lockCustomerSelect.innerHTML = '<option value="">-- Select Customer --</option>';
 
-                usersSnapshot.forEach((doc) => {
-                    const userData = doc.data();
-                    customersMap[doc.id] = userData.name || userData.email || doc.id;
+                usersSnapshot.forEach((docSnap) => {
+                    const userData = docSnap.data();
+                    const displayName = userData.name || userData.email || docSnap.id;
+                    customersMap[docSnap.id] = displayName;
+                    customersLockMap[docSnap.id] = userData.inventory_locked === true;
+
                     const option = document.createElement('option');
-                    option.value = doc.id;
-                    option.textContent = userData.name || userData.email;
+                    option.value = docSnap.id;
+                    option.textContent = displayName;
                     customerSelect.appendChild(option);
+
+                    const lockOption = document.createElement('option');
+                    lockOption.value = docSnap.id;
+                    lockOption.textContent = displayName + (userData.inventory_locked ? ' 🔒' : '');
+                    lockCustomerSelect.appendChild(lockOption);
                 });
             } catch (error) {
                 console.error('Error loading customers:', error);
@@ -374,12 +402,28 @@
                 }
             }
 
+            // Check inventory lock status for customers
+            if (!isStaff()) {
+                const userData = userDoc.exists() ? userDoc.data() : {};
+                inventoryLocked = userData.inventory_locked === true;
+                if (inventoryLocked) {
+                    document.getElementById('locked-banner').style.display = 'block';
+                }
+            }
+
+            // Show Add Item button for all users (unless inventory is locked)
+            if (isStaff() || !inventoryLocked) {
+                document.getElementById('new-item-btn').style.display = 'inline-flex';
+            }
+
             // Show staff-only UI elements
             if (isStaff()) {
-                document.getElementById('new-item-btn').style.display = 'inline-flex';
                 document.getElementById('customer-select-group').style.display = 'block';
                 document.getElementById('customer-col-header').style.display = 'table-cell';
                 await loadCustomers();
+
+                // Show admin lock controls
+                document.getElementById('admin-lock-controls').style.display = 'flex';
 
                 // Initialize column preferences (staff only — full column set)
                 if (window.ColumnPrefs) {
@@ -446,6 +490,12 @@
         document.getElementById('item-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            // Check if inventory is locked for this customer
+            if (!isStaff() && inventoryLocked) {
+                showToast('Your inventory is locked by the administrator. Contact support to make changes.', 'error');
+                return;
+            }
+
             const editId = document.getElementById('item-edit-id').value;
             const isEditing = editId !== '';
 
@@ -495,6 +545,13 @@
 
         document.getElementById('edit-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            // Check if inventory is locked for this customer
+            if (!isStaff() && inventoryLocked) {
+                showToast('Your inventory is locked by the administrator. Contact support to make changes.', 'error');
+                return;
+            }
+
             const id = document.getElementById('edit-id').value;
 
             const updateData = {
@@ -541,6 +598,12 @@
             const item = inventoryData.find(i => i.id === itemId);
             if (!item) return;
 
+            // Check if inventory is locked for this customer
+            if (!isStaff() && inventoryLocked) {
+                showToast('Your inventory is locked by the administrator. Contact support to make changes.', 'error');
+                return;
+            }
+
             const newQty = Math.max(0, item.quantity + delta);
             try {
                 await updateDoc(doc(db, 'inventory', itemId), {
@@ -556,6 +619,79 @@
 
         // Make adjustQuantity globally accessible for inline handlers
         window.adjustQuantity = adjustQuantity;
+
+        // ─── Admin Inventory Lock Controls ───
+        function updateLockControls(customerId) {
+            const lockBtn = document.getElementById('lock-inventory-btn');
+            const unlockBtn = document.getElementById('unlock-inventory-btn');
+            const indicator = document.getElementById('lock-status-indicator');
+
+            if (!customerId) {
+                lockBtn.style.display = 'none';
+                unlockBtn.style.display = 'none';
+                indicator.textContent = '';
+                return;
+            }
+
+            const isLocked = customersLockMap[customerId] === true;
+            lockBtn.style.display = isLocked ? 'none' : 'inline-flex';
+            unlockBtn.style.display = isLocked ? 'inline-flex' : 'none';
+            indicator.textContent = isLocked ? '🔒 Inventory Locked' : '🔓 Inventory Open';
+            indicator.style.color = isLocked ? '#dc2626' : '#16a34a';
+        }
+
+        async function lockCustomerInventory(customerId) {
+            try {
+                await updateDoc(doc(db, 'users', customerId), { inventory_locked: true });
+                customersLockMap[customerId] = true;
+                updateLockControls(customerId);
+                // Update lock dropdown text
+                const lockSelect = document.getElementById('lock-customer-select');
+                for (let opt of lockSelect.options) {
+                    if (opt.value === customerId) {
+                        opt.textContent = (customersMap[customerId] || 'Unknown') + ' 🔒';
+                    }
+                }
+                showToast('Customer inventory locked 🔒', 'success');
+                loadInventory();
+            } catch (e) {
+                showToast('Error locking inventory: ' + e.message, 'error');
+            }
+        }
+
+        async function unlockCustomerInventory(customerId) {
+            try {
+                await updateDoc(doc(db, 'users', customerId), { inventory_locked: false });
+                customersLockMap[customerId] = false;
+                updateLockControls(customerId);
+                // Update lock dropdown text
+                const lockSelect = document.getElementById('lock-customer-select');
+                for (let opt of lockSelect.options) {
+                    if (opt.value === customerId) {
+                        opt.textContent = customersMap[customerId] || 'Unknown';
+                    }
+                }
+                showToast('Customer inventory unlocked 🔓', 'success');
+                loadInventory();
+            } catch (e) {
+                showToast('Error unlocking inventory: ' + e.message, 'error');
+            }
+        }
+
+        // Lock control event listeners
+        document.getElementById('lock-customer-select').addEventListener('change', function() {
+            updateLockControls(this.value);
+        });
+
+        document.getElementById('lock-inventory-btn').addEventListener('click', () => {
+            const customerId = document.getElementById('lock-customer-select').value;
+            if (customerId) lockCustomerInventory(customerId);
+        });
+
+        document.getElementById('unlock-inventory-btn').addEventListener('click', () => {
+            const customerId = document.getElementById('lock-customer-select').value;
+            if (customerId) unlockCustomerInventory(customerId);
+        });
 
         async function loadInventory() {
             const tbody = document.getElementById('inventory-list');
@@ -619,12 +755,14 @@
                 const customerName = customersMap[item.user_id] || 'Unknown';
                 const row = document.createElement('tr');
 
-                // Build customer column HTML for staff
-                const customerCol = isStaff() ? `<td style="color: var(--color-gray-600); font-size: var(--font-size-sm);">${customerName}</td>` : '';
+                // Build customer column HTML for staff (with lock indicator)
+                const isCustomerLocked = customersLockMap[item.user_id] === true;
+                const customerCol = isStaff() ? `<td style="color: var(--color-gray-600); font-size: var(--font-size-sm);">${customerName}${isCustomerLocked ? ' <span title="Inventory locked" style="color:#dc2626;">🔒</span>' : ''}</td>` : '';
 
-                // Build actions based on role
+                // Build actions based on role and lock status
                 let actionsHtml = '';
                 if (isStaff()) {
+                    // Staff always has full control
                     actionsHtml = `
                         <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                             <button class="btn-qty-minus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Decrease quantity" aria-label="Decrease quantity for ${item.name}">-</button>
@@ -633,9 +771,18 @@
                             <button class="btn-delete" data-id="${item.id}" data-name="${item.name}" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Delete ${item.name}">Delete</button>
                         </div>
                     `;
+                } else if (!inventoryLocked) {
+                    // Customer can add/edit their own items when inventory is NOT locked
+                    actionsHtml = `
+                        <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                            <button class="btn-qty-minus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Decrease quantity" aria-label="Decrease quantity for ${item.name}">-</button>
+                            <button class="btn-qty-plus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Increase quantity" aria-label="Increase quantity for ${item.name}">+</button>
+                            <button class="btn-edit" data-id="${item.id}" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Edit ${item.name}">Edit</button>
+                        </div>
+                    `;
                 } else {
-                    // Customers can only view
-                    actionsHtml = '<span style="color: var(--color-gray-400);">View only</span>';
+                    // Inventory is locked — customer can only view
+                    actionsHtml = '<span style="color: #dc2626; font-weight: 500;">🔒 Locked</span>';
                 }
 
                 const whId = item.warehouse || 'miami';
@@ -664,8 +811,9 @@
                 tbody.appendChild(row);
             });
 
-            // Add event listeners for staff actions
-            if (isStaff()) {
+            // Add event listeners for edit/quantity actions (staff always, customers when unlocked)
+            const canEdit = isStaff() || !inventoryLocked;
+            if (canEdit) {
                 // Quantity adjustment buttons
                 document.querySelectorAll('.btn-qty-plus').forEach(btn => {
                     btn.addEventListener('click', () => adjustQuantity(btn.dataset.id, 1));
@@ -693,8 +841,10 @@
                         }
                     });
                 });
+            }
 
-                // Delete buttons - open confirmation modal
+            // Delete buttons - staff only (admin controls deletion)
+            if (isStaff()) {
                 document.querySelectorAll('.btn-delete').forEach(btn => {
                     btn.addEventListener('click', () => {
                         document.getElementById('delete-item-id').value = btn.dataset.id;
