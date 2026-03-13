@@ -1356,4 +1356,498 @@ window.MA3PL_TRANSLATIONS["pt-br"] = {
   "portal.team.namePlaceholder": "João Silva",
   "portal.team.cancel": "Cancelar",
   "portal.team.sendInvite": "Enviar Convite",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // AMAZON FBA PREP PAGE
+  // ═══════════════════════════════════════════════════════════════════
+  "fbaprep.title": "Serviços de FBA Prep em Miami",
+  "fbaprep.intro":
+    "Vender na Amazon é uma excelente maneira de expandir seu negócio, mas preparar seus produtos para FBA pode ser uma grande dor de cabeça. É aí que entramos. Na Miami Alliance 3PL, oferecemos uma gama completa de serviços de Amazon FBA prep para ajudar você a economizar tempo e dinheiro.",
+  "fbaprep.services.title": "Nossos Serviços de FBA Prep Incluem:",
+  "fbaprep.services.fnsku":
+    "<strong>Etiquetagem FNSKU:</strong> Imprimimos e aplicamos etiquetas FNSKU em todos os seus produtos, garantindo que estejam em conformidade com os requisitos da Amazon.",
+  "fbaprep.services.polybag":
+    "<strong>Embalagem em Poly Bag:</strong> Podemos embalar seus produtos em poly bag para protegê-los contra poeira e danos durante o transporte.",
+  "fbaprep.services.bundling":
+    "<strong>Bundling e Kitting:</strong> Quer vender seus produtos como um pacote? Podemos criar bundles e kits personalizados de acordo com suas especificações exatas.",
+  "fbaprep.services.inspection":
+    "<strong>Inspeção e Controle de Qualidade:</strong> Inspecionamos seus produtos em busca de danos e garantimos que atendam aos padrões de qualidade da Amazon.",
+  "fbaprep.services.shipping":
+    "<strong>Envio no Mesmo Dia para Centros de Fulfillment da Amazon:</strong> Nosso armazém em Miami está estrategicamente localizado para oferecer envios rápidos e econômicos para os centros de fulfillment da Amazon em todo o país.",
+  "fbaprep.why.title": "Por Que Escolher a Miami Alliance 3PL para FBA Prep?",
+  "fbaprep.why.expertise":
+    "<strong>Experiência Local:</strong> Estamos localizados em Miami e temos ampla experiência trabalhando com vendedores da Amazon locais.",
+  "fbaprep.why.turnaround":
+    "<strong>Prazos de Entrega Rápidos:</strong> Normalmente conseguimos preparar e enviar seus produtos dentro de 24-48 horas após recebê-los.",
+  "fbaprep.why.pricing":
+    "<strong>Preços Transparentes:</strong> Nossos serviços de FBA prep têm preços acessíveis, sem taxas ocultas.",
+  "fbaprep.why.flexible":
+    "<strong>Soluções Flexíveis:</strong> Podemos criar um plano de preparação personalizado adaptado às suas necessidades específicas.",
+  "fbaprep.cta.title": "Comece Hoje",
+  "fbaprep.cta.text":
+    "Pronto para otimizar seu processo de FBA prep? Entre em contato conosco hoje para uma cotação gratuita. Vamos ajudar você a economizar tempo e dinheiro para que possa focar no que faz de melhor: expandir seu negócio na Amazon.",
+  "fbaprep.cta.button": "Solicite uma Cotação Grátis para FBA Prep",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: Hero Section
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.hero.badge": "Seu Parceiro de Fulfillment Dropshipping em Miami",
+  "dropship.hero.title":
+    "Dropshipping em <span>Miami</span>: Seu Armazém de Fulfillment 3PL",
+  "dropship.hero.subtitle":
+    "A Miami Alliance 3PL é o parceiro de dropshipping que escala com você. Armazenamos seu estoque, processamos pedidos no mesmo dia e enviamos diretamente para seus clientes &mdash; tudo do nosso armazém em Medley, FL. Você vende. Nós enviamos. Você cresce.",
+  "dropship.hero.stat.accuracy": "Precisão nos Pedidos",
+  "dropship.hero.stat.sameday.value": "Mesmo Dia",
+  "dropship.hero.stat.processing": "Processamento de Pedidos",
+  "dropship.hero.stat.minimums": "Sem Mínimos Exigidos",
+  "dropship.hero.cta.quote": "Orçamento Grátis de Dropshipping",
+  "dropship.hero.cta.specialist": "Fale com um Especialista",
+
+  // Hero Pricing Card
+  "dropship.hero.card.title": "Preços de Fulfillment Dropshipping",
+  "dropship.hero.card.subtitle":
+    "Preços transparentes. Sem taxas ocultas. Sem contratos de longo prazo. Pague apenas pelo que você envia.",
+  "dropship.hero.price.pickpack": "Pick & Pack",
+  "dropship.hero.price.pickpack.val": "A partir de $1.50/pedido",
+  "dropship.hero.price.shipping": "Envio Padrão",
+  "dropship.hero.price.shipping.val": "A partir de $3.50/pacote",
+  "dropship.hero.price.packaging": "Embalagem Personalizada",
+  "dropship.hero.price.packaging.val": "A partir de $0.50/pedido",
+  "dropship.hero.price.kitting": "Kitting / Pacotes",
+  "dropship.hero.price.returns": "Processamento de Devoluções",
+  "dropship.hero.price.returns.val": "$2.00/devolução",
+  "dropship.hero.price.inserts": "Insertos de Marca",
+  "dropship.hero.price.inserts.val": "$0.25/inserto",
+  "dropship.hero.price.storage": "Armazenagem por Pallet",
+  "dropship.hero.price.storage.val":
+    '$0.75<span class="price-unit">/pallet/dia</span>',
+  "dropship.hero.card.cta": "Calcule Seu Custo Exato",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: Trust Bar
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.trust.fulfillment": "Fulfillment Dropshipping",
+  "dropship.trust.whitelabel": "Envio White-Label",
+  "dropship.trust.sameday": "Processamento no Mesmo Dia",
+  "dropship.trust.nominimums": "Sem Mínimos",
+  "dropship.trust.sync": "Sincronização Shopify e Amazon",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: Services Section
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.services.title": "Serviços de Fulfillment Dropshipping em Miami",
+  "dropship.services.subtitle":
+    "Tudo o que seu negócio de dropshipping precisa &mdash; do armazenamento de estoque à entrega na porta",
+  "dropship.services.order.title": "Fulfillment de Pedidos Dropship",
+  "dropship.services.order.desc":
+    "Os pedidos da sua loja Shopify, Amazon ou WooCommerce chegam diretamente ao nosso armazém. Separamos, embalamos e enviamos para seu cliente no mesmo dia. As atualizações de rastreamento sincronizam automaticamente com sua loja.",
+  "dropship.services.order.price": "A partir de $1.50/pedido",
+  "dropship.services.blind.title": "Envio Blind / White-Label",
+  "dropship.services.blind.desc":
+    "Dropshipping white-label completo. Sua marca em cada guia de envio, etiqueta e inserto. Embalagem personalizada de marca disponível. Seus clientes nunca veem nosso nome &mdash; o pacote parece que veio de você.",
+  "dropship.services.blind.price": "Experiência de Marca",
+  "dropship.services.storage.title": "Armazenamento de Estoque",
+  "dropship.services.storage.desc":
+    "Armazenamento seguro com clima controlado em nosso armazém de 20.000+ pés quadrados em Medley, FL. Rastreamento de estoque em tempo real pelo seu portal. Alertas de estoque baixo para que você nunca fique sem seus produtos mais vendidos.",
+  "dropship.services.kitting.title": "Embalagem Personalizada e Kitting",
+  "dropship.services.kitting.desc":
+    "Caixas de marca, papel de seda, cartões de agradecimento, insertos promocionais, adesivos &mdash; criamos a experiência de unboxing que gera avaliações 5 estrelas e clientes recorrentes. Montagem de caixas de assinatura incluída.",
+  "dropship.services.kitting.price": "A partir de $0.50/pedido",
+  "dropship.services.returns.title": "Processamento de Devoluções",
+  "dropship.services.returns.desc":
+    "Devoluções de clientes são enviadas para nosso armazém. Recebemos, inspecionamos, fotografamos e reabastecemos itens vendáveis. Unidades não vendáveis são sinalizadas no seu portal. Relatórios detalhados de devoluções semanais.",
+  "dropship.services.returns.price": "$2.00/devolução",
+  "dropship.services.intl.title": "Dropshipping Internacional",
+  "dropship.services.intl.desc":
+    "Envie para o mundo todo a partir de Miami. Nossa localização a 8 milhas do MIA e 15 minutos do Porto de Miami torna o dropshipping internacional simples. América Latina, Caribe, Europa &mdash; enviamos para todos.",
+  "dropship.services.intl.price": "Alcance Global",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: Platform Integrations
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.platforms.title": "Integrações de Plataformas Dropshipping",
+  "dropship.platforms.subtitle":
+    "Sincronização automatizada e fluida com todas as principais plataformas de e-commerce",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: Comparison Section
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.compare.title": "Dropshipping DIY vs. Miami Alliance 3PL",
+  "dropship.compare.subtitle":
+    "Veja por que negócios de dropshipping em Miami nos escolhem ao invés do auto-fulfillment",
+  "dropship.compare.diy.label": "Auto-Fulfillment / DIY",
+  "dropship.compare.diy.title": "Fazer Você Mesmo",
+  "dropship.compare.diy.li1":
+    "&#10060; Embalar pedidos da sua garagem/apartamento",
+  "dropship.compare.diy.li2": "&#10060; Idas diárias aos correios",
+  "dropship.compare.diy.li3":
+    "&#10060; Rastreamento de estoque manual (planilhas)",
+  "dropship.compare.diy.li4": "&#10060; Sem opções de embalagem de marca",
+  "dropship.compare.diy.li5":
+    "&#10060; Limitado às tarifas da sua transportadora local",
+  "dropship.compare.diy.li6":
+    "&#10060; Você lida com cada devolução pessoalmente",
+  "dropship.compare.diy.li7":
+    "&#10060; Não consegue escalar além de 30-50 pedidos/dia",
+  "dropship.compare.miami.badge": "Recomendado",
+  "dropship.compare.miami.title": "Fulfillment Dropshipping",
+  "dropship.compare.miami.li1": "&#9989; Operações profissionais de armazém",
+  "dropship.compare.miami.li2": "&#9989; Processamento e envio no mesmo dia",
+  "dropship.compare.miami.li3": "&#9989; Portal de estoque em tempo real",
+  "dropship.compare.miami.li4":
+    "&#9989; Embalagem de marca personalizada e insertos",
+  "dropship.compare.miami.li5":
+    "&#9989; Tarifas com desconto de transportadoras (UPS, USPS, FedEx)",
+  "dropship.compare.miami.li6":
+    "&#9989; Processamento completo de devoluções e relatórios",
+  "dropship.compare.miami.li7":
+    "&#9989; Escale para 1.000+ pedidos/dia sem complicação",
+  "dropship.compare.cta": "Obtenha Seu Orçamento de Dropshipping &rarr;",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: How It Works
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.howworks.title":
+    "Como Funciona o Fulfillment Dropshipping com a Miami Alliance 3PL",
+  "dropship.howworks.subtitle":
+    "Do cadastro ao envio em dias &mdash; não semanas",
+  "dropship.howworks.step1.title": "Envie-nos Seu Estoque",
+  "dropship.howworks.step1.desc":
+    "Envie seus produtos para nosso armazém em Medley, FL. Recebemos, inspecionamos, contamos e armazenamos tudo. Seu estoque fica ativo no portal em horas.",
+  "dropship.howworks.step2.title": "Conecte Sua Loja",
+  "dropship.howworks.step2.desc":
+    "Nos integramos com seu Shopify, Amazon, WooCommerce ou outra plataforma. Os pedidos fluem automaticamente para nosso armazém em tempo real.",
+  "dropship.howworks.step3.title": "Nós Separamos, Embalamos e Enviamos",
+  "dropship.howworks.step3.desc":
+    "Processamento no mesmo dia para pedidos antes das 14h EST. Separamos do seu estoque, embalamos com sua marca e enviamos pela melhor transportadora para o destino.",
+  "dropship.howworks.step4.title": "Você Escala Seu Negócio",
+  "dropship.howworks.step4.desc":
+    "Foque em marketing, fornecimento e aquisição de clientes. Nós cuidamos da logística. Passe de 10 pedidos por dia para 1.000+ sem mudar nada.",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: Why Miami
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.whymiami.title":
+    "Por Que Miami É a Melhor Cidade para Fulfillment Dropshipping",
+  "dropship.whymiami.subtitle":
+    "Vantagens estratégicas que dão aos negócios de dropshipping uma vantagem competitiva",
+  "dropship.whymiami.b1.title": "Entrega Terrestre em 2 Dias para 80% dos EUA",
+  "dropship.whymiami.b1.desc":
+    "Envie de Miami e alcance toda a Costa Leste dos EUA em 2 dias úteis por via terrestre. Seus clientes recebem seus pedidos rápido sem pagar por envio expresso. Essa é a vantagem do dropshipping.",
+  "dropship.whymiami.b2.title":
+    "Portal de Importação para Fornecimento de Produtos",
+  "dropship.whymiami.b2.desc":
+    "A 8 milhas do Aeroporto Internacional de Miami e 15 minutos do Porto de Miami. Importe produtos da China, Índia, América Latina e tenha-os no seu armazém de dropshipping na mesma semana.",
+  "dropship.whymiami.b3.title": "Hub de Dropshipping Internacional",
+  "dropship.whymiami.b3.desc":
+    "Miami é a porta de entrada para a América Latina e o Caribe. Se seu negócio de dropshipping envia internacionalmente, não há localização melhor nos Estados Unidos. Equipe bilíngue cuida de tudo.",
+  "dropship.whymiami.b4.title": "Tarifas Multi-Transportadora com Desconto",
+  "dropship.whymiami.b4.desc":
+    "Nosso volume com UPS, USPS, FedEx e DHL significa melhores tarifas para você. As margens de dropshipping melhoram quando os custos de envio diminuem. Repassamos nossos descontos de transportadora diretamente para você.",
+  "dropship.whymiami.b5.title": "Sem Mínimos, Sem Contratos",
+  "dropship.whymiami.b5.desc":
+    "Começando pequeno? Perfeito. Não temos requisitos mínimos de pedido nem contratos de longo prazo. Escale na alta temporada, reduza quando estiver calmo. Flexibilidade dropshipping no seu melhor.",
+  "dropship.whymiami.b6.title": "Portal do Cliente em Tempo Real",
+  "dropship.whymiami.b6.desc":
+    "Rastreie cada pedido, cada unidade de estoque e cada envio pelo seu painel. Alertas de estoque baixo, análises de envio e histórico completo de pedidos &mdash; a visibilidade que seu negócio de dropshipping precisa.",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: FAQ Section
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.faq.title":
+    "Fulfillment Dropshipping Miami &mdash; Perguntas Frequentes",
+  "dropship.faq.subtitle":
+    "Perguntas comuns de negócios de dropshipping sobre nossos serviços de fulfillment em Miami",
+  "dropship.faq.q1.title": "O que é fulfillment dropshipping?",
+  "dropship.faq.q1.answer":
+    "Fulfillment dropshipping significa que armazenamos seus produtos e os enviamos diretamente para seus clientes quando eles fazem um pedido na sua loja online. Você nunca toca o produto. Nós cuidamos de recebimento, armazenamento, separação, embalagem e envio &mdash; tudo do nosso armazém em Miami.",
+  "dropship.faq.q2.title": "Quanto custa o fulfillment dropshipping?",
+  "dropship.faq.q2.answer":
+    "Pick &amp; pack a partir de $1.50/pedido, envio padrão a partir de $3.50/pacote, armazenagem a $0.75/pallet/dia. Sem mínimos, sem contratos. Embalagem personalizada, insertos de marca e kitting disponíveis. Use nossa calculadora de orçamento gratuita online para seu preço exato.",
+  "dropship.faq.q3.title": "Vocês integram com Shopify?",
+  "dropship.faq.q3.answer":
+    "Sim! Integramos com Shopify, Amazon, WooCommerce, TikTok Shop, eBay, Etsy e BigCommerce. Os pedidos sincronizam automaticamente &mdash; quando um cliente compra, nós enviamos. Atualizações de estoque e rastreamento voltam para sua loja em tempo real.",
+  "dropship.faq.q4.title": "Vocês fazem envio blind/white-label?",
+  "dropship.faq.q4.answer":
+    "Com certeza. É nosso serviço de dropshipping mais popular. Suas guias de envio de marca, embalagem personalizada, fita de marca e insertos de marketing. Seu cliente nunca vê nosso nome. O pacote chega parecendo que veio diretamente de você.",
+  "dropship.faq.q5.title": "Quão rápido vocês processam pedidos dropship?",
+  "dropship.faq.q5.answer":
+    "Processamento no mesmo dia. Pedidos recebidos antes das 14h EST são separados, embalados e enviados no mesmo dia útil. Mantemos 99,8% de precisão nos pedidos com verificação de código de barras em cada pacote.",
+  "dropship.faq.q6.title": "Onde fica o armazém de dropshipping de vocês?",
+  "dropship.faq.q6.answer":
+    "8780 NW 100th ST, Medley, FL 33178 &mdash; no corredor logístico do Condado de Miami-Dade. A 8 milhas do aeroporto MIA, 15 minutos do Porto de Miami. O envio terrestre alcança 80% dos clientes dos EUA em 2 dias.",
+  "dropship.faq.viewall": "Ver Todas as Perguntas &rarr;",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: Resources Section
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.resources.title": "Recursos e Guias de Dropshipping",
+  "dropship.resources.subtitle":
+    "Insights de especialistas para negócios de dropshipping que escalam com 3PL",
+  "dropship.resources.r1.tag": "Guia",
+  "dropship.resources.r1.title":
+    "Guia Completo de Fulfillment Dropshipping com um 3PL em Miami",
+  "dropship.resources.r1.desc":
+    "Tudo o que você precisa saber sobre terceirizar o fulfillment dropshipping. Custos, integrações, benefícios e como escolher o parceiro 3PL certo.",
+  "dropship.resources.r1.link": "Ler o guia completo &rarr;",
+  "dropship.resources.r2.tag": "Comparação",
+  "dropship.resources.r2.title":
+    "Dropshipping vs. 3PL Tradicional: Qual Modelo É Melhor?",
+  "dropship.resources.r2.desc":
+    "Comparação detalhada de dropshipping e fulfillment tradicional. Saiba quando cada modelo funciona melhor e como combiná-los para lucro máximo.",
+  "dropship.resources.r2.link": "Ler a comparação &rarr;",
+  "dropship.resources.r3.tag": "Crescimento",
+  "dropship.resources.r3.title":
+    "Como Escalar Seu Negócio de Dropshipping com um Parceiro 3PL",
+  "dropship.resources.r3.desc":
+    "De 10 pedidos por dia para 1.000+. Estratégias reais para escalar operações de dropshipping com um armazém 3PL em Miami.",
+  "dropship.resources.r3.link": "Ler o guia de crescimento &rarr;",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: Final CTA
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.cta.title": "Pronto para Escalar Seu Negócio de Dropshipping?",
+  "dropship.cta.subtitle":
+    "Obtenha seu orçamento gratuito de fulfillment dropshipping hoje. Sem mínimos, sem contratos de longo prazo, sem taxas ocultas. Nosso especialista em dropshipping responde em 24 horas.",
+  "dropship.cta.promo":
+    "🎁 Novos clientes recebem $100 em crédito de armazenagem GRÁTIS — aplicado automaticamente na sua primeira fatura.",
+  "dropship.cta.btn.quote": "Orçamento Instantâneo de Dropshipping",
+  "dropship.cta.btn.specialist": "Fale com um Especialista em Dropshipping",
+  "dropship.cta.btn.call": "Ligue (786) 873-8819",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: Footer (page-specific)
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.footer.brand.desc":
+    "Seu parceiro de confiança em fulfillment dropshipping em Miami. Processamento no mesmo dia, embalagem de marca e serviços de armazém para negócios de dropshipping de todos os tamanhos.",
+  "dropship.footer.services.title": "Serviços de Dropshipping",
+  "dropship.footer.services.order": "Fulfillment de Pedidos",
+  "dropship.footer.services.whitelabel": "Envio White-Label",
+  "dropship.footer.services.storage": "Armazenamento de Estoque",
+  "dropship.footer.services.packaging": "Embalagem Personalizada",
+  "dropship.footer.services.returns": "Processamento de Devoluções",
+  "dropship.footer.services.amazon": "Amazon 3PL Miami",
+  "dropship.footer.terms": "Termos de Serviço",
+  "dropship.footer.privacy": "Política de Privacidade",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DROPSHIPPING PAGE: Sticky CTA
+  // ═══════════════════════════════════════════════════════════════════
+  "dropship.sticky.quote": "Orçamento Dropshipping",
+
+  // ═══════════════════════════════════════════════════════════════════
+  // AMAZON 3PL PAGE
+  // ═══════════════════════════════════════════════════════════════════
+
+  // Hero Section
+  "amazon3pl.hero.badge": "Parceiro Amazon 3PL em Miami",
+  "amazon3pl.hero.title":
+    "Amazon 3PL em <span>Miami</span>: Preparação FBA e Armazém de Fulfillment FBM",
+  "amazon3pl.hero.subtitle":
+    "Miami Alliance 3PL é a arma secreta do vendedor Amazon. Do etiquetamento FNSKU ao envio FBM no mesmo dia, cuidamos de cada etapa da sua logística Amazon a partir do nosso armazém em Medley, FL — para que você possa focar em escalar o seu negócio.",
+  "amazon3pl.hero.stat.accuracy": "Taxa de Precisão",
+  "amazon3pl.hero.stat.sameday": "Mesmo Dia",
+  "amazon3pl.hero.stat.processing": "Processamento FBA",
+  "amazon3pl.hero.stat.minimums": "Sem Mínimos",
+  "amazon3pl.hero.cta.quote": "Cotação Grátis Amazon 3PL",
+  "amazon3pl.hero.cta.specialist": "Fale com um Especialista Amazon",
+  "amazon3pl.hero.card.title": "Preços de Preparação Amazon FBA",
+  "amazon3pl.hero.card.subtitle":
+    "Preços transparentes. Sem taxas ocultas. Sem contratos de longo prazo. Pague apenas pelo que usar.",
+  "amazon3pl.hero.price.fnsku": "Etiquetamento FNSKU",
+  "amazon3pl.hero.price.fnsku.val": "$0.20/unidade",
+  "amazon3pl.hero.price.poly": "Embalagem em Saco Plástico",
+  "amazon3pl.hero.price.poly.val": "$0.30/unidade",
+  "amazon3pl.hero.price.bubble": "Embalagem com Plástico Bolha",
+  "amazon3pl.hero.price.bubble.val": "$0.50/unidade",
+  "amazon3pl.hero.price.bundle": "Bundling/Kitting",
+  "amazon3pl.hero.price.bundle.val": "$1.00/pacote",
+  "amazon3pl.hero.price.boxlabel": "Etiquetas de Conteúdo de Caixa",
+  "amazon3pl.hero.price.boxlabel.val": "$3.00/caixa",
+  "amazon3pl.hero.price.inspection": "Inspeção e QC",
+  "amazon3pl.hero.price.inspection.val": "$0.15/unidade",
+  "amazon3pl.hero.price.pallet": "Armazenamento por Pallet",
+  "amazon3pl.hero.price.pallet.val":
+    '$0.75<span class="price-unit">/pallet/dia</span>',
+  "amazon3pl.hero.cta.calculate": "Calcule Seu Custo Exato",
+
+  // Trust Bar
+  "amazon3pl.trust.fbafbm": "Amazon FBA e FBM",
+  "amazon3pl.trust.fnsku": "Etiquetamento FNSKU",
+  "amazon3pl.trust.sameday": "Processamento no Mesmo Dia",
+  "amazon3pl.trust.nominimums": "Sem Mínimos",
+  "amazon3pl.trust.secure": "Instalação Segura 24/7",
+
+  // Services
+  "amazon3pl.services.title": "Serviços Amazon 3PL em Miami",
+  "amazon3pl.services.subtitle":
+    "Tudo o que vendedores Amazon precisam sob o mesmo teto — da preparação ao envio",
+  "amazon3pl.services.fbaprep.title": "Preparação Amazon FBA",
+  "amazon3pl.services.fbaprep.desc":
+    "Preparação FBA completa incluindo etiquetamento FNSKU, embalagem em saco plástico, plástico bolha, bundling e etiquetas de conteúdo de caixa. Seguimos cada requisito da Amazon para que seus envios sejam aceitos de primeira, sempre.",
+  "amazon3pl.services.fbaprep.price": "A partir de $0.15/unidade",
+  "amazon3pl.services.fbm.title": "Fulfillment FBM",
+  "amazon3pl.services.fbm.desc":
+    "Pedidos fulfilled pelo vendedor processados no mesmo dia. Fazemos pick, pack e ship diretamente para seus clientes Amazon com integração de rastreamento.",
+  "amazon3pl.services.fbm.price": "Processamento no Mesmo Dia",
+  "amazon3pl.services.storage.title": "Armazenamento de Estoque Amazon",
+  "amazon3pl.services.storage.desc":
+    "Armazene estoque excedente a uma fração das taxas da Amazon. Evite sobretaxas de armazenamento de longo prazo. Rastreamento de estoque em tempo real incluído.",
+  "amazon3pl.services.storage.price": "$0.75/pallet/dia",
+  "amazon3pl.services.inspection.title": "Inspeção e Controle de Qualidade",
+  "amazon3pl.services.inspection.desc":
+    "Cada unidade é inspecionada antes da preparação. Detectamos defeitos, danos e erros de etiquetamento antes que se tornem reclamações de clientes.",
+  "amazon3pl.services.inspection.price": "$0.15/unidade",
+  "amazon3pl.services.boxlabel.title": "Etiquetamento de Conteúdo de Caixa",
+  "amazon3pl.services.boxlabel.desc":
+    "Etiquetas de conteúdo de caixa compatíveis com Amazon geradas e aplicadas a cada caixa.",
+  "amazon3pl.services.boxlabel.price": "$3.00/caixa",
+  "amazon3pl.services.returns.title": "Processamento de Devoluções",
+  "amazon3pl.services.returns.desc":
+    "Recebemos, inspecionamos e reabastecemos as devoluções Amazon. Classificamos unidades vendáveis vs. não vendáveis.",
+  "amazon3pl.services.returns.price": "Cotação Personalizada",
+
+  // Comparison
+  "amazon3pl.comparison.title":
+    "Armazenamento Amazon FBA vs. Miami Alliance 3PL",
+  "amazon3pl.comparison.subtitle":
+    "Descubra por que vendedores Amazon economizam 40-60% em armazenamento",
+  "amazon3pl.comparison.fba.label": "Armazenamento Amazon FBA",
+  "amazon3pl.comparison.fba.heading": "Taxas da Amazon",
+  "amazon3pl.comparison.fba.item1": "❌ $0.87/pé cúbico mensal (padrão)",
+  "amazon3pl.comparison.fba.item2": "❌ $2.40/pé cúbico mensal (pico Q4)",
+  "amazon3pl.comparison.fba.item3":
+    "❌ $6.90/pé cúbico sobretaxa de longo prazo",
+  "amazon3pl.comparison.fba.item4":
+    "❌ Sobretaxa por estoque antigo após 181 dias",
+  "amazon3pl.comparison.fba.item5":
+    "❌ $0.50/unidade taxa por ordem de remoção",
+  "amazon3pl.comparison.fba.item6": "❌ Visibilidade limitada do estoque",
+  "amazon3pl.comparison.fba.item7": "❌ Amazon controla seu estoque",
+  "amazon3pl.comparison.ma.badge": "Recomendado",
+  "amazon3pl.comparison.ma.label": "Miami Alliance 3PL",
+  "amazon3pl.comparison.ma.heading": "Nossas Taxas",
+  "amazon3pl.comparison.ma.item1": "✅ $0.75/pallet/dia taxa fixa",
+  "amazon3pl.comparison.ma.item2": "✅ Sem sobretaxas de alta temporada",
+  "amazon3pl.comparison.ma.item3":
+    "✅ Sem taxas de armazenamento de longo prazo",
+  "amazon3pl.comparison.ma.item4": "✅ Sem penalidades por estoque antigo",
+  "amazon3pl.comparison.ma.item5":
+    "✅ Reabastecimento de estoque para FBA grátis",
+  "amazon3pl.comparison.ma.item6": "✅ Visibilidade em tempo real no portal",
+  "amazon3pl.comparison.ma.item7": "✅ Você controla seu estoque",
+  "amazon3pl.comparison.cta": "Calcule Sua Economia &rarr;",
+
+  // Process
+  "amazon3pl.process.title": "Como o Amazon 3PL Funciona com a Miami Alliance",
+  "amazon3pl.process.subtitle": "Da inscrição ao envio em dias — não semanas",
+  "amazon3pl.process.step1.title": "Obtenha Sua Cotação",
+  "amazon3pl.process.step1.desc":
+    "Use nossa calculadora instantânea ou fale com nosso especialista Amazon.",
+  "amazon3pl.process.step2.title": "Envie Seu Estoque",
+  "amazon3pl.process.step2.desc":
+    "Envie produtos para nosso armazém em Medley, FL. Recebemos, contamos, inspecionamos e registramos tudo no mesmo dia.",
+  "amazon3pl.process.step3.title": "Preparamos e Enviamos",
+  "amazon3pl.process.step3.desc":
+    "Preparação FBA ou fulfillment FBM. Processamento no mesmo dia para pedidos antes das 14h EST.",
+  "amazon3pl.process.step4.title": "Você Escala",
+  "amazon3pl.process.step4.desc":
+    "Foque em sourcing, marketing e crescimento do seu negócio Amazon enquanto cuidamos da logística.",
+
+  // Why Miami
+  "amazon3pl.whymiami.title":
+    "Por Que Miami É a Melhor Localização para Amazon 3PL",
+  "amazon3pl.whymiami.subtitle":
+    "Vantagens estratégicas que dão aos vendedores Amazon uma vantagem competitiva",
+  "amazon3pl.whymiami.item1.title":
+    "Perto dos Centros de Fulfillment da Amazon",
+  "amazon3pl.whymiami.item1.desc":
+    "A Flórida tem múltiplos centros de recebimento Amazon FBA. Menor trânsito significa check-in mais rápido e menores custos de envio.",
+  "amazon3pl.whymiami.item2.title": "Portal de Importação",
+  "amazon3pl.whymiami.item2.desc":
+    "A 8 milhas do Aeroporto Internacional de Miami e a 15 minutos do Porto de Miami.",
+  "amazon3pl.whymiami.item3.title":
+    "Envio Terrestre em 2 Dias para a Costa Leste",
+  "amazon3pl.whymiami.item3.desc":
+    "Nossa localização em Miami alcança 80% dos clientes da Costa Leste dos EUA em 2 dias úteis por envio terrestre.",
+  "amazon3pl.whymiami.item4.title": "Equipe Bilíngue",
+  "amazon3pl.whymiami.item4.desc":
+    "Equipe de armazém que fala inglês e espanhol. Perfeito para vendedores nos EUA e América Latina.",
+  "amazon3pl.whymiami.item5.title": "Sem Contratos de Longo Prazo",
+  "amazon3pl.whymiami.item5.desc":
+    "Flexibilidade mês a mês. Escale durante a alta temporada, reduza quando diminuir.",
+  "amazon3pl.whymiami.item6.title": "Acesso ao Portal em Tempo Real",
+  "amazon3pl.whymiami.item6.desc":
+    "Rastreie seu estoque Amazon, envios FBA e pedidos FBM através do nosso portal de clientes.",
+
+  // FAQ
+  "amazon3pl.faq.title": "Amazon 3PL Miami — Perguntas Frequentes",
+  "amazon3pl.faq.subtitle":
+    "Perguntas comuns de vendedores Amazon sobre nosso centro de preparação em Miami",
+  "amazon3pl.faq.q1.title": "Quais serviços Amazon 3PL vocês oferecem?",
+  "amazon3pl.faq.q1.answer":
+    "Serviços completos para vendedores Amazon: preparação FBA, fulfillment FBM, armazenamento de estoque, inspeção e QC, etiquetamento e processamento de devoluções.",
+  "amazon3pl.faq.q2.title": "Quanto custa a preparação FBA?",
+  "amazon3pl.faq.q2.answer":
+    "FNSKU: $0.20/unidade. Saco: $0.30/unidade. Bolha: $0.50/unidade. Bundling: $1.00/pacote. Etiquetas: $3.00/caixa. Inspeção: $0.15/unidade. Sem mínimos, sem contratos.",
+  "amazon3pl.faq.q3.title": "Vocês fazem FBA e FBM?",
+  "amazon3pl.faq.q3.answer":
+    "Sim! Fazemos tanto preparação FBA quanto fulfillment FBM. Muitos clientes usam uma abordagem híbrida para máxima flexibilidade.",
+  "amazon3pl.faq.q4.title": "Qual a velocidade do processamento?",
+  "amazon3pl.faq.q4.answer":
+    "Processamento no mesmo dia. Estoque recebido antes das 14h EST está preparado e pronto para enviar no mesmo dia.",
+  "amazon3pl.faq.q5.title":
+    "O armazenamento de vocês é mais barato que o da Amazon?",
+  "amazon3pl.faq.q5.answer":
+    "Significativamente. A Amazon cobra $0.87+/pé cúbico mensal. Cobramos $0.75/pallet/dia com zero sobretaxas. A maioria economiza 40-60%.",
+  "amazon3pl.faq.q6.title": "Onde fica o centro de preparação Amazon de vocês?",
+  "amazon3pl.faq.q6.answer":
+    "8780 NW 100th ST, Medley, FL 33178 — no corredor logístico do Condado de Miami-Dade.",
+  "amazon3pl.faq.viewall": "Ver Todas as Perguntas Frequentes &rarr;",
+
+  // Resources
+  "amazon3pl.resources.title": "Recursos para Vendedores Amazon",
+  "amazon3pl.resources.subtitle":
+    "Guias detalhados para vendedores Amazon que usam serviços 3PL",
+  "amazon3pl.resources.card1.tag": "Guia",
+  "amazon3pl.resources.card1.title":
+    "Amazon 3PL em Miami: Guia Completo de Armazém e Fulfillment",
+  "amazon3pl.resources.card1.desc":
+    "Tudo o que você precisa saber sobre usar um 3PL em Miami para o seu negócio Amazon.",
+  "amazon3pl.resources.card1.link": "Leia o guia completo &rarr;",
+  "amazon3pl.resources.card2.tag": "FBA vs FBM",
+  "amazon3pl.resources.card2.title":
+    "3PL para Vendedores Amazon: FBA Prep, FBM Fulfillment",
+  "amazon3pl.resources.card2.desc":
+    "Comparação detalhada de estratégias de fulfillment FBA e FBM.",
+  "amazon3pl.resources.card2.link": "Leia a comparação &rarr;",
+  "amazon3pl.resources.card3.tag": "Notícias do Setor",
+  "amazon3pl.resources.card3.title": "Mudanças no Amazon FBA Prep 2026",
+  "amazon3pl.resources.card3.desc":
+    "As políticas de preparação em evolução da Amazon e o que significam para os vendedores.",
+  "amazon3pl.resources.card3.link": "Leia a análise &rarr;",
+
+  // CTA
+  "amazon3pl.cta.title": "Pronto para Escalar Seu Negócio Amazon?",
+  "amazon3pl.cta.subtitle":
+    "Obtenha sua cotação gratuita de Amazon 3PL hoje. Sem mínimos, sem contratos, sem taxas ocultas.",
+  "amazon3pl.cta.promo":
+    "🎁 Novos clientes recebem $100 em crédito de armazenamento GRÁTIS",
+  "amazon3pl.cta.btn.quote": "Cotação Instantânea Amazon",
+  "amazon3pl.cta.btn.specialist": "Fale com Especialista Amazon",
+  "amazon3pl.cta.btn.call": "Ligue (786) 873-8819",
+
+  // Footer
+  "amazon3pl.footer.brand.desc":
+    "Seu parceiro confiável de Amazon 3PL em Miami. Preparação FBA, fulfillment FBM e serviços de armazém.",
+  "amazon3pl.footer.services.title": "Serviços Amazon",
+  "amazon3pl.footer.services.fbaprep": "Preparação FBA",
+  "amazon3pl.footer.services.fbm": "Fulfillment FBM",
+  "amazon3pl.footer.services.fnsku": "Etiquetamento FNSKU",
+  "amazon3pl.footer.services.storage": "Armazenamento de Estoque",
+  "amazon3pl.footer.services.returns": "Processamento de Devoluções",
+  "amazon3pl.footer.terms": "Termos de Serviço",
+  "amazon3pl.footer.privacy": "Política de Privacidade",
+  "amazon3pl.sticky.quote": "Cotação Amazon",
+  "amazon3pl.sticky.blog": "Ler Blog",
 };
