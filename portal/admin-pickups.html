@@ -648,6 +648,7 @@
     <!-- Firebase + Portal JS -->
     <script type="module">
         import { initFirebase, onAuthChange, signOutUser, getUserRole, isStaff, isAdmin, getSettings, saveSettings } from '../js/firebase.js';
+        import { escapeHtml, pickDocumentSource } from '../js/shipments-portal-utils.mjs';
 
         // ============================================================
         // STATE
@@ -659,6 +660,22 @@
         let knownRequestIds = new Set();
         let isFirstLoad = true;
         let unsubscribe = null;
+
+        function formatPickupDocumentType(docType) {
+            return {
+                bol: 'Bill of Lading',
+                commercial_invoice: 'Commercial Invoice',
+                invoice: 'Invoice',
+                packing_list: 'Packing List',
+                other: 'Document'
+            }[docType] || 'Document';
+        }
+
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
 
         // Make functions globally available
         window.filterRequests = filterRequests;
@@ -919,11 +936,15 @@
                         <td><strong>$${total.toFixed(2)}</strong></td>
                         <td><span class="status-badge status-${esc(status)}">${esc(status.replace('_', ' '))}</span></td>
                         <td>
-                            <button class="action-btn action-btn-view" onclick="openDetail('${req.id}')">👁 View</button>
+                            <button class="action-btn action-btn-view" data-request-id="${esc(req.id)}">👁 View</button>
                         </td>
                     </tr>
                 `;
             }).join('');
+
+            tbody.querySelectorAll('[data-request-id]').forEach((button) => {
+                button.addEventListener('click', () => openDetail(button.dataset.requestId));
+            });
         }
 
         // ============================================================
@@ -941,6 +962,23 @@
             const typeLabel = req.service_type === 'pickup' ? '🚛 Pickup' : '📦 Delivery';
             const total = req.admin_price_override != null ? req.admin_price_override : (req.pricing?.total || 0);
             const timeLabels = { morning: 'Morning (8AM-12PM)', afternoon: 'Afternoon (12PM-5PM)', flexible: 'Flexible' };
+            const documentSource = req.document ? pickDocumentSource(req.document) : null;
+            const documentLabel = req.document ? formatPickupDocumentType(req.document.type || 'other') : 'Document';
+            const documentName = req.document ? escapeHTML(req.document.filename || req.document.name || documentLabel) : '';
+            const documentSection = req.document
+                ? documentSource
+                    ? `
+                        <a href="${escapeHTML(documentSource)}" target="_blank" rel="noopener noreferrer" class="doc-link">
+                            📄 ${documentName} (${escapeHTML(documentLabel)})
+                        </a>
+                    `
+                    : `
+                        <div style="color: #475569; font-size: 0.9rem;">
+                            📄 ${documentName} (${escapeHTML(documentLabel)})<br>
+                            <span style="color: #94a3b8; font-size: 0.82rem;">Document metadata is present, but no downloadable source is available.</span>
+                        </div>
+                    `
+                : '<p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">No document uploaded</p>';
 
             title.textContent = `Request #${shortId}`;
 
@@ -951,48 +989,44 @@
                     <div class="detail-row"><span class="label">Pallets</span><span class="value">${req.pallet_count}</span></div>
                     <div class="detail-row"><span class="label">Base Price</span><span class="value">$${(req.pricing?.total || 0).toFixed(2)}</span></div>
                     ${req.admin_price_override != null ? `<div class="detail-row"><span class="label">Admin Override</span><span class="value" style="color: #f59e0b;">$${req.admin_price_override.toFixed(2)}</span></div>` : ''}
-                    <div class="detail-row"><span class="label">Status</span><span class="value"><span class="status-badge status-${req.status}">${(req.status || 'pending').replace('_', ' ')}</span></span></div>
+                    <div class="detail-row"><span class="label">Status</span><span class="value"><span class="status-badge status-${escapeHTML(req.status)}">${escapeHTML((req.status || 'pending').replace('_', ' '))}</span></span></div>
                 </div>
 
                 <div class="detail-section">
                     <h4>Contact</h4>
-                    <div class="detail-row"><span class="label">Name</span><span class="value">${req.contact?.name || '—'}</span></div>
-                    <div class="detail-row"><span class="label">Phone</span><span class="value">${req.contact?.phone || '—'}</span></div>
-                    <div class="detail-row"><span class="label">Email</span><span class="value">${req.contact?.email || req.user_email || '—'}</span></div>
+                    <div class="detail-row"><span class="label">Name</span><span class="value">${escapeHTML(req.contact?.name || '—')}</span></div>
+                    <div class="detail-row"><span class="label">Phone</span><span class="value">${escapeHTML(req.contact?.phone || '—')}</span></div>
+                    <div class="detail-row"><span class="label">Email</span><span class="value">${escapeHTML(req.contact?.email || req.user_email || '—')}</span></div>
                 </div>
 
                 <div class="detail-section">
                     <h4>Address</h4>
-                    <div class="detail-row"><span class="label">Street</span><span class="value">${req.address?.street || '—'}</span></div>
-                    <div class="detail-row"><span class="label">City/State/ZIP</span><span class="value">${req.address?.city || ''}, ${req.address?.state || ''} ${req.address?.zip || ''}</span></div>
+                    <div class="detail-row"><span class="label">Street</span><span class="value">${escapeHTML(req.address?.street || '—')}</span></div>
+                    <div class="detail-row"><span class="label">City/State/ZIP</span><span class="value">${escapeHTML(req.address?.city || '')}, ${escapeHTML(req.address?.state || '')} ${escapeHTML(req.address?.zip || '')}</span></div>
                 </div>
 
                 <div class="detail-section">
                     <h4>Schedule</h4>
-                    <div class="detail-row"><span class="label">Date</span><span class="value">${req.schedule?.preferred_date || '—'}</span></div>
-                    <div class="detail-row"><span class="label">Time</span><span class="value">${timeLabels[req.schedule?.preferred_time] || req.schedule?.preferred_time || '—'}</span></div>
+                    <div class="detail-row"><span class="label">Date</span><span class="value">${escapeHTML(req.schedule?.preferred_date || '—')}</span></div>
+                    <div class="detail-row"><span class="label">Time</span><span class="value">${escapeHTML(timeLabels[req.schedule?.preferred_time] || req.schedule?.preferred_time || '—')}</span></div>
                 </div>
 
                 ${req.special_instructions ? `
                 <div class="detail-section">
                     <h4>Special Instructions</h4>
-                    <p style="color: #475569; font-size: 0.9rem; margin: 0;">${req.special_instructions}</p>
+                    <p style="color: #475569; font-size: 0.9rem; margin: 0;">${escapeHTML(req.special_instructions)}</p>
                 </div>
                 ` : ''}
 
                 <div class="detail-section">
                     <h4>Documentation</h4>
-                    ${req.document ? `
-                        <a href="${req.document.url}" target="_blank" class="doc-link">
-                            📄 ${req.document.name} (${req.document.type || 'document'})
-                        </a>
-                    ` : '<p style="color: #94a3b8; font-size: 0.85rem; margin: 0;">No document uploaded</p>'}
+                    ${documentSection}
                 </div>
 
                 ${req.admin_notes ? `
                 <div class="detail-section">
                     <h4>Admin Notes</h4>
-                    <p style="color: #475569; font-size: 0.9rem; margin: 0;">${req.admin_notes}</p>
+                    <p style="color: #475569; font-size: 0.9rem; margin: 0;">${escapeHTML(req.admin_notes)}</p>
                 </div>
                 ` : ''}
 
@@ -1013,13 +1047,17 @@
                     </div>
                     <div style="width: 100%; margin-top: 8px;">
                         <label style="font-size: 0.82rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Admin Notes:</label>
-                        <textarea id="detail-notes" rows="2" style="width: 100%; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;" placeholder="Internal notes...">${req.admin_notes || ''}</textarea>
+                        <textarea id="detail-notes" rows="2" style="width: 100%; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;" placeholder="Internal notes...">${escapeHTML(req.admin_notes || '')}</textarea>
                     </div>
-                    <button class="btn-update-detail" onclick="saveDetail('${req.id}')" style="width: 100%; padding: 12px; margin-top: 8px;">
+                    <button class="btn-update-detail" data-save-request-id="${escapeHTML(req.id)}" style="width: 100%; padding: 12px; margin-top: 8px;">
                         💾 Save Changes
                     </button>
                 </div>
             `;
+
+            body.querySelector('[data-save-request-id]')?.addEventListener('click', () => {
+                window.saveDetail(req.id);
+            });
 
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';

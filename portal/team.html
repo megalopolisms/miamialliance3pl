@@ -466,6 +466,12 @@
 
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -495,7 +501,7 @@
                 return;
             }
 
-            document.getElementById('user-name').innerHTML = `${user.displayName || user.email} <span class="admin-badge">ADMIN</span>`;
+            document.getElementById('user-name').innerHTML = `${escapeHTML(user.displayName || user.email)} <span class="admin-badge">ADMIN</span>`;
             loadUsers();
             loadPendingInvites();
         });
@@ -555,22 +561,22 @@
             }
 
             container.innerHTML = filtered.map(user => `
-                <div class="user-card" data-user-id="${user.id}">
+                <div class="user-card" data-user-id="${escapeHTML(user.id)}">
                     <div class="user-info">
-                        <div class="user-avatar">${(user.name || user.email || '?')[0].toUpperCase()}</div>
+                        <div class="user-avatar">${escapeHTML((user.name || user.email || '?')[0].toUpperCase())}</div>
                         <div class="user-details">
-                            <h3>${user.name || 'No Name'}</h3>
-                            <p>${user.email || 'No Email'}</p>
+                            <h3>${escapeHTML(user.name || 'No Name')}</h3>
+                            <p>${escapeHTML(user.email || 'No Email')}</p>
                         </div>
-                        <span class="role-badge role-${user.role}">${user.role.toUpperCase()}</span>
+                        <span class="role-badge role-${escapeHTML(user.role)}">${escapeHTML(user.role?.toUpperCase())}</span>
                     </div>
                     <div class="user-actions">
-                        <select class="role-select" data-user-id="${user.id}" data-original="${user.role}">
+                        <select class="role-select" data-user-id="${escapeHTML(user.id)}" data-original="${escapeHTML(user.role)}">
                             <option value="customer" ${user.role === 'customer' ? 'selected' : ''}>Customer</option>
                             <option value="employee" ${user.role === 'employee' ? 'selected' : ''}>Employee</option>
                             <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
                         </select>
-                        <button class="btn-save" data-user-id="${user.id}" disabled>Save</button>
+                        <button class="btn-save" data-user-id="${escapeHTML(user.id)}" disabled>Save</button>
                     </div>
                 </div>
             `).join('');
@@ -712,11 +718,11 @@
                     div.className = 'invite-item';
                     div.innerHTML = `
                         <div>
-                            <strong>${data.email}</strong>
-                            <span class="role-badge role-${data.role}" style="margin-left: 8px;">${data.role.toUpperCase()}</span>
-                            ${data.name ? `<span style="color: var(--color-gray-500); margin-left: 8px;">(${data.name})</span>` : ''}
+                            <strong>${escapeHTML(data.email)}</strong>
+                            <span class="role-badge role-${escapeHTML(data.role)}" style="margin-left: 8px;">${escapeHTML(data.role?.toUpperCase())}</span>
+                            ${data.name ? `<span style="color: var(--color-gray-500); margin-left: 8px;">(${escapeHTML(data.name)})</span>` : ''}
                         </div>
-                        <button class="btn-delete" data-email="${data.email}">Remove</button>
+                        <button class="btn-delete" data-email="${escapeHTML(data.email)}">Remove</button>
                     `;
                     container.appendChild(div);
                 });

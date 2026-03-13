@@ -312,12 +312,12 @@
         <section class="content-section" style="padding-bottom: 0;">
             <div class="container">
                 <div class="faq-categories" style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 2rem;">
-                    <button class="faq-filter-btn active" data-category="all" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: var(--color-accent); color: white; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">All</button>
-                    <button class="faq-filter-btn" data-category="general" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: white; color: var(--color-gray-600); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">General</button>
-                    <button class="faq-filter-btn" data-category="pricing" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: white; color: var(--color-gray-600); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">Pricing & Billing</button>
-                    <button class="faq-filter-btn" data-category="receiving" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: white; color: var(--color-gray-600); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">Receiving & Shipping</button>
-                    <button class="faq-filter-btn" data-category="fba" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: white; color: var(--color-gray-600); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">FBA Prep</button>
-                    <button class="faq-filter-btn" data-category="operations" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: white; color: var(--color-gray-600); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">Operations</button>
+                    <button class="faq-filter-btn active" data-category="all" aria-pressed="true" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: var(--color-accent); color: white; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">All</button>
+                    <button class="faq-filter-btn" data-category="general" aria-pressed="false" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: white; color: var(--color-gray-600); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">General</button>
+                    <button class="faq-filter-btn" data-category="pricing" aria-pressed="false" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: white; color: var(--color-gray-600); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">Pricing & Billing</button>
+                    <button class="faq-filter-btn" data-category="receiving" aria-pressed="false" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: white; color: var(--color-gray-600); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">Receiving & Shipping</button>
+                    <button class="faq-filter-btn" data-category="fba" aria-pressed="false" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: white; color: var(--color-gray-600); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">FBA Prep</button>
+                    <button class="faq-filter-btn" data-category="operations" aria-pressed="false" style="padding: 0.5rem 1.25rem; border-radius: 2rem; border: 1px solid var(--color-gray-200); background: white; color: var(--color-gray-600); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">Operations</button>
                 </div>
             </div>
         </section>
@@ -573,10 +573,12 @@
                     b.style.background = 'white';
                     b.style.color = 'var(--color-gray-600)';
                     b.classList.remove('active');
+                    b.setAttribute('aria-pressed', 'false');
                 });
                 this.style.background = 'var(--color-accent)';
                 this.style.color = 'white';
                 this.classList.add('active');
+                this.setAttribute('aria-pressed', 'true');
 
                 // Filter items
                 faqItems.forEach(item => {

@@ -8,6 +8,11 @@ const adminPanelHtml = readFileSync(new URL('../portal/admin-panel.html', import
 const customersHtml = readFileSync(new URL('../portal/customers.html', import.meta.url), 'utf8');
 const inventoryHtml = readFileSync(new URL('../portal/inventory.html', import.meta.url), 'utf8');
 const dashboardHtml = readFileSync(new URL('../portal/dashboard.html', import.meta.url), 'utf8');
+const pickupsHtml = readFileSync(new URL('../portal/pickups.html', import.meta.url), 'utf8');
+const adminPickupsHtml = readFileSync(new URL('../portal/admin-pickups.html', import.meta.url), 'utf8');
+const adminBillingHtml = readFileSync(new URL('../portal/admin-billing.html', import.meta.url), 'utf8');
+const invoicesHtml = readFileSync(new URL('../portal/invoices.html', import.meta.url), 'utf8');
+const storageLogHtml = readFileSync(new URL('../portal/storage-log.html', import.meta.url), 'utf8');
 const contactHtml = readFileSync(new URL('../contact.html', import.meta.url), 'utf8');
 const firebaseJson = readFileSync(new URL('../firebase.json', import.meta.url), 'utf8');
 const storageRules = readFileSync(new URL('../storage.rules', import.meta.url), 'utf8');
@@ -106,6 +111,61 @@ test('contact form reuses the Firebase app and only shows success after persiste
     assert.match(contactHtml, /trackFormSubmit\('contact_form', false\)/);
     assert.match(contactHtml, /if \(!submitted\) return;/);
     assert.match(contactHtml, /showContactToast\('We could not submit your request/);
+});
+
+test('pickup uploads use shared fallback metadata and explicit upload failure handling', () => {
+    assert.match(pickupsHtml, /shipments-portal-utils\.mjs/);
+    assert.match(pickupsHtml, /buildPickupDocument/);
+    assert.match(pickupsHtml, /buildDocumentMetadata/);
+    assert.match(pickupsHtml, /getInlineFileData/);
+    assert.match(pickupsHtml, /sanitizeStoragePathSegment/);
+    assert.match(pickupsHtml, /storage_error:/);
+    assert.match(pickupsHtml, /await buildPickupDocument\(uploadedFile, documentType\)/);
+    assert.match(pickupsHtml, /submitBtn\?\.addEventListener\('click', submitRequest\)/);
+    assert.doesNotMatch(pickupsHtml, /onclick="document\.getElementById\('file-input'\)\.click\(\)"/);
+    assert.doesNotMatch(pickupsHtml, /onchange="handleFileSelect\(event\)"/);
+});
+
+test('admin pickups resolves safe document sources for uploaded pickup files', () => {
+    assert.match(adminPickupsHtml, /pickDocumentSource/);
+    assert.match(adminPickupsHtml, /formatPickupDocumentType/);
+    assert.match(adminPickupsHtml, /data-request-id=/);
+    assert.match(adminPickupsHtml, /data-save-request-id=/);
+    assert.match(adminPickupsHtml, /rel="noopener noreferrer"/);
+    assert.match(adminPickupsHtml, /pickDocumentSource\(req\.document\)/);
+    assert.doesNotMatch(adminPickupsHtml, /action-btn action-btn-view" onclick="openDetail/);
+});
+
+test('admin billing uses local function bindings for tab and preview actions', () => {
+    assert.match(adminBillingHtml, /function showTab\(tab, tabButton\)/);
+    assert.match(adminBillingHtml, /window\.showTab = showTab/);
+    assert.match(adminBillingHtml, /function updateCalcPreview\(\)/);
+    assert.match(adminBillingHtml, /window\.updateCalcPreview = updateCalcPreview/);
+    assert.match(adminBillingHtml, /function loadHistory\(\)/);
+    assert.match(adminBillingHtml, /window\.loadHistory = loadHistory/);
+    assert.match(adminBillingHtml, /function previewInvoiceActivities\(\)/);
+    assert.match(adminBillingHtml, /window\.previewInvoiceActivities = previewInvoiceActivities/);
+});
+
+test('invoices page keeps modal and invoice actions bound in module scope', () => {
+    assert.match(invoicesHtml, /function loadInvoices\(\)/);
+    assert.match(invoicesHtml, /window\.loadInvoices = loadInvoices/);
+    assert.match(invoicesHtml, /function closeModal\(id\)/);
+    assert.match(invoicesHtml, /window\.closeModal = closeModal/);
+    assert.match(invoicesHtml, /function loadCustomerData\(\)/);
+    assert.match(invoicesHtml, /window\.calculateInvoice = loadCustomerData/);
+    assert.match(invoicesHtml, /function sendInvoice\(\)/);
+    assert.match(invoicesHtml, /window\.sendInvoice = sendInvoice/);
+});
+
+test('storage log tab actions use explicit button context and local handlers', () => {
+    assert.match(storageLogHtml, /onclick="showTab\('record', this\)"/);
+    assert.match(storageLogHtml, /function showTab\(tab, tabButton\)/);
+    assert.match(storageLogHtml, /window\.showTab = showTab/);
+    assert.match(storageLogHtml, /function loadHistory\(\)/);
+    assert.match(storageLogHtml, /window\.loadHistory = loadHistory/);
+    assert.match(storageLogHtml, /function loadSummary\(\)/);
+    assert.match(storageLogHtml, /window\.loadSummary = loadSummary/);
 });
 
 test('firebase config includes storage rules for shipment uploads', () => {

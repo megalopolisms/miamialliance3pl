@@ -69,6 +69,19 @@ test('buildDocumentMetadata records storage uploads and strips undefined extras'
     assert.ok(!('foo' in metadata));
 });
 
+test('buildDocumentMetadata persists inline fallback payloads', () => {
+    const metadata = buildDocumentMetadata({
+        file: { name: 'bol.pdf', type: 'application/pdf', size: 512 },
+        uploadedAt: '2026-03-13T12:00:00.000Z',
+        inlineData: 'data:application/pdf;base64,AAA=',
+        extra: { type: 'bol' }
+    });
+
+    assert.equal(metadata.upload_method, 'inline');
+    assert.equal(metadata.file_data, 'data:application/pdf;base64,AAA=');
+    assert.equal(metadata.type, 'bol');
+});
+
 test('pickDocumentSource prefers safe URL sources and sanitizeStoragePathSegment normalizes filenames', () => {
     assert.equal(
         pickDocumentSource({ url: 'https://example.com/doc.pdf', file_data: 'data:ignored' }, { file_data: 'data:fallback' }),

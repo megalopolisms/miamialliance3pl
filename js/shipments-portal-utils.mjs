@@ -1,4 +1,5 @@
-export const MAX_INLINE_FILE_BYTES = 1024 * 1024;
+// Keep raw files well below Firestore's 1 MiB document limit once data URL overhead is added.
+export const MAX_INLINE_FILE_BYTES = 700 * 1024;
 export const MAX_TAG_BADGES = 3;
 
 function asString(value, fallback = "") {
@@ -281,6 +282,7 @@ export function buildDocumentMetadata({ file, uploadedAt, url = null, storagePat
         uploaded_at: uploadedAt || null,
         ...extra,
         url: url || null,
+        file_data: inlineData || null,
         storage_path: storagePath || null,
         upload_method: url ? "storage" : inlineData ? "inline" : "metadata_only"
     });

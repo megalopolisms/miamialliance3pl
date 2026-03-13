@@ -432,6 +432,12 @@
 
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
         let customers = [];
         let pricingData = {};
         let currentInvoice = null;
@@ -510,7 +516,7 @@
             pricingData = doc_.exists() ? doc_.data() : {};
         }
 
-        window.loadInvoices = async function() {
+        async function loadInvoices() {
             const customerId = document.getElementById('filter-customer').value;
             const status = document.getElementById('filter-status').value;
             const month = document.getElementById('filter-month').value;
@@ -553,12 +559,12 @@
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><strong>${d.invoice_number}</strong></td>
-                        <td>${d.customer_name || 'Unknown'}</td>
-                        <td>${d.billing_period_start} to ${d.billing_period_end}</td>
+                        <td><strong>${escapeHTML(d.invoice_number)}</strong></td>
+                        <td>${escapeHTML(d.customer_name || 'Unknown')}</td>
+                        <td>${escapeHTML(d.billing_period_start)} to ${escapeHTML(d.billing_period_end)}</td>
                         <td>$${d.total?.toFixed(2) || '0.00'}</td>
-                        <td><span class="badge badge-${d.status}">${d.status.toUpperCase()}</span></td>
-                        <td>${d.due_date || '-'}</td>
+                        <td><span class="badge badge-${escapeHTML(d.status)}">${escapeHTML(d.status?.toUpperCase())}</span></td>
+                        <td>${escapeHTML(d.due_date || '-')}</td>
                         <td class="actions-cell">
                             <button class="btn-sm btn-view" onclick="viewInvoice('${doc.id}')">View</button>
                             ${d.status === 'draft' ? `<button class="btn-sm btn-send" onclick="sendInvoiceById('${doc.id}')">Send</button>` : ''}
@@ -573,7 +579,8 @@
             document.getElementById('stat-pending').textContent = pendingCount;
             document.getElementById('stat-overdue').textContent = overdueCount;
             document.getElementById('stat-paid').textContent = '$' + paidThisMonth.toFixed(2);
-        };
+        }
+        window.loadInvoices = loadInvoices;
 
         function generateInvoiceNumber() {
             const now = new Date();
@@ -590,7 +597,7 @@
             document.getElementById('inv-due-date').value = dueDate.toISOString().split('T')[0];
         }
 
-        window.openCreateModal = function() {
+        function openCreateModal() {
             lineItems = [];
             document.getElementById('line-items-container').innerHTML = '';
             generateInvoiceNumber();
@@ -598,13 +605,15 @@
             document.getElementById('inv-notes').value = '';
             updateTotals();
             document.getElementById('create-modal').classList.add('show');
-        };
+        }
+        window.openCreateModal = openCreateModal;
 
-        window.closeModal = function(id) {
+        function closeModal(id) {
             document.getElementById(id).classList.remove('show');
-        };
+        }
+        window.closeModal = closeModal;
 
-        window.loadCustomerData = async function() {
+        async function loadCustomerData() {
             const customerId = document.getElementById('inv-customer').value;
             if (!customerId) return;
 
@@ -670,7 +679,8 @@
                 console.error(err);
                 document.getElementById('line-items-container').innerHTML = '<p style="color: red;">Error loading data</p>';
             }
-        };
+        }
+        window.loadCustomerData = loadCustomerData;
 
         window.calculateInvoice = loadCustomerData;
 
@@ -687,8 +697,8 @@
                 const div = document.createElement('div');
                 div.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr 80px 100px 100px 40px; gap: 8px; margin-bottom: 8px; align-items: center;';
                 div.innerHTML = `
-                    <input type="text" value="${item.description}" onchange="updateLineItem(${idx}, 'description', this.value)" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
-                    <input type="text" value="${item.unit}" onchange="updateLineItem(${idx}, 'unit', this.value)" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
+                    <input type="text" value="${escapeHTML(item.description)}" onchange="updateLineItem(${idx}, 'description', this.value)" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
+                    <input type="text" value="${escapeHTML(item.unit)}" onchange="updateLineItem(${idx}, 'unit', this.value)" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
                     <input type="number" value="${item.quantity}" onchange="updateLineItem(${idx}, 'quantity', parseFloat(this.value))" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
                     <input type="number" step="0.01" value="${item.rate}" onchange="updateLineItem(${idx}, 'rate', parseFloat(this.value))" style="padding: 8px; border: 1px solid var(--color-gray-300); border-radius: 4px;">
                     <span style="font-weight: 600;">$${item.amount.toFixed(2)}</span>
@@ -698,22 +708,24 @@
             });
         }
 
-        window.updateLineItem = function(idx, field, value) {
+        function updateLineItem(idx, field, value) {
             lineItems[idx][field] = value;
             if (field === 'quantity' || field === 'rate') {
                 lineItems[idx].amount = lineItems[idx].quantity * lineItems[idx].rate;
             }
             renderLineItems();
             updateTotals();
-        };
+        }
+        window.updateLineItem = updateLineItem;
 
-        window.removeLineItem = function(idx) {
+        function removeLineItem(idx) {
             lineItems.splice(idx, 1);
             renderLineItems();
             updateTotals();
-        };
+        }
+        window.removeLineItem = removeLineItem;
 
-        window.addLineItem = function() {
+        function addLineItem() {
             lineItems.push({
                 category: 'custom',
                 description: 'Custom Service',
@@ -723,7 +735,8 @@
                 amount: 0
             });
             renderLineItems();
-        };
+        }
+        window.addLineItem = addLineItem;
 
         function updateTotals() {
             const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
@@ -741,9 +754,10 @@
             await saveInvoice('draft');
         });
 
-        window.saveAndSend = async function() {
+        async function saveAndSend() {
             await saveInvoice('sent');
-        };
+        }
+        window.saveAndSend = saveAndSend;
 
         async function saveInvoice(status) {
             const customerId = document.getElementById('inv-customer').value;
@@ -797,14 +811,15 @@
             }
         }
 
-        window.viewInvoice = async function(invoiceId) {
+        async function viewInvoice(invoiceId) {
             const docSnap = await getDoc(doc(db, 'invoices', invoiceId));
             if (!docSnap.exists()) return;
 
             currentInvoice = { id: invoiceId, ...docSnap.data() };
             renderInvoicePreview(currentInvoice);
             document.getElementById('view-modal').classList.add('show');
-        };
+        }
+        window.viewInvoice = viewInvoice;
 
         function renderInvoicePreview(inv) {
             const preview = document.getElementById('invoice-preview');
@@ -816,18 +831,18 @@
                     </div>
                     <div style="text-align: right;">
                         <h1 style="font-size: 2rem; color: var(--color-gray-800);">INVOICE</h1>
-                        <p><strong>${inv.invoice_number}</strong></p>
-                        <p>Date: ${inv.created_at?.split('T')[0]}</p>
-                        <p>Due: ${inv.due_date}</p>
+                        <p><strong>${escapeHTML(inv.invoice_number)}</strong></p>
+                        <p>Date: ${escapeHTML(inv.created_at?.split('T')[0])}</p>
+                        <p>Due: ${escapeHTML(inv.due_date)}</p>
                     </div>
                 </div>
                 <div style="margin-bottom: var(--spacing-lg);">
                     <strong>Bill To:</strong><br>
-                    ${inv.customer_name}<br>
-                    ${inv.customer_email || ''}
+                    ${escapeHTML(inv.customer_name)}<br>
+                    ${escapeHTML(inv.customer_email || '')}
                 </div>
                 <div style="margin-bottom: var(--spacing-md);">
-                    <strong>Billing Period:</strong> ${inv.billing_period_start} to ${inv.billing_period_end}
+                    <strong>Billing Period:</strong> ${escapeHTML(inv.billing_period_start)} to ${escapeHTML(inv.billing_period_end)}
                 </div>
                 <table class="line-items-table">
                     <thead>
@@ -842,9 +857,9 @@
                     <tbody>
                         ${inv.line_items?.map(item => `
                             <tr>
-                                <td>${item.description}</td>
+                                <td>${escapeHTML(item.description)}</td>
                                 <td>${item.quantity}</td>
-                                <td>${item.unit}</td>
+                                <td>${escapeHTML(item.unit)}</td>
                                 <td>$${item.rate?.toFixed(2)}</td>
                                 <td>$${item.amount?.toFixed(2)}</td>
                             </tr>
@@ -858,7 +873,7 @@
                     ${inv.amount_paid > 0 ? `<div class="row"><span>Paid:</span> <span>-$${inv.amount_paid?.toFixed(2)}</span></div>` : ''}
                     ${inv.amount_paid > 0 ? `<div class="row"><span>Balance:</span> <span>$${(inv.total - inv.amount_paid).toFixed(2)}</span></div>` : ''}
                 </div>
-                ${inv.notes ? `<div style="margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);"><strong>Notes:</strong><br>${inv.notes}</div>` : ''}
+                ${inv.notes ? `<div style="margin-top: var(--spacing-lg); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);"><strong>Notes:</strong><br>${escapeHTML(inv.notes)}</div>` : ''}
             `;
 
             // Update button states
@@ -866,7 +881,7 @@
             document.getElementById('btn-mark-paid').style.display = (inv.status === 'sent' || inv.status === 'overdue') ? 'inline-block' : 'none';
         }
 
-        window.printInvoice = function() {
+        function printInvoice() {
             const content = document.getElementById('invoice-preview').innerHTML;
             const win = window.open('', '_blank');
             win.document.write(`
@@ -884,9 +899,10 @@
             `);
             win.document.close();
             win.print();
-        };
+        }
+        window.printInvoice = printInvoice;
 
-        window.sendInvoice = async function() {
+        async function sendInvoice() {
             if (!currentInvoice) return;
             await updateDoc(doc(db, 'invoices', currentInvoice.id), {
                 status: 'sent',
@@ -895,18 +911,20 @@
             showToast('Invoice sent!');
             closeModal('view-modal');
             loadInvoices();
-        };
+        }
+        window.sendInvoice = sendInvoice;
 
-        window.sendInvoiceById = async function(id) {
+        async function sendInvoiceById(id) {
             await updateDoc(doc(db, 'invoices', id), {
                 status: 'sent',
                 sent_at: new Date().toISOString()
             });
             showToast('Invoice sent!');
             loadInvoices();
-        };
+        }
+        window.sendInvoiceById = sendInvoiceById;
 
-        window.markAsPaid = async function() {
+        async function markAsPaid() {
             if (!currentInvoice) return;
             await updateDoc(doc(db, 'invoices', currentInvoice.id), {
                 status: 'paid',
@@ -916,9 +934,10 @@
             showToast('Invoice marked as paid!');
             closeModal('view-modal');
             loadInvoices();
-        };
+        }
+        window.markAsPaid = markAsPaid;
 
-        window.markPaidById = async function(id) {
+        async function markPaidById(id) {
             const docSnap = await getDoc(doc(db, 'invoices', id));
             const data = docSnap.data();
             await updateDoc(doc(db, 'invoices', id), {
@@ -928,7 +947,8 @@
             });
             showToast('Invoice marked as paid!');
             loadInvoices();
-        };
+        }
+        window.markPaidById = markPaidById;
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
             await signOut(auth);

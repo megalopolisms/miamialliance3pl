@@ -732,6 +732,12 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         // ──────────────────────────────────────────────
@@ -966,7 +972,7 @@
         // ──────────────────────────────────────────────
         // TAB SWITCHING
         // ──────────────────────────────────────────────
-        window.showTab = function(tab, tabButton) {
+        function showTab(tab, tabButton) {
             document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tab).style.display = 'block';
@@ -980,7 +986,8 @@
             if (tab === 'history') loadHistory();
             if (tab === 'reconcile') {}
             if (tab === 'generate') {}
-        };
+        }
+        window.showTab = showTab;
 
         // ──────────────────────────────────────────────
         // INIT
@@ -1111,7 +1118,7 @@
         // ──────────────────────────────────────────────
         // ACTIVITY TYPE CHANGE
         // ──────────────────────────────────────────────
-        window.onActivityTypeChange = function() {
+        function onActivityTypeChange() {
             const type = document.getElementById('entry-type').value;
             if (!type) return;
 
@@ -1121,12 +1128,13 @@
             document.querySelectorAll('.quick-type').forEach(b => {
                 b.classList.toggle('selected', b.dataset.type === type);
             });
-        };
+        }
+        window.onActivityTypeChange = onActivityTypeChange;
 
         // ──────────────────────────────────────────────
         // CALC PREVIEW
         // ──────────────────────────────────────────────
-        window.updateCalcPreview = function() {
+        function updateCalcPreview() {
             const qty = parseFloat(document.getElementById('entry-quantity').value) || 0;
             const rate = parseFloat(document.getElementById('entry-rate').value) || 0;
             const amount = qty * rate;
@@ -1135,7 +1143,8 @@
             document.getElementById('calc-amount').textContent = formatCurrency(amount);
             document.getElementById('calc-formula').textContent =
                 qty > 0 ? `${qty} ${unit} x ${formatCurrency(rate)} = ` : '';
-        };
+        }
+        window.updateCalcPreview = updateCalcPreview;
 
         // ──────────────────────────────────────────────
         // SAVE ACTIVITY
@@ -1201,13 +1210,13 @@
             e.preventDefault();
             const saved = await saveActivity();
             if (saved) {
-                resetForm();
+                window.resetForm();
                 await loadTodayActivities();
                 await loadStats();
             }
         });
 
-        window.saveAndAddAnother = async function() {
+        async function saveAndAddAnother() {
             const saved = await saveActivity();
             if (saved) {
                 // Keep customer, warehouse, and date, clear the rest
@@ -1224,16 +1233,18 @@
                 await loadStats();
                 document.getElementById('entry-type').focus();
             }
-        };
+        }
+        window.saveAndAddAnother = saveAndAddAnother;
 
-        window.resetForm = function() {
+        function resetForm() {
             document.getElementById('activity-form').reset();
             document.getElementById('entry-date').value = todayStr();
             document.querySelectorAll('.quick-type').forEach(b => b.classList.remove('selected'));
             document.getElementById('rate-hint').textContent = 'Rate auto-filled from customer override / pricing settings';
             document.getElementById('calc-amount').textContent = '$0.00';
             document.getElementById('calc-formula').textContent = '';
-        };
+        }
+        window.resetForm = resetForm;
 
         // ──────────────────────────────────────────────
         // TODAY'S ACTIVITIES
@@ -1264,14 +1275,14 @@
                         todayCount++;
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${a.customer_name}</td>
-                            <td>${getActivityIcon(itemType)} ${getActivityLabel(itemType)}</td>
+                            <td>${escapeHTML(a.customer_name)}</td>
+                            <td>${escapeHTML(getActivityIcon(itemType))} ${escapeHTML(getActivityLabel(itemType))}</td>
                             <td>${a.quantity}</td>
-                            <td>${a.unit}</td>
+                            <td>${escapeHTML(a.unit)}</td>
                             <td>${formatCurrency(a.rate)}</td>
                             <td><strong>${formatCurrency(a.amount)}</strong></td>
-                            <td>${a.reference || '-'}</td>
-                            <td><button class="btn-delete" onclick="deleteActivity('${d.id}')">Delete</button></td>
+                            <td>${escapeHTML(a.reference || '-')}</td>
+                            <td><button class="btn-delete" onclick="deleteActivity('${escapeHTML(d.id)}')">Delete</button></td>
                         `;
                         tbody.appendChild(row);
                     });
@@ -1284,7 +1295,7 @@
             }
         }
 
-        window.deleteActivity = async function(id) {
+        async function deleteActivity(id) {
             if (!confirm('Delete this activity entry?')) return;
             try {
                 await deleteDoc(doc(db, 'activity_log', id));
@@ -1294,7 +1305,8 @@
             } catch (err) {
                 showToast('Error: ' + err.message, 'error');
             }
-        };
+        }
+        window.deleteActivity = deleteActivity;
 
         // ──────────────────────────────────────────────
         // STATS
@@ -1342,7 +1354,7 @@
         // ──────────────────────────────────────────────
         // HISTORY TAB
         // ──────────────────────────────────────────────
-        window.loadHistory = async function() {
+        async function loadHistory() {
             const customerId = document.getElementById('hist-customer').value;
             const warehouseFilter = document.getElementById('hist-warehouse').value;
             const activityType = document.getElementById('hist-type').value;
@@ -1389,17 +1401,17 @@
 
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${a.date}</td>
-                            <td>${a.customer_name}</td>
-                            <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">${whLabel}</span></td>
-                            <td>${getActivityIcon(itemType)} ${getActivityLabel(itemType)}</td>
+                            <td>${escapeHTML(a.date)}</td>
+                            <td>${escapeHTML(a.customer_name)}</td>
+                            <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">${escapeHTML(whLabel)}</span></td>
+                            <td>${escapeHTML(getActivityIcon(itemType))} ${escapeHTML(getActivityLabel(itemType))}</td>
                             <td>${a.quantity}</td>
-                            <td>${a.unit}</td>
+                            <td>${escapeHTML(a.unit)}</td>
                             <td>${formatCurrency(a.rate)}</td>
                             <td><strong>${formatCurrency(a.amount)}</strong></td>
-                            <td>${a.reference || '-'}</td>
+                            <td>${escapeHTML(a.reference || '-')}</td>
                             <td><span class="badge ${a.billed ? 'badge-billed' : 'badge-unbilled'}">${a.billed ? 'Billed' : 'Unbilled'}</span></td>
-                            <td>${a.logged_by_name || a.logged_by_email || 'Staff'}</td>
+                            <td>${escapeHTML(a.logged_by_name || a.logged_by_email || 'Staff')}</td>
                         `;
                         tbody.appendChild(row);
                     });
@@ -1409,7 +1421,7 @@
                 const summaryDiv = document.getElementById('history-summary');
                 const typeBreakdown = Object.entries(typeTotals)
                     .sort((a, b) => b[1] - a[1])
-                    .map(([type, amt]) => `<strong>${getActivityLabel(type)}</strong>: ${formatCurrency(amt)}`)
+                    .map(([type, amt]) => `<strong>${escapeHTML(getActivityLabel(type))}</strong>: ${formatCurrency(amt)}`)
                     .join(' &bull; ');
 
                 summaryDiv.innerHTML = count > 0
@@ -1420,12 +1432,13 @@
                 console.error('History error:', err);
                 showToast('Error loading history', 'error');
             }
-        };
+        }
+        window.loadHistory = loadHistory;
 
         // ──────────────────────────────────────────────
         // RECONCILIATION TAB
         // ──────────────────────────────────────────────
-        window.loadReconciliation = async function() {
+        async function loadReconciliation() {
             const customerId = document.getElementById('recon-customer').value;
             const month = document.getElementById('recon-month').value;
 
@@ -1529,7 +1542,7 @@
 
                     rows += `
                         <div class="recon-row">
-                            <div>${getQuoteCategoryLabel(key)}</div>
+                            <div>${escapeHTML(getQuoteCategoryLabel(key))}</div>
                             <div>${formatCurrency(quoted)}</div>
                             <div>${formatCurrency(actual)}</div>
                             <div class="${varianceClass}">${varianceStr}</div>
@@ -1544,7 +1557,7 @@
                         totalActual += actual;
                         rows += `
                             <div class="recon-row">
-                                <div>${getActivityIcon(itemType)} ${getActivityLabel(itemType)} <span style="font-size: 0.75rem; color: var(--color-gray-500);">(unquoted)</span></div>
+                                <div>${escapeHTML(getActivityIcon(itemType))} ${escapeHTML(getActivityLabel(itemType))} <span style="font-size: 0.75rem; color: var(--color-gray-500);">(unquoted)</span></div>
                                 <div>${formatCurrency(0)}</div>
                                 <div>${formatCurrency(actual)}</div>
                                 <div class="variance-positive">+${formatCurrency(actual)}</div>
@@ -1565,7 +1578,7 @@
 
                 content.innerHTML = `
                     <div class="reconciliation-card">
-                        <h4 style="margin-bottom: var(--spacing-md);">${customer?.company_name || customer?.name} — ${month}</h4>
+                        <h4 style="margin-bottom: var(--spacing-md);">${escapeHTML(customer?.company_name || customer?.name)} — ${escapeHTML(month)}</h4>
                         <div class="recon-row header">
                             <div>Service Category</div>
                             <div>Quoted</div>
@@ -1594,16 +1607,17 @@
             } catch (err) {
                 console.error('Reconciliation error:', err);
                 document.getElementById('recon-content').innerHTML =
-                    `<p style="color: #ef4444; text-align: center; padding: 20px;">Error loading data: ${err.message}</p>`;
+                    `<p style="color: #ef4444; text-align: center; padding: 20px;">Error loading data: ${escapeHTML(err.message)}</p>`;
             }
-        };
+        }
+        window.loadReconciliation = loadReconciliation;
 
         // ──────────────────────────────────────────────
         // GENERATE INVOICE TAB
         // ──────────────────────────────────────────────
         let previewActivities = [];
 
-        window.previewInvoiceActivities = async function() {
+        async function previewInvoiceActivities() {
             const customerId = document.getElementById('gen-customer').value;
             const periodStart = document.getElementById('gen-period-start').value;
             const periodEnd = document.getElementById('gen-period-end').value;
@@ -1668,18 +1682,18 @@
 
                 let tableRows = lineItems.map(li => `
                     <tr>
-                        <td>${getActivityIcon(li.billing_item_id)} ${li.description}</td>
+                        <td>${escapeHTML(getActivityIcon(li.billing_item_id))} ${escapeHTML(li.description)}</td>
                         <td>${li.quantity.toFixed(2)}</td>
-                        <td>${li.unit}</td>
+                        <td>${escapeHTML(li.unit)}</td>
                         <td>${formatCurrency(li.rate)}</td>
                         <td><strong>${formatCurrency(li.amount)}</strong></td>
-                        <td style="color: var(--color-gray-400);">${li.entries} entries &bull; ${getQuoteCategoryLabel(li.quote_category)}</td>
+                        <td style="color: var(--color-gray-400);">${li.entries} entries &bull; ${escapeHTML(getQuoteCategoryLabel(li.quote_category))}</td>
                     </tr>
                 `).join('');
 
                 document.getElementById('gen-preview').innerHTML = `
                     <div class="section-card" style="border: 2px solid var(--color-primary);">
-                        <h4 style="margin-bottom: var(--spacing-sm);">Invoice Preview — ${customer?.company_name || customer?.name}</h4>
+                        <h4 style="margin-bottom: var(--spacing-sm);">Invoice Preview — ${escapeHTML(customer?.company_name || customer?.name)}</h4>
                         <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
                             Period: ${periodStart} to ${periodEnd} &bull; ${previewActivities.length} activity entries
                         </p>
@@ -1716,11 +1730,12 @@
             } catch (err) {
                 console.error('Preview error:', err);
                 document.getElementById('gen-preview').innerHTML =
-                    `<p style="color: #ef4444; text-align: center;">${err.message}</p>`;
+                    `<p style="color: #ef4444; text-align: center;">${escapeHTML(err.message)}</p>`;
             }
-        };
+        }
+        window.previewInvoiceActivities = previewInvoiceActivities;
 
-        window.generateInvoiceFromActivities = async function() {
+        async function generateInvoiceFromActivities() {
             const customerId = document.getElementById('gen-customer').value;
             const customer = customers.find(c => c.id === customerId);
             const periodStart = document.getElementById('gen-period-start').value;
@@ -1806,7 +1821,7 @@
                 document.getElementById('gen-preview').innerHTML = `
                     <div style="text-align: center; padding: 40px;">
                         <div style="font-size: 3rem;">✅</div>
-                        <h3 style="margin: var(--spacing-md) 0;">Invoice ${invNumber} Created</h3>
+                        <h3 style="margin: var(--spacing-md) 0;">Invoice ${escapeHTML(invNumber)} Created</h3>
                         <p style="color: var(--color-gray-500);">Total: ${formatCurrency(subtotal)} &bull; Status: Draft</p>
                         <a href="invoices.html" class="btn btn-primary" style="margin-top: var(--spacing-md); display: inline-block; text-decoration: none;">View in Invoices</a>
                     </div>
@@ -1817,7 +1832,8 @@
             } catch (err) {
                 showToast('Error creating invoice: ' + err.message, 'error');
             }
-        };
+        }
+        window.generateInvoiceFromActivities = generateInvoiceFromActivities;
 
         // ──────────────────────────────────────────────
         // LOGOUT

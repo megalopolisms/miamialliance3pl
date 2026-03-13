@@ -11,6 +11,11 @@
 - Inventory portal: [portal/inventory.html](/Users/yuri/miamialliance3pl/portal/inventory.html)
 - Dashboard: [portal/dashboard.html](/Users/yuri/miamialliance3pl/portal/dashboard.html)
 - Public contact form: [contact.html](/Users/yuri/miamialliance3pl/contact.html)
+- Admin billing: [portal/admin-billing.html](/Users/yuri/miamialliance3pl/portal/admin-billing.html)
+- Invoices: [portal/invoices.html](/Users/yuri/miamialliance3pl/portal/invoices.html)
+- Storage log: [portal/storage-log.html](/Users/yuri/miamialliance3pl/portal/storage-log.html)
+- Team admin: [portal/team.html](/Users/yuri/miamialliance3pl/portal/team.html)
+- Tracking page: [portal/tracking.html](/Users/yuri/miamialliance3pl/portal/tracking.html)
 - Firebase config and storage rules: [firebase.json](/Users/yuri/miamialliance3pl/firebase.json), [storage.rules](/Users/yuri/miamialliance3pl/storage.rules)
 
 ## Findings
@@ -39,6 +44,15 @@
 8. The public contact form could reinitialize Firebase on repeat submission and still show a success toast after persistence failures.
    Result: repeated contact submissions could silently fail while telling the user the request was received.
 
+9. Pickup-request uploads still depended on Firebase Storage and archived only a direct URL.
+   Result: when Storage was unavailable, customer pickup requests with attachments could fail outright, and admin pickup viewers could not open inline fallback documents.
+
+10. The shared document metadata helper omitted `file_data`.
+    Result: the supposed inline fallback path could report success without actually persisting the document payload.
+
+11. Several other admin/client pages had the same module-scope handler bug.
+    Result: some tabs, invoice actions, and storage-log functions relied on `window.*` exports but were also called as bare identifiers inside module scripts, which could break depending on the call path.
+
 ## Fixes
 
 - Replaced customer shipment loading with a query-plan approach:
@@ -57,6 +71,12 @@
 - Escaped customer and inventory row content before injection and removed inline edit-modal hooks from the customers page.
 - Converted dashboard admin stat cards from clickable `<div>` blocks into real links and escaped recent-shipment row content.
 - Changed the contact form to reuse the existing Firebase app, fail closed on persistence errors, and only show success after the write completes.
+- Lowered the inline upload threshold to stay below Firestore document-size limits after base64 encoding.
+- Fixed the shared document metadata helper so inline fallback uploads persist `file_data`.
+- Reworked pickup-request uploads to use safe storage paths, Storage attempt + inline fallback, and explicit failure when neither path can retain the file.
+- Updated the admin pickup viewer to resolve safe document sources from `url` or `file_data`.
+- Fixed module-scope handler binding on admin billing, invoices, and storage log so tab/action functions work both from inline HTML handlers and internal module calls.
+- Applied the same escaping pass to additional customer/admin screens already under modification: team, tracking, invoices, admin billing, and storage log.
 - Added Firebase Storage rules for `shipment_uploads/<userId>/...`.
 
 ## Buttons Audited
@@ -75,6 +95,11 @@
 - Customers page `Edit`, modal close, and modal cancel buttons
 - Dashboard admin stat cards
 - Contact form submit button
+- Pickup upload zone, remove-file button, and submit button
+- Admin pickup request `View` and `Save Changes` buttons
+- Admin billing tabs and generated invoice preview actions
+- Invoice modal actions and invoice list refresh actions
+- Storage log tabs and auto-count actions
 
 ## Tests Added
 
@@ -90,7 +115,7 @@ node --test /Users/yuri/miamialliance3pl/tests/*.mjs
 
 Result: 14 tests passed.
 
-Second pass result: 19 tests passed.
+Second pass result: 25 tests passed.
 
 ## Residual Risk
 
