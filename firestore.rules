@@ -24,22 +24,68 @@ service cloud.firestore {
         request.auth.token.email == 'ceo@usglatam.com';
     }
 
+    function isFallbackAdminEmail() {
+      return isAuthenticated() &&
+        request.auth.token.email in [
+          'ceo@usglatam.com',
+          'yuri@megalopolisms.com',
+          'admin@miamialliance3pl.com',
+          'yuri@miamialliance3pl.com'
+        ];
+    }
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Check if the current user's inventory is locked by admin
-    function isInventoryLocked() {
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.inventory_locked == true;
+    function isInventoryLockedForUser(userId) {
+      return userId != null &&
+        exists(/databases/$(database)/documents/users/$(userId)) &&
+        get(/databases/$(database)/documents/users/$(userId)).data.inventory_locked == true;
+    }
+
+    function hasMatchingPendingInvite() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/pending_invites/$(request.auth.token.email));
+    }
+
+    function requestedRoleIsAllowedForSelfCreate() {
+      return request.resource.data.role == null ||
+        request.resource.data.role == 'customer' ||
+        (hasMatchingPendingInvite() &&
+          get(/databases/$(database)/documents/pending_invites/$(request.auth.token.email)).data.role == request.resource.data.role) ||
+        (isFallbackAdminEmail() && request.resource.data.role == 'admin');
+    }
+
+    function canSelfUpdateUser(userId) {
+      return isOwner(userId) &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.inventory_locked == resource.data.inventory_locked;
+    }
+
+    function canCreateInventoryForUser(userId) {
+      return isAdmin() ||
+        (isStaff() && !isInventoryLockedForUser(userId)) ||
+        (isOwner(userId) && !isInventoryLockedForUser(userId));
+    }
+
+    function canUpdateInventoryForUser(userId) {
+      return isAdmin() ||
+        (isStaff() && !isInventoryLockedForUser(userId)) ||
+        (isOwner(userId) && !isInventoryLockedForUser(userId));
     }
 
     // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isStaff());
       // Allow admins to create any user doc, AND allow users to create their OWN profile (self-registration)
-      allow create: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
-      allow update: if isAdmin() || isOwner(userId);
+      allow create: if isAdmin() || (
+        isAuthenticated() &&
+        request.auth.uid == userId &&
+        request.resource.data.email == request.auth.token.email &&
+        requestedRoleIsAllowedForSelfCreate()
+      );
+      allow update: if isAdmin() || canSelfUpdateUser(userId);
       allow delete: if isAdmin();
     }
 
@@ -54,10 +100,10 @@ service cloud.firestore {
     // Inventory collection (with admin lock support)
     match /inventory/{itemId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
-      // Staff can always create; customers can create only if their inventory is NOT locked
-      allow create: if isStaff() || (isAuthenticated() && !isInventoryLocked());
-      // Staff can always update; customers can update their own items only if NOT locked
-      allow update: if isStaff() || (resource.data.user_id == request.auth.uid && !isInventoryLocked());
+      allow create: if request.resource.data.user_id != null &&
+        canCreateInventoryForUser(request.resource.data.user_id);
+      allow update: if resource.data.user_id == request.resource.data.user_id &&
+        canUpdateInventoryForUser(resource.data.user_id);
       allow delete: if isAdmin();
     }
 

@@ -3951,20 +3951,31 @@
                 const validItems = incomingItemsForSave;
                 if (validItems.length > 0) {
                     try {
-                        for (const item of validItems) {
-                            // Check if SKU already exists for this user in this warehouse
-                            const existingQuery = query(
-                                collection(db, 'inventory'),
-                                where('user_id', '==', currentUser.uid),
-                                where('sku', '==', item.sku),
-                                where('warehouse', '==', sc.selectedWarehouse || 'miami')
-                            );
-                            const existingSnap = await getDocs(existingQuery);
+                        const existingInventorySnapshot = await getDocs(
+                            query(collection(db, 'inventory'), where('user_id', '==', currentUser.uid))
+                        );
+                        const existingInventoryByKey = new Map();
 
-                            if (!existingSnap.empty) {
+                        existingInventorySnapshot.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            const skuKey = String(data.sku || '').trim().toLowerCase();
+                            const warehouseKey = data.warehouse || 'miami';
+                            if (!skuKey) return;
+                            existingInventoryByKey.set(`${skuKey}::${warehouseKey}`, {
+                                id: docSnap.id,
+                                ref: docSnap.ref,
+                                ...data
+                            });
+                        });
+
+                        for (const item of validItems) {
+                            const warehouseId = sc.selectedWarehouse || 'miami';
+                            const itemKey = `${String(item.sku || '').trim().toLowerCase()}::${warehouseId}`;
+                            const existingEntry = existingInventoryByKey.get(itemKey);
+
+                            if (existingEntry) {
                                 // Update existing inventory item — add quantity
-                                const existingDoc = existingSnap.docs[0];
-                                const existingData = existingDoc.data();
+                                const existingData = existingEntry;
                                 const updatedData = {
                                     quantity: (existingData.quantity || 0) + item.qty,
                                     last_updated: new Date().toISOString(),
@@ -3982,10 +3993,14 @@
                                     const existingPhotos = Array.isArray(existingData.photos) ? existingData.photos : [];
                                     updatedData.photos = [...existingPhotos, ...item.photos].slice(0, 10);
                                 }
-                                await setDoc(existingDoc.ref, updatedData, { merge: true });
+                                await setDoc(existingEntry.ref, updatedData, { merge: true });
+                                existingInventoryByKey.set(itemKey, {
+                                    ...existingData,
+                                    ...updatedData
+                                });
                             } else {
                                 // Create new inventory item
-                                await addDoc(collection(db, 'inventory'), {
+                                const newItem = {
                                     user_id: currentUser.uid,
                                     sku: item.sku,
                                     name: item.name,
@@ -3993,12 +4008,18 @@
                                     upc: item.upc || '',
                                     tags: item.tags,
                                     photos: item.photos || [],
-                                    warehouse: sc.selectedWarehouse || 'miami',
+                                    warehouse: warehouseId,
                                     location: 'Receiving',
                                     reorder_level: 10,
                                     source_shipment: trackingNumber,
                                     last_shipment: trackingNumber,
                                     last_updated: new Date().toISOString()
+                                };
+                                const newDocRef = await addDoc(collection(db, 'inventory'), newItem);
+                                existingInventoryByKey.set(itemKey, {
+                                    id: newDocRef.id,
+                                    ref: newDocRef,
+                                    ...newItem
                                 });
                             }
                         }
