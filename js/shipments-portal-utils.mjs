@@ -232,20 +232,39 @@ export function getInlineFileData(fileSize, dataUrl, maxInlineBytes = MAX_INLINE
     return typeof dataUrl === "string" && Number(fileSize) <= maxInlineBytes ? dataUrl : null;
 }
 
+export function sanitizeDocumentSource(candidate) {
+    const value = asString(candidate, "").trim();
+    if (!value) return null;
+
+    if (/^data:/i.test(value) || /^blob:/i.test(value) || /^\//.test(value)) {
+        return value;
+    }
+
+    try {
+        const parsed = new URL(value);
+        return ["https:", "http:"].includes(parsed.protocol) ? value : null;
+    } catch {
+        return null;
+    }
+}
+
 export function pickDocumentSource(...candidates) {
     for (const candidate of candidates) {
         if (!candidate) continue;
 
         if (typeof candidate === "string" && candidate.trim()) {
-            return candidate.trim();
+            const sanitized = sanitizeDocumentSource(candidate);
+            if (sanitized) return sanitized;
         }
 
         if (typeof candidate?.url === "string" && candidate.url.trim()) {
-            return candidate.url.trim();
+            const sanitized = sanitizeDocumentSource(candidate.url);
+            if (sanitized) return sanitized;
         }
 
         if (typeof candidate?.file_data === "string" && candidate.file_data.trim()) {
-            return candidate.file_data.trim();
+            const sanitized = sanitizeDocumentSource(candidate.file_data);
+            if (sanitized) return sanitized;
         }
     }
 

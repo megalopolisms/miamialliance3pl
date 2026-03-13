@@ -2512,12 +2512,12 @@
                     <div class="panel-doc-left">
                         <span class="panel-doc-icon">${d.icon}</span>
                         <div>
-                            <div class="panel-doc-name">${d.label}</div>
-                            <div class="panel-doc-size">${d.data.filename || 'Unknown file'} &middot; ${formatDocSize(d.data.file_size)}</div>
+                            <div class="panel-doc-name">${escapeHtml(d.label)}</div>
+                            <div class="panel-doc-size">${escapeHtml(d.data.filename || 'Unknown file')} &middot; ${escapeHtml(formatDocSize(d.data.file_size))}</div>
                         </div>
                     </div>
                     <div class="panel-doc-actions">
-                        <button class="panel-doc-btn view" onclick="viewDocument('${shipment.id}', '${d.type}')">View</button>
+                        <button class="panel-doc-btn view" onclick='viewDocument(${JSON.stringify(shipment.id)}, ${JSON.stringify(d.type)})'>View</button>
                     </div>
                 </div>
             `).join('');
@@ -2813,9 +2813,15 @@
         });
 
         window.downloadDoc = function(dataUrl, filename) {
+            const safeSource = pickDocumentSource(dataUrl);
+            if (!safeSource) {
+                showToast('Unsafe or invalid document link.', 'warning');
+                return;
+            }
             const a = document.createElement('a');
-            a.href = dataUrl;
+            a.href = safeSource;
             a.download = filename || 'document';
+            a.rel = 'noopener noreferrer';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

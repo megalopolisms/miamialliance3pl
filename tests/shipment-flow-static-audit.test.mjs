@@ -37,9 +37,12 @@ test('shipments portal uses resilient load flow and corrected invoice semantics'
 
 test('admin document views can resolve URL-backed files without compound query dependence', () => {
     assert.match(adminShipmentsHtml, /pickDocumentSource/);
+    assert.match(adminShipmentsHtml, /Unsafe or invalid document link/);
     assert.match(adminShipmentsHtml, /query\(collection\(db, 'shipment_documents'\), where\('shipment_id', '==', shipmentId\)\)/);
+    assert.match(adminPanelHtml, /pickDocumentSource/);
     assert.match(adminPanelHtml, /url: data\.url \|\| null/);
     assert.match(adminPanelHtml, /url: data\.commercial_invoice\.url \|\| null/);
+    assert.match(adminPanelHtml, /rel="noopener noreferrer"/);
 });
 
 test('firebase config includes storage rules for shipment uploads', () => {

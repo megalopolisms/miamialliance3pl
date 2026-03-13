@@ -7,6 +7,7 @@ import {
     buildShipmentRowHtml,
     filterShipmentsForPlan,
     pickDocumentSource,
+    sanitizeDocumentSource,
     sanitizeStoragePathSegment
 } from '../js/shipments-portal-utils.mjs';
 
@@ -68,11 +69,16 @@ test('buildDocumentMetadata records storage uploads and strips undefined extras'
     assert.ok(!('foo' in metadata));
 });
 
-test('pickDocumentSource prefers URL and sanitizeStoragePathSegment normalizes filenames', () => {
+test('pickDocumentSource prefers safe URL sources and sanitizeStoragePathSegment normalizes filenames', () => {
     assert.equal(
         pickDocumentSource({ url: 'https://example.com/doc.pdf', file_data: 'data:ignored' }, { file_data: 'data:fallback' }),
         'https://example.com/doc.pdf'
     );
+    assert.equal(
+        pickDocumentSource({ url: 'javascript:alert(1)' }, { file_data: 'data:application/pdf;base64,AAA=' }),
+        'data:application/pdf;base64,AAA='
+    );
+    assert.equal(sanitizeDocumentSource('javascript:alert(1)'), null);
     assert.equal(
         sanitizeStoragePathSegment('Invoice March 2026 #1.pdf'),
         'Invoice-March-2026-1.pdf'
