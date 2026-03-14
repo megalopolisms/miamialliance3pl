@@ -1831,6 +1831,12 @@
 
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -1904,9 +1910,9 @@
             // Display badge
             const userNameEl = document.getElementById('user-name');
             if (userRole === 'admin' || FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail)) {
-                userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
+                userNameEl.innerHTML = `${escapeHTML(userName)} <span class="admin-badge">ADMIN</span>`;
             } else {
-                userNameEl.innerHTML = `${userName} <span class="admin-badge">STAFF</span>`;
+                userNameEl.innerHTML = `${escapeHTML(userName)} <span class="admin-badge">STAFF</span>`;
             }
 
             // Load data
@@ -1954,7 +1960,7 @@
                 document.getElementById('empty-state').style.display = 'block';
                 document.getElementById('empty-state').innerHTML = `
                     <div class="icon">&#10060;</div>
-                    <p>Error loading shipments: ${error.message}</p>
+                    <p>Error loading shipments: ${escapeHTML(error.message)}</p>
                 `;
             }
         }
@@ -2442,7 +2448,7 @@
         function updatePanelStatusBadge(status) {
             const badge = document.getElementById('panel-status-badge');
             badge.className = `status-badge status-${status || 'pending'}`;
-            badge.innerHTML = `<span class="status-dot"></span> ${STATUS_LABELS[status] || status || 'Unknown'}`;
+            badge.innerHTML = `<span class="status-dot"></span> ${escapeHTML(STATUS_LABELS[status] || status || 'Unknown')}`;
         }
 
         // Close panel events
@@ -2738,7 +2744,7 @@
 
             // Build viewer header
             const title = document.getElementById('doc-viewer-title');
-            title.innerHTML = `${meta.icon} ${meta.label} <span class="doc-type-pill ${meta.cssClass}">${meta.label}</span>`;
+            title.innerHTML = `${escapeHTML(meta.icon)} ${escapeHTML(meta.label)} <span class="doc-type-pill ${escapeHTML(meta.cssClass)}">${escapeHTML(meta.label)}</span>`;
 
             // Build viewer body
             const body = document.getElementById('doc-viewer-body');
@@ -2855,7 +2861,7 @@
 
             toast.innerHTML = `
                 <span class="toast-icon">${icons[type] || icons.success}</span>
-                <span class="toast-message">${message}</span>
+                <span class="toast-message">${escapeHTML(message)}</span>
                 <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
             `;
 

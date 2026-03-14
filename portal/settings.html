@@ -415,6 +415,12 @@
 
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -440,7 +446,7 @@
                 return;
             }
 
-            document.getElementById('user-name').innerHTML = `${user.displayName || user.email} <span class="admin-badge">ADMIN</span>`;
+            document.getElementById('user-name').innerHTML = `${escapeHTML(user.displayName || user.email)} <span class="admin-badge">ADMIN</span>`;
             loadStats();
             loadSettings();
         });

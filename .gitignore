@@ -25,8 +25,28 @@ ENV/
 ._*
 Thumbs.db
 
+# Node
+node_modules/
+
 # Logs
 *.log
 npm-debug.log*
+
+# MCP runtime
 mcp/node_modules/
 mcp/audit.log
+mcp/state.json
+mcp/mcp.log
+mcp/checksums.json
+
+# Local runtime / deploy artifacts
+.tmp/
+.firebase/
+.firebaserc
+skills/*/.state/
+skills/*/outputs/
+
+# Local exports
+*_export_*.csv
+todo-*.txt
+todo-*.docx

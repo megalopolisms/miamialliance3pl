@@ -312,12 +312,17 @@ class ModalManager {
                 padding: 16px 20px;
                 border-bottom: 1px solid #e5e7eb;
             `;
-      header.innerHTML = `
-                <h2 style="margin:0;font-size:1.25rem;">${options.title}</h2>
-                <button class="modal-close" style="background:none;border:none;font-size:1.5rem;cursor:pointer;padding:0;line-height:1;">&times;</button>
-            `;
+      const h2 = document.createElement("h2");
+      h2.style.cssText = "margin:0;font-size:1.25rem;";
+      h2.textContent = options.title;
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "modal-close";
+      closeBtn.style.cssText =
+        "background:none;border:none;font-size:1.5rem;cursor:pointer;padding:0;line-height:1;";
+      closeBtn.textContent = "\u00d7";
+      closeBtn.onclick = () => this.close(id);
+      header.append(h2, closeBtn);
       content.appendChild(header);
-      header.querySelector(".modal-close").onclick = () => this.close(id);
     }
 
     const body = document.createElement("div");
@@ -646,9 +651,11 @@ class TableUtils {
         columns.forEach((col) => {
           const td = document.createElement("td");
           const value = row[col.key];
-          td.innerHTML = col.render
-            ? col.render(value, row, index)
-            : (value ?? "-");
+          if (col.render) {
+            td.innerHTML = col.render(value, row, index);
+          } else {
+            td.textContent = value ?? "-";
+          }
           tbody.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -776,11 +783,17 @@ class ErrorUI {
             align-items: center;
             gap: 10px;
         `;
-    errorEl.innerHTML = `
-            <span style="font-size:1.2em;">⚠️</span>
-            <span>${message}</span>
-            <button style="margin-left:auto;background:none;border:none;font-size:1.2em;cursor:pointer;" onclick="this.parentElement.remove()">×</button>
-        `;
+    const iconSpan = document.createElement("span");
+    iconSpan.style.fontSize = "1.2em";
+    iconSpan.textContent = "⚠️";
+    const msgSpan = document.createElement("span");
+    msgSpan.textContent = message;
+    const closeBtn = document.createElement("button");
+    closeBtn.style.cssText =
+      "margin-left:auto;background:none;border:none;font-size:1.2em;cursor:pointer;";
+    closeBtn.textContent = "×";
+    closeBtn.addEventListener("click", () => errorEl.remove());
+    errorEl.append(iconSpan, msgSpan, closeBtn);
 
     if (container) {
       if (typeof container === "string") {
@@ -804,12 +817,17 @@ class ErrorUI {
       container = document.querySelector(container);
     }
 
-    container.innerHTML = `
-            <div style="text-align:center;padding:40px;color:#6b7280;">
-                <div style="font-size:3rem;margin-bottom:16px;">${icon}</div>
-                <div style="font-size:1.1rem;">${message}</div>
-            </div>
-        `;
+    container.textContent = "";
+    const wrapper = document.createElement("div");
+    wrapper.style.cssText = "text-align:center;padding:40px;color:#6b7280;";
+    const iconDiv = document.createElement("div");
+    iconDiv.style.cssText = "font-size:3rem;margin-bottom:16px;";
+    iconDiv.textContent = icon;
+    const msgDiv = document.createElement("div");
+    msgDiv.style.cssText = "font-size:1.1rem;";
+    msgDiv.textContent = message;
+    wrapper.append(iconDiv, msgDiv);
+    container.appendChild(wrapper);
   }
 }
 
