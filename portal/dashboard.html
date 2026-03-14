@@ -260,36 +260,36 @@
                 <h2 id="admin-title" data-i18n="portal.dashboard.adminTitle">👑 Admin Dashboard</h2>
                 <p id="admin-subtitle" style="color: #92400e; margin-bottom: var(--spacing-sm);" data-i18n="portal.dashboard.adminSubtitle">You have full access to manage all customers and shipments.</p>
                 <div class="admin-grid">
-                    <div class="admin-card" onclick="location.href='#users'">
+                    <a class="admin-card" href="customers.html" style="text-decoration:none;color:inherit;">
                         <div class="icon">👥</div>
                         <div class="count" id="total-users">0</div>
                         <div class="label" id="label-users" data-i18n="portal.dashboard.totalCustomers">Total Customers</div>
-                    </div>
-                    <div class="admin-card" onclick="location.href='#shipments'">
+                    </a>
+                    <a class="admin-card" href="admin-shipments.html" style="text-decoration:none;color:inherit;">
                         <div class="icon" id="icon-shipments">📦</div>
                         <div class="count" id="total-shipments">0</div>
                         <div class="label" id="label-shipments" data-i18n="portal.dashboard.totalShipments">Total Shipments</div>
-                    </div>
-                    <div class="admin-card" onclick="location.href='#inventory'">
+                    </a>
+                    <a class="admin-card" href="inventory.html" style="text-decoration:none;color:inherit;">
                         <div class="icon" id="icon-inventory">🏭</div>
                         <div class="count" id="total-inventory">0</div>
                         <div class="label" id="label-inventory" data-i18n="portal.dashboard.inventoryItems">Inventory Items</div>
-                    </div>
-                    <div class="admin-card" onclick="location.href='admin-pickups.html'">
+                    </a>
+                    <a class="admin-card" href="admin-pickups.html" style="text-decoration:none;color:inherit;">
                         <div class="icon">🚛</div>
                         <div class="count" id="total-pickups">0</div>
                         <div class="label" data-i18n="portal.dashboard.pickupRequests">Pickup Requests</div>
-                    </div>
-                    <div class="admin-card" onclick="location.href='#pending'">
+                    </a>
+                    <a class="admin-card" href="admin-shipments.html?status=pending" style="text-decoration:none;color:inherit;">
                         <div class="icon" id="icon-pending">⏳</div>
                         <div class="count" id="total-pending">0</div>
                         <div class="label" id="label-pending" data-i18n="portal.dashboard.pendingActions">Pending Actions</div>
-                    </div>
-                    <div class="admin-card" onclick="location.href='#leads'" style="border: 2px solid #10b981;">
+                    </a>
+                    <a class="admin-card" href="admin-panel.html?tab=leads" style="text-decoration:none;color:inherit;border: 2px solid #10b981;">
                         <div class="icon">🎯</div>
                         <div class="count" id="total-leads">0</div>
                         <div class="label">New Leads</div>
-                    </div>
+                    </a>
                 </div>
             </div>
 
@@ -510,6 +510,24 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+
+        // Safe badge renderer - uses textContent to prevent XSS
+        function setBadgeText(element, text, badgeText, badgeStyle) {
+            if (!element) return;
+            element.textContent = '';
+            element.append(document.createTextNode(String(text || '')));
+            const badge = document.createElement('span');
+            badge.className = 'admin-badge';
+            if (badgeStyle) badge.style.cssText = badgeStyle;
+            badge.textContent = badgeText;
+            element.append(' ', badge);
+        }
+
         let userRole = 'customer'; // customer, employee, admin
 
         // Check authentication
@@ -584,9 +602,9 @@
             const userNameEl = document.getElementById('user-name');
 
             if (isJorge && isAdmin) {
-                welcomeTitle.innerHTML = `Welcome back, Jedi Master ${userName}! ⚔️ <span class="admin-badge">SITH LORD</span>`;
+                setBadgeText(welcomeTitle, `Welcome back, Jedi Master ${userName}! ⚔️`, 'SITH LORD');
                 welcomeSubtitle.textContent = "The Force is strong with you. Your galactic logistics empire awaits.";
-                userNameEl.innerHTML = `${userName} <span class="admin-badge">🌟 JEDI</span>`;
+                setBadgeText(userNameEl, userName, '🌟 JEDI');
 
                 const quoteEl = document.getElementById('jorge-quote');
                 quoteEl.textContent = JORGE_QUOTES[Math.floor(Math.random() * JORGE_QUOTES.length)];
@@ -595,7 +613,7 @@
                 document.getElementById('admin-section').style.display = 'block';
                 document.getElementById('employee-nav').style.display = 'block';
                 document.getElementById('admin-nav').style.display = 'block';
-                document.getElementById('admin-title').innerHTML = '⚔️ Galactic Command Center';
+                document.getElementById('admin-title').textContent = '⚔️ Galactic Command Center';
                 document.getElementById('admin-subtitle').textContent = 'Execute Order 66... or just manage some shipments. Your call, my lord.';
 
                 document.getElementById('label-users').textContent = 'Rebel Allies';
@@ -609,9 +627,9 @@
                 loadAdminStats();
                 loadAnalytics(true);
             } else if (isAdmin) {
-                welcomeTitle.innerHTML = `Welcome back, ${userName}! <span class="admin-badge">ADMIN</span>`;
+                setBadgeText(welcomeTitle, `Welcome back, ${userName}!`, 'ADMIN');
                 welcomeSubtitle.textContent = "You have full admin access to manage all customers and operations.";
-                userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
+                setBadgeText(userNameEl, userName, 'ADMIN');
 
                 document.getElementById('admin-section').style.display = 'block';
                 document.getElementById('employee-nav').style.display = 'block';
@@ -620,9 +638,9 @@
                 loadAdminStats();
                 loadAnalytics(true);
             } else if (isEmployee) {
-                welcomeTitle.innerHTML = `Welcome back, ${userName}! <span class="admin-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">EMPLOYEE</span>`;
+                setBadgeText(welcomeTitle, `Welcome back, ${userName}!`, 'EMPLOYEE', 'background: linear-gradient(135deg, #3b82f6, #1d4ed8);');
                 welcomeSubtitle.textContent = "Ready to help our customers with their logistics needs.";
-                userNameEl.innerHTML = `${userName} <span class="admin-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">STAFF</span>`;
+                setBadgeText(userNameEl, userName, 'STAFF', 'background: linear-gradient(135deg, #3b82f6, #1d4ed8);');
 
                 document.getElementById('admin-section').style.display = 'block';
                 document.getElementById('employee-nav').style.display = 'block';
@@ -992,11 +1010,11 @@
                     const whColor = whId === 'biloxi' ? '#8b5cf6' : '#14b8a6';
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent);">${data.tracking_number || 'N/A'}</a></td>
+                        <td><a href="tracking.html?id=${encodeURIComponent(data.tracking_number || '')}" style="color: var(--color-accent);">${escapeHTML(data.tracking_number || 'N/A')}</a></td>
                         <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">${whLabel}</span></td>
-                        <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
-                        <td><span class="badge badge-${data.status}">${(data.status || 'unknown').replace('_', ' ')}</span></td>
-                        <td>${data.created_at ? new Date(data.created_at).toLocaleDateString() : 'N/A'}</td>
+                        <td>${escapeHTML(data.destination?.city || 'N/A')}, ${escapeHTML(data.destination?.state || '')}</td>
+                        <td><span class="badge badge-${escapeHTML(data.status)}">${escapeHTML((data.status || 'unknown').replace('_', ' '))}</span></td>
+                        <td>${escapeHTML(data.created_at ? new Date(data.created_at).toLocaleDateString() : 'N/A')}</td>
                     `;
                     tbody.appendChild(row);
                 });
