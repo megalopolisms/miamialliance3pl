@@ -18,6 +18,25 @@
  */
 
 // ============================================================
+// XSS PREVENTION HELPER
+// ============================================================
+
+function escapeHTML(str) {
+  if (str === null || str === undefined) return "";
+  return String(str).replace(
+    /[&<>"']/g,
+    (m) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      })[m],
+  );
+}
+
+// ============================================================
 // UI-001: TOAST NOTIFICATIONS
 // ============================================================
 
@@ -378,6 +397,8 @@ class ModalManager {
     }
   }
 
+  // SECURITY: html parameter is raw HTML. Callers MUST sanitize user data
+  // with escapeHTML() before passing it to this method.
   setContent(id, html) {
     const modal = this.modals.get(id) || document.getElementById(id);
     if (modal) {
@@ -395,8 +416,12 @@ class ModalManager {
         footer: true,
       });
 
-      modal.querySelector(".modal-body").innerHTML =
-        `<p style="margin:0;">${message}</p>`;
+      const msgP = document.createElement("p");
+      msgP.style.margin = "0";
+      msgP.textContent = message;
+      const modalBody = modal.querySelector(".modal-body");
+      modalBody.textContent = "";
+      modalBody.appendChild(msgP);
       modal.querySelector(".modal-footer").innerHTML = `
                 <button class="btn btn-outline modal-cancel">Cancel</button>
                 <button class="btn btn-primary modal-confirm">${options.confirmText || "Confirm"}</button>
@@ -679,7 +704,7 @@ class TableUtils {
     };
 
     const color = colors[status] || "#6b7280";
-    return `<span style="background:${color}20;color:${color};padding:4px 8px;border-radius:12px;font-size:0.75rem;font-weight:600;">${status.replace("_", " ").toUpperCase()}</span>`;
+    return `<span style="background:${color}20;color:${color};padding:4px 8px;border-radius:12px;font-size:0.75rem;font-weight:600;">${escapeHTML(status.replace("_", " ").toUpperCase())}</span>`;
   }
 }
 
@@ -929,9 +954,11 @@ window.MA3PL = {
   TableUtils,
   FormatUtils,
   ErrorUI,
+  escapeHTML,
 };
 
 export {
+  escapeHTML,
   ToastManager,
   LoadingManager,
   ModalManager,

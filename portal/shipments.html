@@ -2070,11 +2070,17 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Fallback admin emails
+        // SECURITY: Fallback admin emails - MUST match js/firebase.js. Prefer Firestore roles.
         const FALLBACK_ADMIN_EMAILS = [
-            'yuri.petrini.m5@gmail.com',
-            'admin@miamialliance3pl.com'
+            'ceo@usglatam.com',
+            'yuri@megalopolisms.com'
         ];
+
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
 
         let currentUser = null;
         let currentUserRole = 'customer';
@@ -2903,7 +2909,7 @@
                 <span class="toast-icon">📄</span>
                 <div class="toast-text">
                     <strong>Quote Downloaded!</strong>
-                    <span>${quoteNum}</span>
+                    <span>${escapeHTML(quoteNum)}</span>
                 </div>
             `;
             document.body.appendChild(toast);
@@ -4947,13 +4953,13 @@
                     bolCargoHtml += `<button class="shipment-upload-link" data-shipment-id="${docSnap.id}" data-tracking="${data.tracking_number}" title="Upload BOL or Invoice">📤 Upload</button>`;
 
                     row.innerHTML = `
-                        <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
-                        <td>${data.destination?.name || 'N/A'}</td>
-                        <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
+                        <td><a href="tracking.html?id=${encodeURIComponent(data.tracking_number)}" style="color: var(--color-accent); font-weight: 500;">${escapeHTML(data.tracking_number)}</a></td>
+                        <td>${escapeHTML(data.destination?.name || 'N/A')}</td>
+                        <td>${escapeHTML(data.destination?.city || 'N/A')}, ${escapeHTML(data.destination?.state || '')}</td>
                         <td>${bolCargoHtml}</td>
-                        <td style="text-transform: capitalize;">${data.service_type || data.shipping_zone || ''}</td>
-                        <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
-                        <td>${new Date(data.created_at).toLocaleDateString()}</td>
+                        <td style="text-transform: capitalize;">${escapeHTML(data.service_type || data.shipping_zone || '')}</td>
+                        <td><span class="badge badge-${escapeHTML(data.status)}">${escapeHTML(data.status.replace('_', ' '))}</span></td>
+                        <td>${escapeHTML(new Date(data.created_at).toLocaleDateString())}</td>
                     `;
                     tbody.appendChild(row);
                 });

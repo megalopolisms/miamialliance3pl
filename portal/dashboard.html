@@ -489,7 +489,7 @@
             measurementId: "G-KTW0F25ZM1"
         };
 
-        // Fallback admin emails (for initial setup before Firestore roles exist)
+        // SECURITY: Fallback admin emails - MUST match js/firebase.js. Prefer Firestore roles.
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         // Fun quotes for special users

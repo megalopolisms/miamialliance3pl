@@ -303,13 +303,17 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Fallback admin emails (used only if Firestore role is missing)
+        // SECURITY: Fallback admin emails - MUST match js/firebase.js. Prefer Firestore roles.
         const FALLBACK_ADMIN_EMAILS = [
             'ceo@usglatam.com',
-            'yuri@megalopolisms.com',
-            'admin@miamialliance3pl.com',
-            'yuri@miamialliance3pl.com'
+            'yuri@megalopolisms.com'
         ];
+
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
 
         let currentUser = null;
         let currentUserRole = null;
@@ -791,20 +795,20 @@
 
                 const upcVal = item.upc || '';
                 const tagsArr = Array.isArray(item.tags) ? item.tags : (typeof item.tags === 'string' && item.tags ? item.tags.split(',').map(t => t.trim()) : []);
-                const tagsHtml = tagsArr.length > 0 ? tagsArr.map(t => `<span style="background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:8px;font-size:0.7rem;font-weight:600;margin:1px;">${t}</span>`).join(' ') : '<span style="color:var(--color-gray-400);font-size:0.75rem;">—</span>';
+                const tagsHtml = tagsArr.length > 0 ? tagsArr.map(t => `<span style="background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:8px;font-size:0.7rem;font-weight:600;margin:1px;">${escapeHTML(t)}</span>`).join(' ') : '<span style="color:var(--color-gray-400);font-size:0.75rem;">—</span>';
 
                 row.innerHTML = `
-                    <td><strong>${item.sku}</strong></td>
-                    <td>${item.name}</td>
+                    <td><strong>${escapeHTML(item.sku)}</strong></td>
+                    <td>${escapeHTML(item.name)}</td>
                     ${customerCol}
                     <td style="color: ${isLowStock ? 'var(--color-accent)' : 'inherit'}; font-weight: ${isLowStock ? '600' : '400'};">
                         ${item.quantity}
                         ${isLowStock ? '<span style="font-size: var(--font-size-sm); margin-left: 4px;">Low Stock</span>' : ''}
                     </td>
-                    <td style="font-family:monospace;font-size:0.8rem;color:var(--color-gray-600);">${upcVal || '<span style="color:var(--color-gray-400);">—</span>'}</td>
+                    <td style="font-family:monospace;font-size:0.8rem;color:var(--color-gray-600);">${upcVal ? escapeHTML(upcVal) : '<span style="color:var(--color-gray-400);">—</span>'}</td>
                     <td style="max-width:150px;">${tagsHtml}</td>
-                    <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">${whLabel}</span></td>
-                    <td>${item.location}</td>
+                    <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">${escapeHTML(whLabel)}</span></td>
+                    <td>${escapeHTML(item.location)}</td>
                     <td>${new Date(item.last_updated).toLocaleDateString()}</td>
                     <td>${actionsHtml}</td>
                 `;

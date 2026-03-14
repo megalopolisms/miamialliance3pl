@@ -175,13 +175,18 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Fallback admin emails (used only if Firestore role check fails)
+        // SECURITY: Fallback admin emails - MUST match js/firebase.js. Prefer Firestore roles.
+        // Do NOT add emails here without also updating firebase.js.
         const FALLBACK_ADMIN_EMAILS = [
             'ceo@usglatam.com',
-            'yuri@megalopolisms.com',
-            'admin@miamialliance3pl.com',
-            'operations@miamialliance3pl.com'
+            'yuri@megalopolisms.com'
         ];
+
+        // XSS prevention helper
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
 
         // Current user data
         let currentUser = null;
@@ -313,20 +318,20 @@
             }
 
             document.getElementById('result-origin').innerHTML = `
-                ${data.origin.street}<br>
-                ${data.origin.city}, ${data.origin.state} ${data.origin.zip}
+                ${escapeHTML(data.origin.street)}<br>
+                ${escapeHTML(data.origin.city)}, ${escapeHTML(data.origin.state)} ${escapeHTML(data.origin.zip)}
             `;
 
             document.getElementById('result-destination').innerHTML = `
-                ${data.destination.name}<br>
-                ${data.destination.street}<br>
-                ${data.destination.city}, ${data.destination.state} ${data.destination.zip}
+                ${escapeHTML(data.destination.name)}<br>
+                ${escapeHTML(data.destination.street)}<br>
+                ${escapeHTML(data.destination.city)}, ${escapeHTML(data.destination.state)} ${escapeHTML(data.destination.zip)}
             `;
 
             document.getElementById('result-package').innerHTML = `
-                Weight: ${data.package.weight} lbs<br>
-                Dimensions: ${data.package.length || '-'}×${data.package.width || '-'}×${data.package.height || '-'} in<br>
-                Quantity: ${data.package.quantity}
+                Weight: ${escapeHTML(String(data.package.weight))} lbs<br>
+                Dimensions: ${escapeHTML(String(data.package.length || '-'))}×${escapeHTML(String(data.package.width || '-'))}×${escapeHTML(String(data.package.height || '-'))} in<br>
+                Quantity: ${escapeHTML(String(data.package.quantity))}
             `;
 
             document.getElementById('result-service').textContent = data.service_type;
