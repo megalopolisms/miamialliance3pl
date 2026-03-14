@@ -46,7 +46,7 @@ service cloud.firestore {
     // Shipments collection
     match /shipments/{shipmentId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
-      allow create: if isAuthenticated();
+      allow create: if isStaff() || (isAuthenticated() && request.resource.data.user_id == request.auth.uid);
       allow update: if isStaff() || resource.data.user_id == request.auth.uid;
       allow delete: if isAdmin();
     }
@@ -54,8 +54,8 @@ service cloud.firestore {
     // Inventory collection (with admin lock support)
     match /inventory/{itemId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
-      // Staff can always create; customers can create only if their inventory is NOT locked
-      allow create: if isStaff() || (isAuthenticated() && !isInventoryLocked());
+      // Staff can always create; customers can create only if their inventory is NOT locked AND user_id matches
+      allow create: if isStaff() || (isAuthenticated() && request.resource.data.user_id == request.auth.uid && !isInventoryLocked());
       // Staff can always update; customers can update their own items only if NOT locked
       allow update: if isStaff() || (resource.data.user_id == request.auth.uid && !isInventoryLocked());
       allow delete: if isAdmin();
@@ -84,7 +84,7 @@ service cloud.firestore {
     // Pickup/Delivery Requests
     match /pickup_requests/{requestId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
-      allow create: if isAuthenticated();
+      allow create: if isStaff() || (isAuthenticated() && request.resource.data.user_id == request.auth.uid);
       allow update: if isStaff();
       allow delete: if isAdmin();
     }
@@ -108,7 +108,7 @@ service cloud.firestore {
     // BOL Documents — uploaded Bills of Lading and Shipping Labels
     match /bol_documents/{docId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
-      allow create: if isAuthenticated();
+      allow create: if isStaff() || (isAuthenticated() && request.resource.data.user_id == request.auth.uid);
       allow update: if isStaff();
       allow delete: if isAdmin();
     }
@@ -116,7 +116,7 @@ service cloud.firestore {
     // Shipment Documents — uploaded Invoices, Packing Lists, and other shipment docs
     match /shipment_documents/{docId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
-      allow create: if isAuthenticated();
+      allow create: if isStaff() || (isAuthenticated() && request.resource.data.user_id == request.auth.uid);
       allow update: if isStaff() || resource.data.user_id == request.auth.uid;
       allow delete: if isAdmin();
     }
@@ -132,7 +132,7 @@ service cloud.firestore {
     // Cargo Items — individual pallet/box tracking with unique IDs
     match /cargo_items/{itemId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
-      allow create: if isAuthenticated();
+      allow create: if isStaff() || (isAuthenticated() && request.resource.data.user_id == request.auth.uid);
       allow update: if isStaff() || resource.data.user_id == request.auth.uid;
       allow delete: if isAdmin();
     }
