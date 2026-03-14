@@ -4407,8 +4407,17 @@ exports.exportAnalytics = functions.https.onCall(async (data, context) => {
 // =============================================================================
 
 exports.portalChatWebhook = functions.https.onRequest(async (req, res) => {
-  // Enable CORS
-  res.set("Access-Control-Allow-Origin", "*");
+  // CORS — restrict to known origins
+  const allowedOrigins = [
+    "https://megalopolisms.github.io",
+    "https://miamialliance3pl.com",
+    "https://www.miamialliance3pl.com",
+    "http://localhost:5000",
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.set("Access-Control-Allow-Origin", origin);
+  }
   res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type");
 
