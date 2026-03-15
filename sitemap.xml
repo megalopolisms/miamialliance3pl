@@ -690,10 +690,26 @@
         <priority>0.90</priority>
     </url>
 
+    <!-- Blog: Cross-Border Shipping Miami 3PL Guide (NEW Mar 15) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/cross-border-shipping-miami-3pl-guide.html</loc>
+        <lastmod>2026-03-15</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
     <!-- Blog: Inventory Management Best Practices 3PL Warehouse (NEW Mar 13) -->
     <url>
         <loc>https://miamialliance3pl.com/blog/inventory-management-best-practices-3pl-warehouse-2026.html</loc>
         <lastmod>2026-03-13</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
+    <!-- Blog: Seasonal Storage Solutions Flexible 3PL Warehouse Miami (NEW Mar 15) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/seasonal-storage-solutions-flexible-3pl-warehouse-miami.html</loc>
+        <lastmod>2026-03-15</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.90</priority>
     </url>
