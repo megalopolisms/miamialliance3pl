@@ -176,12 +176,7 @@
         const db = getFirestore(app);
 
         // Fallback admin emails (used only if Firestore role check fails)
-        const FALLBACK_ADMIN_EMAILS = [
-            'ceo@usglatam.com',
-            'yuri@megalopolisms.com',
-            'admin@miamialliance3pl.com',
-            'operations@miamialliance3pl.com'
-        ];
+        const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         // Current user data
         let currentUser = null;
