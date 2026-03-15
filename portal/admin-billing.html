@@ -1003,17 +1003,10 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // SECURITY: Fallback admin emails - MUST match js/firebase.js. Prefer Firestore roles.
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
         const BillingEngine = window.MA3PLBillingEngine;
         const BILLING_ITEMS = BillingEngine.BILLING_ITEMS;
         const QUOTE_KEYS = BillingEngine.QUOTE_KEYS;
-
-        // XSS prevention helper
-        function escapeHTML(str) {
-            if (str === null || str === undefined) return '';
-            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-        }
 
         let customers = [];
         let pricingData = {};

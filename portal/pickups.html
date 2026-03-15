@@ -1077,12 +1077,6 @@
     <script type="module">
         import { initFirebase, onAuthChange, signOutUser, getUserRole, isStaff, isAdmin, getSettings } from '../js/firebase.js';
 
-        // XSS prevention helper
-        function escapeHTML(str) {
-            if (str === null || str === undefined) return '';
-            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-        }
-
         // ============================================================
         // STATE
         // ============================================================
@@ -1597,12 +1591,12 @@
 
                 return `
                     <tr>
-                        <td><strong>#${escapeHTML(shortId)}</strong></td>
-                        <td>${escapeHTML(typeIcon)} ${escapeHTML(typeLabel)}</td>
-                        <td>${escapeHTML(String(req.pallet_count))} pallet${req.pallet_count > 1 ? 's' : ''}</td>
-                        <td>${escapeHTML(date)}</td>
+                        <td><strong>#${shortId}</strong></td>
+                        <td>${typeIcon} ${typeLabel}</td>
+                        <td>${req.pallet_count} pallet${req.pallet_count > 1 ? 's' : ''}</td>
+                        <td>${date}</td>
                         <td><strong>$${total.toFixed(2)}</strong></td>
-                        <td><span class="status-badge status-${escapeHTML(status)}">${escapeHTML(status.replace('_', ' '))}</span></td>
+                        <td><span class="status-badge status-${status}">${status.replace('_', ' ')}</span></td>
                     </tr>
                 `;
             }).join('');

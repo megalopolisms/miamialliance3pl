@@ -360,7 +360,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // SECURITY: Fallback admin emails - MUST match js/firebase.js. Prefer Firestore roles.
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
         let customers = [];
         let inventoryByCustomer = {};

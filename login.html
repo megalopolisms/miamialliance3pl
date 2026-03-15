@@ -237,7 +237,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // SECURITY: Fallback admin emails - MUST match js/firebase.js. Prefer Firestore roles.
+        // Fallback admin emails (for initial setup)
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         // Google Auth Provider

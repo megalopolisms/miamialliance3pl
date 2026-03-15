@@ -2296,10 +2296,6 @@ ul {
   cursor: pointer;
   -webkit-appearance: none;
 }
-.weight-slider:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 4px;
-}
 
 .weight-slider::-webkit-slider-thumb {
   -webkit-appearance: none;

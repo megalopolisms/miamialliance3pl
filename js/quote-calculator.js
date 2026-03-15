@@ -1056,19 +1056,13 @@ class QuoteCalculator {
     // Create success toast
     const toast = document.createElement("div");
     toast.className = "pdf-toast";
-    const iconDiv = document.createElement("div");
-    iconDiv.className = "pdf-toast-icon";
-    iconDiv.textContent = "\u2713";
-    const contentDiv = document.createElement("div");
-    contentDiv.className = "pdf-toast-content";
-    const strong = document.createElement("strong");
-    strong.textContent = "Quote Downloaded!";
-    const span = document.createElement("span");
-    span.textContent = quoteNumber;
-    contentDiv.appendChild(strong);
-    contentDiv.appendChild(span);
-    toast.appendChild(iconDiv);
-    toast.appendChild(contentDiv);
+    toast.innerHTML = `
+            <div class="pdf-toast-icon">✓</div>
+            <div class="pdf-toast-content">
+                <strong>Quote Downloaded!</strong>
+                <span>${quoteNumber}</span>
+            </div>
+        `;
     document.body.appendChild(toast);
 
     // Animate in

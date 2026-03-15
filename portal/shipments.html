@@ -2070,17 +2070,11 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // SECURITY: Fallback admin emails - MUST match js/firebase.js. Prefer Firestore roles.
+        // Fallback admin emails
         const FALLBACK_ADMIN_EMAILS = [
-            'ceo@usglatam.com',
-            'yuri@megalopolisms.com'
+            'yuri.petrini.m5@gmail.com',
+            'admin@miamialliance3pl.com'
         ];
-
-        // XSS prevention helper
-        function escapeHTML(str) {
-            if (str === null || str === undefined) return '';
-            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-        }
 
         let currentUser = null;
         let currentUserRole = 'customer';
@@ -2909,7 +2903,7 @@
                 <span class="toast-icon">📄</span>
                 <div class="toast-text">
                     <strong>Quote Downloaded!</strong>
-                    <span>${escapeHTML(quoteNum)}</span>
+                    <span>${quoteNum}</span>
                 </div>
             `;
             document.body.appendChild(toast);
@@ -3957,20 +3951,31 @@
                 const validItems = incomingItemsForSave;
                 if (validItems.length > 0) {
                     try {
-                        for (const item of validItems) {
-                            // Check if SKU already exists for this user in this warehouse
-                            const existingQuery = query(
-                                collection(db, 'inventory'),
-                                where('user_id', '==', currentUser.uid),
-                                where('sku', '==', item.sku),
-                                where('warehouse', '==', sc.selectedWarehouse || 'miami')
-                            );
-                            const existingSnap = await getDocs(existingQuery);
+                        const existingInventorySnapshot = await getDocs(
+                            query(collection(db, 'inventory'), where('user_id', '==', currentUser.uid))
+                        );
+                        const existingInventoryByKey = new Map();
 
-                            if (!existingSnap.empty) {
+                        existingInventorySnapshot.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            const skuKey = String(data.sku || '').trim().toLowerCase();
+                            const warehouseKey = data.warehouse || 'miami';
+                            if (!skuKey) return;
+                            existingInventoryByKey.set(`${skuKey}::${warehouseKey}`, {
+                                id: docSnap.id,
+                                ref: docSnap.ref,
+                                ...data
+                            });
+                        });
+
+                        for (const item of validItems) {
+                            const warehouseId = sc.selectedWarehouse || 'miami';
+                            const itemKey = `${String(item.sku || '').trim().toLowerCase()}::${warehouseId}`;
+                            const existingEntry = existingInventoryByKey.get(itemKey);
+
+                            if (existingEntry) {
                                 // Update existing inventory item — add quantity
-                                const existingDoc = existingSnap.docs[0];
-                                const existingData = existingDoc.data();
+                                const existingData = existingEntry;
                                 const updatedData = {
                                     quantity: (existingData.quantity || 0) + item.qty,
                                     last_updated: new Date().toISOString(),
@@ -3988,10 +3993,14 @@
                                     const existingPhotos = Array.isArray(existingData.photos) ? existingData.photos : [];
                                     updatedData.photos = [...existingPhotos, ...item.photos].slice(0, 10);
                                 }
-                                await setDoc(existingDoc.ref, updatedData, { merge: true });
+                                await setDoc(existingEntry.ref, updatedData, { merge: true });
+                                existingInventoryByKey.set(itemKey, {
+                                    ...existingData,
+                                    ...updatedData
+                                });
                             } else {
                                 // Create new inventory item
-                                await addDoc(collection(db, 'inventory'), {
+                                const newItem = {
                                     user_id: currentUser.uid,
                                     sku: item.sku,
                                     name: item.name,
@@ -3999,12 +4008,18 @@
                                     upc: item.upc || '',
                                     tags: item.tags,
                                     photos: item.photos || [],
-                                    warehouse: sc.selectedWarehouse || 'miami',
+                                    warehouse: warehouseId,
                                     location: 'Receiving',
                                     reorder_level: 10,
                                     source_shipment: trackingNumber,
                                     last_shipment: trackingNumber,
                                     last_updated: new Date().toISOString()
+                                };
+                                const newDocRef = await addDoc(collection(db, 'inventory'), newItem);
+                                existingInventoryByKey.set(itemKey, {
+                                    id: newDocRef.id,
+                                    ref: newDocRef,
+                                    ...newItem
                                 });
                             }
                         }
@@ -4953,13 +4968,13 @@
                     bolCargoHtml += `<button class="shipment-upload-link" data-shipment-id="${docSnap.id}" data-tracking="${data.tracking_number}" title="Upload BOL or Invoice">📤 Upload</button>`;
 
                     row.innerHTML = `
-                        <td><a href="tracking.html?id=${encodeURIComponent(data.tracking_number)}" style="color: var(--color-accent); font-weight: 500;">${escapeHTML(data.tracking_number)}</a></td>
-                        <td>${escapeHTML(data.destination?.name || 'N/A')}</td>
-                        <td>${escapeHTML(data.destination?.city || 'N/A')}, ${escapeHTML(data.destination?.state || '')}</td>
+                        <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
+                        <td>${data.destination?.name || 'N/A'}</td>
+                        <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
                         <td>${bolCargoHtml}</td>
-                        <td style="text-transform: capitalize;">${escapeHTML(data.service_type || data.shipping_zone || '')}</td>
-                        <td><span class="badge badge-${escapeHTML(data.status)}">${escapeHTML(data.status.replace('_', ' '))}</span></td>
-                        <td>${escapeHTML(new Date(data.created_at).toLocaleDateString())}</td>
+                        <td style="text-transform: capitalize;">${data.service_type || data.shipping_zone || ''}</td>
+                        <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
+                        <td>${new Date(data.created_at).toLocaleDateString()}</td>
                     `;
                     tbody.appendChild(row);
                 });

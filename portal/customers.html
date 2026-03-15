@@ -465,16 +465,8 @@
             measurementId: "G-KTW0F25ZM1"
         };
 
-        // SECURITY: Fallback admin emails used ONLY before Firestore roles exist.
-        // These MUST match js/firebase.js FALLBACK_ADMIN_EMAILS. Do NOT add emails here
-        // without also updating firebase.js. Prefer assigning roles in Firestore instead.
+        // Fallback admin emails (used only if no Firestore role exists)
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
-
-        // XSS prevention helper
-        function escapeHTML(str) {
-            if (str === null || str === undefined) return '';
-            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-        }
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -524,9 +516,9 @@
 
             const userNameEl = document.getElementById('user-name');
             if (isAdmin) {
-                userNameEl.innerHTML = `${escapeHTML(userName)} <span class="admin-badge">ADMIN</span>`;
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
             } else if (isEmployee) {
-                userNameEl.innerHTML = `${escapeHTML(userName)} <span class="admin-badge">EMPLOYEE</span>`;
+                userNameEl.innerHTML = `${userName} <span class="admin-badge">EMPLOYEE</span>`;
             }
 
             loadCustomers();
@@ -594,7 +586,7 @@
                 document.getElementById('customers-list').innerHTML = `
                     <div class="empty-state">
                         <div class="icon">❌</div>
-                        <p>Error loading customers: ${escapeHTML(error.message)}</p>
+                        <p>Error loading customers: ${error.message}</p>
                     </div>
                 `;
             }
@@ -637,18 +629,18 @@
                 <div class="customer-card">
                     <div class="customer-header">
                         <div>
-                            <div class="customer-name">${escapeHTML(customer.name || customer.email || 'Unknown')}</div>
-                            <div class="customer-company">${escapeHTML(customer.company_name || 'No company')}</div>
+                            <div class="customer-name">${customer.name || customer.email || 'Unknown'}</div>
+                            <div class="customer-company">${customer.company_name || 'No company'}</div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <button class="btn-edit" onclick="openEditModal('${escapeHTML(customer.id)}')">Edit</button>
-                            <span class="badge ${customer.role === 'admin' ? 'badge-pending' : customer.role === 'employee' ? 'badge-in_transit' : 'badge-delivered'}">${escapeHTML(customer.role === 'admin' ? 'Admin' : customer.role === 'employee' ? 'Employee' : 'Customer')}</span>
+                            <button class="btn-edit" onclick="openEditModal('${customer.id}')">Edit</button>
+                            <span class="badge ${customer.role === 'admin' ? 'badge-pending' : customer.role === 'employee' ? 'badge-in_transit' : 'badge-delivered'}">${customer.role === 'admin' ? 'Admin' : customer.role === 'employee' ? 'Employee' : 'Customer'}</span>
                         </div>
                     </div>
                     <div class="customer-meta">
-                        <span>📧 ${escapeHTML(customer.email || 'No email')}</span>
-                        <span>📞 ${escapeHTML(customer.phone || 'No phone')}</span>
-                        <span>📅 Joined: ${escapeHTML(toDateLabel(customer.created_at))}</span>
+                        <span>📧 ${customer.email || 'No email'}</span>
+                        <span>📞 ${customer.phone || 'No phone'}</span>
+                        <span>📅 Joined: ${toDateLabel(customer.created_at)}</span>
                     </div>
                     <div class="customer-stats">
                         <div class="stat-item">
@@ -656,7 +648,7 @@
                             <div class="label">Shipments</div>
                         </div>
                         <div class="stat-item">
-                            <div class="value">${escapeHTML(customer.id.substring(0, 8))}...</div>
+                            <div class="value">${customer.id.substring(0, 8)}...</div>
                             <div class="label">User ID</div>
                         </div>
                     </div>
@@ -685,7 +677,7 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span> ${escapeHTML(message)}`;
+            toast.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span> ${message}`;
             container.appendChild(toast);
 
             // Auto-remove after 3 seconds

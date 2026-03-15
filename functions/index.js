@@ -17,7 +17,7 @@
  * @requires firebase-admin
  * @requires stripe
  * @requires twilio
- * @requires @anthropic-ai/sdk (REMOVED — FENCE API0, graceful degradation)
+ * @requires @anthropic-ai/sdk
  *
  * @example
  * // Deploy all functions
@@ -49,8 +49,8 @@
  * firebase functions:config:set twilio.phone_number="+13056970028"
  * firebase functions:config:set twilio.whatsapp_number="whatsapp:+14155238886"
  *
- * # Anthropic (REMOVED — FENCE API0: no API keys/SDKs)
- * # firebase functions:config:set anthropic.api_key="sk-ant-api03-xxx"
+ * # Anthropic (AI Chatbot)
+ * firebase functions:config:set anthropic.api_key="sk-ant-api03-xxx"
  *
  * # Admin
  * firebase functions:config:set admin.phone="+17868738819"
@@ -1083,19 +1083,12 @@ exports.lowInventoryAlert = functions.pubsub
 // CLAUDE AI WHATSAPP CHATBOT WITH MCP TOOLS
 // =============================================================================
 
-// FENCE API0: @anthropic-ai/sdk removed — CLI-only policy, no API keys/SDKs.
-// AI chatbot functions gracefully degrade when anthropicClient is null.
-let Anthropic = null;
-try {
-  Anthropic = require("@anthropic-ai/sdk");
-} catch (_) {
-  // SDK not installed (expected under FENCE API0)
-}
+const Anthropic = require("@anthropic-ai/sdk");
 const anthropicApiKey =
   functions.config().anthropic?.api_key || process.env.ANTHROPIC_API_KEY;
 
 let anthropicClient = null;
-if (Anthropic && anthropicApiKey) {
+if (anthropicApiKey) {
   anthropicClient = new Anthropic({ apiKey: anthropicApiKey });
 }
 
@@ -4407,17 +4400,8 @@ exports.exportAnalytics = functions.https.onCall(async (data, context) => {
 // =============================================================================
 
 exports.portalChatWebhook = functions.https.onRequest(async (req, res) => {
-  // CORS — restrict to known origins
-  const allowedOrigins = [
-    "https://megalopolisms.github.io",
-    "https://miamialliance3pl.com",
-    "https://www.miamialliance3pl.com",
-    "http://localhost:5000",
-  ];
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.set("Access-Control-Allow-Origin", origin);
-  }
+  // Enable CORS
+  res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type");
 

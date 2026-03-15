@@ -367,7 +367,6 @@
             return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
         }
 
-        // SECURITY: Fallback admin emails - MUST match js/firebase.js. Prefer Firestore roles.
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         let currentUserId = null;

@@ -18,21 +18,20 @@
 // ============================================================
 
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
-  authDomain: "miamialliance3pl.firebaseapp.com",
-  projectId: "miamialliance3pl",
-  storageBucket: "miamialliance3pl.firebasestorage.app",
-  messagingSenderId: "657614666588",
-  appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
-  measurementId: "G-KTW0F25ZM1",
+    apiKey: "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg",
+    authDomain: "miamialliance3pl.firebaseapp.com",
+    projectId: "miamialliance3pl",
+    storageBucket: "miamialliance3pl.firebasestorage.app",
+    messagingSenderId: "657614666588",
+    appId: "1:657614666588:web:20e50484fe5d90b5aa5f99",
+    measurementId: "G-KTW0F25ZM1"
 };
 
-// SECURITY: Fallback admin emails used ONLY before Firestore roles exist.
-// This is the SINGLE SOURCE OF TRUTH for fallback admin emails.
-// All portal HTML files MUST use this same list. Do NOT add emails to
-// individual portal pages without updating this file.
-// Prefer assigning roles via Firestore 'users' collection instead of relying on this list.
-const FALLBACK_ADMIN_EMAILS = ["ceo@usglatam.com", "yuri@megalopolisms.com"];
+// Fallback admin emails (used before Firestore roles exist)
+const FALLBACK_ADMIN_EMAILS = [
+    'ceo@usglatam.com',
+    'yuri@megalopolisms.com'
+];
 
 // ============================================================
 // FB-002: FIREBASE INITIALIZATION
@@ -48,41 +47,27 @@ let firebaseFunctions = null;
  * @returns {Promise<{app: object, auth: object, db: object, functions: object}>}
  */
 async function initFirebase() {
-  if (firebaseApp) {
-    return {
-      app: firebaseApp,
-      auth: firebaseAuth,
-      db: firebaseDb,
-      functions: firebaseFunctions,
-    };
-  }
+    if (firebaseApp) {
+        return { app: firebaseApp, auth: firebaseAuth, db: firebaseDb, functions: firebaseFunctions };
+    }
 
-  try {
-    const { initializeApp } =
-      await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
-    const { getAuth } =
-      await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-    const { getFirestore } =
-      await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-    const { getFunctions } =
-      await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js");
+    try {
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+        const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const { getFunctions } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js');
 
-    firebaseApp = initializeApp(FIREBASE_CONFIG);
-    firebaseAuth = getAuth(firebaseApp);
-    firebaseDb = getFirestore(firebaseApp);
-    firebaseFunctions = getFunctions(firebaseApp);
+        firebaseApp = initializeApp(FIREBASE_CONFIG);
+        firebaseAuth = getAuth(firebaseApp);
+        firebaseDb = getFirestore(firebaseApp);
+        firebaseFunctions = getFunctions(firebaseApp);
 
-    console.log("[FB-002] Firebase initialized successfully");
-    return {
-      app: firebaseApp,
-      auth: firebaseAuth,
-      db: firebaseDb,
-      functions: firebaseFunctions,
-    };
-  } catch (error) {
-    console.error("[FB-002] Firebase initialization failed:", error);
-    throw new FirebaseError("FB-002", "Failed to initialize Firebase", error);
-  }
+        console.log('[FB-002] Firebase initialized successfully');
+        return { app: firebaseApp, auth: firebaseAuth, db: firebaseDb, functions: firebaseFunctions };
+    } catch (error) {
+        console.error('[FB-002] Firebase initialization failed:', error);
+        throw new FirebaseError('FB-002', 'Failed to initialize Firebase', error);
+    }
 }
 
 // ============================================================
@@ -96,16 +81,16 @@ async function initFirebase() {
  * @returns {Promise<object|null>}
  */
 async function getCurrentUser(maxRetries = 3, retryDelay = 500) {
-  const { auth } = await initFirebase();
+    const { auth } = await initFirebase();
 
-  for (let i = 0; i < maxRetries; i++) {
-    if (auth.currentUser) {
-      return auth.currentUser;
+    for (let i = 0; i < maxRetries; i++) {
+        if (auth.currentUser) {
+            return auth.currentUser;
+        }
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
     }
-    await new Promise((resolve) => setTimeout(resolve, retryDelay));
-  }
 
-  return null;
+    return null;
 }
 
 /**
@@ -113,17 +98,16 @@ async function getCurrentUser(maxRetries = 3, retryDelay = 500) {
  * @returns {Promise<void>}
  */
 async function signOutUser() {
-  const { signOut } =
-    await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-  const { auth } = await initFirebase();
+    const { signOut } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+    const { auth } = await initFirebase();
 
-  try {
-    await signOut(auth);
-    console.log("[FB-003] User signed out successfully");
-  } catch (error) {
-    console.error("[FB-003] Sign out failed:", error);
-    throw new FirebaseError("FB-003", "Failed to sign out", error);
-  }
+    try {
+        await signOut(auth);
+        console.log('[FB-003] User signed out successfully');
+    } catch (error) {
+        console.error('[FB-003] Sign out failed:', error);
+        throw new FirebaseError('FB-003', 'Failed to sign out', error);
+    }
 }
 
 /**
@@ -132,25 +116,24 @@ async function signOutUser() {
  * @returns {Function} Unsubscribe function
  */
 async function onAuthChange(callback) {
-  const { onAuthStateChanged } =
-    await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
-  const { auth } = await initFirebase();
+    const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+    const { auth } = await initFirebase();
 
-  return onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      callback(null, null, null);
-      return;
-    }
+    return onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            callback(null, null, null);
+            return;
+        }
 
-    try {
-      const userData = await getUserData(user.uid);
-      const userRole = getUserRole(user.email, userData);
-      callback(user, userData, userRole);
-    } catch (error) {
-      console.error("[FB-003] Error in auth change handler:", error);
-      callback(user, null, "customer");
-    }
-  });
+        try {
+            const userData = await getUserData(user.uid);
+            const userRole = getUserRole(user.email, userData);
+            callback(user, userData, userRole);
+        } catch (error) {
+            console.error('[FB-003] Error in auth change handler:', error);
+            callback(user, null, 'customer');
+        }
+    });
 }
 
 // ============================================================
@@ -163,17 +146,16 @@ async function onAuthChange(callback) {
  * @returns {Promise<object|null>}
  */
 async function getUserData(userId) {
-  const { doc, getDoc } =
-    await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-  const { db } = await initFirebase();
+    const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const { db } = await initFirebase();
 
-  try {
-    const userDoc = await getDoc(doc(db, "users", userId));
-    return userDoc.exists() ? userDoc.data() : null;
-  } catch (error) {
-    console.error("[FB-004] Error fetching user data:", error);
-    return null;
-  }
+    try {
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        return userDoc.exists() ? userDoc.data() : null;
+    } catch (error) {
+        console.error('[FB-004] Error fetching user data:', error);
+        return null;
+    }
 }
 
 /**
@@ -182,17 +164,16 @@ async function getUserData(userId) {
  * @returns {Promise<object|null>}
  */
 async function getSettings(settingsKey) {
-  const { doc, getDoc } =
-    await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-  const { db } = await initFirebase();
+    const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const { db } = await initFirebase();
 
-  try {
-    const settingsDoc = await getDoc(doc(db, "settings", settingsKey));
-    return settingsDoc.exists() ? settingsDoc.data() : null;
-  } catch (error) {
-    console.error(`[FB-004] Error fetching settings '${settingsKey}':`, error);
-    return null;
-  }
+    try {
+        const settingsDoc = await getDoc(doc(db, 'settings', settingsKey));
+        return settingsDoc.exists() ? settingsDoc.data() : null;
+    } catch (error) {
+        console.error(`[FB-004] Error fetching settings '${settingsKey}':`, error);
+        return null;
+    }
 }
 
 /**
@@ -202,21 +183,20 @@ async function getSettings(settingsKey) {
  * @returns {Promise<boolean>}
  */
 async function saveSettings(settingsKey, data) {
-  const { doc, setDoc } =
-    await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-  const { db } = await initFirebase();
+    const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const { db } = await initFirebase();
 
-  try {
-    await setDoc(doc(db, "settings", settingsKey), {
-      ...data,
-      updatedAt: new Date().toISOString(),
-    });
-    console.log(`[FB-004] Settings '${settingsKey}' saved successfully`);
-    return true;
-  } catch (error) {
-    console.error(`[FB-004] Error saving settings '${settingsKey}':`, error);
-    return false;
-  }
+    try {
+        await setDoc(doc(db, 'settings', settingsKey), {
+            ...data,
+            updatedAt: new Date().toISOString()
+        });
+        console.log(`[FB-004] Settings '${settingsKey}' saved successfully`);
+        return true;
+    } catch (error) {
+        console.error(`[FB-004] Error saving settings '${settingsKey}':`, error);
+        return false;
+    }
 }
 
 /**
@@ -226,28 +206,22 @@ async function saveSettings(settingsKey, data) {
  * @returns {Promise<Array>}
  */
 async function queryCollection(collectionName, constraints = []) {
-  const { collection, query, getDocs } =
-    await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-  const { db } = await initFirebase();
+    const { collection, query, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const { db } = await initFirebase();
 
-  try {
-    const q =
-      constraints.length > 0
-        ? query(collection(db, collectionName), ...constraints)
-        : collection(db, collectionName);
+    try {
+        const q = constraints.length > 0
+            ? query(collection(db, collectionName), ...constraints)
+            : collection(db, collectionName);
 
-    const snapshot = await getDocs(q);
-    const results = [];
-    snapshot.forEach((doc) => results.push({ id: doc.id, ...doc.data() }));
-    return results;
-  } catch (error) {
-    console.error(`[FB-004] Error querying '${collectionName}':`, error);
-    throw new FirebaseError(
-      "FB-004",
-      `Failed to query ${collectionName}`,
-      error,
-    );
-  }
+        const snapshot = await getDocs(q);
+        const results = [];
+        snapshot.forEach(doc => results.push({ id: doc.id, ...doc.data() }));
+        return results;
+    } catch (error) {
+        console.error(`[FB-004] Error querying '${collectionName}':`, error);
+        throw new FirebaseError('FB-004', `Failed to query ${collectionName}`, error);
+    }
 }
 
 // ============================================================
@@ -261,21 +235,17 @@ async function queryCollection(collectionName, constraints = []) {
  * @returns {string} - 'admin', 'employee', or 'customer'
  */
 function getUserRole(email, userData) {
-  // Check Firestore role first
-  if (userData?.role) {
-    return userData.role;
-  }
+    // Check Firestore role first
+    if (userData?.role) {
+        return userData.role;
+    }
 
-  // Fallback to hardcoded admin emails
-  if (
-    FALLBACK_ADMIN_EMAILS.map((e) => e.toLowerCase()).includes(
-      email?.toLowerCase(),
-    )
-  ) {
-    return "admin";
-  }
+    // Fallback to hardcoded admin emails
+    if (FALLBACK_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email?.toLowerCase())) {
+        return 'admin';
+    }
 
-  return "customer";
+    return 'customer';
 }
 
 /**
@@ -284,7 +254,7 @@ function getUserRole(email, userData) {
  * @returns {boolean}
  */
 function isStaff(role) {
-  return role === "admin" || role === "employee";
+    return role === 'admin' || role === 'employee';
 }
 
 /**
@@ -293,7 +263,7 @@ function isStaff(role) {
  * @returns {boolean}
  */
 function isAdmin(role) {
-  return role === "admin";
+    return role === 'admin';
 }
 
 // ============================================================
@@ -304,12 +274,12 @@ function isAdmin(role) {
  * Custom Firebase Error class
  */
 class FirebaseError extends Error {
-  constructor(code, message, originalError = null) {
-    super(message);
-    this.name = "FirebaseError";
-    this.code = code;
-    this.originalError = originalError;
-  }
+    constructor(code, message, originalError = null) {
+        super(message);
+        this.name = 'FirebaseError';
+        this.code = code;
+        this.originalError = originalError;
+    }
 }
 
 /**
@@ -318,21 +288,19 @@ class FirebaseError extends Error {
  * @returns {string} - User-friendly error message
  */
 function getErrorMessage(error) {
-  const errorMessages = {
-    "auth/invalid-email": "Invalid email address.",
-    "auth/user-disabled": "This account has been disabled.",
-    "auth/user-not-found": "No account found with this email.",
-    "auth/wrong-password": "Incorrect password.",
-    "auth/too-many-requests": "Too many attempts. Please try again later.",
-    "auth/network-request-failed": "Network error. Check your connection.",
-    "permission-denied": "You do not have permission to perform this action.",
-    unavailable: "Service temporarily unavailable. Please try again.",
-  };
+    const errorMessages = {
+        'auth/invalid-email': 'Invalid email address.',
+        'auth/user-disabled': 'This account has been disabled.',
+        'auth/user-not-found': 'No account found with this email.',
+        'auth/wrong-password': 'Incorrect password.',
+        'auth/too-many-requests': 'Too many attempts. Please try again later.',
+        'auth/network-request-failed': 'Network error. Check your connection.',
+        'permission-denied': 'You do not have permission to perform this action.',
+        'unavailable': 'Service temporarily unavailable. Please try again.',
+    };
 
-  const code = error.code || error.message;
-  return (
-    errorMessages[code] || error.message || "An unexpected error occurred."
-  );
+    const code = error.code || error.message;
+    return errorMessages[code] || error.message || 'An unexpected error occurred.';
 }
 
 // ============================================================
@@ -340,19 +308,19 @@ function getErrorMessage(error) {
 // ============================================================
 
 export {
-  FIREBASE_CONFIG,
-  FALLBACK_ADMIN_EMAILS,
-  initFirebase,
-  getCurrentUser,
-  signOutUser,
-  onAuthChange,
-  getUserData,
-  getSettings,
-  saveSettings,
-  queryCollection,
-  getUserRole,
-  isStaff,
-  isAdmin,
-  FirebaseError,
-  getErrorMessage,
+    FIREBASE_CONFIG,
+    FALLBACK_ADMIN_EMAILS,
+    initFirebase,
+    getCurrentUser,
+    signOutUser,
+    onAuthChange,
+    getUserData,
+    getSettings,
+    saveSettings,
+    queryCollection,
+    getUserRole,
+    isStaff,
+    isAdmin,
+    FirebaseError,
+    getErrorMessage
 };
