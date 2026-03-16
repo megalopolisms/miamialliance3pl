@@ -218,8 +218,9 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, browserLocalPersistence, setPersistence } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, browserLocalPersistence, setPersistence } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, setDoc, getDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -236,6 +237,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const functions = getFunctions(app);
+        const requestCustomerPasswordReset = httpsCallable(functions, 'requestCustomerPasswordReset');
 
         // Fallback admin emails (for initial setup)
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
@@ -559,11 +562,28 @@
         // Reset password handler
         resetForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('reset-email').value;
+            const email = document.getElementById('reset-email').value.trim();
+            const submitBtn = resetForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
 
             try {
-                await sendPasswordResetEmail(auth, email);
-                showLoginToast('Password reset email sent! Check your inbox.', 'success');
+                const continueUrl = new URL('login.html', window.location.href).toString();
+                const result = await requestCustomerPasswordReset({ email, continueUrl });
+                const resetStatus = result?.data?.status;
+
+                if (resetStatus === 'submitted') {
+                    showLoginToast('If an account exists for this email, a reset message is on the way. If you use Google sign-in, you can also use the Google button below.', 'info');
+                } else {
+                    showLoginToast('✅ Password reset email sent! Check your inbox and spam/junk folder.', 'success');
+                }
+
+                const infoBanner = document.createElement('div');
+                infoBanner.style.cssText = 'background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.85rem;color:#1e40af;line-height:1.5;';
+                infoBanner.innerHTML = '📧 <strong>Password help requested for ' + email + '</strong><br>• Check your <strong>spam/junk folder</strong><br>• The email comes from <em>noreply@miamialliance3pl.firebaseapp.com</em><br>• Allow up to 5 minutes for delivery<br>• If you originally used Google sign-in, you can still use the Google button on this page';
+                loginForm.parentNode.insertBefore(infoBanner, loginForm);
+                setTimeout(() => infoBanner.remove(), 30000);
+
                 // Show login form
                 loginForm.style.display = 'block';
                 signupForm.style.display = 'none';
@@ -572,7 +592,21 @@
                 signupFooter.style.display = 'none';
                 resetFooter.style.display = 'none';
             } catch (error) {
-                showLoginToast('Error: ' + error.message, 'error');
+                console.error('Password reset error:', error.code, error.message);
+                let msg = 'Error sending reset email. ';
+                if (error.code === 'functions/invalid-argument') {
+                    msg = 'Please enter a valid email address.';
+                } else if (error.code === 'functions/resource-exhausted') {
+                    msg = 'Too many reset requests. Please wait a few minutes and try again.';
+                } else if (error.code === 'functions/failed-precondition') {
+                    msg = error.message || 'This account cannot receive a reset email right now. Contact support.';
+                } else {
+                    msg += error.message || 'Please try again.';
+                }
+                showLoginToast(msg, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Reset Link';
             }
         });
     </script>
