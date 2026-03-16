@@ -2093,6 +2093,95 @@ function roundCurrency(value) {
   return Math.round((Number(value) || 0) * 100) / 100;
 }
 
+function createShipStationTrace(options) {
+  return shipstationObservability.createTraceRecorder(admin, options || {});
+}
+
+function buildShipStationTraceFields(trace, status, extra) {
+  return shipstationObservability.buildEntityTraceFields(
+    trace,
+    Object.assign({ status: status }, extra || {}),
+  );
+}
+
+function verifyShipStationWebhookAuth(req) {
+  const config = functions.config().shipstation || {};
+  const headerKey = cleanOptionalString(config.webhook_header_key, 80);
+  const headerValue = cleanOptionalString(config.webhook_header_value, 200);
+  const querySecret = cleanOptionalString(config.webhook_secret, 200);
+
+  if (headerKey && headerValue) {
+    const provided = cleanOptionalString(req.get(headerKey), 200);
+    return {
+      ok: provided === headerValue,
+      mode: "header",
+      header_key: headerKey,
+    };
+  }
+
+  if (querySecret) {
+    const providedQuery = cleanOptionalString(req.query.secret, 200);
+    const providedHeader = cleanOptionalString(req.get("x-shipstation-secret"), 200);
+    return {
+      ok: providedQuery === querySecret || providedHeader === querySecret,
+      mode: providedHeader ? "header_fallback" : "query",
+      header_key: "x-shipstation-secret",
+    };
+  }
+
+  return {
+    ok: true,
+    mode: "none",
+    header_key: null,
+  };
+}
+
+async function applyShipStationShipmentTags(shipstationV2ShipmentId, tagNames, trace) {
+  const normalizedTags = Array.isArray(tagNames) ? tagNames.slice(0, 4) : [];
+  if (!shipstationV2ShipmentId || normalizedTags.length === 0) {
+    return { applied: [], failed: [] };
+  }
+
+  const applied = [];
+  const failed = [];
+
+  for (const tagName of normalizedTags) {
+    try {
+      await shipstationClient.addShipmentTag(
+        shipstationV2ShipmentId,
+        tagName,
+        trace ? trace.toTraceContext({
+          shipstationV2ShipmentId: shipstationV2ShipmentId,
+          tags: ["shipstation_tagging"],
+        }) : null,
+      );
+      applied.push(tagName);
+    } catch (error) {
+      failed.push({
+        tag: tagName,
+        error: error.message || String(error),
+      });
+      if (trace) {
+        await trace.event("warn", "shipment_tag_failed", {
+          shipstation_v2_shipment_id: shipstationV2ShipmentId,
+          tag_name: tagName,
+          error: shipstationObservability.sanitizeShipStationError(error),
+        });
+      }
+    }
+  }
+
+  if (trace) {
+    await trace.event("info", "shipment_tags_applied", {
+      shipstation_v2_shipment_id: shipstationV2ShipmentId,
+      applied_tags: applied,
+      failed_tags: failed.map((entry) => entry.tag),
+    });
+  }
+
+  return { applied: applied, failed: failed };
+}
+
 function cleanString(value, maxLength = 250) {
   const text = String(value || "").trim();
   return text.slice(0, maxLength);
@@ -2637,97 +2726,174 @@ function mapShipStationTrackingToShipmentStatus(trackingData) {
   return null;
 }
 
-async function syncShipStationTrackingForShipment(shipmentRef, shipmentData) {
-  if (!shipmentData || !shipmentData.tracking_number) {
-    return { updated: false, reason: "missing_tracking_number" };
-  }
-
-  const labelsResult = await shipstationClient.listLabelsByTrackingNumber(
-    shipmentData.tracking_number,
-  );
-  const labelsPayload = labelsResult.data || {};
-  const labels = Array.isArray(labelsPayload.labels)
-    ? labelsPayload.labels
-    : Array.isArray(labelsPayload)
-      ? labelsPayload
-      : [];
-  const label = labels[0];
-
-  if (!label) {
-    return { updated: false, reason: "label_not_found" };
-  }
-
-  let trackingPayload = {};
-  if (label.label_id) {
-    try {
-      const trackingResult = await shipstationClient.getLabelTracking(
-        label.label_id,
-      );
-      trackingPayload = trackingResult.data || {};
-    } catch (error) {
-      console.warn(
-        "ShipStation label tracking lookup failed for",
-        shipmentRef.id,
-        error.message || error,
-      );
-    }
-  }
-
-  const nextStatus = mapShipStationTrackingToShipmentStatus({
-    tracking_status: label.tracking_status,
-    status_code:
-      trackingPayload.status_code ||
-      (trackingPayload.current_status && trackingPayload.current_status.status_code),
-    status_description:
-      trackingPayload.status_description ||
-      (trackingPayload.current_status &&
-        trackingPayload.current_status.status_description),
+async function syncShipStationTrackingForShipment(shipmentRef, shipmentData, trace) {
+  const trackingTrace = trace || createShipStationTrace({
+    operation: "shipstation_tracking_sync",
+    scope: "internal",
+    shipmentId: shipmentRef.id,
+    trackingNumber: shipmentData && shipmentData.tracking_number,
+    shipstationShipmentId: shipmentData && shipmentData.shipstation_shipment_id,
+    shipstationV2ShipmentId: shipmentData && shipmentData.shipstation_v2_shipment_id,
+    labelId: shipmentData && shipmentData.shipstation_label_id,
+    carrier: shipmentData && shipmentData.carrier,
+    service: shipmentData && shipmentData.service,
+    tags: ["shipstation", "tracking_sync"],
   });
 
-  const trackingUrl =
-    label.tracking_url ||
-    trackingPayload.tracking_url ||
-    shipmentData.tracking_url ||
-    buildCarrierTrackingUrl(shipmentData.carrier, shipmentData.tracking_number);
-  const updateData = {
-    shipstation_label_id: label.label_id || shipmentData.shipstation_label_id || null,
-    shipstation_tracking_status:
-      label.tracking_status ||
-      trackingPayload.tracking_status ||
-      shipmentData.shipstation_tracking_status ||
-      null,
-    shipstation_tracking_status_code:
-      trackingPayload.status_code ||
-      (trackingPayload.current_status &&
-        trackingPayload.current_status.status_code) ||
-      null,
-    shipstation_tracking_status_description:
-      trackingPayload.status_description ||
-      (trackingPayload.current_status &&
-        trackingPayload.current_status.status_description) ||
-      null,
-    shipstation_tracking_synced_at: new Date().toISOString(),
-    tracking_url: trackingUrl,
-    updated_at: new Date().toISOString(),
-  };
+  await trackingTrace.start({
+    request: {
+      shipment_id: shipmentRef.id,
+      tracking_number: shipmentData && shipmentData.tracking_number || null,
+      shipstation_shipment_id:
+        shipmentData && shipmentData.shipstation_shipment_id || null,
+      shipstation_v2_shipment_id:
+        shipmentData && shipmentData.shipstation_v2_shipment_id || null,
+      shipstation_label_id:
+        shipmentData && shipmentData.shipstation_label_id || null,
+    },
+  });
 
-  if (nextStatus && canAdvanceStatus(shipmentData.status, nextStatus)) {
-    updateData.status = nextStatus;
-  }
+  try {
+    if (!shipmentData || !shipmentData.tracking_number) {
+      const missingResult = {
+        updated: false,
+        reason: "missing_tracking_number",
+        trace_id: trackingTrace.traceId,
+      };
+      await trackingTrace.success(missingResult);
+      return missingResult;
+    }
 
-  if (trackingPayload.estimated_delivery_date) {
-    updateData.estimated_delivery_date = trackingPayload.estimated_delivery_date;
-  }
-  if (trackingPayload.actual_delivery_date) {
-    updateData.delivered_at = trackingPayload.actual_delivery_date;
-  }
+    const labelsResult = await shipstationClient.listLabelsByTrackingNumber(
+      shipmentData.tracking_number,
+      trackingTrace.toTraceContext(),
+    );
+    const labelsPayload = labelsResult.data || {};
+    const labels = Array.isArray(labelsPayload.labels)
+      ? labelsPayload.labels
+      : Array.isArray(labelsPayload)
+        ? labelsPayload
+        : [];
+    const label = labels[0];
 
-  await shipmentRef.set(updateData, { merge: true });
-  return {
-    updated: true,
-    status: updateData.status || shipmentData.status,
-    tracking_status: updateData.shipstation_tracking_status,
-  };
+    if (!label) {
+      const notFoundResult = {
+        updated: false,
+        reason: "label_not_found",
+        trace_id: trackingTrace.traceId,
+      };
+      await trackingTrace.event("warn", "tracking_label_missing", {
+        shipment_id: shipmentRef.id,
+        tracking_number: shipmentData.tracking_number,
+      });
+      await trackingTrace.success(notFoundResult);
+      return notFoundResult;
+    }
+
+    const shipstationV2ShipmentId =
+      label.shipment_id ||
+      shipmentData.shipstation_v2_shipment_id ||
+      null;
+    await trackingTrace.annotate({
+      labelId: label.label_id || shipmentData.shipstation_label_id || null,
+      shipstationV2ShipmentId: shipstationV2ShipmentId,
+      trackingNumber:
+        label.tracking_number ||
+        label.trackingNumber ||
+        shipmentData.tracking_number,
+    });
+
+    let trackingPayload = {};
+    if (label.label_id) {
+      try {
+        const trackingResult = await shipstationClient.getLabelTracking(
+          label.label_id,
+          trackingTrace.toTraceContext({
+            labelId: label.label_id,
+            shipstationV2ShipmentId: shipstationV2ShipmentId,
+          }),
+        );
+        trackingPayload = trackingResult.data || {};
+      } catch (error) {
+        await trackingTrace.event("warn", "label_tracking_lookup_failed", {
+          shipment_id: shipmentRef.id,
+          shipstation_label_id: label.label_id,
+          error: shipstationObservability.sanitizeShipStationError(error),
+        });
+      }
+    }
+
+    const nextStatus = mapShipStationTrackingToShipmentStatus({
+      tracking_status: label.tracking_status,
+      status_code:
+        trackingPayload.status_code ||
+        (trackingPayload.current_status && trackingPayload.current_status.status_code),
+      status_description:
+        trackingPayload.status_description ||
+        (trackingPayload.current_status &&
+          trackingPayload.current_status.status_description),
+    });
+
+    const syncedAt = new Date().toISOString();
+    const trackingUrl =
+      label.tracking_url ||
+      trackingPayload.tracking_url ||
+      shipmentData.tracking_url ||
+      buildCarrierTrackingUrl(shipmentData.carrier, shipmentData.tracking_number);
+    const updateData = {
+      shipstation_label_id: label.label_id || shipmentData.shipstation_label_id || null,
+      shipstation_v2_shipment_id: shipstationV2ShipmentId,
+      shipstation_tracking_status:
+        label.tracking_status ||
+        trackingPayload.tracking_status ||
+        shipmentData.shipstation_tracking_status ||
+        null,
+      shipstation_tracking_status_code:
+        trackingPayload.status_code ||
+        (trackingPayload.current_status &&
+          trackingPayload.current_status.status_code) ||
+        null,
+      shipstation_tracking_status_description:
+        trackingPayload.status_description ||
+        (trackingPayload.current_status &&
+          trackingPayload.current_status.status_description) ||
+        null,
+      shipstation_tracking_synced_at: syncedAt,
+      tracking_url: trackingUrl,
+      updated_at: syncedAt,
+      ...buildShipStationTraceFields(trackingTrace, "success", {
+        operation: "shipstation_tracking_sync",
+        at: syncedAt,
+      }),
+    };
+
+    if (nextStatus && canAdvanceStatus(shipmentData.status, nextStatus)) {
+      updateData.status = nextStatus;
+    }
+
+    if (trackingPayload.estimated_delivery_date) {
+      updateData.estimated_delivery_date = trackingPayload.estimated_delivery_date;
+    }
+    if (trackingPayload.actual_delivery_date) {
+      updateData.delivered_at = trackingPayload.actual_delivery_date;
+    }
+
+    await shipmentRef.set(updateData, { merge: true });
+    const result = {
+      updated: true,
+      status: updateData.status || shipmentData.status,
+      tracking_status: updateData.shipstation_tracking_status,
+      trace_id: trackingTrace.traceId,
+    };
+    await trackingTrace.success(result);
+    return result;
+  } catch (error) {
+    await trackingTrace.failure(error, {
+      shipment_id: shipmentRef.id,
+      tracking_number: shipmentData && shipmentData.tracking_number || null,
+    });
+    throw error;
+  }
 }
 
 // =============================================================================
@@ -2983,31 +3149,70 @@ exports.syncShipmentTracking = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
-
-  const db = admin.firestore();
-  const callerDoc = await db.doc("users/" + context.auth.uid).get();
-  const callerRole = callerDoc.exists ? callerDoc.data().role : "customer";
-  if (!isStaffRole(callerRole)) {
-    throw new functions.https.HttpsError("permission-denied", "Staff role required");
-  }
-
   const shipmentId = cleanString(data && data.shipment_id, 120);
-  if (!shipmentId) {
-    throw new functions.https.HttpsError("invalid-argument", "Missing shipment_id");
-  }
+  const trace = createShipStationTrace({
+    operation: "shipstation_manual_tracking_sync",
+    scope: "callable",
+    userId: context.auth.uid,
+    shipmentId: shipmentId,
+    tags: ["shipstation", "tracking_sync", "manual"],
+  });
 
-  const shipmentRef = db.doc("shipments/" + shipmentId);
-  const shipmentDoc = await shipmentRef.get();
-  if (!shipmentDoc.exists) {
-    throw new functions.https.HttpsError("not-found", "Shipment not found");
-  }
+  await trace.start({
+    request: {
+      shipment_id: shipmentId,
+    },
+  });
 
-  const result = await syncShipStationTrackingForShipment(shipmentRef, shipmentDoc.data());
-  return {
-    success: true,
-    shipment_id: shipmentId,
-    ...result,
-  };
+  try {
+    const db = admin.firestore();
+    const callerDoc = await db.doc("users/" + context.auth.uid).get();
+    const callerRole = callerDoc.exists ? callerDoc.data().role : "customer";
+    if (!isStaffRole(callerRole)) {
+      throw new functions.https.HttpsError("permission-denied", "Staff role required");
+    }
+
+    if (!shipmentId) {
+      throw new functions.https.HttpsError("invalid-argument", "Missing shipment_id");
+    }
+
+    const shipmentRef = db.doc("shipments/" + shipmentId);
+    const shipmentDoc = await shipmentRef.get();
+    if (!shipmentDoc.exists) {
+      throw new functions.https.HttpsError("not-found", "Shipment not found");
+    }
+
+    const result = await syncShipStationTrackingForShipment(
+      shipmentRef,
+      shipmentDoc.data(),
+      trace.child({
+        operation: "shipstation_tracking_sync",
+        scope: "manual_child",
+        shipmentId: shipmentId,
+        trackingNumber: shipmentDoc.data().tracking_number || null,
+        shipstationShipmentId: shipmentDoc.data().shipstation_shipment_id || null,
+        shipstationV2ShipmentId: shipmentDoc.data().shipstation_v2_shipment_id || null,
+        labelId: shipmentDoc.data().shipstation_label_id || null,
+        tags: ["manual_child"],
+      }),
+    );
+    const response = {
+      success: true,
+      shipment_id: shipmentId,
+      ...result,
+      trace_id: trace.traceId,
+    };
+    await trace.success({
+      shipment_id: shipmentId,
+      child_trace_id: result.trace_id || null,
+    });
+    return response;
+  } catch (error) {
+    await trace.failure(error, {
+      shipment_id: shipmentId,
+    });
+    throw error;
+  }
 });
 
 // =============================================================================
@@ -3022,145 +3227,225 @@ exports.getShippingRatesLive = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in to check rates");
   }
-
-  // Validate required input
-  if (!data.destination_zip || typeof data.destination_zip !== "string" || !/^\d{5}(-\d{4})?$/.test(data.destination_zip.trim())) {
-    throw new functions.https.HttpsError("invalid-argument", "Valid destination ZIP code is required");
-  }
-  if (data.weight_lbs !== undefined && (typeof data.weight_lbs !== "number" || data.weight_lbs <= 0 || data.weight_lbs > 150)) {
-    throw new functions.https.HttpsError("invalid-argument", "Weight must be a positive number up to 150 lbs");
-  }
-
-  const db = admin.firestore();
-  let callerIsStaff = false;
-  try {
-    const userDoc = await db.doc("users/" + context.auth.uid).get();
-    if (userDoc.exists && isStaffRole(userDoc.data().role)) callerIsStaff = true;
-  } catch (e) { /* not staff */ }
-
-  const settingsDoc = await db.doc("settings/shipping").get();
-
-  if (!settingsDoc.exists || !settingsDoc.data().enabled) {
-    return buildLegacyRateFallbackResponse(data, callerIsStaff);
-  }
-
-  const settings = settingsDoc.data();
-  const carriers = settings.enabled_carriers || ["stamps_com"];
-  const origin = settings.origin || {};
-  const markupConfig = settings.markup || MARKUP_DEFAULTS;
-
-  // Build ShipStation rate request
-  const baseParams = {
-    fromPostalCode: origin.postalCode || "33178",
-    toPostalCode: data.destination_zip.trim(),
-    toState: data.destination_state || "",
-    toCity: data.destination_city || "",
-    toCountry: "US",
-    weight: {
-      value: data.weight_lbs || 1,
-      units: "pounds",
-    },
-    dimensions: {
-      length: data.length || 12,
-      width: data.width || 12,
-      height: data.height || 12,
-      units: "inches",
-    },
-    confirmation: data.confirmation || "none",
-    residential: data.residential !== false,
-  };
-
-  // Call ShipStation for each carrier in parallel
-  const results = await shipstationClient.getRatesMultiCarrier(carriers, baseParams);
-
-  // Flatten + apply markup
-  const allRates = [];
-  for (const result of results) {
-    if (result.error && result.rates.length === 0) continue;
-    for (const rate of result.rates) {
-      const rawShipment = parseFloat(rate.shipmentCost);
-      const rawOther = parseFloat(rate.otherCost || 0);
-      const carrierCost = (isNaN(rawShipment) ? 0 : rawShipment) + (isNaN(rawOther) ? 0 : rawOther);
-      const effectiveMarkup = resolveMarkupConfig(markupConfig, result.carrier, rate.serviceCode);
-      const customerCost = applyMarkup(carrierCost, data.weight_lbs || 1, effectiveMarkup);
-
-      allRates.push({
-        carrier: result.carrier,
-        carrierCode: result.carrier,
-        service: rate.serviceName,
-        serviceCode: rate.serviceCode,
-        carrierCost: carrierCost,
-        customerCost: customerCost,
-        margin: roundCurrency(customerCost - carrierCost),
-        deliveryDays: rate.deliveryDays || null,
-      });
-    }
-  }
-
-  // Sort by customer cost
-  allRates.sort((a, b) => a.customerCost - b.customerCost);
-
-  // Find cheapest and fastest
-  const cheapest = allRates[0] || null;
-  const fastest = allRates.length > 0
-    ? [...allRates].sort((a, b) => (a.deliveryDays || 99) - (b.deliveryDays || 99))[0]
-    : null;
-
-  const clientRates = allRates.map((r) => {
-    const cleaned = Object.assign({}, r);
-    if (!callerIsStaff) {
-      delete cleaned.carrierCost;
-      delete cleaned.margin;
-    }
-    return cleaned;
+  const trace = createShipStationTrace({
+    operation: "shipstation_get_rates",
+    scope: "callable",
+    userId: context.auth.uid,
+    tags: ["shipstation", "rates", "callable"],
   });
 
-  // Store quote snapshot for server-side validation during label purchase
-  let quoteId = null;
-  if (allRates.length > 0) {
-    const quoteRef = db.collection("shipping_quotes").doc();
-    const quoteExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min TTL
-    // Strip internal cost data from quote snapshot (client-readable collection)
-    const safeRates = allRates.map((r) => ({
-      carrier: r.carrier,
-      carrierCode: r.carrierCode,
-      service: r.service,
-      serviceCode: r.serviceCode,
-      customerCost: r.customerCost,
-      deliveryDays: r.deliveryDays,
-    }));
-    await quoteRef.set({
-      user_id: context.auth.uid,
-      request: {
-        destination_zip: data.destination_zip.trim(),
-        destination_state: data.destination_state || "",
-        weight_lbs: data.weight_lbs || 1,
-        dimensions: baseParams.dimensions,
-        residential: baseParams.residential,
+  await trace.start({
+    request: {
+      destination_zip: cleanOptionalString(data && data.destination_zip, 32),
+      destination_state: cleanOptionalString(data && data.destination_state, 32),
+      destination_city: cleanOptionalString(data && data.destination_city, 80),
+      weight_lbs: data && data.weight_lbs !== undefined ? data.weight_lbs : 1,
+      dimensions: {
+        length: data && data.length || 12,
+        width: data && data.width || 12,
+        height: data && data.height || 12,
       },
-      rates: safeRates,
-      markup_snapshot: { type: markupConfig.type },
-      expires_at: quoteExpiry,
-      created_at: new Date().toISOString(),
-      status: "open",
-    });
-    quoteId = quoteRef.id;
-  }
+      residential: data && data.residential !== false,
+      confirmation: cleanOptionalString(data && data.confirmation, 40) || "none",
+    },
+  });
 
-  return {
-    rates: clientRates,
-    quote_id: quoteId,
-    cheapest: cheapest
-      ? { carrier: cheapest.carrier, service: cheapest.service, price: cheapest.customerCost, days: cheapest.deliveryDays }
-      : null,
-    fastest: fastest
-      ? { carrier: fastest.carrier, service: fastest.service, price: fastest.customerCost, days: fastest.deliveryDays }
-      : null,
-    origin: { city: origin.city || "Medley", state: origin.state || "FL", zip: origin.postalCode || "33178" },
-    markup: callerIsStaff ? { type: markupConfig.type, value: markupConfig.percentage || markupConfig.flat_fee || 0 } : null,
-    count: allRates.length,
-    source: "shipstation",
-  };
+  try {
+    // Validate required input
+    if (!data.destination_zip || typeof data.destination_zip !== "string" || !/^\d{5}(-\d{4})?$/.test(data.destination_zip.trim())) {
+      throw new functions.https.HttpsError("invalid-argument", "Valid destination ZIP code is required");
+    }
+    if (data.weight_lbs !== undefined && (typeof data.weight_lbs !== "number" || data.weight_lbs <= 0 || data.weight_lbs > 150)) {
+      throw new functions.https.HttpsError("invalid-argument", "Weight must be a positive number up to 150 lbs");
+    }
+
+    const db = admin.firestore();
+    let callerIsStaff = false;
+    try {
+      const userDoc = await db.doc("users/" + context.auth.uid).get();
+      if (userDoc.exists && isStaffRole(userDoc.data().role)) callerIsStaff = true;
+    } catch (e) { /* not staff */ }
+
+    const settingsDoc = await db.doc("settings/shipping").get();
+
+    if (!settingsDoc.exists || !settingsDoc.data().enabled) {
+      await trace.event("warn", "rate_lookup_fallback", {
+        reason: "shipping_disabled",
+      });
+      const fallback = await buildLegacyRateFallbackResponse(data, callerIsStaff);
+      fallback.trace_id = trace.traceId;
+      await trace.success({
+        source: fallback.source,
+        rate_count: fallback.count,
+        used_fallback: true,
+      });
+      return fallback;
+    }
+
+    const settings = settingsDoc.data();
+    const carriers = settings.enabled_carriers || ["stamps_com"];
+    const origin = settings.origin || {};
+    const markupConfig = settings.markup || MARKUP_DEFAULTS;
+    await trace.annotate({
+      tags: carriers.map((carrier) => "carrier:" + carrier),
+    });
+
+    // Build ShipStation rate request
+    const baseParams = {
+      fromPostalCode: origin.postalCode || "33178",
+      toPostalCode: data.destination_zip.trim(),
+      toState: data.destination_state || "",
+      toCity: data.destination_city || "",
+      toCountry: "US",
+      weight: {
+        value: data.weight_lbs || 1,
+        units: "pounds",
+      },
+      dimensions: {
+        length: data.length || 12,
+        width: data.width || 12,
+        height: data.height || 12,
+        units: "inches",
+      },
+      confirmation: data.confirmation || "none",
+      residential: data.residential !== false,
+    };
+
+    // Call ShipStation for each carrier in parallel
+    const results = await shipstationClient.getRatesMultiCarrier(
+      carriers,
+      baseParams,
+      trace.toTraceContext(),
+    );
+
+    const carrierErrors = results
+      .filter((result) => result.error)
+      .map((result) => ({
+        carrier: result.carrier,
+        error: shipstationObservability.sanitizeShipStationError(result.error),
+      }));
+    if (carrierErrors.length > 0) {
+      await trace.event("warn", "carrier_rate_errors", {
+        carrier_errors: carrierErrors,
+      });
+    }
+
+    // Flatten + apply markup
+    const allRates = [];
+    for (const result of results) {
+      if (result.error && result.rates.length === 0) continue;
+      for (const rate of result.rates) {
+        const rawShipment = parseFloat(rate.shipmentCost);
+        const rawOther = parseFloat(rate.otherCost || 0);
+        const carrierCost = (isNaN(rawShipment) ? 0 : rawShipment) + (isNaN(rawOther) ? 0 : rawOther);
+        const effectiveMarkup = resolveMarkupConfig(markupConfig, result.carrier, rate.serviceCode);
+        const customerCost = applyMarkup(carrierCost, data.weight_lbs || 1, effectiveMarkup);
+
+        allRates.push({
+          carrier: result.carrier,
+          carrierCode: result.carrier,
+          service: rate.serviceName,
+          serviceCode: rate.serviceCode,
+          carrierCost: carrierCost,
+          customerCost: customerCost,
+          margin: roundCurrency(customerCost - carrierCost),
+          deliveryDays: rate.deliveryDays || null,
+        });
+      }
+    }
+
+    // Sort by customer cost
+    allRates.sort((a, b) => a.customerCost - b.customerCost);
+
+    // Find cheapest and fastest
+    const cheapest = allRates[0] || null;
+    const fastest = allRates.length > 0
+      ? [...allRates].sort((a, b) => (a.deliveryDays || 99) - (b.deliveryDays || 99))[0]
+      : null;
+
+    const clientRates = allRates.map((r) => {
+      const cleaned = Object.assign({}, r);
+      if (!callerIsStaff) {
+        delete cleaned.carrierCost;
+        delete cleaned.margin;
+      }
+      return cleaned;
+    });
+
+    // Store quote snapshot for server-side validation during label purchase
+    let quoteId = null;
+    if (allRates.length > 0) {
+      const quoteRef = db.collection("shipping_quotes").doc();
+      const quoteCreatedAt = new Date().toISOString();
+      const quoteExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min TTL
+      // Strip internal cost data from quote snapshot (client-readable collection)
+      const safeRates = allRates.map((r) => ({
+        carrier: r.carrier,
+        carrierCode: r.carrierCode,
+        service: r.service,
+        serviceCode: r.serviceCode,
+        customerCost: r.customerCost,
+        deliveryDays: r.deliveryDays,
+      }));
+      await quoteRef.set({
+        user_id: context.auth.uid,
+        request: {
+          destination_zip: data.destination_zip.trim(),
+          destination_state: data.destination_state || "",
+          weight_lbs: data.weight_lbs || 1,
+          dimensions: baseParams.dimensions,
+          residential: baseParams.residential,
+        },
+        rates: safeRates,
+        markup_snapshot: { type: markupConfig.type },
+        expires_at: quoteExpiry,
+        created_at: quoteCreatedAt,
+        status: "open",
+        ...buildShipStationTraceFields(trace, "success", {
+          operation: "shipstation_get_rates",
+          at: quoteCreatedAt,
+        }),
+      });
+      quoteId = quoteRef.id;
+      await trace.event("info", "quote_snapshot_stored", {
+        quote_id: quoteId,
+        rate_count: safeRates.length,
+      });
+    }
+
+    const response = {
+      rates: clientRates,
+      quote_id: quoteId,
+      cheapest: cheapest
+        ? { carrier: cheapest.carrier, service: cheapest.service, price: cheapest.customerCost, days: cheapest.deliveryDays }
+        : null,
+      fastest: fastest
+        ? { carrier: fastest.carrier, service: fastest.service, price: fastest.customerCost, days: fastest.deliveryDays }
+        : null,
+      origin: { city: origin.city || "Medley", state: origin.state || "FL", zip: origin.postalCode || "33178" },
+      markup: callerIsStaff ? { type: markupConfig.type, value: markupConfig.percentage || markupConfig.flat_fee || 0 } : null,
+      count: allRates.length,
+      source: "shipstation",
+      trace_id: trace.traceId,
+    };
+
+    await trace.success({
+      source: response.source,
+      rate_count: response.count,
+      quote_id: quoteId,
+      cheapest_carrier: cheapest ? cheapest.carrier : null,
+      fastest_carrier: fastest ? fastest.carrier : null,
+      carrier_count_requested: carriers.length,
+      carrier_count_succeeded: results.filter((result) => !result.error).length,
+    });
+
+    return response;
+  } catch (error) {
+    await trace.failure(error, {
+      destination_zip: cleanOptionalString(data && data.destination_zip, 32),
+    });
+    throw error;
+  }
 });
 
 // =============================================================================
@@ -3175,371 +3460,500 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
+  const trace = createShipStationTrace({
+    operation: "shipstation_label_purchase",
+    scope: "callable",
+    userId: context.auth.uid,
+    shipmentId: cleanOptionalString(data && data.shipment_id, 120),
+    carrier: cleanOptionalString(data && data.carrierCode, 80),
+    service: cleanOptionalString(data && data.serviceCode, 80),
+    tags: ["shipstation", "label_purchase", "callable"],
+  });
 
-  // Validate required fields
-  const requiredFields = ["carrierCode", "serviceCode", "weight_lbs", "recipient_name", "recipient_street1", "recipient_city", "recipient_state", "recipient_zip"];
-  const missing = requiredFields.filter((f) => !data[f]);
-  if (missing.length > 0) {
-    throw new functions.https.HttpsError("invalid-argument", "Missing required fields: " + missing.join(", "));
-  }
-  if (typeof data.weight_lbs !== "number" || data.weight_lbs <= 0 || data.weight_lbs > 150) {
-    throw new functions.https.HttpsError("invalid-argument", "Weight must be a positive number up to 150 lbs");
-  }
-  if (!/^\d{5}(-\d{4})?$/.test(String(data.recipient_zip).trim())) {
-    throw new functions.https.HttpsError("invalid-argument", "Valid recipient ZIP code is required");
-  }
-  if (!/^[a-z0-9_]+$/i.test(String(data.carrierCode))) {
-    throw new functions.https.HttpsError("invalid-argument", "Invalid carrier code format");
-  }
-  if (!/^[a-z0-9_]+$/i.test(String(data.serviceCode))) {
-    throw new functions.https.HttpsError("invalid-argument", "Invalid service code format");
-  }
-
-  const db = admin.firestore();
-
-  // Optional: validate against a stored quote to prevent price tampering
-  if (data.quote_id) {
-    const safeQuoteId = cleanString(data.quote_id, 128).replace(/[^a-zA-Z0-9_-]/g, "");
-    if (!safeQuoteId || safeQuoteId !== data.quote_id) {
-      throw new functions.https.HttpsError("invalid-argument", "Invalid quote_id format");
-    }
-    const quoteDoc = await db.doc("shipping_quotes/" + safeQuoteId).get();
-    if (!quoteDoc.exists) {
-      throw new functions.https.HttpsError("not-found", "Quote not found — rates may have expired. Please refresh rates.");
-    }
-    const quote = quoteDoc.data();
-    if (quote.user_id !== context.auth.uid) {
-      throw new functions.https.HttpsError("permission-denied", "Quote does not belong to you");
-    }
-    if (quote.status !== "open") {
-      throw new functions.https.HttpsError("failed-precondition", "Quote has already been used or expired");
-    }
-    if (new Date(quote.expires_at) < new Date()) {
-      throw new functions.https.HttpsError("failed-precondition", "Quote has expired. Please refresh rates.");
-    }
-    // Mark quote as used
-    await quoteDoc.ref.update({ status: "used", used_at: new Date().toISOString() });
-  }
-
-  let existingShipmentData = null;
-  let ownerUserId = context.auth.uid;
-  let callerRole = "customer";
-  let callerUserData = null;
+  await trace.start({
+    request: {
+      shipment_id: cleanOptionalString(data && data.shipment_id, 120),
+      quote_id: cleanOptionalString(data && data.quote_id, 120),
+      carrier_code: cleanOptionalString(data && data.carrierCode, 80),
+      service_code: cleanOptionalString(data && data.serviceCode, 80),
+      weight_lbs: data && data.weight_lbs,
+      destination_city: cleanOptionalString(data && data.recipient_city, 80),
+      destination_state: cleanOptionalString(data && data.recipient_state, 32),
+      destination_zip: cleanOptionalString(data && data.recipient_zip, 32),
+      test_label: Boolean(data && data.test_label),
+    },
+  });
 
   try {
-    const callerDoc = await db.doc("users/" + context.auth.uid).get();
-    if (callerDoc.exists) {
-      callerUserData = callerDoc.data();
-      callerRole = callerUserData.role || "customer";
+    // Validate required fields
+    const requiredFields = ["carrierCode", "serviceCode", "weight_lbs", "recipient_name", "recipient_street1", "recipient_city", "recipient_state", "recipient_zip"];
+    const missing = requiredFields.filter((f) => !data[f]);
+    if (missing.length > 0) {
+      throw new functions.https.HttpsError("invalid-argument", "Missing required fields: " + missing.join(", "));
     }
-  } catch (e) { /* default customer */ }
-
-  // Ownership/role check: if linking to existing shipment, verify caller owns it or is staff
-  if (data.shipment_id) {
-    const existingShipment = await db.doc("shipments/" + data.shipment_id).get();
-    if (!existingShipment.exists) {
-      throw new functions.https.HttpsError("not-found", "Shipment not found");
+    if (typeof data.weight_lbs !== "number" || data.weight_lbs <= 0 || data.weight_lbs > 150) {
+      throw new functions.https.HttpsError("invalid-argument", "Weight must be a positive number up to 150 lbs");
+    }
+    if (!/^\d{5}(-\d{4})?$/.test(String(data.recipient_zip).trim())) {
+      throw new functions.https.HttpsError("invalid-argument", "Valid recipient ZIP code is required");
+    }
+    if (!/^[a-z0-9_]+$/i.test(String(data.carrierCode))) {
+      throw new functions.https.HttpsError("invalid-argument", "Invalid carrier code format");
+    }
+    if (!/^[a-z0-9_]+$/i.test(String(data.serviceCode))) {
+      throw new functions.https.HttpsError("invalid-argument", "Invalid service code format");
     }
 
-    existingShipmentData = existingShipment.data();
-    ownerUserId = existingShipmentData.user_id || context.auth.uid;
-    const callerUid = context.auth.uid;
-    if (ownerUserId !== callerUid && !isStaffRole(callerRole)) {
-      throw new functions.https.HttpsError(
-        "permission-denied",
-        "You can only purchase labels for your own shipments",
-      );
-    }
-  }
+    const db = admin.firestore();
 
-  let ownerUserData = callerUserData;
-  if (ownerUserId !== context.auth.uid) {
+    // Optional: validate against a stored quote to prevent price tampering
+    if (data.quote_id) {
+      const safeQuoteId = cleanString(data.quote_id, 128).replace(/[^a-zA-Z0-9_-]/g, "");
+      if (!safeQuoteId || safeQuoteId !== data.quote_id) {
+        throw new functions.https.HttpsError("invalid-argument", "Invalid quote_id format");
+      }
+      const quoteDoc = await db.doc("shipping_quotes/" + safeQuoteId).get();
+      if (!quoteDoc.exists) {
+        throw new functions.https.HttpsError("not-found", "Quote not found — rates may have expired. Please refresh rates.");
+      }
+      const quote = quoteDoc.data();
+      if (quote.user_id !== context.auth.uid) {
+        throw new functions.https.HttpsError("permission-denied", "Quote does not belong to you");
+      }
+      if (quote.status !== "open") {
+        throw new functions.https.HttpsError("failed-precondition", "Quote has already been used or expired");
+      }
+      if (new Date(quote.expires_at) < new Date()) {
+        throw new functions.https.HttpsError("failed-precondition", "Quote has expired. Please refresh rates.");
+      }
+      const quoteUsedAt = new Date().toISOString();
+      await quoteDoc.ref.update({
+        status: "used",
+        used_at: quoteUsedAt,
+        ...buildShipStationTraceFields(trace, "success", {
+          operation: "shipstation_label_purchase",
+          at: quoteUsedAt,
+        }),
+      });
+      await trace.event("info", "quote_marked_used", {
+        quote_id: safeQuoteId,
+      });
+    }
+
+    let existingShipmentData = null;
+    let ownerUserId = context.auth.uid;
+    let callerRole = "customer";
+    let callerUserData = null;
+
     try {
-      const ownerUserDoc = await db.doc("users/" + ownerUserId).get();
-      if (ownerUserDoc.exists) ownerUserData = ownerUserDoc.data();
-    } catch (e) { /* best-effort only */ }
-  }
+      const callerDoc = await db.doc("users/" + context.auth.uid).get();
+      if (callerDoc.exists) {
+        callerUserData = callerDoc.data();
+        callerRole = callerUserData.role || "customer";
+      }
+    } catch (e) { /* default customer */ }
 
-  const settingsDoc = await db.doc("settings/shipping").get();
-  if (!settingsDoc.exists || !settingsDoc.data().enabled) {
-    throw new functions.https.HttpsError("failed-precondition", "Shipping integration not configured");
-  }
+    // Ownership/role check: if linking to existing shipment, verify caller owns it or is staff
+    if (data.shipment_id) {
+      const existingShipment = await db.doc("shipments/" + data.shipment_id).get();
+      if (!existingShipment.exists) {
+        throw new functions.https.HttpsError("not-found", "Shipment not found");
+      }
 
-  const settings = settingsDoc.data();
-  const origin = settings.origin || {};
-  const markupConfig = settings.markup || MARKUP_DEFAULTS;
-  const shipmentCreatedAt =
-    (existingShipmentData && existingShipmentData.created_at) ||
-    new Date().toISOString();
-  const shipmentUpdatedAt = new Date().toISOString();
-  const customerPhone =
-    (existingShipmentData && existingShipmentData.customer_phone) ||
-    data.customer_phone ||
-    data.recipient_phone ||
-    (ownerUserData &&
-      (ownerUserData.customer_phone ||
-        ownerUserData.phone ||
-        ownerUserData.phoneNumber)) ||
-    null;
-  const notificationChannel =
-    (existingShipmentData && existingShipmentData.notification_channel) ||
-    (ownerUserData && ownerUserData.notification_channel) ||
-    "sms";
-  const notificationsEnabled =
-    existingShipmentData &&
-    existingShipmentData.notifications_enabled !== undefined
-      ? existingShipmentData.notifications_enabled
-      : true;
-  const shipmentStatus =
-    existingShipmentData && existingShipmentData.status &&
-    existingShipmentData.status !== "voided"
-      ? existingShipmentData.status
-      : "pending";
-
-  // Build label request
-  const labelParams = {
-    carrierCode: data.carrierCode,
-    serviceCode: data.serviceCode,
-    packageCode: data.packageCode || "package",
-    confirmation: data.confirmation || "none",
-    shipDate: new Date().toISOString().split("T")[0],
-    weight: { value: data.weight_lbs, units: "pounds" },
-    dimensions: {
-      length: data.length || 12,
-      width: data.width || 12,
-      height: data.height || 12,
-      units: "inches",
-    },
-    shipFrom: {
-      name: origin.name || "Miami Alliance 3PL",
-      company: origin.company || origin.name || "Miami Alliance 3PL",
-      street1: origin.street1,
-      city: origin.city,
-      state: origin.state,
-      postalCode: origin.postalCode,
-      country: "US",
-      phone: origin.phone || "",
-    },
-    shipTo: {
-      name: data.recipient_name,
-      company: data.recipient_company || "",
-      street1: data.recipient_street1,
-      street2: data.recipient_street2 || "",
-      city: data.recipient_city,
-      state: data.recipient_state,
-      postalCode: data.recipient_zip,
-      country: "US",
-      phone: data.recipient_phone || "",
-    },
-    testLabel: data.test_label || false,
-  };
-
-  const result = await shipstationClient.createLabel(labelParams);
-
-  if (result.status !== 200 || !result.data.trackingNumber) {
-    console.error("ShipStation label creation failed:", JSON.stringify(result.data));
-    throw new functions.https.HttpsError(
-      "internal",
-      "Label creation failed. Please try again or contact support.",
-    );
-  }
-
-  const label = result.data;
-  const rawShipCost = parseFloat(label.shipmentCost || 0);
-  const rawOtherCost = parseFloat(label.otherCost || 0);
-  const rawInsuranceCost = parseFloat(label.insuranceCost || 0);
-  const carrierCost = roundCurrency(
-    (isNaN(rawShipCost) ? 0 : rawShipCost) +
-    (isNaN(rawOtherCost) ? 0 : rawOtherCost) +
-    (isNaN(rawInsuranceCost) ? 0 : rawInsuranceCost),
-  );
-  const effectiveMarkup = resolveMarkupConfig(markupConfig, data.carrierCode, data.serviceCode);
-  const customerCost = applyMarkup(carrierCost, data.weight_lbs, effectiveMarkup);
-  const margin = roundCurrency(customerCost - carrierCost);
-  const trackingUrl = buildCarrierTrackingUrl(data.carrierCode, label.trackingNumber);
-  const shipmentRef = data.shipment_id
-    ? db.doc("shipments/" + data.shipment_id)
-    : db.collection("shipments").doc();
-  const billableRef = db.collection("billable_events").doc();
-  const shippingFinancialRef = db.doc("shipping_financials/" + shipmentRef.id);
-
-  let shipstationLabelId = null;
-  try {
-    const labelLookup = await shipstationClient.listLabelsByTrackingNumber(
-      label.trackingNumber,
-    );
-    const labelRecords =
-      labelLookup.data && Array.isArray(labelLookup.data.labels)
-        ? labelLookup.data.labels
-        : [];
-    if (labelRecords[0] && labelRecords[0].label_id) {
-      shipstationLabelId = labelRecords[0].label_id;
+      existingShipmentData = existingShipment.data();
+      ownerUserId = existingShipmentData.user_id || context.auth.uid;
+      const callerUid = context.auth.uid;
+      if (ownerUserId !== callerUid && !isStaffRole(callerRole)) {
+        throw new functions.https.HttpsError(
+          "permission-denied",
+          "You can only purchase labels for your own shipments",
+        );
+      }
     }
-  } catch (labelLookupError) {
-    console.warn(
-      "ShipStation label lookup failed:",
-      labelLookupError.message || labelLookupError,
-    );
-  }
 
-  // Store label PDF in Firebase Storage
-  let labelPath = "";
-  try {
-    const bucket = admin.storage().bucket();
-    labelPath =
-      "labels/" + ownerUserId + "/" + shipmentRef.id + "/" + label.trackingNumber + ".pdf";
-    const labelBuffer = Buffer.from(label.labelData, "base64");
-    await bucket.file(labelPath).save(labelBuffer, {
-      contentType: "application/pdf",
-      metadata: {
-        metadata: {
-          user_id: ownerUserId,
-          shipment_id: shipmentRef.id,
-          tracking_number: label.trackingNumber,
-        },
-      },
-    });
-  } catch (storageErr) {
-    console.warn("Label PDF storage failed:", storageErr.message);
-  }
+    let ownerUserData = callerUserData;
+    if (ownerUserId !== context.auth.uid) {
+      try {
+        const ownerUserDoc = await db.doc("users/" + ownerUserId).get();
+        if (ownerUserDoc.exists) ownerUserData = ownerUserDoc.data();
+      } catch (e) { /* best-effort only */ }
+    }
 
-  const shipmentData = {
-    user_id: ownerUserId,
-    tracking_number: label.trackingNumber,
-    tracking_url: trackingUrl,
-    carrier: data.carrierCode,
-    carrier_name: data.carrier_name || data.carrierCode,
-    service: data.serviceCode,
-    service_name: data.service_name || data.serviceCode,
-    service_type: data.service_name || data.serviceCode,
-    shipstation_shipment_id: label.shipmentId,
-    shipstation_label_id: shipstationLabelId,
-    customer_cost: customerCost,
-    label_pdf_path: labelPath,
-    status: shipmentStatus,
-    shipping_label_status: "created",
-    warehouse:
+    const settingsDoc = await db.doc("settings/shipping").get();
+    if (!settingsDoc.exists || !settingsDoc.data().enabled) {
+      throw new functions.https.HttpsError("failed-precondition", "Shipping integration not configured");
+    }
+
+    const settings = settingsDoc.data();
+    const origin = settings.origin || {};
+    const markupConfig = settings.markup || MARKUP_DEFAULTS;
+    const shipmentCreatedAt =
+      (existingShipmentData && existingShipmentData.created_at) ||
+      new Date().toISOString();
+    const shipmentUpdatedAt = new Date().toISOString();
+    const customerPhone =
+      (existingShipmentData && existingShipmentData.customer_phone) ||
+      data.customer_phone ||
+      data.recipient_phone ||
+      (ownerUserData &&
+        (ownerUserData.customer_phone ||
+          ownerUserData.phone ||
+          ownerUserData.phoneNumber)) ||
+      null;
+    const notificationChannel =
+      (existingShipmentData && existingShipmentData.notification_channel) ||
+      (ownerUserData && ownerUserData.notification_channel) ||
+      "sms";
+    const notificationsEnabled =
+      existingShipmentData &&
+      existingShipmentData.notifications_enabled !== undefined
+        ? existingShipmentData.notifications_enabled
+        : true;
+    const shipmentStatus =
+      existingShipmentData && existingShipmentData.status &&
+      existingShipmentData.status !== "voided"
+        ? existingShipmentData.status
+        : "pending";
+    const shipmentRef = data.shipment_id
+      ? db.doc("shipments/" + data.shipment_id)
+      : db.collection("shipments").doc();
+    const billableRef = db.collection("billable_events").doc();
+    const shippingFinancialRef = db.doc("shipping_financials/" + shipmentRef.id);
+    const warehouseId =
       existingShipmentData && existingShipmentData.warehouse
         ? existingShipmentData.warehouse
-        : "miami",
-    customer_phone: customerPhone,
-    notification_channel: notificationChannel,
-    notifications_enabled: notificationsEnabled,
-    // Match schema expected by portal/tracking.html (uses .street not .street1)
-    origin: {
-      address: origin.street1,
-      street: origin.street1,
-      street1: origin.street1,
-      city: origin.city,
-      state: origin.state,
-      zip: origin.postalCode,
-      country: "US",
-    },
-    destination: {
-      name: data.recipient_name,
-      company:
-        data.recipient_company ||
-        (ownerUserData &&
-          (ownerUserData.company_name || ownerUserData.company || ownerUserData.name)) ||
-        "",
-      address: data.recipient_street1,
-      street: data.recipient_street1,
-      street1: data.recipient_street1,
-      street2: data.recipient_street2 || "",
-      city: data.recipient_city,
-      state: data.recipient_state,
-      zip: data.recipient_zip,
-      country: "US",
-    },
-    shipping_zone: "shipstation",
-    pricing_authoritative: true,
-    quote_id: data.quote_id || null,
-    package: {
+        : "miami";
+
+    await trace.annotate({
+      shipmentId: shipmentRef.id,
+      userId: ownerUserId,
+      carrier: data.carrierCode,
+      service: data.serviceCode,
+    });
+
+    // Build label request
+    const labelParams = {
+      carrierCode: data.carrierCode,
+      serviceCode: data.serviceCode,
+      packageCode: data.packageCode || "package",
+      confirmation: data.confirmation || "none",
+      shipDate: new Date().toISOString().split("T")[0],
+      weight: { value: data.weight_lbs, units: "pounds" },
+      dimensions: {
+        length: data.length || 12,
+        width: data.width || 12,
+        height: data.height || 12,
+        units: "inches",
+      },
+      shipFrom: {
+        name: origin.name || "Miami Alliance 3PL",
+        company: origin.company || origin.name || "Miami Alliance 3PL",
+        street1: origin.street1,
+        city: origin.city,
+        state: origin.state,
+        postalCode: origin.postalCode,
+        country: "US",
+        phone: origin.phone || "",
+      },
+      shipTo: {
+        name: data.recipient_name,
+        company: data.recipient_company || "",
+        street1: data.recipient_street1,
+        street2: data.recipient_street2 || "",
+        city: data.recipient_city,
+        state: data.recipient_state,
+        postalCode: data.recipient_zip,
+        country: "US",
+        phone: data.recipient_phone || "",
+      },
+      testLabel: data.test_label || false,
+    };
+
+    const result = await shipstationClient.createLabel(
+      labelParams,
+      trace.toTraceContext(),
+    );
+
+    if (result.status !== 200 || !result.data.trackingNumber) {
+      await trace.event("error", "label_creation_failed_response", {
+        http_status: result.status,
+      });
+      throw new functions.https.HttpsError(
+        "internal",
+        "Label creation failed. Please try again or contact support.",
+      );
+    }
+
+    const label = result.data;
+    const rawShipCost = parseFloat(label.shipmentCost || 0);
+    const rawOtherCost = parseFloat(label.otherCost || 0);
+    const rawInsuranceCost = parseFloat(label.insuranceCost || 0);
+    const carrierCost = roundCurrency(
+      (isNaN(rawShipCost) ? 0 : rawShipCost) +
+      (isNaN(rawOtherCost) ? 0 : rawOtherCost) +
+      (isNaN(rawInsuranceCost) ? 0 : rawInsuranceCost),
+    );
+    const effectiveMarkup = resolveMarkupConfig(markupConfig, data.carrierCode, data.serviceCode);
+    const customerCost = applyMarkup(carrierCost, data.weight_lbs, effectiveMarkup);
+    const margin = roundCurrency(customerCost - carrierCost);
+    const trackingUrl = buildCarrierTrackingUrl(data.carrierCode, label.trackingNumber);
+
+    let shipstationLabelId = null;
+    let shipstationV2ShipmentId = null;
+    try {
+      const labelLookup = await shipstationClient.listLabelsByTrackingNumber(
+        label.trackingNumber,
+        trace.toTraceContext({
+          trackingNumber: label.trackingNumber,
+          shipstationShipmentId: label.shipmentId,
+        }),
+      );
+      const labelRecords =
+        labelLookup.data && Array.isArray(labelLookup.data.labels)
+          ? labelLookup.data.labels
+          : [];
+      if (labelRecords[0] && labelRecords[0].label_id) {
+        shipstationLabelId = labelRecords[0].label_id;
+      }
+      if (labelRecords[0] && labelRecords[0].shipment_id) {
+        shipstationV2ShipmentId = labelRecords[0].shipment_id;
+      }
+    } catch (labelLookupError) {
+      await trace.event("warn", "label_lookup_failed", {
+        tracking_number: label.trackingNumber,
+        error: shipstationObservability.sanitizeShipStationError(labelLookupError),
+      });
+    }
+
+    await trace.annotate({
+      trackingNumber: label.trackingNumber,
+      shipstationShipmentId: label.shipmentId,
+      shipstationV2ShipmentId: shipstationV2ShipmentId,
+      labelId: shipstationLabelId,
+    });
+
+    // Store label PDF in Firebase Storage
+    let labelPath = "";
+    try {
+      const bucket = admin.storage().bucket();
+      labelPath =
+        "labels/" + ownerUserId + "/" + shipmentRef.id + "/" + label.trackingNumber + ".pdf";
+      const labelBuffer = Buffer.from(label.labelData, "base64");
+      await bucket.file(labelPath).save(labelBuffer, {
+        contentType: "application/pdf",
+        metadata: {
+          metadata: {
+            user_id: ownerUserId,
+            shipment_id: shipmentRef.id,
+            tracking_number: label.trackingNumber,
+            trace_id: trace.traceId,
+          },
+        },
+      });
+      await trace.event("info", "label_pdf_stored", {
+        shipment_id: shipmentRef.id,
+        label_pdf_path: labelPath,
+      });
+    } catch (storageErr) {
+      await trace.event("warn", "label_pdf_storage_failed", {
+        shipment_id: shipmentRef.id,
+        error: shipstationObservability.sanitizeShipStationError(storageErr),
+      });
+    }
+
+    const shipstationTagNames = shipstationObservability.buildShipmentTagNames({
+      channel: "portal",
+      flowType: "label_purchase",
+      warehouse: warehouseId,
+      carrierCode: data.carrierCode,
+    });
+    const shipmentData = {
+      user_id: ownerUserId,
+      tracking_number: label.trackingNumber,
+      tracking_url: trackingUrl,
+      carrier: data.carrierCode,
+      carrier_name: data.carrier_name || data.carrierCode,
+      service: data.serviceCode,
+      service_name: data.service_name || data.serviceCode,
+      service_type: data.service_name || data.serviceCode,
+      shipstation_shipment_id: label.shipmentId,
+      shipstation_v2_shipment_id: shipstationV2ShipmentId,
+      shipstation_label_id: shipstationLabelId,
+      shipstation_tags_requested: shipstationTagNames,
+      shipstation_tags_applied: [],
+      customer_cost: customerCost,
+      label_pdf_path: labelPath,
+      status: shipmentStatus,
+      shipping_label_status: "created",
+      warehouse: warehouseId,
+      customer_phone: customerPhone,
+      notification_channel: notificationChannel,
+      notifications_enabled: notificationsEnabled,
+      // Match schema expected by portal/tracking.html (uses .street not .street1)
+      origin: {
+        address: origin.street1,
+        street: origin.street1,
+        street1: origin.street1,
+        city: origin.city,
+        state: origin.state,
+        zip: origin.postalCode,
+        country: "US",
+      },
+      destination: {
+        name: data.recipient_name,
+        company:
+          data.recipient_company ||
+          (ownerUserData &&
+            (ownerUserData.company_name || ownerUserData.company || ownerUserData.name)) ||
+          "",
+        address: data.recipient_street1,
+        street: data.recipient_street1,
+        street1: data.recipient_street1,
+        street2: data.recipient_street2 || "",
+        city: data.recipient_city,
+        state: data.recipient_state,
+        zip: data.recipient_zip,
+        country: "US",
+      },
+      shipping_zone: "shipstation",
+      pricing_authoritative: true,
+      quote_id: data.quote_id || null,
+      package: {
+        weight: data.weight_lbs,
+        length: data.length || 12,
+        width: data.width || 12,
+        height: data.height || 12,
+        quantity:
+          existingShipmentData &&
+          existingShipmentData.package &&
+          existingShipmentData.package.quantity
+            ? existingShipmentData.package.quantity
+            : 1,
+      },
       weight: data.weight_lbs,
-      length: data.length || 12,
-      width: data.width || 12,
-      height: data.height || 12,
-      quantity:
-        existingShipmentData &&
-        existingShipmentData.package &&
-        existingShipmentData.package.quantity
-          ? existingShipmentData.package.quantity
-          : 1,
-    },
-    weight: data.weight_lbs,
-    weight_lbs: data.weight_lbs,
-    estimated_cost: customerCost,
-    dimensions: {
-      length: data.length || 12,
-      width: data.width || 12,
-      height: data.height || 12,
-    },
-    created_at: shipmentCreatedAt,
-    updated_at: shipmentUpdatedAt,
-  };
+      weight_lbs: data.weight_lbs,
+      estimated_cost: customerCost,
+      dimensions: {
+        length: data.length || 12,
+        width: data.width || 12,
+        height: data.height || 12,
+      },
+      created_at: shipmentCreatedAt,
+      updated_at: shipmentUpdatedAt,
+      ...buildShipStationTraceFields(trace, "success", {
+        operation: "shipstation_label_purchase",
+        at: shipmentUpdatedAt,
+      }),
+    };
 
-  const batch = db.batch();
-  batch.set(shipmentRef, shipmentData, { merge: true });
-  batch.set(billableRef, {
-    customer_id: ownerUserId,
-    event_type: "shipping",
-    billing_item_id: "shipping",
-    description: "Shipping: " + data.carrierCode + " " + data.serviceCode + " to " + data.recipient_city + ", " + data.recipient_state,
-    quantity: 1,
-    unit: "label",
-    rate: customerCost,
-    amount: customerCost,
-    total: customerCost,
-    customer_cost: customerCost,
-    carrier_cost: carrierCost,
-    margin: margin,
-    carrier_code: data.carrierCode,
-    service_code: data.serviceCode,
-    source: "shipstation",
-    shipment_id: shipmentRef.id,
-    tracking_number: label.trackingNumber,
-    invoiced: false,
-    voided: false,
-    created_at: shipmentUpdatedAt,
-  });
-  batch.set(shippingFinancialRef, {
-    shipment_id: shipmentRef.id,
-    customer_id: ownerUserId,
-    billable_event_id: billableRef.id,
-    tracking_number: label.trackingNumber,
-    carrier: data.carrierCode,
-    carrier_name: data.carrier_name || data.carrierCode,
-    service: data.serviceCode,
-    service_name: data.service_name || data.serviceCode,
-    shipstation_shipment_id: label.shipmentId,
-    shipstation_label_id: shipstationLabelId,
-    carrier_cost: carrierCost,
-    customer_cost: customerCost,
-    margin: margin,
-    status: "active",
-    voided: false,
-    purchased_at: shipmentUpdatedAt,
-    updated_at: shipmentUpdatedAt,
-  }, { merge: true });
-  await batch.commit();
+    const batch = db.batch();
+    batch.set(shipmentRef, shipmentData, { merge: true });
+    batch.set(billableRef, {
+      customer_id: ownerUserId,
+      event_type: "shipping",
+      billing_item_id: "shipping",
+      description: "Shipping: " + data.carrierCode + " " + data.serviceCode + " to " + data.recipient_city + ", " + data.recipient_state,
+      quantity: 1,
+      unit: "label",
+      rate: customerCost,
+      amount: customerCost,
+      total: customerCost,
+      customer_cost: customerCost,
+      carrier_cost: carrierCost,
+      margin: margin,
+      carrier_code: data.carrierCode,
+      service_code: data.serviceCode,
+      source: "shipstation",
+      shipment_id: shipmentRef.id,
+      tracking_number: label.trackingNumber,
+      invoiced: false,
+      voided: false,
+      created_at: shipmentUpdatedAt,
+      trace_id: trace.traceId,
+      trace_tags: trace.tags,
+    });
+    batch.set(shippingFinancialRef, {
+      shipment_id: shipmentRef.id,
+      customer_id: ownerUserId,
+      billable_event_id: billableRef.id,
+      tracking_number: label.trackingNumber,
+      carrier: data.carrierCode,
+      carrier_name: data.carrier_name || data.carrierCode,
+      service: data.serviceCode,
+      service_name: data.service_name || data.serviceCode,
+      shipstation_shipment_id: label.shipmentId,
+      shipstation_v2_shipment_id: shipstationV2ShipmentId,
+      shipstation_label_id: shipstationLabelId,
+      carrier_cost: carrierCost,
+      customer_cost: customerCost,
+      margin: margin,
+      status: "active",
+      voided: false,
+      purchased_at: shipmentUpdatedAt,
+      updated_at: shipmentUpdatedAt,
+      trace_id: trace.traceId,
+      trace_tags: trace.tags,
+    }, { merge: true });
+    await batch.commit();
 
-  const response = {
-    success: true,
-    tracking_number: label.trackingNumber,
-    tracking_url: trackingUrl,
-    shipment_id: shipmentRef.id,
-    shipstation_id: label.shipmentId,
-    customer_cost: customerCost,
-    label_pdf_base64: label.labelData || null,
-    label_pdf_content_type: "application/pdf",
-    label_pdf_filename: label.trackingNumber + ".pdf",
-    label_pdf_path: labelPath || null,
-  };
-  if (isStaffRole(callerRole)) {
-    response.carrier_cost = carrierCost;
-    response.margin = margin;
+    const tagResult = await applyShipStationShipmentTags(
+      shipstationV2ShipmentId,
+      shipstationTagNames,
+      trace,
+    );
+    if (tagResult.applied.length > 0 || tagResult.failed.length > 0) {
+      const tagUpdatedAt = new Date().toISOString();
+      await shipmentRef.set({
+        shipstation_tags_applied: tagResult.applied,
+        shipstation_tags_failed: tagResult.failed,
+        shipstation_tags_applied_at: tagUpdatedAt,
+        updated_at: tagUpdatedAt,
+        ...buildShipStationTraceFields(trace, "success", {
+          operation: "shipstation_label_purchase",
+          at: tagUpdatedAt,
+        }),
+      }, { merge: true });
+    }
+
+    const response = {
+      success: true,
+      tracking_number: label.trackingNumber,
+      tracking_url: trackingUrl,
+      shipment_id: shipmentRef.id,
+      shipstation_id: label.shipmentId,
+      shipstation_v2_shipment_id: shipstationV2ShipmentId,
+      shipstation_label_id: shipstationLabelId,
+      shipstation_tags_applied: tagResult.applied,
+      customer_cost: customerCost,
+      label_pdf_base64: label.labelData || null,
+      label_pdf_content_type: "application/pdf",
+      label_pdf_filename: label.trackingNumber + ".pdf",
+      label_pdf_path: labelPath || null,
+      trace_id: trace.traceId,
+    };
+    if (isStaffRole(callerRole)) {
+      response.carrier_cost = carrierCost;
+      response.margin = margin;
+    }
+
+    await trace.success({
+      shipment_id: shipmentRef.id,
+      tracking_number: label.trackingNumber,
+      shipstation_shipment_id: label.shipmentId,
+      shipstation_v2_shipment_id: shipstationV2ShipmentId,
+      shipstation_label_id: shipstationLabelId,
+      applied_tags: tagResult.applied,
+      failed_tag_count: tagResult.failed.length,
+    });
+
+    return response;
+  } catch (error) {
+    await trace.failure(error, {
+      shipment_id: cleanOptionalString(data && data.shipment_id, 120),
+      quote_id: cleanOptionalString(data && data.quote_id, 120),
+    });
+    throw error;
   }
-  return response;
 });
 
 // =============================================================================
@@ -3550,140 +3964,224 @@ exports.voidShippingLabel = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
   }
+  const trace = createShipStationTrace({
+    operation: "shipstation_label_void",
+    scope: "callable",
+    userId: context.auth.uid,
+    shipmentId: cleanOptionalString(data && data.shipment_id, 120),
+    shipstationShipmentId: cleanOptionalString(data && data.shipstation_shipment_id, 120),
+    labelId: cleanOptionalString(data && data.shipstation_label_id, 120),
+    tags: ["shipstation", "label_void", "callable"],
+  });
 
-  const db = admin.firestore();
-  let shipData = null;
+  await trace.start({
+    request: {
+      shipment_id: cleanOptionalString(data && data.shipment_id, 120),
+      shipstation_shipment_id: cleanOptionalString(data && data.shipstation_shipment_id, 120),
+      shipstation_label_id: cleanOptionalString(data && data.shipstation_label_id, 120),
+    },
+  });
 
-  // Ownership/role check: verify caller owns the shipment or is staff
-  if (data.shipment_id) {
-    const shipDoc = await db.doc("shipments/" + data.shipment_id).get();
-    if (!shipDoc.exists) {
-      throw new functions.https.HttpsError("not-found", "Shipment not found");
-    }
+  try {
+    const db = admin.firestore();
+    let shipData = null;
 
-    shipData = shipDoc.data();
-    const callerUid = context.auth.uid;
-    if (shipData.user_id !== callerUid) {
-      const callerDoc = await db.doc("users/" + callerUid).get();
+    // Ownership/role check: verify caller owns the shipment or is staff
+    if (data.shipment_id) {
+      const shipDoc = await db.doc("shipments/" + data.shipment_id).get();
+      if (!shipDoc.exists) {
+        throw new functions.https.HttpsError("not-found", "Shipment not found");
+      }
+
+      shipData = shipDoc.data();
+      await trace.annotate({
+        shipmentId: data.shipment_id,
+        trackingNumber: shipData.tracking_number,
+        shipstationShipmentId: shipData.shipstation_shipment_id,
+        shipstationV2ShipmentId: shipData.shipstation_v2_shipment_id,
+        labelId: shipData.shipstation_label_id,
+      });
+      const callerUid = context.auth.uid;
+      if (shipData.user_id !== callerUid) {
+        const callerDoc = await db.doc("users/" + callerUid).get();
+        const callerRole = callerDoc.exists ? callerDoc.data().role : "customer";
+        if (!isStaffRole(callerRole)) {
+          throw new functions.https.HttpsError("permission-denied", "You can only void labels for your own shipments");
+        }
+      }
+
+      if (shipData.status === "voided") {
+        throw new functions.https.HttpsError("failed-precondition", "Label already voided");
+      }
+      if (["delivered", "in_transit", "out_for_delivery"].includes(shipData.status)) {
+        throw new functions.https.HttpsError(
+          "failed-precondition",
+          "Cannot void a label that is already " + shipData.status.replace(/_/g, " "),
+        );
+      }
+
+      if (
+        shipData.shipstation_shipment_id &&
+        data.shipstation_shipment_id &&
+        String(shipData.shipstation_shipment_id) !== String(data.shipstation_shipment_id)
+      ) {
+        throw new functions.https.HttpsError("invalid-argument", "ShipStation shipment ID does not match the referenced shipment");
+      }
+    } else {
+      // No shipment_id means we can't verify ownership — require staff role
+      const callerDoc = await db.doc("users/" + context.auth.uid).get();
       const callerRole = callerDoc.exists ? callerDoc.data().role : "customer";
       if (!isStaffRole(callerRole)) {
-        throw new functions.https.HttpsError("permission-denied", "You can only void labels for your own shipments");
+        throw new functions.https.HttpsError("permission-denied", "Staff role required to void labels without shipment reference");
       }
     }
 
-    if (shipData.status === "voided") {
-      throw new functions.https.HttpsError("failed-precondition", "Label already voided");
+    const shipstationShipmentId =
+      data.shipstation_shipment_id ||
+      (shipData && shipData.shipstation_shipment_id) ||
+      null;
+    const shipstationLabelId =
+      data.shipstation_label_id ||
+      (shipData && shipData.shipstation_label_id) ||
+      null;
+
+    if (!shipstationShipmentId && !shipstationLabelId) {
+      throw new functions.https.HttpsError("invalid-argument", "Missing ShipStation shipment or label ID");
     }
-    if (["delivered", "in_transit", "out_for_delivery"].includes(shipData.status)) {
-      throw new functions.https.HttpsError(
-        "failed-precondition",
-        "Cannot void a label that is already " + shipData.status.replace(/_/g, " "),
+
+    let result;
+    let voidMethod = "legacy_shipment";
+    if (shipstationLabelId) {
+      voidMethod = "v2_label";
+      result = await shipstationClient.voidLabelById(
+        shipstationLabelId,
+        trace.toTraceContext({
+          labelId: shipstationLabelId,
+          shipstationShipmentId: shipstationShipmentId,
+        }),
+      );
+    } else {
+      result = await shipstationClient.voidLabel(
+        shipstationShipmentId,
+        trace.toTraceContext({
+          shipstationShipmentId: shipstationShipmentId,
+        }),
       );
     }
+    await trace.event("info", "void_request_sent", {
+      void_method: voidMethod,
+      shipstation_shipment_id: shipstationShipmentId,
+      shipstation_label_id: shipstationLabelId,
+    });
 
-    if (
-      shipData.shipstation_shipment_id &&
-      data.shipstation_shipment_id &&
-      String(shipData.shipstation_shipment_id) !== String(data.shipstation_shipment_id)
-    ) {
-      throw new functions.https.HttpsError("invalid-argument", "ShipStation shipment ID does not match the referenced shipment");
-    }
-  } else {
-    // No shipment_id means we can't verify ownership — require staff role
-    const callerDoc = await db.doc("users/" + context.auth.uid).get();
-    const callerRole = callerDoc.exists ? callerDoc.data().role : "customer";
-    if (!isStaffRole(callerRole)) {
-      throw new functions.https.HttpsError("permission-denied", "Staff role required to void labels without shipment reference");
-    }
-  }
+    if (result.data && result.data.approved) {
+      if (data.shipment_id) {
+        // Reverse billable events with explicit negative entries so invoice math nets to zero.
+        const billableQuery = await db.collection("billable_events")
+          .where("shipment_id", "==", data.shipment_id)
+          .get();
+        const batch = db.batch();
+        const reversalTimestamp = new Date().toISOString();
+        const shipmentRef = db.doc("shipments/" + data.shipment_id);
+        const shippingFinancialRef = db.doc("shipping_financials/" + data.shipment_id);
 
-  const shipstationShipmentId =
-    data.shipstation_shipment_id ||
-    (shipData && shipData.shipstation_shipment_id) ||
-    null;
-
-  if (!shipstationShipmentId) {
-    throw new functions.https.HttpsError("invalid-argument", "Missing ShipStation shipment ID");
-  }
-
-  const result = await shipstationClient.voidLabel(shipstationShipmentId);
-
-  if (result.data && result.data.approved) {
-    if (data.shipment_id) {
-      // Reverse billable events with explicit negative entries so invoice math nets to zero.
-      const billableQuery = await db.collection("billable_events")
-        .where("shipment_id", "==", data.shipment_id)
-        .get();
-      const batch = db.batch();
-      const reversalTimestamp = new Date().toISOString();
-      const shipmentRef = db.doc("shipments/" + data.shipment_id);
-      const shippingFinancialRef = db.doc("shipping_financials/" + data.shipment_id);
-
-      batch.set(shipmentRef, {
-        status: "voided",
-        shipping_label_status: "voided",
-        voided_at: reversalTimestamp,
-        updated_at: reversalTimestamp,
-      }, { merge: true });
-      batch.set(shippingFinancialRef, {
-        status: "voided",
-        voided: true,
-        voided_at: reversalTimestamp,
-        updated_at: reversalTimestamp,
-      }, { merge: true });
-
-      billableQuery.forEach((doc) => {
-        const billable = doc.data();
-        const itemKey = billable.billing_item_id || billable.event_type;
-        if (itemKey !== "shipping") return;
-        if (billable.reversal_of_event_id || billable.voided) return;
-
-        const amount = Number.isFinite(Number(billable.amount))
-          ? Number(billable.amount)
-          : Number(billable.quantity || 0) * Number(billable.rate || 0);
-
-        batch.update(doc.ref, {
+        batch.set(shipmentRef, {
+          status: "voided",
+          shipping_label_status: "voided",
+          voided_at: reversalTimestamp,
+          updated_at: reversalTimestamp,
+          ...buildShipStationTraceFields(trace, "success", {
+            operation: "shipstation_label_void",
+            at: reversalTimestamp,
+          }),
+        }, { merge: true });
+        batch.set(shippingFinancialRef, {
+          status: "voided",
           voided: true,
           voided_at: reversalTimestamp,
-        });
+          updated_at: reversalTimestamp,
+          trace_id: trace.traceId,
+          trace_tags: trace.tags,
+        }, { merge: true });
 
-        const carrierCostVal = Number(billable.carrier_cost) || 0;
-        const marginVal = Number(billable.margin) || 0;
+        billableQuery.forEach((doc) => {
+          const billable = doc.data();
+          const itemKey = billable.billing_item_id || billable.event_type;
+          if (itemKey !== "shipping") return;
+          if (billable.reversal_of_event_id || billable.voided) return;
 
-        const reversalRef = db.collection("billable_events").doc();
-        batch.set(reversalRef, {
-          customer_id: billable.customer_id || (shipData ? shipData.user_id : null),
-          event_type: "shipping_void",
-          billing_item_id: "shipping",
-          description:
-            "Voided shipping label - " +
-            (billable.tracking_number || data.shipment_id),
-          quantity: 1,
-          unit: billable.unit || "label",
-          rate: -Math.abs(amount),
-          amount: -Math.abs(amount),
-          total: -Math.abs(amount),
-          customer_cost: -Math.abs(amount),
-          carrier_cost: -Math.abs(carrierCostVal),
-          margin: -Math.abs(marginVal),
-          carrier_code: billable.carrier_code || null,
-          service_code: billable.service_code || null,
-          source: "shipstation",
-          shipment_id: data.shipment_id,
-          tracking_number: billable.tracking_number || null,
-          invoiced: false,
-          voided: false,
-          reversal_of_event_id: doc.id,
-          created_at: reversalTimestamp,
+          const amount = Number.isFinite(Number(billable.amount))
+            ? Number(billable.amount)
+            : Number(billable.quantity || 0) * Number(billable.rate || 0);
+
+          batch.update(doc.ref, {
+            voided: true,
+            voided_at: reversalTimestamp,
+            trace_id: trace.traceId,
+            trace_tags: trace.tags,
+          });
+
+          const carrierCostVal = Number(billable.carrier_cost) || 0;
+          const marginVal = Number(billable.margin) || 0;
+
+          const reversalRef = db.collection("billable_events").doc();
+          batch.set(reversalRef, {
+            customer_id: billable.customer_id || (shipData ? shipData.user_id : null),
+            event_type: "shipping_void",
+            billing_item_id: "shipping",
+            description:
+              "Voided shipping label - " +
+              (billable.tracking_number || data.shipment_id),
+            quantity: 1,
+            unit: billable.unit || "label",
+            rate: -Math.abs(amount),
+            amount: -Math.abs(amount),
+            total: -Math.abs(amount),
+            customer_cost: -Math.abs(amount),
+            carrier_cost: -Math.abs(carrierCostVal),
+            margin: -Math.abs(marginVal),
+            carrier_code: billable.carrier_code || null,
+            service_code: billable.service_code || null,
+            source: "shipstation",
+            shipment_id: data.shipment_id,
+            tracking_number: billable.tracking_number || null,
+            invoiced: false,
+            voided: false,
+            reversal_of_event_id: doc.id,
+            created_at: reversalTimestamp,
+            trace_id: trace.traceId,
+            trace_tags: trace.tags,
+          });
         });
+        await batch.commit();
+      }
+
+      const response = {
+        success: true,
+        message: "Label voided and billing reversed",
+        trace_id: trace.traceId,
+      };
+      await trace.success({
+        shipment_id: cleanOptionalString(data && data.shipment_id, 120),
+        shipstation_shipment_id: shipstationShipmentId,
+        shipstation_label_id: shipstationLabelId,
+        void_method: voidMethod,
       });
-      await batch.commit();
+      return response;
     }
-    return { success: true, message: "Label voided and billing reversed" };
-  }
 
-  console.error("ShipStation void failed:", JSON.stringify(result.data));
-  throw new functions.https.HttpsError("internal", "Label void failed. Please try again or contact support.");
+    await trace.event("error", "void_failed_response", {
+      shipstation_shipment_id: shipstationShipmentId,
+      shipstation_label_id: shipstationLabelId,
+      void_method: voidMethod,
+    });
+    throw new functions.https.HttpsError("internal", "Label void failed. Please try again or contact support.");
+  } catch (error) {
+    await trace.failure(error, {
+      shipment_id: cleanOptionalString(data && data.shipment_id, 120),
+    });
+    throw error;
+  }
 });
 
 // =============================================================================
@@ -3702,26 +4200,52 @@ exports.shipstationWebhook = functions.https.onRequest(async (req, res) => {
     res.status(405).send("Method Not Allowed");
     return;
   }
+  const payload = req.body || {};
+  const resourceUrl = cleanOptionalString(payload.resource_url, 1000);
+  const resourceType = cleanString(payload.resource_type || payload.event || "unknown", 80);
+  const directTrackingNumber = cleanOptionalString(
+    payload.tracking_number || payload.trackingNumber,
+    120,
+  );
+  const trace = createShipStationTrace({
+    operation: "shipstation_webhook",
+    scope: "http_webhook",
+    resourceType: resourceType,
+    trackingNumber: directTrackingNumber,
+    tags: ["shipstation", "webhook", "http"],
+  });
+
+  await trace.start({
+    request: {
+      method: req.method,
+      resource_type: resourceType,
+      resource_url: resourceUrl,
+      tracking_number: directTrackingNumber,
+      payload_keys: Object.keys(payload).slice(0, 20),
+    },
+  });
 
   try {
-    // Verify webhook secret from query param (ShipStation doesn't sign payloads)
-    const config = functions.config().shipstation || {};
-    const webhookSecret = config.webhook_secret;
-    if (webhookSecret && req.query.secret !== webhookSecret) {
-      console.warn("ShipStation webhook rejected: invalid secret");
+    const db = admin.firestore();
+    let updated = 0;
+    let resourcePayload = null;
+
+    const authResult = verifyShipStationWebhookAuth(req);
+    await trace.event("info", "webhook_auth_checked", {
+      auth_mode: authResult.mode,
+      header_key: authResult.header_key,
+    });
+    if (!authResult.ok) {
+      await trace.event("warn", "webhook_auth_rejected", {
+        auth_mode: authResult.mode,
+      });
+      await trace.success({
+        processed: false,
+        reason: "unauthorized",
+      });
       res.status(401).send("Unauthorized");
       return;
     }
-
-    const payload = req.body || {};
-    const resourceUrl = cleanOptionalString(payload.resource_url, 1000);
-    const resourceType = cleanString(payload.resource_type || payload.event, 80);
-    const directTrackingNumber = cleanOptionalString(
-      payload.tracking_number || payload.trackingNumber,
-      120,
-    );
-    const db = admin.firestore();
-    let updated = 0;
 
     // Idempotency check: skip if we've already processed this exact resource_url
     if (resourceUrl) {
@@ -3730,24 +4254,47 @@ exports.shipstationWebhook = functions.https.onRequest(async (req, res) => {
         .limit(1)
         .get();
       if (!existingWebhook.empty) {
-        res.status(200).json({ received: true, processed: false, reason: "duplicate" });
+        await trace.event("info", "webhook_duplicate_skipped", {
+          resource_url: resourceUrl,
+        });
+        await trace.success({
+          processed: false,
+          reason: "duplicate",
+        });
+        res.status(200).json({
+          received: true,
+          processed: false,
+          reason: "duplicate",
+          trace_id: trace.traceId,
+        });
         return;
       }
     }
 
     if (resourceUrl) {
-      console.log("ShipStation webhook received:", resourceType, resourceUrl);
-      const resourceData = await shipstationClient.fetchResourceUrl(resourceUrl);
-      const resourcePayload = resourceData && resourceData.data ? resourceData.data : null;
+      const resourceData = await shipstationClient.fetchResourceUrl(
+        resourceUrl,
+        trace.toTraceContext({
+          resourceType: resourceType,
+        }),
+      );
+      resourcePayload = resourceData && resourceData.data ? resourceData.data : null;
 
       if (!resourcePayload) {
-        console.warn("ShipStation webhook: empty resource data from", resourceUrl);
+        await trace.event("warn", "webhook_empty_resource_payload", {
+          resource_url: resourceUrl,
+        });
       } else {
         const shipments = Array.isArray(resourcePayload.shipments)
           ? resourcePayload.shipments
           : Array.isArray(resourcePayload)
             ? resourcePayload
             : [resourcePayload];
+
+        await trace.event("info", "webhook_resource_loaded", {
+          resource_url: resourceUrl,
+          shipment_count: shipments.length,
+        });
 
         for (const shipment of shipments) {
           const trackingNumber =
@@ -3763,13 +4310,25 @@ exports.shipstationWebhook = functions.https.onRequest(async (req, res) => {
               .limit(1)
               .get();
           }
+          if ((!query || query.empty) && ssShipmentId !== null) {
+            query = await db.collection("shipments")
+              .where("shipstation_v2_shipment_id", "==", ssShipmentId)
+              .limit(1)
+              .get();
+          }
           if ((!query || query.empty) && trackingNumber) {
             query = await db.collection("shipments")
               .where("tracking_number", "==", trackingNumber)
               .limit(1)
               .get();
           }
-          if (!query || query.empty) continue;
+          if (!query || query.empty) {
+            await trace.event("warn", "webhook_shipment_not_matched", {
+              tracking_number: trackingNumber,
+              shipstation_shipment_id: ssShipmentId,
+            });
+            continue;
+          }
 
           const doc = query.docs[0];
           const currentShipment = doc.data();
@@ -3779,6 +4338,11 @@ exports.shipstationWebhook = functions.https.onRequest(async (req, res) => {
             shipstation_webhook_last_seen_at: now,
             shipstation_shipment_id:
               ssShipmentId || currentShipment.shipstation_shipment_id || null,
+            shipstation_v2_shipment_id:
+              currentShipment.shipstation_v2_shipment_id ||
+              (typeof ssShipmentId === "string" && ssShipmentId.indexOf("se-") === 0
+                ? ssShipmentId
+                : null),
             carrier:
               shipment.carrierCode || currentShipment.carrier || null,
             carrier_name:
@@ -3791,6 +4355,10 @@ exports.shipstationWebhook = functions.https.onRequest(async (req, res) => {
               shipment.serviceCode || currentShipment.service_type || null,
             shipping_label_status:
               currentShipment.shipping_label_status || "created",
+            ...buildShipStationTraceFields(trace, "success", {
+              operation: "shipstation_webhook",
+              at: now,
+            }),
           };
 
           if (shipment.voided) {
@@ -3819,15 +4387,31 @@ exports.shipstationWebhook = functions.https.onRequest(async (req, res) => {
 
           if (updateData.tracking_number || currentShipment.tracking_number) {
             try {
-              await syncShipStationTrackingForShipment(doc.ref, {
-                ...currentShipment,
-                ...updateData,
-              });
-            } catch (syncError) {
-              console.warn(
-                "ShipStation webhook tracking sync failed:",
-                syncError.message || syncError,
+              await syncShipStationTrackingForShipment(
+                doc.ref,
+                {
+                  ...currentShipment,
+                  ...updateData,
+                },
+                trace.child({
+                  operation: "shipstation_tracking_sync",
+                  scope: "webhook_child",
+                  shipmentId: doc.id,
+                  trackingNumber:
+                    updateData.tracking_number || currentShipment.tracking_number,
+                  shipstationShipmentId:
+                    updateData.shipstation_shipment_id || currentShipment.shipstation_shipment_id,
+                  shipstationV2ShipmentId:
+                    updateData.shipstation_v2_shipment_id || currentShipment.shipstation_v2_shipment_id,
+                  labelId: currentShipment.shipstation_label_id || null,
+                  tags: ["webhook_sync"],
+                }),
               );
+            } catch (syncError) {
+              await trace.event("warn", "webhook_tracking_sync_failed", {
+                shipment_id: doc.id,
+                error: shipstationObservability.sanitizeShipStationError(syncError),
+              });
             }
           }
         }
@@ -3842,10 +4426,29 @@ exports.shipstationWebhook = functions.https.onRequest(async (req, res) => {
         await syncShipStationTrackingForShipment(
           query.docs[0].ref,
           query.docs[0].data(),
+          trace.child({
+            operation: "shipstation_tracking_sync",
+            scope: "webhook_child",
+            shipmentId: query.docs[0].id,
+            trackingNumber: directTrackingNumber,
+            shipstationShipmentId: query.docs[0].data().shipstation_shipment_id || null,
+            shipstationV2ShipmentId: query.docs[0].data().shipstation_v2_shipment_id || null,
+            labelId: query.docs[0].data().shipstation_label_id || null,
+            tags: ["webhook_tracking_only"],
+          }),
         );
         updated = 1;
+      } else {
+        await trace.event("warn", "tracking_only_webhook_not_matched", {
+          tracking_number: directTrackingNumber,
+        });
       }
     } else {
+      await trace.event("warn", "webhook_missing_identifiers", {});
+      await trace.success({
+        processed: false,
+        reason: "missing_identifiers",
+      });
       res.status(400).send("Missing resource_url or tracking_number");
       return;
     }
@@ -3854,26 +4457,51 @@ exports.shipstationWebhook = functions.https.onRequest(async (req, res) => {
     await db.collection("shipstation_webhooks").add({
       resource_type: resourceType,
       resource_url: resourceUrl,
+      tracking_number: directTrackingNumber,
       shipments_updated: updated,
       received_at: new Date().toISOString(),
+      status: "processed",
+      trace_id: trace.traceId,
+      trace_tags: trace.tags,
+      auth_mode: authResult.mode,
+      payload_summary: shipstationObservability.summarizeResourcePayload(resourcePayload),
     });
 
-    res.status(200).json({ received: true, processed: true, updated: updated });
+    await trace.success({
+      processed: true,
+      shipments_updated: updated,
+      resource_type: resourceType,
+    });
+    res.status(200).json({
+      received: true,
+      processed: true,
+      updated: updated,
+      trace_id: trace.traceId,
+    });
   } catch (err) {
-    console.error("ShipStation webhook error:", err);
+    await trace.failure(err, {
+      resource_type: resourceType,
+      resource_url: resourceUrl,
+    });
     // Store failed webhook for dead letter / retry
     try {
       const db = admin.firestore();
       await db.collection("shipstation_webhooks").add({
-        resource_type: req.body && req.body.resource_type || "unknown",
-        resource_url: req.body && req.body.resource_url || null,
+        resource_type: resourceType,
+        resource_url: resourceUrl,
+        tracking_number: directTrackingNumber,
         shipments_updated: 0,
         error: err.message || String(err),
         status: "failed",
         received_at: new Date().toISOString(),
+        trace_id: trace.traceId,
+        trace_tags: trace.tags,
       });
     } catch (dlErr) {
-      console.error("Failed to store dead letter webhook:", dlErr);
+      logger.error("Failed to store dead letter webhook", {
+        trace_id: trace.traceId,
+        error: shipstationObservability.sanitizeShipStationError(dlErr),
+      });
     }
     res.status(500).send("Internal error");
   }
@@ -6209,40 +6837,73 @@ exports.woocommerceOrderCreated = functions.https.onRequest(
 exports.syncCarrierTracking = functions.pubsub
   .schedule("every 1 hours")
   .onRun(async () => {
-    const db = admin.firestore();
-    const shipments = await db
-      .collection("shipments")
-      .orderBy("updated_at", "desc")
-      .limit(100)
-      .get();
+    const trace = createShipStationTrace({
+      operation: "shipstation_tracking_batch",
+      scope: "scheduler",
+      tags: ["shipstation", "tracking_sync", "scheduler"],
+    });
 
-    let synced = 0;
-    let skipped = 0;
+    await trace.start({
+      request: {
+        schedule: "every 1 hours",
+      },
+    });
 
-    for (const doc of shipments.docs) {
-      const shipment = doc.data();
-      if (
-        !shipment.shipstation_shipment_id ||
-        !shipment.tracking_number ||
-        ["voided", "delivered"].includes(shipment.status)
-      ) {
-        skipped++;
-        continue;
+    try {
+      const db = admin.firestore();
+      const shipments = await db
+        .collection("shipments")
+        .orderBy("updated_at", "desc")
+        .limit(100)
+        .get();
+
+      let synced = 0;
+      let skipped = 0;
+
+      for (const doc of shipments.docs) {
+        const shipment = doc.data();
+        if (
+          (!shipment.shipstation_shipment_id && !shipment.shipstation_v2_shipment_id) ||
+          !shipment.tracking_number ||
+          ["voided", "delivered"].includes(shipment.status)
+        ) {
+          skipped++;
+          continue;
+        }
+
+        try {
+          await syncShipStationTrackingForShipment(
+            doc.ref,
+            shipment,
+            trace.child({
+              operation: "shipstation_tracking_sync",
+              scope: "scheduler_child",
+              shipmentId: doc.id,
+              trackingNumber: shipment.tracking_number || null,
+              shipstationShipmentId: shipment.shipstation_shipment_id || null,
+              shipstationV2ShipmentId: shipment.shipstation_v2_shipment_id || null,
+              labelId: shipment.shipstation_label_id || null,
+              tags: ["scheduler_child"],
+            }),
+          );
+          synced++;
+        } catch (error) {
+          await trace.event("warn", "scheduled_tracking_sync_failed", {
+            shipment_id: doc.id,
+            error: shipstationObservability.sanitizeShipStationError(error),
+          });
+        }
       }
 
-      try {
-        await syncShipStationTrackingForShipment(doc.ref, shipment);
-        synced++;
-      } catch (error) {
-        console.warn(
-          "Carrier tracking sync failed for",
-          doc.id,
-          error.message || error,
-        );
-      }
+      await trace.success({
+        synced: synced,
+        skipped: skipped,
+      });
+      return { synced: synced, skipped: skipped, trace_id: trace.traceId };
+    } catch (error) {
+      await trace.failure(error, {});
+      throw error;
     }
-
-    return { synced: synced, skipped: skipped };
   });
 
 // =============================================================================

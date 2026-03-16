@@ -2,6 +2,14 @@
 
 Cloud Functions for Stripe payment processing.
 
+## ShipStation
+
+The ShipStation integration now includes structured tracing, webhook audit records, and per-shipment trace fields.
+
+Runbook:
+
+- [`docs/SHIPSTATION_OBSERVABILITY.md`](/Users/yuri/miamialliance3pl/docs/SHIPSTATION_OBSERVABILITY.md)
+
 ## Setup
 
 ### Prerequisites
