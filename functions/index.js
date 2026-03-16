@@ -3505,6 +3505,7 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
     }
 
     const db = admin.firestore();
+    let consumedQuoteId = null;
 
     // Optional: validate against a stored quote to prevent price tampering
     if (data.quote_id) {
@@ -3526,11 +3527,12 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
       if (new Date(quote.expires_at) < new Date()) {
         throw new functions.https.HttpsError("failed-precondition", "Quote has expired. Please refresh rates.");
       }
+      consumedQuoteId = safeQuoteId;
       const quoteUsedAt = new Date().toISOString();
       await quoteDoc.ref.update({
         status: "used",
         used_at: quoteUsedAt,
-        ...buildShipStationTraceFields(trace, "success", {
+        ...buildShipStationTraceFields(trace, "running", {
           operation: "shipstation_label_purchase",
           at: quoteUsedAt,
         }),
@@ -3915,6 +3917,23 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
       }, { merge: true });
     }
 
+    if (consumedQuoteId) {
+      const quoteLinkedAt = new Date().toISOString();
+      await db.doc("shipping_quotes/" + consumedQuoteId).set({
+        shipment_id: shipmentRef.id,
+        tracking_number: label.trackingNumber,
+        shipstation_shipment_id: label.shipmentId,
+        shipstation_v2_shipment_id: shipstationV2ShipmentId,
+        shipstation_label_id: shipstationLabelId,
+        purchase_status: "completed",
+        purchase_completed_at: quoteLinkedAt,
+        ...buildShipStationTraceFields(trace, "success", {
+          operation: "shipstation_label_purchase",
+          at: quoteLinkedAt,
+        }),
+      }, { merge: true });
+    }
+
     const response = {
       success: true,
       tracking_number: label.trackingNumber,
@@ -3948,6 +3967,28 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
 
     return response;
   } catch (error) {
+    if (data && data.quote_id) {
+      const failedQuoteId = cleanString(data.quote_id, 128).replace(/[^a-zA-Z0-9_-]/g, "");
+      if (failedQuoteId) {
+        try {
+          const quoteFailedAt = new Date().toISOString();
+          await admin.firestore().doc("shipping_quotes/" + failedQuoteId).set({
+            purchase_status: "failed",
+            purchase_failed_at: quoteFailedAt,
+            purchase_error: error.message || String(error),
+            ...buildShipStationTraceFields(trace, "error", {
+              operation: "shipstation_label_purchase",
+              at: quoteFailedAt,
+            }),
+          }, { merge: true });
+        } catch (quoteUpdateError) {
+          await trace.event("warn", "quote_failure_trace_update_failed", {
+            quote_id: data.quote_id,
+            error: shipstationObservability.sanitizeShipStationError(quoteUpdateError),
+          });
+        }
+      }
+    }
     await trace.failure(error, {
       shipment_id: cleanOptionalString(data && data.shipment_id, 120),
       quote_id: cleanOptionalString(data && data.quote_id, 120),

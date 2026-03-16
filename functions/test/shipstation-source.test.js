@@ -109,6 +109,9 @@ const sandbox = {
   isNaN,
   Promise,
   encodeURIComponent,
+  functions: {
+    config: () => ({ shipstation: {} }),
+  },
   // STATUS_RANK is a const, not a function — inject directly
   STATUS_RANK: {
     pending: 0, shipped: 1, in_transit: 2, out_for_delivery: 3,
@@ -119,6 +122,7 @@ const sandbox = {
 [
   "cleanString",
   "cleanOptionalString",
+  "verifyShipStationWebhookAuth",
   "roundCurrency",
   "buildPortalTrackingNumber",
   "normalizePortalDestination",
@@ -257,6 +261,47 @@ describe("ShipStation source helpers", function () {
       sandbox.mapShipStationTrackingToShipmentStatus({}),
       null,
     );
+  });
+
+  it("prefers explicit webhook header auth when configured", function () {
+    sandbox.functions.config = () => ({
+      shipstation: {
+        webhook_header_key: "x-shipstation-secret",
+        webhook_header_value: "topsecret",
+        webhook_secret: "legacy-secret",
+      },
+    });
+
+    const result = sandbox.verifyShipStationWebhookAuth({
+      query: { secret: "wrong" },
+      get: (headerName) => headerName === "x-shipstation-secret" ? "topsecret" : null,
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.mode, "header");
+    assert.equal(result.header_key, "x-shipstation-secret");
+  });
+
+  it("falls back to query or x-shipstation-secret when only legacy secret is configured", function () {
+    sandbox.functions.config = () => ({
+      shipstation: {
+        webhook_secret: "legacy-secret",
+      },
+    });
+
+    const headerMatch = sandbox.verifyShipStationWebhookAuth({
+      query: {},
+      get: (headerName) => headerName === "x-shipstation-secret" ? "legacy-secret" : null,
+    });
+    const queryMatch = sandbox.verifyShipStationWebhookAuth({
+      query: { secret: "legacy-secret" },
+      get: () => null,
+    });
+
+    assert.equal(headerMatch.ok, true);
+    assert.equal(headerMatch.mode, "header_fallback");
+    assert.equal(queryMatch.ok, true);
+    assert.equal(queryMatch.mode, "query");
   });
 });
 
