@@ -2530,6 +2530,26 @@ async function getAuthoritativeLiveRateQuote(
   };
 }
 
+const STATUS_RANK = {
+  pending: 0,
+  shipped: 1,
+  in_transit: 2,
+  out_for_delivery: 3,
+  delivered: 4,
+  returned: 5,
+  exception: 5,
+  voided: 5,
+};
+
+function canAdvanceStatus(currentStatus, newStatus) {
+  if (!newStatus) return false;
+  // Voided/returned/exception are terminal — can override anything
+  if (["voided", "returned", "exception"].includes(newStatus)) return true;
+  const currentRank = STATUS_RANK[currentStatus] || 0;
+  const newRank = STATUS_RANK[newStatus] || 0;
+  return newRank > currentRank;
+}
+
 function mapShipStationTrackingToShipmentStatus(trackingData) {
   const statusText = cleanString(
     trackingData.status_description ||
@@ -2670,7 +2690,7 @@ async function syncShipStationTrackingForShipment(shipmentRef, shipmentData) {
     updated_at: new Date().toISOString(),
   };
 
-  if (nextStatus && nextStatus !== shipmentData.status) {
+  if (nextStatus && canAdvanceStatus(shipmentData.status, nextStatus)) {
     updateData.status = nextStatus;
   }
 
@@ -3644,11 +3664,7 @@ exports.shipstationWebhook = functions.https.onRequest(async (req, res) => {
           if (shipment.voided) {
             updateData.status = "voided";
             updateData.shipping_label_status = "voided";
-          } else if (
-            !["voided", "in_transit", "out_for_delivery", "delivered"].includes(
-              currentShipment.status || "pending",
-            )
-          ) {
+          } else if (canAdvanceStatus(currentShipment.status || "pending", "shipped")) {
             updateData.status = "shipped";
           }
 

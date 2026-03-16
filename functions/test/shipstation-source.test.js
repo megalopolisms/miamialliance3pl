@@ -103,11 +103,17 @@ const sandbox = {
   String,
   Boolean,
   Date,
+  Array,
   parseInt,
   parseFloat,
   isNaN,
   Promise,
   encodeURIComponent,
+  // STATUS_RANK is a const, not a function — inject directly
+  STATUS_RANK: {
+    pending: 0, shipped: 1, in_transit: 2, out_for_delivery: 3,
+    delivered: 4, returned: 5, exception: 5, voided: 5,
+  },
 };
 
 [
@@ -117,6 +123,7 @@ const sandbox = {
   "buildPortalTrackingNumber",
   "normalizePortalDestination",
   "isStaffRole",
+  "canAdvanceStatus",
   "getZoneFromZip",
   "toolGetShippingRates",
   "normalizeLegacyRateResponse",
@@ -301,5 +308,30 @@ describe("Utility helpers (extracted from source)", function () {
     assert.equal(sandbox.isStaffRole("customer"), false);
     assert.equal(sandbox.isStaffRole(null), false);
     assert.equal(sandbox.isStaffRole(undefined), false);
+  });
+
+  it("canAdvanceStatus prevents status downgrades", function () {
+    // Forward transitions
+    assert.equal(sandbox.canAdvanceStatus("pending", "shipped"), true);
+    assert.equal(sandbox.canAdvanceStatus("shipped", "in_transit"), true);
+    assert.equal(sandbox.canAdvanceStatus("in_transit", "out_for_delivery"), true);
+    assert.equal(sandbox.canAdvanceStatus("out_for_delivery", "delivered"), true);
+
+    // Backward transitions blocked
+    assert.equal(sandbox.canAdvanceStatus("delivered", "shipped"), false);
+    assert.equal(sandbox.canAdvanceStatus("in_transit", "shipped"), false);
+    assert.equal(sandbox.canAdvanceStatus("delivered", "in_transit"), false);
+
+    // Same status blocked
+    assert.equal(sandbox.canAdvanceStatus("shipped", "shipped"), false);
+
+    // Terminal statuses always allowed
+    assert.equal(sandbox.canAdvanceStatus("delivered", "voided"), true);
+    assert.equal(sandbox.canAdvanceStatus("in_transit", "returned"), true);
+    assert.equal(sandbox.canAdvanceStatus("shipped", "exception"), true);
+
+    // Null new status blocked
+    assert.equal(sandbox.canAdvanceStatus("pending", null), false);
+    assert.equal(sandbox.canAdvanceStatus("pending", undefined), false);
   });
 });
