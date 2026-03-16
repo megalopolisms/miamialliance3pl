@@ -1388,25 +1388,35 @@
             await loadAllData();
         });
 
-        // ===== LOAD ALL DATA =====
+        // ===== LOAD ALL DATA (resilient — each loader isolated) =====
         async function loadAllData() {
-            try {
-                await Promise.all([
-                    loadUsers(),
-                    loadShipments(),
-                    loadPickups(),
-                    loadQuotes(),
-                    loadDocuments(),
-                    loadPricing(),
-                    loadDailyTasks()
-                ]);
-                updateStats();
-                renderNewRequests();
-                populateCustomerDropdown();
-            } catch (e) {
-                console.error('Error loading data:', e);
-                showToast('Error loading some data: ' + e.message, true);
+            const loaders = [
+                { name: 'users', fn: loadUsers },
+                { name: 'shipments', fn: loadShipments },
+                { name: 'pickups', fn: loadPickups },
+                { name: 'quotes', fn: loadQuotes },
+                { name: 'documents', fn: loadDocuments },
+                { name: 'pricing', fn: loadPricing },
+                { name: 'daily-tasks', fn: loadDailyTasks }
+            ];
+
+            const results = await Promise.allSettled(loaders.map(l => l.fn()));
+            const failures = [];
+            results.forEach((r, i) => {
+                if (r.status === 'rejected') {
+                    console.error(`Failed to load ${loaders[i].name}:`, r.reason);
+                    failures.push(loaders[i].name);
+                }
+            });
+
+            if (failures.length > 0) {
+                showToast('Some data failed to load: ' + failures.join(', ') + '. Other sections are still available.', true);
             }
+
+            // Always attempt UI updates with whatever data loaded successfully
+            try { updateStats(); } catch (e) { console.warn('Stats update partial:', e.message); }
+            try { renderNewRequests(); } catch (e) { console.warn('Render requests partial:', e.message); }
+            try { populateCustomerDropdown(); } catch (e) { console.warn('Dropdown partial:', e.message); }
         }
 
         // ===== LOAD USERS =====

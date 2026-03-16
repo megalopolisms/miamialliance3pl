@@ -488,7 +488,10 @@
                 if (userDoc.exists() && userDoc.data().role === 'admin') {
                     isAdmin = true;
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error('Failed to verify admin role:', e.message);
+                // Admin check failed — deny access for safety
+            }
 
             if (!isAdmin) {
                 window.location.href = 'dashboard.html';

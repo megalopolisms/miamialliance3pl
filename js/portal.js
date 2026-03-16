@@ -390,8 +390,12 @@ class ModalManager {
         footer: true,
       });
 
-      modal.querySelector(".modal-body").innerHTML =
-        `<p style="margin:0;">${message}</p>`;
+      const bodyEl = modal.querySelector(".modal-body");
+      const msgP = document.createElement("p");
+      msgP.style.margin = "0";
+      msgP.textContent = message;
+      bodyEl.innerHTML = "";
+      bodyEl.appendChild(msgP);
       modal.querySelector(".modal-footer").innerHTML = `
                 <button class="btn btn-outline modal-cancel">Cancel</button>
                 <button class="btn btn-primary modal-confirm">${options.confirmText || "Confirm"}</button>
