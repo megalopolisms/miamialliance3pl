@@ -128,7 +128,9 @@ function requestWithOptions(options, body) {
     });
 
     if (body !== null && body !== undefined) {
-      req.write(JSON.stringify(body));
+      var bodyStr = JSON.stringify(body);
+      req.setHeader("Content-Length", Buffer.byteLength(bodyStr));
+      req.write(bodyStr);
     }
     req.end();
   });

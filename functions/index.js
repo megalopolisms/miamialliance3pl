@@ -3193,6 +3193,27 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
   }
 
   const db = admin.firestore();
+
+  // Optional: validate against a stored quote to prevent price tampering
+  if (data.quote_id) {
+    const quoteDoc = await db.doc("shipping_quotes/" + data.quote_id).get();
+    if (!quoteDoc.exists) {
+      throw new functions.https.HttpsError("not-found", "Quote not found — rates may have expired. Please refresh rates.");
+    }
+    const quote = quoteDoc.data();
+    if (quote.user_id !== context.auth.uid) {
+      throw new functions.https.HttpsError("permission-denied", "Quote does not belong to you");
+    }
+    if (quote.status !== "open") {
+      throw new functions.https.HttpsError("failed-precondition", "Quote has already been used or expired");
+    }
+    if (new Date(quote.expires_at) < new Date()) {
+      throw new functions.https.HttpsError("failed-precondition", "Quote has expired. Please refresh rates.");
+    }
+    // Mark quote as used
+    await quoteDoc.ref.update({ status: "used", used_at: new Date().toISOString() });
+  }
+
   let existingShipmentData = null;
   let ownerUserId = context.auth.uid;
   let callerRole = "customer";
