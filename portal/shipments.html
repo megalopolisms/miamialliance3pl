@@ -1625,10 +1625,12 @@
                         <div class="quote-control-group">
                             <label class="quote-label" data-i18n="quote.zone.label">Shipping Zone</label>
                             <select id="sc-zone" class="zone-select">
-                                <option value="local" data-i18n="quote.zone.local">Local (FL)</option>
+                                <option value="none" selected data-i18n="quote.zone.none">No Shipping Required</option>
+                                <option value="localDelivery">🚚 Local Delivery (Flat Rate)</option>
+                                <option value="pickup">🏭 Warehouse Pick Up (Flat Rate)</option>
+                                <option value="local" data-i18n="quote.zone.local">Local (FL) — Weight Based</option>
                                 <option value="regional" data-i18n="quote.zone.regional">Regional (Southeast)</option>
                                 <option value="national" data-i18n="quote.zone.national">National</option>
-                                <option value="none" selected data-i18n="quote.zone.none">No Shipping Required</option>
                                 <option value="dropship" data-i18n="quote.zone.dropship">Shipping by Units (Drop Ship)</option>
                             </select>
                         </div>
@@ -2582,7 +2584,9 @@
                 blackWrapping: 7.0,
                 storageDays: 30,
                 minStorage: 5.0,
-                shippingZones: { local: 0.45, regional: 0.65, national: 0.85, none: 0, dropship: 0 },
+                shippingZones: { local: 0.45, regional: 0.65, national: 0.85, none: 0, dropship: 0, localDelivery: 0, pickup: 0 },
+                localDeliveryFlat: { box: 75.0, pallet: 150.0 },
+                pickupFlat: { box: 25.0, pallet: 50.0 },
                 dropShipRates: { envelope: 1.5, small: 3.0, medium: 5.0, large: 20.0 },
                 fbaPrep: {
                     fnskuLabeling: { rate: 0.3, label: 'FNSKU Labeling', unit: 'unit' },
@@ -2794,8 +2798,16 @@
                 pickPack = PRICING.pickAndPack * sc.quantity;
             }
             storage = Math.max(storage, PRICING.minStorage);
-            let shipping = (sc.shippingZone === 'none' || sc.shippingZone === 'dropship')
-                ? 0 : billableWeight * PRICING.shippingZones[sc.shippingZone] * sc.quantity;
+            let shipping = 0;
+            if (sc.shippingZone === 'localDelivery') {
+                const pkgKey = sc.packageType === 'pallet' ? 'pallet' : 'box';
+                shipping = PRICING.localDeliveryFlat[pkgKey] * sc.quantity;
+            } else if (sc.shippingZone === 'pickup') {
+                const pkgKey = sc.packageType === 'pallet' ? 'pallet' : 'box';
+                shipping = PRICING.pickupFlat[pkgKey] * sc.quantity;
+            } else if (sc.shippingZone !== 'none' && sc.shippingZone !== 'dropship') {
+                shipping = billableWeight * PRICING.shippingZones[sc.shippingZone] * sc.quantity;
+            }
             let wrapping = (sc.packageType === 'pallet' && sc.blackWrapping) ? PRICING.blackWrapping * sc.quantity : 0;
             let dropship = 0;
             if (sc.shippingZone === 'dropship') {
@@ -2821,7 +2833,7 @@
 
         function getZoneLabel(zone) {
             if (QuoteEngine) return QuoteEngine.getZoneLabel(zone);
-            const labels = { local: 'Local (Florida)', regional: 'Regional (Southeast)', national: 'National', none: 'No Shipping', dropship: 'Drop Ship' };
+            const labels = { local: 'Local (Florida)', regional: 'Regional (Southeast)', national: 'National', none: 'No Shipping', dropship: 'Drop Ship', localDelivery: 'Local Delivery (Flat Rate)', pickup: 'Warehouse Pick Up (Flat Rate)' };
             return labels[zone] || zone;
         }
 

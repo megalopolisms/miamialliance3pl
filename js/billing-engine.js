@@ -21,7 +21,11 @@
           national: 0.85,
           none: 0,
           dropship: 0,
+          localDelivery: 0,
+          pickup: 0,
         },
+        localDeliveryFlat: { box: 75.0, pallet: 150.0 },
+        pickupFlat: { box: 25.0, pallet: 50.0 },
         dropShipRates: {
           envelope: 1.5,
           small: 3.0,
@@ -516,6 +520,22 @@
     return BASE_PRICING.shippingZones.regional;
   }
 
+  function isFlatRateZone(zone) {
+    return zone === "localDelivery" || zone === "pickup";
+  }
+
+  function getFlatRateShipping(zone, packageType, quantity) {
+    const pkgKey = packageType === "pallet" ? "pallet" : "box";
+    const qty = Math.max(quantity || 1, 1);
+    if (zone === "localDelivery") {
+      return roundCurrency(BASE_PRICING.localDeliveryFlat[pkgKey] * qty);
+    }
+    if (zone === "pickup") {
+      return roundCurrency(BASE_PRICING.pickupFlat[pkgKey] * qty);
+    }
+    return 0;
+  }
+
   function getDropshipUnits(dropShipQty) {
     const sizes = dropShipQty || {};
     return (
@@ -883,22 +903,33 @@
               "shipping",
               allowGenericGroupOverrides,
             );
-            let quantity = Math.max(roundQuantity(group.shippingQuantity), quoteAmount > 0 ? 1 : 0);
-            const unit = "lb";
-            let baseRate =
-              quantity > 0 && quoteAmount > 0
-                ? quoteAmount / quantity
-                : getShippingRate(zone);
-            let rate = override.rate !== null ? override.rate : baseRate;
-            let amount =
-              override.amount !== null
+            let quantity, unit, baseRate, rate, amount, detail;
+
+            if (isFlatRateZone(zone)) {
+              quantity = Math.max(roundQuantity(group.quantity || qty), 1);
+              unit = "ea";
+              const flatAmount = getFlatRateShipping(zone, group.packageType || pkgType, quantity);
+              baseRate = quantity > 0 ? flatAmount / quantity : 0;
+              rate = override.rate !== null ? override.rate : baseRate;
+              amount = override.amount !== null ? override.amount : flatAmount;
+              if (override.amount !== null && quantity > 0 && override.rate === null) {
+                rate = amount / quantity;
+              }
+              detail = groupName + ", " + zone + " (flat rate), " + quantity + " unit(s)";
+            } else {
+              quantity = Math.max(roundQuantity(group.shippingQuantity), quoteAmount > 0 ? 1 : 0);
+              unit = "lb";
+              baseRate = quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : getShippingRate(zone);
+              rate = override.rate !== null ? override.rate : baseRate;
+              amount = override.amount !== null
                 ? override.amount
                 : override.rate !== null || quoteAmount <= 0
                   ? quantity * rate
                   : quoteAmount;
-
-            if (override.amount !== null && quantity > 0 && override.rate === null) {
-              rate = amount / quantity;
+              if (override.amount !== null && quantity > 0 && override.rate === null) {
+                rate = amount / quantity;
+              }
+              detail = groupName + ", " + zone + " zone, " + roundQuantity(group.shippingQuantity).toFixed(1) + " billable lbs";
             }
 
             addCharge({
@@ -913,13 +944,7 @@
               quoteAmount: quoteAmount,
               rateMeta: rateMeta,
               override: override,
-              detail:
-                groupName +
-                ", " +
-                zone +
-                " zone, " +
-                roundQuantity(group.shippingQuantity).toFixed(1) +
-                " billable lbs",
+              detail: detail,
             });
           })();
         }
@@ -1100,22 +1125,33 @@
           let quoteAmount = getQuoteAmount(shipment, "shipping");
           const rateMeta = getRateMeta(pricingData, customerRateIndex, "shipping", customerId);
           const override = overrides.shipping || normalizeLineOverride();
-          let quantity = Math.max(roundQuantity(billableWeight * qty), 1);
-          const unit = "lb";
-          let baseRate =
-            quantity > 0 && quoteAmount > 0
-              ? quoteAmount / quantity
-              : getShippingRate(zone);
-          let rate = override.rate !== null ? override.rate : baseRate;
-          let amount =
-            override.amount !== null
+          let quantity, unit, baseRate, rate, amount, detail;
+
+          if (isFlatRateZone(zone)) {
+            quantity = Math.max(qty, 1);
+            unit = "ea";
+            const flatAmount = getFlatRateShipping(zone, pkgType, quantity);
+            baseRate = quantity > 0 ? flatAmount / quantity : 0;
+            rate = override.rate !== null ? override.rate : baseRate;
+            amount = override.amount !== null ? override.amount : flatAmount;
+            if (override.amount !== null && quantity > 0 && override.rate === null) {
+              rate = amount / quantity;
+            }
+            detail = zone + " (flat rate), " + quantity + " unit(s)";
+          } else {
+            quantity = Math.max(roundQuantity(billableWeight * qty), 1);
+            unit = "lb";
+            baseRate = quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : getShippingRate(zone);
+            rate = override.rate !== null ? override.rate : baseRate;
+            amount = override.amount !== null
               ? override.amount
               : override.rate !== null || quoteAmount <= 0
                 ? quantity * rate
                 : quoteAmount;
-
-          if (override.amount !== null && quantity > 0 && override.rate === null) {
-            rate = amount / quantity;
+            if (override.amount !== null && quantity > 0 && override.rate === null) {
+              rate = amount / quantity;
+            }
+            detail = zone + " zone, " + billableWeight.toFixed(1) + " billable lbs x " + qty;
           }
 
           addCharge({
@@ -1129,12 +1165,7 @@
             quoteAmount: quoteAmount,
             rateMeta: rateMeta,
             override: override,
-            detail:
-              zone +
-              " zone, " +
-              billableWeight.toFixed(1) +
-              " billable lbs x " +
-              qty,
+            detail: detail,
           });
         })();
       }

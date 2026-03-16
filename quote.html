@@ -367,10 +367,12 @@
                         <div class="quote-control-group">
                             <label class="quote-label" data-i18n="quote.zone.label">Shipping Zone</label>
                             <select id="shipping-zone" class="zone-select">
-                                <option value="local" data-i18n="quote.zone.local">Local (FL)</option>
+                                <option value="none" selected data-i18n="quote.zone.none">No Shipping Required</option>
+                                <option value="localDelivery">🚚 Local Delivery (Flat Rate)</option>
+                                <option value="pickup">🏭 Warehouse Pick Up (Flat Rate)</option>
+                                <option value="local" data-i18n="quote.zone.local">Local (FL) — Weight Based</option>
                                 <option value="regional" data-i18n="quote.zone.regional">Regional (Southeast)</option>
                                 <option value="national" data-i18n="quote.zone.national">National</option>
-                                <option value="none" selected data-i18n="quote.zone.none">No Shipping Required</option>
                                 <option value="dropship" data-i18n="quote.zone.dropship">Shipping by Units (Drop Ship)</option>
                             </select>
                         </div>

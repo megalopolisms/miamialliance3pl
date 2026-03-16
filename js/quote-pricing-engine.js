@@ -57,7 +57,12 @@
       national: 0.85,
       none: 0,
       dropship: 0,
+      localDelivery: 0,
+      pickup: 0,
     },
+    /* Flat-rate fees for local delivery and warehouse pickup (NOT weight-based) */
+    localDeliveryFlat: { box: 75.0, pallet: 150.0 },
+    pickupFlat: { box: 25.0, pallet: 50.0 },
     dropShipRates: {
       envelope: 1.5,
       small: 3.0,
@@ -189,6 +194,8 @@
       national: "National",
       none: "No Shipping",
       dropship: "Drop Ship",
+      localDelivery: "Local Delivery (Flat Rate)",
+      pickup: "Warehouse Pick Up (Flat Rate)",
     };
     return labels[zone] || zone;
   }
@@ -214,6 +221,10 @@
       pickPack = PRICING.palletPickPack * config.quantity;
       if (config.shippingZone === "dropship") {
         dropship = getDropShipTotal(config.dropShipQty);
+      } else if (config.shippingZone === "localDelivery") {
+        shipping = PRICING.localDeliveryFlat.pallet * config.quantity;
+      } else if (config.shippingZone === "pickup") {
+        shipping = PRICING.pickupFlat.pallet * config.quantity;
       } else if (config.shippingZone !== "none") {
         shipping =
           billableWeight *
@@ -233,6 +244,10 @@
       pickPack = PRICING.pickAndPack * config.quantity;
       if (config.shippingZone === "dropship") {
         dropship = getDropShipTotal(config.dropShipQty);
+      } else if (config.shippingZone === "localDelivery") {
+        shipping = PRICING.localDeliveryFlat.box * config.quantity;
+      } else if (config.shippingZone === "pickup") {
+        shipping = PRICING.pickupFlat.box * config.quantity;
       } else if (config.shippingZone !== "none") {
         shipping =
           billableWeight *
