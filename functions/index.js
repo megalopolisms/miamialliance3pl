@@ -122,6 +122,7 @@
 
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const logger = require("firebase-functions/logger");
 
 // Initialize Firebase Admin SDK
 admin.initializeApp();
@@ -133,6 +134,7 @@ const stripe = require("stripe")(
 
 // ShipStation API client (SS-001)
 const shipstationClient = require("./shipstation-client");
+const shipstationObservability = require("./shipstation-observability");
 const shippingPricing = require("./shipping-pricing");
 
 // Markup defaults (SS-004)
@@ -1931,15 +1933,6 @@ function getZoneFromZip(zip) {
 // =============================================================================
 
 /**
- * Apply configurable markup to a carrier shipping cost.
- * Supports percentage, flat fee, and weight-based tiered markup.
- *
- * @param {number} carrierCost - Raw cost from ShipStation (shipmentCost + otherCost)
- * @param {number} weightLbs - Package weight in pounds
- * @param {object} markupConfig - Markup configuration from settings/shipping
- * @returns {number} Customer-facing price (rounded to 2 decimals)
- */
-/**
  * Resolve the effective markup config with service > carrier > default precedence.
  * @param {object} markupConfig - Full markup config from settings/shipping
  * @param {string} [carrierCode] - e.g., "ups"
@@ -2043,7 +2036,7 @@ function normalizeLegacyRateResponse(legacyResult) {
   };
 }
 
-async function buildLegacyRateFallbackResponse(data, isAdmin) {
+async function buildLegacyRateFallbackResponse(data, isStaff) {
   const fallbackResponse = normalizeLegacyRateResponse(
     await toolGetShippingRates({
       weight_lbs: data.weight_lbs,
@@ -2052,7 +2045,7 @@ async function buildLegacyRateFallbackResponse(data, isAdmin) {
     }),
   );
 
-  if (!isAdmin) {
+  if (!isStaff) {
     fallbackResponse.rates = fallbackResponse.rates.map((rate) => {
       const cleaned = Object.assign({}, rate);
       delete cleaned.carrierCost;
@@ -2599,7 +2592,8 @@ function mapShipStationTrackingToShipmentStatus(trackingData) {
 
   if (
     statusCode.includes("out_for_delivery") ||
-    statusText.includes("out for delivery")
+    statusText.includes("out for delivery") ||
+    statusText.includes("attempted delivery")
   ) {
     return "out_for_delivery";
   }
@@ -3097,7 +3091,7 @@ exports.getShippingRatesLive = functions.https.onCall(async (data, context) => {
         serviceCode: rate.serviceCode,
         carrierCost: carrierCost,
         customerCost: customerCost,
-        margin: Math.round((customerCost - carrierCost) * 100) / 100,
+        margin: roundCurrency(customerCost - carrierCost),
         deliveryDays: rate.deliveryDays || null,
       });
     }
@@ -3126,6 +3120,15 @@ exports.getShippingRatesLive = functions.https.onCall(async (data, context) => {
   if (allRates.length > 0) {
     const quoteRef = db.collection("shipping_quotes").doc();
     const quoteExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min TTL
+    // Strip internal cost data from quote snapshot (client-readable collection)
+    const safeRates = allRates.map((r) => ({
+      carrier: r.carrier,
+      carrierCode: r.carrierCode,
+      service: r.service,
+      serviceCode: r.serviceCode,
+      customerCost: r.customerCost,
+      deliveryDays: r.deliveryDays,
+    }));
     await quoteRef.set({
       user_id: context.auth.uid,
       request: {
@@ -3135,7 +3138,7 @@ exports.getShippingRatesLive = functions.https.onCall(async (data, context) => {
         dimensions: baseParams.dimensions,
         residential: baseParams.residential,
       },
-      rates: allRates,
+      rates: safeRates,
       markup_snapshot: { type: markupConfig.type },
       expires_at: quoteExpiry,
       created_at: new Date().toISOString(),
@@ -3196,7 +3199,11 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
 
   // Optional: validate against a stored quote to prevent price tampering
   if (data.quote_id) {
-    const quoteDoc = await db.doc("shipping_quotes/" + data.quote_id).get();
+    const safeQuoteId = cleanString(data.quote_id, 128).replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!safeQuoteId || safeQuoteId !== data.quote_id) {
+      throw new functions.https.HttpsError("invalid-argument", "Invalid quote_id format");
+    }
+    const quoteDoc = await db.doc("shipping_quotes/" + safeQuoteId).get();
     if (!quoteDoc.exists) {
       throw new functions.https.HttpsError("not-found", "Quote not found — rates may have expired. Please refresh rates.");
     }
@@ -3341,13 +3348,14 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
   const rawShipCost = parseFloat(label.shipmentCost || 0);
   const rawOtherCost = parseFloat(label.otherCost || 0);
   const rawInsuranceCost = parseFloat(label.insuranceCost || 0);
-  const carrierCost =
+  const carrierCost = roundCurrency(
     (isNaN(rawShipCost) ? 0 : rawShipCost) +
     (isNaN(rawOtherCost) ? 0 : rawOtherCost) +
-    (isNaN(rawInsuranceCost) ? 0 : rawInsuranceCost);
+    (isNaN(rawInsuranceCost) ? 0 : rawInsuranceCost),
+  );
   const effectiveMarkup = resolveMarkupConfig(markupConfig, data.carrierCode, data.serviceCode);
   const customerCost = applyMarkup(carrierCost, data.weight_lbs, effectiveMarkup);
-  const margin = Math.round((customerCost - carrierCost) * 100) / 100;
+  const margin = roundCurrency(customerCost - carrierCost);
   const trackingUrl = buildCarrierTrackingUrl(data.carrierCode, label.trackingNumber);
   const shipmentRef = data.shipment_id
     ? db.doc("shipments/" + data.shipment_id)
@@ -3444,6 +3452,8 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
       country: "US",
     },
     shipping_zone: "shipstation",
+    pricing_authoritative: true,
+    quote_id: data.quote_id || null,
     package: {
       weight: data.weight_lbs,
       length: data.length || 12,
@@ -3637,6 +3647,9 @@ exports.voidShippingLabel = functions.https.onCall(async (data, context) => {
           voided_at: reversalTimestamp,
         });
 
+        const carrierCostVal = Number(billable.carrier_cost) || 0;
+        const marginVal = Number(billable.margin) || 0;
+
         const reversalRef = db.collection("billable_events").doc();
         batch.set(reversalRef, {
           customer_id: billable.customer_id || (shipData ? shipData.user_id : null),
@@ -3650,6 +3663,12 @@ exports.voidShippingLabel = functions.https.onCall(async (data, context) => {
           rate: -Math.abs(amount),
           amount: -Math.abs(amount),
           total: -Math.abs(amount),
+          customer_cost: -Math.abs(amount),
+          carrier_cost: -Math.abs(carrierCostVal),
+          margin: -Math.abs(marginVal),
+          carrier_code: billable.carrier_code || null,
+          service_code: billable.service_code || null,
+          source: "shipstation",
           shipment_id: data.shipment_id,
           tracking_number: billable.tracking_number || null,
           invoiced: false,

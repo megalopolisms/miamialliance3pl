@@ -242,9 +242,19 @@ describe("ShipStation source helpers", function () {
       sandbox.mapShipStationTrackingToShipmentStatus({ status_description: "Refused by recipient" }),
       "exception",
     );
+    // Attempted delivery maps to out_for_delivery
+    assert.equal(
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_description: "Attempted delivery" }),
+      "out_for_delivery",
+    );
     // Unknown status returns null
     assert.equal(
       sandbox.mapShipStationTrackingToShipmentStatus({ status_description: "some unknown thing" }),
+      null,
+    );
+    // Empty input returns null
+    assert.equal(
+      sandbox.mapShipStationTrackingToShipmentStatus({}),
       null,
     );
   });
