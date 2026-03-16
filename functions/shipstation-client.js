@@ -166,19 +166,22 @@ function requestV2(method, path, body) {
 
 function fetchResourceUrl(resourceUrl) {
   var parsed = new URL(resourceUrl);
-  if (parsed.hostname !== V1_BASE_HOST) {
+  if (parsed.hostname !== V1_BASE_HOST && parsed.hostname !== V2_BASE_HOST) {
     throw new Error("Unexpected ShipStation resource host: " + parsed.hostname);
   }
+
+  var isV2 = parsed.hostname === V2_BASE_HOST;
+
+  var headers = isV2
+    ? { "API-Key": getApiKey(), "Content-Type": "application/json" }
+    : { Authorization: getAuthHeader(), "Content-Type": "application/json" };
 
   return requestWithOptions(
     {
       hostname: parsed.hostname,
       path: parsed.pathname + parsed.search,
       method: "GET",
-      headers: {
-        Authorization: getAuthHeader(),
-        "Content-Type": "application/json",
-      },
+      headers: headers,
     },
     null,
   );

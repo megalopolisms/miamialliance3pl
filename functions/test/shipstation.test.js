@@ -391,4 +391,32 @@ describe("Rate flattening", function () {
     var carrierCost = (isNaN(rawShipment) ? 0 : rawShipment) + (isNaN(rawOther) ? 0 : rawOther);
     assert.equal(carrierCost, 10.5);
   });
+
+  it("sorts rates correctly when deliveryDays are null", function () {
+    var rates = [
+      { service: "Economy", customerCost: 5.0, deliveryDays: null },
+      { service: "Express", customerCost: 15.0, deliveryDays: 2 },
+      { service: "Standard", customerCost: 8.0, deliveryDays: 5 },
+    ];
+
+    var fastest = rates.slice().sort(function (a, b) {
+      return (a.deliveryDays || 99) - (b.deliveryDays || 99);
+    })[0];
+
+    // Express (2 days) should be fastest, null days sorts to end
+    assert.equal(fastest.service, "Express");
+  });
+
+  it("handles empty rates array for cheapest/fastest", function () {
+    var rates = [];
+    rates.sort(function (a, b) { return a.customerCost - b.customerCost; });
+    var cheapest = rates[0] || null;
+    var fastest = rates.length > 0
+      ? rates.slice().sort(function (a, b) {
+          return (a.deliveryDays || 99) - (b.deliveryDays || 99);
+        })[0]
+      : null;
+    assert.equal(cheapest, null);
+    assert.equal(fastest, null);
+  });
 });
