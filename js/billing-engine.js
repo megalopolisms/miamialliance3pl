@@ -24,8 +24,10 @@
           localDelivery: 0,
           pickup: 0,
         },
-        localDeliveryFlat: { box: 75.0, pallet: 150.0 },
-        pickupFlat: { box: 25.0, pallet: 50.0 },
+        localDeliveryBase: 120.0,
+        localDeliveryPerUnit: 25.0,
+        pickupBase: 120.0,
+        pickupPerUnit: 25.0,
         dropShipRates: {
           envelope: 1.5,
           small: 3.0,
@@ -525,13 +527,12 @@
   }
 
   function getFlatRateShipping(zone, packageType, quantity) {
-    const pkgKey = packageType === "pallet" ? "pallet" : "box";
     const qty = Math.max(quantity || 1, 1);
     if (zone === "localDelivery") {
-      return roundCurrency(BASE_PRICING.localDeliveryFlat[pkgKey] * qty);
+      return roundCurrency(BASE_PRICING.localDeliveryBase + Math.max(0, qty - 1) * BASE_PRICING.localDeliveryPerUnit);
     }
     if (zone === "pickup") {
-      return roundCurrency(BASE_PRICING.pickupFlat[pkgKey] * qty);
+      return roundCurrency(BASE_PRICING.pickupBase + Math.max(0, qty - 1) * BASE_PRICING.pickupPerUnit);
     }
     return 0;
   }

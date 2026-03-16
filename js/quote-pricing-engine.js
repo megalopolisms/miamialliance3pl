@@ -60,9 +60,11 @@
       localDelivery: 0,
       pickup: 0,
     },
-    /* Flat-rate fees for local delivery and warehouse pickup (NOT weight-based) */
-    localDeliveryFlat: { box: 75.0, pallet: 150.0 },
-    pickupFlat: { box: 25.0, pallet: 50.0 },
+    /* Base + per-pallet fees for local delivery and warehouse pickup (our truck) */
+    localDeliveryBase: 120.0,
+    localDeliveryPerUnit: 25.0,
+    pickupBase: 120.0,
+    pickupPerUnit: 25.0,
     dropShipRates: {
       envelope: 1.5,
       small: 3.0,
@@ -194,8 +196,8 @@
       national: "National",
       none: "No Shipping",
       dropship: "Drop Ship",
-      localDelivery: "Local Delivery (Flat Rate)",
-      pickup: "Warehouse Pick Up (Flat Rate)",
+      localDelivery: "Local Delivery (Our Truck)",
+      pickup: "Warehouse Pick Up (Our Truck)",
     };
     return labels[zone] || zone;
   }
@@ -222,9 +224,9 @@
       if (config.shippingZone === "dropship") {
         dropship = getDropShipTotal(config.dropShipQty);
       } else if (config.shippingZone === "localDelivery") {
-        shipping = PRICING.localDeliveryFlat.pallet * config.quantity;
+        shipping = PRICING.localDeliveryBase + Math.max(0, config.quantity - 1) * PRICING.localDeliveryPerUnit;
       } else if (config.shippingZone === "pickup") {
-        shipping = PRICING.pickupFlat.pallet * config.quantity;
+        shipping = PRICING.pickupBase + Math.max(0, config.quantity - 1) * PRICING.pickupPerUnit;
       } else if (config.shippingZone !== "none") {
         shipping =
           billableWeight *
@@ -245,9 +247,9 @@
       if (config.shippingZone === "dropship") {
         dropship = getDropShipTotal(config.dropShipQty);
       } else if (config.shippingZone === "localDelivery") {
-        shipping = PRICING.localDeliveryFlat.box * config.quantity;
+        shipping = PRICING.localDeliveryBase + Math.max(0, config.quantity - 1) * PRICING.localDeliveryPerUnit;
       } else if (config.shippingZone === "pickup") {
-        shipping = PRICING.pickupFlat.box * config.quantity;
+        shipping = PRICING.pickupBase + Math.max(0, config.quantity - 1) * PRICING.pickupPerUnit;
       } else if (config.shippingZone !== "none") {
         shipping =
           billableWeight *
