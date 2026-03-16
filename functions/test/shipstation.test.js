@@ -419,4 +419,31 @@ describe("Rate flattening", function () {
     assert.equal(cheapest, null);
     assert.equal(fastest, null);
   });
+
+  it("per-carrier markup: resolved config changes final price", function () {
+    // Simulating what resolveMarkupConfig + applyMarkup would do
+    var defaultMarkup = { type: "percentage", percentage: 15, minimum_charge: 0 };
+    var carrierMarkup = { type: "percentage", percentage: 8, minimum_charge: 0 };
+
+    var defaultPrice = applyMarkup(10.0, 5, defaultMarkup);
+    var carrierPrice = applyMarkup(10.0, 5, carrierMarkup);
+
+    assert.equal(defaultPrice, 11.5);  // 15%
+    assert.equal(carrierPrice, 10.8);  // 8%
+    assert.ok(carrierPrice < defaultPrice);
+  });
+
+  it("margin calculation is consistent", function () {
+    var carrierCost = 10.42;
+    var customerCost = applyMarkup(carrierCost, 5, {
+      type: "percentage",
+      percentage: 15,
+      minimum_charge: 0,
+    });
+    var margin = Math.round((customerCost - carrierCost) * 100) / 100;
+
+    assert.equal(customerCost, 11.98); // 10.42 * 1.15 = 11.983 → 11.98
+    assert.equal(margin, 1.56);
+    assert.ok(margin > 0);
+  });
 });
