@@ -2978,6 +2978,45 @@ exports.getShipmentLabel = functions.https.onCall(async (data, context) => {
 });
 
 // =============================================================================
+// SS-006: MANUAL TRACKING SYNC (staff-only)
+// =============================================================================
+
+/**
+ * Manually trigger a ShipStation tracking sync for a shipment.
+ * Staff-only callable — useful when webhooks miss updates.
+ */
+exports.syncShipmentTracking = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("unauthenticated", "Must be logged in");
+  }
+
+  const db = admin.firestore();
+  const callerDoc = await db.doc("users/" + context.auth.uid).get();
+  const callerRole = callerDoc.exists ? callerDoc.data().role : "customer";
+  if (!isStaffRole(callerRole)) {
+    throw new functions.https.HttpsError("permission-denied", "Staff role required");
+  }
+
+  const shipmentId = cleanString(data && data.shipment_id, 120);
+  if (!shipmentId) {
+    throw new functions.https.HttpsError("invalid-argument", "Missing shipment_id");
+  }
+
+  const shipmentRef = db.doc("shipments/" + shipmentId);
+  const shipmentDoc = await shipmentRef.get();
+  if (!shipmentDoc.exists) {
+    throw new functions.https.HttpsError("not-found", "Shipment not found");
+  }
+
+  const result = await syncShipStationTrackingForShipment(shipmentRef, shipmentDoc.data());
+  return {
+    success: true,
+    shipment_id: shipmentId,
+    ...result,
+  };
+});
+
+// =============================================================================
 // SS-002: LIVE RATE SHOPPING (ShipStation)
 // =============================================================================
 
@@ -3758,6 +3797,20 @@ exports.shipstationWebhook = functions.https.onRequest(async (req, res) => {
     res.status(200).json({ received: true, processed: true, updated: updated });
   } catch (err) {
     console.error("ShipStation webhook error:", err);
+    // Store failed webhook for dead letter / retry
+    try {
+      const db = admin.firestore();
+      await db.collection("shipstation_webhooks").add({
+        resource_type: req.body && req.body.resource_type || "unknown",
+        resource_url: req.body && req.body.resource_url || null,
+        shipments_updated: 0,
+        error: err.message || String(err),
+        status: "failed",
+        received_at: new Date().toISOString(),
+      });
+    } catch (dlErr) {
+      console.error("Failed to store dead letter webhook:", dlErr);
+    }
     res.status(500).send("Internal error");
   }
 });
