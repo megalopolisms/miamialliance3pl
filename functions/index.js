@@ -120,6 +120,7 @@
 // DEPENDENCIES
 // =============================================================================
 
+const crypto = require("crypto");
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 
@@ -174,6 +175,16 @@ if (twilioAccountSid && twilioAuthToken) {
   const twilio = require("twilio");
   twilioClient = twilio(twilioAccountSid, twilioAuthToken);
 }
+
+const firebaseWebApiKey =
+  functions.config().firebase?.web_api_key ||
+  process.env.FIREBASE_WEB_API_KEY ||
+  "AIzaSyA4wMm8-QmZGt3lJcZgTpbBa1W_TklrmRg";
+
+const defaultPasswordResetContinueUrl =
+  functions.config().app?.password_reset_continue_url ||
+  process.env.PASSWORD_RESET_CONTINUE_URL ||
+  "https://miamialliance3pl.com/login.html";
 
 // =============================================================================
 // ERROR HANDLING UTILITIES
@@ -325,6 +336,72 @@ function validateRequired(data, fields) {
   }
 }
 
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function isAllowedPasswordResetContinueUrl(value) {
+  try {
+    const url = new URL(value);
+    if (
+      url.protocol !== "https:" &&
+      !["localhost", "127.0.0.1"].includes(url.hostname)
+    ) {
+      return false;
+    }
+
+    return [
+      "miamialliance3pl.com",
+      "www.miamialliance3pl.com",
+      "megalopolisms.github.io",
+      "localhost",
+      "127.0.0.1",
+    ].includes(url.hostname);
+  } catch (error) {
+    return false;
+  }
+}
+
+function hasPasswordProvider(userRecord) {
+  const providerIds = new Set(
+    (userRecord.providerData || [])
+      .map((provider) => provider.providerId)
+      .filter(Boolean),
+  );
+
+  // Password-only users in this Firebase project export with no federated
+  // providers, so an empty provider set still means email/password login.
+  return providerIds.size === 0 || providerIds.has("password");
+}
+
+async function sendFirebasePasswordResetEmail(email, continueUrl) {
+  if (!firebaseWebApiKey) {
+    throw new Error("Firebase web API key is not configured");
+  }
+
+  const response = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${firebaseWebApiKey}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        requestType: "PASSWORD_RESET",
+        email,
+        continueUrl,
+      }),
+    },
+  );
+
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload?.error?.message || "Failed to send reset email");
+  }
+
+  return payload;
+}
+
 /**
  * Check if user is authenticated
  *
@@ -345,6 +422,62 @@ function requireAuth(context) {
   }
   return context.auth.uid;
 }
+
+exports.requestCustomerPasswordReset = functions.https.onCall(
+  withErrorHandling("requestCustomerPasswordReset", async (data) => {
+    validateRequired(data, ["email"]);
+
+    const email = normalizeEmail(data.email);
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new functions.https.HttpsError(
+        ERROR_CODES.INVALID_ARGUMENT.code,
+        "A valid email address is required",
+      );
+    }
+
+    const continueUrl = isAllowedPasswordResetContinueUrl(data.continueUrl)
+      ? data.continueUrl
+      : defaultPasswordResetContinueUrl;
+
+    try {
+      const userRecord = await admin.auth().getUserByEmail(email);
+
+      if (userRecord.disabled) {
+        throw new functions.https.HttpsError(
+          ERROR_CODES.FAILED_PRECONDITION.code,
+          "This account is currently disabled. Contact support.",
+        );
+      }
+
+      if (!hasPasswordProvider(userRecord)) {
+        await admin.auth().updateUser(userRecord.uid, {
+          password: crypto.randomBytes(24).toString("base64url"),
+        });
+      }
+
+      await sendFirebasePasswordResetEmail(email, continueUrl);
+      return { status: "email-sent" };
+    } catch (error) {
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+
+      if (error?.code === "auth/user-not-found") {
+        // Preserve email enumeration protection for public callers.
+        return { status: "submitted" };
+      }
+
+      if (error?.message?.includes("TOO_MANY_ATTEMPTS_TRY_LATER")) {
+        throw new functions.https.HttpsError(
+          ERROR_CODES.RESOURCE_EXHAUSTED.code,
+          "Too many reset requests. Please wait a few minutes and try again.",
+        );
+      }
+
+      throw error;
+    }
+  }),
+);
 
 /**
  * Check if user has admin role
