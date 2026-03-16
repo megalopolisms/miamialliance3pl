@@ -52,6 +52,7 @@
     storageDays: 30,
     minStorage: 5.0,
     shippingZones: {
+      live: 0,
       local: 0.45,
       regional: 0.65,
       national: 0.85,
@@ -184,6 +185,7 @@
 
   function getZoneLabel(zone) {
     var labels = {
+      live: "Live Carrier Rate",
       local: "Local (Florida)",
       regional: "Regional (Southeast)",
       national: "National",

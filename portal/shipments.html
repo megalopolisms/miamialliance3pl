@@ -1022,6 +1022,32 @@
             background: #f0fdfa;
             color: #0d9488;
         }
+        .shipment-action-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.72rem;
+            color: #1d4ed8;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: none;
+            background: transparent;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .shipment-action-link:hover {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+        .shipment-action-link.danger {
+            color: #b91c1c;
+        }
+        .shipment-action-link.danger:hover {
+            background: #fef2f2;
+            color: #991b1b;
+        }
 
         /* ================================================
            INCOMING INVENTORY ITEMS — SKU Entry Section
@@ -1335,6 +1361,104 @@
                 height: 64px;
             }
         }
+        .live-rate-status {
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+        .live-rate-status.loading {
+            border-color: #93c5fd;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+        .live-rate-status.error {
+            border-color: #fecaca;
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+        .live-rate-status.success {
+            border-color: #99f6e4;
+            background: #f0fdfa;
+            color: #0f766e;
+        }
+        .live-rate-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .live-rate-card {
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 14px;
+            background: #fff;
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+        .live-rate-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+            border-color: #94a3b8;
+        }
+        .live-rate-card.selected {
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.14);
+            background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
+        }
+        .live-rate-main {
+            min-width: 0;
+        }
+        .live-rate-title {
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        .live-rate-meta {
+            color: #475569;
+            font-size: 0.88rem;
+        }
+        .live-rate-price {
+            text-align: right;
+            white-space: nowrap;
+        }
+        .live-rate-price strong {
+            display: block;
+            font-size: 1.05rem;
+            color: #0f172a;
+        }
+        .live-rate-price span {
+            color: #475569;
+            font-size: 0.82rem;
+        }
+        .live-rate-badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .live-rate-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+        .live-rate-badge.cheapest {
+            background: #ecfccb;
+            color: #3f6212;
+        }
+        .live-rate-badge.fastest {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
     </style>
 </head>
 <body>
@@ -1399,6 +1523,9 @@
                     <button id="new-shipment-calc-btn" class="btn btn-primary" data-i18n="portal.shipments.newShipment">+ New Shipment</button>
                 </div>
             </div>
+            <p style="margin: -8px 0 16px; color: var(--color-gray-600); max-width: 720px;">
+                Open <strong>New Shipment</strong> to compare live domestic USPS, UPS, and FedEx rates before you submit a shipment request.
+            </p>
 
             <!-- Filter -->
             <div style="margin-bottom: var(--spacing-md);">
@@ -1580,13 +1707,11 @@
                             </div>
                         </div>
 
-                        <!-- Shipping Zone -->
+                        <!-- Shipping Method -->
                         <div class="quote-control-group">
-                            <label class="quote-label" data-i18n="quote.zone.label">Shipping Zone</label>
+                            <label class="quote-label">Shipping Method</label>
                             <select id="sc-zone" class="zone-select">
-                                <option value="local" data-i18n="quote.zone.local">Local (FL)</option>
-                                <option value="regional" selected data-i18n="quote.zone.regional">Regional (Southeast)</option>
-                                <option value="national" data-i18n="quote.zone.national">National</option>
+                                <option value="live" selected>Live Carrier Rates (US)</option>
                                 <option value="none" data-i18n="quote.zone.none">No Shipping Required</option>
                                 <option value="dropship" data-i18n="quote.zone.dropship">Shipping by Units (Drop Ship)</option>
                             </select>
@@ -1772,7 +1897,7 @@
                                 <span id="sc-r-pickpack">$1.25</span>
                             </div>
                             <div class="quote-line" id="sc-r-shipping-row">
-                                <span data-i18n="quote.results.shipping">Est. Shipping</span>
+                                <span id="sc-r-shipping-label" data-i18n="quote.results.shipping">Est. Shipping</span>
                                 <span id="sc-r-shipping">$16.25</span>
                             </div>
                             <div class="quote-line" id="sc-r-wrapping-row" style="display: none;">
@@ -1950,6 +2075,18 @@
                             </div>
                         </div>
 
+                        <div class="quote-control-group" id="sc-live-rates-group">
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <label class="quote-label" style="margin:0;">Live Domestic Carrier Rates</label>
+                                <button type="button" class="btn-sm" id="sc-refresh-rates-btn">Refresh Rates</button>
+                            </div>
+                            <p style="margin:6px 0 10px; font-size:0.85rem; color:var(--color-gray-500);">
+                                Compare live USPS, UPS, and FedEx rates for domestic US parcel shipments. Rates load automatically after destination details are complete.
+                            </p>
+                            <div id="sc-live-rate-status" class="live-rate-status">Enter city, state, and ZIP to compare live rates.</div>
+                            <div id="sc-live-rate-list" class="live-rate-list"></div>
+                        </div>
+
                         <!-- Notes -->
                         <div class="quote-control-group">
                             <label class="quote-label">Special Instructions (Optional)</label>
@@ -2014,6 +2151,17 @@
                     <h3>Shipment Created!</h3>
                     <div class="tracking-num" id="success-tracking">MA3PL00000000</div>
                     <p>Your shipment is now being processed. Track it anytime in your dashboard.</p>
+                    <div id="success-label-panel" style="display:none; max-width: 560px; margin: 16px auto 0; padding: 16px; border: 1px solid var(--color-gray-200); border-radius: 16px; background: #f8fafc; text-align: left;">
+                        <div id="success-label-status" style="font-weight: 700; color: var(--color-gray-900); margin-bottom: 8px;">No live carrier label selected.</div>
+                        <div id="success-label-meta" style="font-size: 0.9rem; color: var(--color-gray-600); line-height: 1.5;"></div>
+                        <div id="success-label-error" class="calc-error" style="margin-top: 12px;"></div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+                            <button type="button" class="btn btn-primary" id="success-buy-label-btn" style="display:none;">Buy Selected Label</button>
+                            <button type="button" class="btn btn-outline" id="success-download-label-btn" style="display:none;">Download Label PDF</button>
+                            <button type="button" class="btn btn-outline" id="success-print-label-btn" style="display:none;">Print Label</button>
+                            <button type="button" class="btn btn-outline" id="success-void-label-btn" style="display:none;">Void Label</button>
+                        </div>
+                    </div>
                     <button type="button" class="btn btn-primary" style="margin:16px auto 0;padding:12px 32px;" id="calc-done">Done</button>
                 </div>
             </div>
@@ -2051,6 +2199,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
         import { getFirestore, collection, query, where, orderBy, getDocs, addDoc, doc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -2069,6 +2218,12 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const fns = getFunctions(app);
+        const createPortalShipmentCallable = httpsCallable(fns, 'createPortalShipment');
+        const getShippingRatesLiveCallable = httpsCallable(fns, 'getShippingRatesLive');
+        const getShipmentLabelCallable = httpsCallable(fns, 'getShipmentLabel');
+        const purchaseShippingLabelCallable = httpsCallable(fns, 'purchaseShippingLabel');
+        const voidShippingLabelCallable = httpsCallable(fns, 'voidShippingLabel');
 
         // Fallback admin emails
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
@@ -2542,7 +2697,7 @@
                 blackWrapping: 7.0,
                 storageDays: 30,
                 minStorage: 5.0,
-                shippingZones: { local: 0.45, regional: 0.65, national: 0.85, none: 0, dropship: 0 },
+                shippingZones: { live: 0, local: 0.45, regional: 0.65, national: 0.85, none: 0, dropship: 0 },
                 dropShipRates: { envelope: 1.5, small: 3.0, medium: 5.0, large: 20.0 },
                 fbaPrep: {
                     fnskuLabeling: { rate: 0.3, label: 'FNSKU Labeling', unit: 'unit' },
@@ -2563,7 +2718,7 @@
             length: 12, width: 12, height: 12,
             weight: 25,
             quantity: 1,
-            shippingZone: 'regional',
+            shippingZone: 'live',
             blackWrapping: false,
             dropShipQty: { envelope: 0, small: 0, medium: 0, large: 0 },
             fbaPrep: {
@@ -2579,61 +2734,673 @@
             },
             destination: { name: '', street: '', city: '', state: '', zip: '' },
             notes: '',
-            incomingItems: [{ sku: '', name: '', qty: 1, upc: '', tags: '', photos: [] }]
+            incomingItems: [{ sku: '', name: '', qty: 1, upc: '', tags: '', photos: [] }],
+            liveRates: [],
+            selectedRateKey: '',
+            liveRatesLoading: false,
+            liveRateError: '',
+            liveRateLastRequestKey: '',
+            liveRateRequestSeq: 0,
+            liveRateSource: null
         };
+
+        let liveRateFetchTimer = null;
+        const labelPurchaseState = {
+            shipmentId: null,
+            shipmentTrackingNumber: '',
+            shipmentQuantity: 1,
+            quote: null,
+            purchase: null,
+            loading: false,
+            voiding: false,
+            error: ''
+        };
+        const shipmentActionCache = new Map();
+
+        function getCarrierDisplayName(code) {
+            const value = String(code || '').toLowerCase();
+            if (value === 'stamps_com' || value === 'usps') return 'USPS';
+            if (value === 'ups') return 'UPS';
+            if (value === 'fedex') return 'FedEx';
+            return String(code || 'Carrier').toUpperCase();
+        }
+
+        function clearSuccessLabelError() {
+            const errorEl = document.getElementById('success-label-error');
+            if (!errorEl) return;
+            errorEl.textContent = '';
+            errorEl.classList.remove('active');
+        }
+
+        function showSuccessLabelError(message) {
+            const errorEl = document.getElementById('success-label-error');
+            if (!errorEl) return;
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+        }
+
+        function resetLabelPurchaseState() {
+            labelPurchaseState.shipmentId = null;
+            labelPurchaseState.shipmentTrackingNumber = '';
+            labelPurchaseState.shipmentQuantity = 1;
+            labelPurchaseState.quote = null;
+            labelPurchaseState.purchase = null;
+            labelPurchaseState.loading = false;
+            labelPurchaseState.voiding = false;
+            labelPurchaseState.error = '';
+        }
+
+        function base64ToBlob(base64, contentType = 'application/pdf') {
+            const byteChars = atob(base64);
+            const byteNumbers = new Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) {
+                byteNumbers[i] = byteChars.charCodeAt(i);
+            }
+            return new Blob([new Uint8Array(byteNumbers)], { type: contentType });
+        }
+
+        function downloadLabelPayload(purchaseData) {
+            if (!purchaseData || !purchaseData.label_pdf_base64) return;
+            const blob = base64ToBlob(
+                purchaseData.label_pdf_base64,
+                purchaseData.label_pdf_content_type || 'application/pdf'
+            );
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = purchaseData.label_pdf_filename || 'shipping-label.pdf';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function printLabelPayload(purchaseData) {
+            if (!purchaseData || !purchaseData.label_pdf_base64) return;
+            const blob = base64ToBlob(
+                purchaseData.label_pdf_base64,
+                purchaseData.label_pdf_content_type || 'application/pdf'
+            );
+            const url = URL.createObjectURL(blob);
+            const printWindow = window.open(url, '_blank', 'noopener,noreferrer');
+            if (!printWindow) {
+                showSuccessLabelError('Unable to open the label preview. Please allow pop-ups and try again.');
+                return;
+            }
+            printWindow.addEventListener('load', () => {
+                printWindow.print();
+            }, { once: true });
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+        }
+
+        function downloadPurchasedLabel() {
+            downloadLabelPayload(labelPurchaseState.purchase);
+        }
+
+        function printPurchasedLabel() {
+            printLabelPayload(labelPurchaseState.purchase);
+        }
+
+        function buildShipmentLabelPayload(shipmentId, data) {
+            const liveRate = data && data.live_rate_quote ? data.live_rate_quote : null;
+            const pkg = data && data.package ? data.package : {};
+            const destination = data && data.destination ? data.destination : {};
+
+            if (!liveRate || !liveRate.carrier || !liveRate.service_code) {
+                throw new Error('This shipment does not have a saved live carrier rate to purchase.');
+            }
+            if ((pkg.type || 'box') !== 'box') {
+                throw new Error('Live label purchase currently supports parcel boxes only.');
+            }
+            if (Number(pkg.quantity || 1) !== 1) {
+                throw new Error('Live label purchase currently supports single-package shipments only.');
+            }
+            if (!destination.name || !destination.street || !destination.city || !destination.state || !destination.zip) {
+                throw new Error('Shipment destination is incomplete. Update the shipment before buying a label.');
+            }
+
+            return {
+                shipment_id: shipmentId,
+                carrierCode: liveRate.carrier,
+                carrier_name: getCarrierDisplayName(liveRate.carrier),
+                serviceCode: liveRate.service_code,
+                service_name: liveRate.service,
+                packageCode: 'package',
+                weight_lbs: Number(pkg.weight) || Number(data.weight_lbs) || 1,
+                length: Number(pkg.length) || Number(data.dimensions?.length) || 12,
+                width: Number(pkg.width) || Number(data.dimensions?.width) || 12,
+                height: Number(pkg.height) || Number(data.dimensions?.height) || 12,
+                recipient_name: destination.name,
+                recipient_street1: destination.street || destination.street1 || '',
+                recipient_street2: destination.street2 || '',
+                recipient_city: destination.city,
+                recipient_state: destination.state,
+                recipient_zip: destination.zip,
+                recipient_phone: data.customer_phone || ''
+            };
+        }
+
+        function renderSuccessLabelPanel() {
+            const panelEl = document.getElementById('success-label-panel');
+            const statusEl = document.getElementById('success-label-status');
+            const metaEl = document.getElementById('success-label-meta');
+            const buyBtn = document.getElementById('success-buy-label-btn');
+            const downloadBtn = document.getElementById('success-download-label-btn');
+            const printBtn = document.getElementById('success-print-label-btn');
+            const voidBtn = document.getElementById('success-void-label-btn');
+            if (!panelEl || !statusEl || !metaEl || !buyBtn || !downloadBtn || !printBtn || !voidBtn) return;
+
+            const hasShipment = !!labelPurchaseState.shipmentId;
+            panelEl.style.display = hasShipment ? 'block' : 'none';
+            if (!hasShipment) return;
+
+            clearSuccessLabelError();
+            if (labelPurchaseState.error) {
+                showSuccessLabelError(labelPurchaseState.error);
+            }
+
+            buyBtn.style.display = 'none';
+            downloadBtn.style.display = 'none';
+            printBtn.style.display = 'none';
+            voidBtn.style.display = 'none';
+            buyBtn.disabled = labelPurchaseState.loading;
+            voidBtn.disabled = labelPurchaseState.voiding;
+
+            if (labelPurchaseState.purchase) {
+                const purchase = labelPurchaseState.purchase;
+                const carrierLabel = getCarrierDisplayName(purchase.carrier || labelPurchaseState.quote?.carrierCode);
+                const trackingLink = purchase.tracking_url
+                    ? `<a href="${purchase.tracking_url}" target="_blank" rel="noopener noreferrer" style="color: var(--color-accent); font-weight: 600; text-decoration: none;">${purchase.tracking_number}</a>`
+                    : (purchase.tracking_number || 'Pending');
+                const financeBits = [];
+                financeBits.push(`Carrier: ${carrierLabel}`);
+                financeBits.push(`Service: ${purchase.service_name || labelPurchaseState.quote?.service || 'Selected rate'}`);
+                financeBits.push(`Customer cost: ${fmt(Number(purchase.customer_cost) || 0)}`);
+                if (isStaff && purchase.carrier_cost !== undefined) {
+                    financeBits.push(`Carrier cost: ${fmt(Number(purchase.carrier_cost) || 0)}`);
+                }
+                if (isStaff && purchase.margin !== undefined) {
+                    financeBits.push(`Margin: ${fmt(Number(purchase.margin) || 0)}`);
+                }
+
+                if (purchase.voided) {
+                    statusEl.textContent = 'Shipping label voided.';
+                } else {
+                    statusEl.textContent = 'Live carrier label purchased successfully.';
+                }
+                metaEl.innerHTML = `
+                    Internal shipment: <strong>${labelPurchaseState.shipmentTrackingNumber}</strong><br>
+                    Carrier tracking: ${trackingLink}<br>
+                    ${financeBits.join('<br>')}
+                `;
+                if (!purchase.voided) {
+                    downloadBtn.style.display = purchase.label_pdf_base64 ? 'inline-flex' : 'none';
+                    printBtn.style.display = purchase.label_pdf_base64 ? 'inline-flex' : 'none';
+                    voidBtn.style.display = 'inline-flex';
+                    voidBtn.textContent = labelPurchaseState.voiding ? 'Voiding...' : 'Void Label';
+                }
+                return;
+            }
+
+            if (!labelPurchaseState.quote) {
+                statusEl.textContent = 'Shipment saved without live label purchase.';
+                metaEl.innerHTML = 'Choose a live carrier rate before creating the shipment if you want to buy a label immediately.';
+                return;
+            }
+
+            const carrierLabel = getCarrierDisplayName(labelPurchaseState.quote.carrierCode);
+            if (labelPurchaseState.shipmentQuantity !== 1) {
+                statusEl.textContent = 'Live label purchase is limited to single-package shipments right now.';
+                metaEl.innerHTML = `
+                    Selected rate: <strong>${carrierLabel} ${labelPurchaseState.quote.service || ''}</strong><br>
+                    Quantity: ${labelPurchaseState.shipmentQuantity} package(s)<br>
+                    Rate estimate: ${fmt(Number(labelPurchaseState.quote.customerCost) || 0)} each
+                `;
+                return;
+            }
+
+            statusEl.textContent = 'Selected live rate is ready to purchase as a carrier label.';
+            metaEl.innerHTML = `
+                Selected rate: <strong>${carrierLabel} ${labelPurchaseState.quote.service || ''}</strong><br>
+                Estimated postage charge: ${fmt(Number(labelPurchaseState.quote.customerCost) || 0)}<br>
+                Shipment: ${labelPurchaseState.shipmentTrackingNumber}
+            `;
+            buyBtn.style.display = 'inline-flex';
+            buyBtn.textContent = labelPurchaseState.loading
+                ? 'Buying Label...'
+                : `Buy ${carrierLabel} Label`;
+        }
+
+        async function buySuccessLabel() {
+            if (!labelPurchaseState.shipmentId || !labelPurchaseState.quote) return;
+            if (labelPurchaseState.shipmentQuantity !== 1) {
+                labelPurchaseState.error = 'Live label purchase currently supports single-package shipments only.';
+                renderSuccessLabelPanel();
+                return;
+            }
+
+            labelPurchaseState.loading = true;
+            labelPurchaseState.error = '';
+            renderSuccessLabelPanel();
+
+            try {
+                const quote = labelPurchaseState.quote;
+                const result = await purchaseShippingLabelCallable({
+                    shipment_id: labelPurchaseState.shipmentId,
+                    carrierCode: quote.carrierCode,
+                    carrier_name: getCarrierDisplayName(quote.carrierCode),
+                    serviceCode: quote.serviceCode,
+                    service_name: quote.service,
+                    packageCode: 'package',
+                    weight_lbs: quote.weight_lbs,
+                    length: quote.length,
+                    width: quote.width,
+                    height: quote.height,
+                    recipient_name: quote.recipient_name,
+                    recipient_street1: quote.recipient_street1,
+                    recipient_street2: quote.recipient_street2 || '',
+                    recipient_city: quote.recipient_city,
+                    recipient_state: quote.recipient_state,
+                    recipient_zip: quote.recipient_zip,
+                    recipient_phone: quote.recipient_phone || '',
+                    confirmation: 'none'
+                });
+
+                labelPurchaseState.purchase = {
+                    ...result.data,
+                    carrier: quote.carrierCode,
+                    service_name: quote.service
+                };
+                labelPurchaseState.error = '';
+                loadShipments();
+            } catch (error) {
+                labelPurchaseState.error = error?.message || 'Unable to purchase the shipping label right now.';
+            } finally {
+                labelPurchaseState.loading = false;
+                renderSuccessLabelPanel();
+            }
+        }
+
+        async function voidSuccessLabel() {
+            if (!labelPurchaseState.shipmentId || !labelPurchaseState.purchase || labelPurchaseState.purchase.voided) return;
+
+            labelPurchaseState.voiding = true;
+            labelPurchaseState.error = '';
+            renderSuccessLabelPanel();
+
+            try {
+                await voidShippingLabelCallable({
+                    shipment_id: labelPurchaseState.shipmentId,
+                    shipstation_shipment_id: labelPurchaseState.purchase.shipstation_id
+                });
+                labelPurchaseState.purchase = {
+                    ...labelPurchaseState.purchase,
+                    voided: true
+                };
+                loadShipments();
+            } catch (error) {
+                labelPurchaseState.error = error?.message || 'Unable to void the shipping label right now.';
+            } finally {
+                labelPurchaseState.voiding = false;
+                renderSuccessLabelPanel();
+            }
+        }
+
+        async function buyShipmentLabelFromRow(shipmentId) {
+            const shipmentData = shipmentActionCache.get(shipmentId);
+            if (!shipmentData) return;
+
+            try {
+                const payload = buildShipmentLabelPayload(shipmentId, shipmentData);
+                const result = await purchaseShippingLabelCallable(payload);
+                if (result.data && result.data.label_pdf_base64) {
+                    downloadLabelPayload(result.data);
+                }
+                window.alert(`Label purchased successfully. Carrier tracking: ${result.data?.tracking_number || 'pending'}`);
+                loadShipments();
+            } catch (error) {
+                window.alert(error?.message || 'Unable to purchase the label for this shipment.');
+            }
+        }
+
+        async function voidShipmentLabelFromRow(shipmentId) {
+            const shipmentData = shipmentActionCache.get(shipmentId);
+            if (!shipmentData || !shipmentData.shipstation_shipment_id) return;
+
+            try {
+                await voidShippingLabelCallable({
+                    shipment_id: shipmentId,
+                    shipstation_shipment_id: shipmentData.shipstation_shipment_id
+                });
+                window.alert('Label voided successfully.');
+                loadShipments();
+            } catch (error) {
+                window.alert(error?.message || 'Unable to void the label for this shipment.');
+            }
+        }
+
+        async function downloadShipmentLabelFromRow(shipmentId) {
+            try {
+                const result = await getShipmentLabelCallable({ shipment_id: shipmentId });
+                downloadLabelPayload(result.data);
+            } catch (error) {
+                window.alert(error?.message || 'Unable to download the stored label for this shipment.');
+            }
+        }
+
+        function syncDestinationFromForm() {
+            const stateInput = document.getElementById('sc-dest-state');
+            const nextState = (stateInput?.value || '').trim().toUpperCase();
+            if (stateInput && stateInput.value !== nextState) stateInput.value = nextState;
+
+            sc.destination = {
+                name: (document.getElementById('sc-dest-name')?.value || '').trim(),
+                street: (document.getElementById('sc-dest-street')?.value || '').trim(),
+                city: (document.getElementById('sc-dest-city')?.value || '').trim(),
+                state: nextState,
+                zip: (document.getElementById('sc-dest-zip')?.value || '').trim()
+            };
+        }
+
+        function isLiveShippingMode() {
+            return sc.shippingZone === 'live';
+        }
+
+        function getLiveRateKey(rate) {
+            return [rate.carrierCode || rate.carrier || '', rate.serviceCode || rate.service || ''].join('::');
+        }
+
+        function getSelectedLiveRate() {
+            return (sc.liveRates || []).find(rate => getLiveRateKey(rate) === sc.selectedRateKey) || null;
+        }
+
+        function getSelectedLiveShippingTotal() {
+            const rate = getSelectedLiveRate();
+            if (!rate) return 0;
+            return (Number(rate.customerCost) || 0) * sc.quantity;
+        }
+
+        function clearLiveRates(options = {}) {
+            sc.liveRates = [];
+            sc.selectedRateKey = '';
+            sc.liveRateError = options.error || '';
+            sc.liveRateSource = options.source || null;
+            if (options.resetCache) sc.liveRateLastRequestKey = '';
+        }
+
+        function setLiveRateStatus(message, tone) {
+            const statusEl = document.getElementById('sc-live-rate-status');
+            if (!statusEl) return;
+            statusEl.className = 'live-rate-status' + (tone ? ' ' + tone : '');
+            statusEl.textContent = message;
+        }
+
+        function renderLiveRates() {
+            const groupEl = document.getElementById('sc-live-rates-group');
+            const listEl = document.getElementById('sc-live-rate-list');
+            if (!groupEl || !listEl) return;
+
+            groupEl.style.display = isLiveShippingMode() ? 'block' : 'none';
+            if (!isLiveShippingMode()) {
+                listEl.innerHTML = '';
+                return;
+            }
+
+            syncDestinationFromForm();
+
+            if (sc.packageType !== 'box') {
+                listEl.innerHTML = '';
+                setLiveRateStatus('Live carrier rates are available for parcel boxes. Switch package type to Box to compare rates.', 'error');
+                return;
+            }
+
+            if (!currentUser) {
+                listEl.innerHTML = '';
+                setLiveRateStatus('Sign in to load live rates.', '');
+                return;
+            }
+
+            if (sc.liveRatesLoading) {
+                setLiveRateStatus('Loading live carrier rates...', 'loading');
+            } else if (sc.liveRateError) {
+                setLiveRateStatus(sc.liveRateError, 'error');
+            } else if (!sc.destination.city || !sc.destination.state || !sc.destination.zip) {
+                setLiveRateStatus('Enter city, state, and ZIP to compare live rates.', '');
+            } else if ((sc.liveRates || []).length === 0) {
+                setLiveRateStatus('No live rates available for the current package details.', 'error');
+            } else {
+                const sourceLabel = sc.liveRateSource === 'simulated' ? 'fallback estimate' : 'live carrier pricing';
+                setLiveRateStatus(`${sc.liveRates.length} ${sourceLabel} options ready. Select one to price this shipment.`, 'success');
+            }
+
+            if (!sc.liveRates || sc.liveRates.length === 0) {
+                listEl.innerHTML = '';
+                return;
+            }
+
+            const cheapestKey = getLiveRateKey(sc.liveRates[0]);
+            let fastestKey = '';
+            let fastestDays = Number.POSITIVE_INFINITY;
+            sc.liveRates.forEach((rate) => {
+                const days = Number(rate.deliveryDays);
+                if (Number.isFinite(days) && days < fastestDays) {
+                    fastestDays = days;
+                    fastestKey = getLiveRateKey(rate);
+                }
+            });
+
+            listEl.innerHTML = sc.liveRates.map((rate) => {
+                const key = getLiveRateKey(rate);
+                const selected = key === sc.selectedRateKey;
+                const total = (Number(rate.customerCost) || 0) * sc.quantity;
+                const carrierLabel = String(rate.carrierCode || rate.carrier || '').toUpperCase().replace('STAMPS_COM', 'USPS');
+                const badges = [];
+                if (key === cheapestKey) badges.push('<span class="live-rate-badge cheapest">Best Price</span>');
+                if (fastestKey && key === fastestKey) badges.push('<span class="live-rate-badge fastest">Fastest</span>');
+                return `
+                    <button type="button" class="live-rate-card${selected ? ' selected' : ''}" data-rate-key="${key}">
+                        <div class="live-rate-main">
+                            <div class="live-rate-title">${carrierLabel} • ${rate.service || 'Service'}</div>
+                            <div class="live-rate-meta">
+                                ${rate.deliveryDays ? rate.deliveryDays + ' business day' + (rate.deliveryDays === 1 ? '' : 's') : 'Delivery estimate pending'}
+                            </div>
+                            ${badges.length ? `<div class="live-rate-badges">${badges.join('')}</div>` : ''}
+                        </div>
+                        <div class="live-rate-price">
+                            <strong>${fmt(Number(rate.customerCost) || 0)} each</strong>
+                            <span>${fmt(total)} total</span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            listEl.querySelectorAll('.live-rate-card').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    sc.selectedRateKey = btn.dataset.rateKey;
+                    updatePricing();
+                    renderLiveRates();
+                });
+            });
+        }
+
+        async function fetchLiveRates(options = {}) {
+            syncDestinationFromForm();
+
+            if (!isLiveShippingMode()) {
+                clearLiveRates({ resetCache: !!options.force });
+                renderLiveRates();
+                updatePricing();
+                return;
+            }
+
+            if (!currentUser) {
+                clearLiveRates({ error: 'Sign in to load live rates.', resetCache: !!options.force });
+                renderLiveRates();
+                updatePricing();
+                return;
+            }
+
+            if (sc.packageType !== 'box') {
+                clearLiveRates({ resetCache: !!options.force });
+                renderLiveRates();
+                updatePricing();
+                return;
+            }
+
+            if (!sc.destination.city || !/^[A-Z]{2}$/.test(sc.destination.state) || !/^\d{5}(-\d{4})?$/.test(sc.destination.zip)) {
+                clearLiveRates({ resetCache: !!options.force });
+                renderLiveRates();
+                updatePricing();
+                return;
+            }
+
+            const requestKey = JSON.stringify({
+                warehouse: sc.selectedWarehouse,
+                weight: sc.weight,
+                length: sc.length,
+                width: sc.width,
+                height: sc.height,
+                city: sc.destination.city,
+                state: sc.destination.state,
+                zip: sc.destination.zip
+            });
+
+            if (!options.force && requestKey === sc.liveRateLastRequestKey && sc.liveRates.length > 0) {
+                renderLiveRates();
+                return;
+            }
+
+            const requestSeq = ++sc.liveRateRequestSeq;
+            sc.liveRatesLoading = true;
+            sc.liveRateError = '';
+            renderLiveRates();
+
+            try {
+                const result = await getShippingRatesLiveCallable({
+                    weight_lbs: sc.weight,
+                    length: sc.length,
+                    width: sc.width,
+                    height: sc.height,
+                    destination_city: sc.destination.city,
+                    destination_state: sc.destination.state,
+                    destination_zip: sc.destination.zip,
+                    residential: true
+                });
+
+                if (requestSeq !== sc.liveRateRequestSeq) return;
+
+                const data = result.data || {};
+                sc.liveRates = Array.isArray(data.rates)
+                    ? data.rates.map((rate) => ({
+                        ...rate,
+                        customerCost: Number(rate.customerCost) || 0
+                    }))
+                    : [];
+                sc.liveRateSource = data.source || 'shipstation';
+                sc.liveRateLastRequestKey = requestKey;
+                sc.liveRateError = '';
+
+                if (sc.liveRates.length > 0) {
+                    const selectedStillExists = sc.liveRates.some((rate) => getLiveRateKey(rate) === sc.selectedRateKey);
+                    if (!selectedStillExists) sc.selectedRateKey = getLiveRateKey(sc.liveRates[0]);
+                } else {
+                    sc.selectedRateKey = '';
+                }
+            } catch (error) {
+                if (requestSeq !== sc.liveRateRequestSeq) return;
+                const message =
+                    (error && error.message ? error.message : 'Unable to load live rates right now.') ||
+                    'Unable to load live rates right now.';
+                clearLiveRates({ error: message, resetCache: true });
+            } finally {
+                if (requestSeq === sc.liveRateRequestSeq) {
+                    sc.liveRatesLoading = false;
+                    updatePricing();
+                    renderLiveRates();
+                }
+            }
+        }
+
+        function scheduleLiveRateFetch(options = {}) {
+            clearTimeout(liveRateFetchTimer);
+            liveRateFetchTimer = setTimeout(() => {
+                fetchLiveRates(options);
+            }, options.force ? 0 : 350);
+        }
 
         // =====================================================
         // PRICING CALCULATION (uses shared engine)
         // =====================================================
         function calculateQuote() {
+            const effectiveShippingZone = sc.shippingZone === 'live' ? 'regional' : sc.shippingZone;
+            let result;
             if (QuoteEngine) {
-                return QuoteEngine.calculateEstimate({
+                result = QuoteEngine.calculateEstimate({
                     packageType: sc.packageType,
                     dimensions: { length: sc.length, width: sc.width, height: sc.height },
                     weight: sc.weight,
                     quantity: sc.quantity,
-                    shippingZone: sc.shippingZone,
+                    shippingZone: effectiveShippingZone,
                     storageDays: PRICING.storageDays,
                     blackWrapping: sc.blackWrapping,
                     dropShipQty: sc.dropShipQty,
                     fbaPrep: sc.fbaPrep
                 });
-            }
-            // Inline fallback (same algorithm as quote-pricing-engine.js)
-            const cubicFt = (sc.length * sc.width * sc.height) / 1728;
-            const dimWeight = (sc.length * sc.width * sc.height) / PRICING.dimensionalFactor;
-            const billableWeight = Math.max(sc.weight, dimWeight);
-            let storage, handling, pickPack;
-            if (sc.packageType === 'pallet') {
-                storage = PRICING.palletStoragePerDay * PRICING.storageDays * sc.quantity;
-                handling = PRICING.palletHandling * sc.quantity;
-                pickPack = PRICING.palletPickPack * sc.quantity;
             } else {
-                storage = cubicFt * PRICING.storagePerCubicFtDay * PRICING.storageDays * sc.quantity;
-                handling = PRICING.handlingFee * sc.quantity;
-                pickPack = PRICING.pickAndPack * sc.quantity;
-            }
-            storage = Math.max(storage, PRICING.minStorage);
-            let shipping = (sc.shippingZone === 'none' || sc.shippingZone === 'dropship')
-                ? 0 : billableWeight * PRICING.shippingZones[sc.shippingZone] * sc.quantity;
-            let wrapping = (sc.packageType === 'pallet' && sc.blackWrapping) ? PRICING.blackWrapping * sc.quantity : 0;
-            let dropship = 0;
-            if (sc.shippingZone === 'dropship') {
-                for (const [size, qty] of Object.entries(sc.dropShipQty)) {
-                    dropship += qty * PRICING.dropShipRates[size];
+                // Inline fallback (same algorithm as quote-pricing-engine.js)
+                const cubicFt = (sc.length * sc.width * sc.height) / 1728;
+                const dimWeight = (sc.length * sc.width * sc.height) / PRICING.dimensionalFactor;
+                const billableWeight = Math.max(sc.weight, dimWeight);
+                let storage, handling, pickPack;
+                if (sc.packageType === 'pallet') {
+                    storage = PRICING.palletStoragePerDay * PRICING.storageDays * sc.quantity;
+                    handling = PRICING.palletHandling * sc.quantity;
+                    pickPack = PRICING.palletPickPack * sc.quantity;
+                } else {
+                    storage = cubicFt * PRICING.storagePerCubicFtDay * PRICING.storageDays * sc.quantity;
+                    handling = PRICING.handlingFee * sc.quantity;
+                    pickPack = PRICING.pickAndPack * sc.quantity;
                 }
-            }
-            // FBA Prep calculation (inline fallback)
-            let fbaPrepTotal = 0;
-            if (sc.fbaPrep && sc.fbaPrep.enabled && PRICING.fbaPrep) {
-                for (const [key, svc] of Object.entries(sc.fbaPrep.services)) {
-                    if (svc && svc.selected && svc.qty > 0 && PRICING.fbaPrep[key]) {
-                        fbaPrepTotal += svc.qty * PRICING.fbaPrep[key].rate;
+                storage = Math.max(storage, PRICING.minStorage);
+                let shipping = (sc.shippingZone === 'none' || sc.shippingZone === 'dropship' || sc.shippingZone === 'live')
+                    ? 0 : billableWeight * PRICING.shippingZones[sc.shippingZone] * sc.quantity;
+                let wrapping = (sc.packageType === 'pallet' && sc.blackWrapping) ? PRICING.blackWrapping * sc.quantity : 0;
+                let dropship = 0;
+                if (sc.shippingZone === 'dropship') {
+                    for (const [size, qty] of Object.entries(sc.dropShipQty)) {
+                        dropship += qty * PRICING.dropShipRates[size];
                     }
                 }
+                // FBA Prep calculation (inline fallback)
+                let fbaPrepTotal = 0;
+                if (sc.fbaPrep && sc.fbaPrep.enabled && PRICING.fbaPrep) {
+                    for (const [key, svc] of Object.entries(sc.fbaPrep.services)) {
+                        if (svc && svc.selected && svc.qty > 0 && PRICING.fbaPrep[key]) {
+                            fbaPrepTotal += svc.qty * PRICING.fbaPrep[key].rate;
+                        }
+                    }
+                }
+                const total = storage + handling + pickPack + shipping + wrapping + dropship + fbaPrepTotal;
+                result = { storage, handling, pickPack, shipping, wrapping, dropship, fbaPrepTotal, total, cubicFt, dimWeight, billableWeight };
             }
-            const total = storage + handling + pickPack + shipping + wrapping + dropship + fbaPrepTotal;
-            return { storage, handling, pickPack, shipping, wrapping, dropship, fbaPrepTotal, total, cubicFt, dimWeight, billableWeight };
+
+            if (sc.shippingZone === 'live') {
+                const liveShipping = getSelectedLiveShippingTotal();
+                result = {
+                    ...result,
+                    shipping: liveShipping,
+                    total:
+                        (result.storage || 0) +
+                        (result.handling || 0) +
+                        (result.pickPack || 0) +
+                        liveShipping +
+                        (result.wrapping || 0) +
+                        (result.dropship || 0) +
+                        (result.fbaPrepTotal || 0)
+                };
+            }
+
+            return result;
         }
 
         function fmt(amount) {
@@ -2641,6 +3408,7 @@
         }
 
         function getZoneLabel(zone) {
+            if (zone === 'live') return 'Live Carrier Rate';
             if (QuoteEngine) return QuoteEngine.getZoneLabel(zone);
             const labels = { local: 'Local (Florida)', regional: 'Regional (Southeast)', national: 'National', none: 'No Shipping', dropship: 'Drop Ship' };
             return labels[zone] || zone;
@@ -2650,6 +3418,7 @@
         // PRICING DISPLAY UPDATE + 3D VIEWER SYNC
         // =====================================================
         function updatePricing() {
+            syncDestinationFromForm();
             const q = calculateQuote();
             const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
             set('sc-r-dimweight', q.dimWeight.toFixed(1) + ' lbs');
@@ -2662,6 +3431,10 @@
             set('sc-r-dropship', fmt(q.dropship));
             set('sc-r-fbaprep', fmt(q.fbaPrepTotal || 0));
             set('sc-r-total', fmt(q.total));
+            const shippingLabelEl = document.getElementById('sc-r-shipping-label');
+            if (shippingLabelEl) {
+                shippingLabelEl.textContent = isLiveShippingMode() ? 'Live Shipping' : 'Est. Shipping';
+            }
 
             // Show/hide wrapping row (pallet + option selected) — same as quote.html
             const wrappingRow = document.getElementById('sc-r-wrapping-row');
@@ -2678,6 +3451,8 @@
             // Show/hide shipping row (hide when no shipping or dropship) — same as quote.html
             const shippingRow = document.getElementById('sc-r-shipping-row');
             if (shippingRow) shippingRow.style.display = (sc.shippingZone === 'none' || sc.shippingZone === 'dropship') ? 'none' : 'flex';
+
+            renderLiveRates();
 
             // Sync 3D viewer (same as quote.html)
             if (viewer3D && viewer3D.active) {
@@ -2943,7 +3718,7 @@
             sc.packageType = 'box';
             sc.length = 12; sc.width = 12; sc.height = 12;
             sc.weight = 25; sc.quantity = 1;
-            sc.shippingZone = 'regional';
+            sc.shippingZone = 'live';
             sc.blackWrapping = false;
             sc.dropShipQty = { envelope: 0, small: 0, medium: 0, large: 0 };
             sc.fbaPrep = {
@@ -2960,6 +3735,9 @@
             sc.destination = { name: '', street: '', city: '', state: '', zip: '' };
             sc.notes = '';
             sc.incomingItems = [{ sku: '', name: '', qty: 1, upc: '', tags: '', photos: [] }];
+            clearLiveRates({ resetCache: true });
+            sc.liveRatesLoading = false;
+            resetLabelPurchaseState();
 
             // Reset UI inputs
             document.querySelectorAll('#calc-overlay .package-option').forEach(btn => {
@@ -2971,13 +3749,14 @@
             document.getElementById('sc-weight-slider').value = 25;
             document.getElementById('sc-weight-input').value = 25;
             document.getElementById('sc-qty').value = 1;
-            document.getElementById('sc-zone').value = 'regional';
+            document.getElementById('sc-zone').value = 'live';
             var scWhSel = document.getElementById('sc-warehouse-select');
             if (scWhSel) scWhSel.value = 'miami';
             sc.selectedWarehouse = 'miami';
             document.getElementById('sc-wrapping').checked = false;
             document.getElementById('sc-wrapping-group').style.display = 'none';
             document.getElementById('sc-dropship-group').style.display = 'none';
+            document.getElementById('sc-live-rates-group').style.display = 'block';
             ['envelope', 'small', 'medium', 'large'].forEach(s => {
                 document.getElementById('sc-ds-' + s).value = 0;
             });
@@ -2998,6 +3777,7 @@
             // Reset success state
             document.getElementById('calc-success').classList.remove('active');
             document.querySelector('#calc-body .quote-tool').style.display = '';
+            renderSuccessLabelPanel();
 
             // Reset create button
             const createBtn = document.getElementById('sc-create-btn');
@@ -3308,6 +4088,7 @@
                     }
                 }
                 updatePricing();
+                scheduleLiveRateFetch();
             });
         }
 
@@ -3352,6 +4133,7 @@
 
                 clearError();
                 updatePricing();
+                scheduleLiveRateFetch();
                 trackCalcEvent('shipment_package_selected', { type: sc.packageType });
             });
         });
@@ -3365,6 +4147,7 @@
                 sc[field] = Math.max(1, Math.min(120, parseInt(e.target.value) || 1));
                 clearError();
                 updatePricing();
+                scheduleLiveRateFetch();
             });
         });
 
@@ -3376,12 +4159,14 @@
             document.getElementById('sc-weight-input').value = sc.weight;
             clearError();
             updatePricing();
+            scheduleLiveRateFetch();
         });
         document.getElementById('sc-weight-input').addEventListener('input', (e) => {
             sc.weight = Math.max(1, Math.min(2000, parseInt(e.target.value) || 1));
             document.getElementById('sc-weight-slider').value = Math.min(500, sc.weight);
             clearError();
             updatePricing();
+            scheduleLiveRateFetch();
         });
 
         // =====================================================
@@ -3411,6 +4196,7 @@
         document.getElementById('sc-zone').addEventListener('change', (e) => {
             sc.shippingZone = e.target.value;
             document.getElementById('sc-dropship-group').style.display = sc.shippingZone === 'dropship' ? 'block' : 'none';
+            document.getElementById('sc-live-rates-group').style.display = sc.shippingZone === 'live' ? 'block' : 'none';
             if (sc.shippingZone !== 'dropship') {
                 sc.dropShipQty = { envelope: 0, small: 0, medium: 0, large: 0 };
                 ['envelope', 'small', 'medium', 'large'].forEach(size => {
@@ -3419,7 +4205,27 @@
             }
             clearError();
             updatePricing();
+            if (sc.shippingZone === 'live') {
+                scheduleLiveRateFetch({ force: true });
+            }
             trackCalcEvent('shipment_zone_selected', { zone: sc.shippingZone });
+        });
+
+        ['sc-dest-name', 'sc-dest-street', 'sc-dest-city', 'sc-dest-state', 'sc-dest-zip'].forEach((id) => {
+            const input = document.getElementById(id);
+            if (!input) return;
+            input.addEventListener('input', () => {
+                syncDestinationFromForm();
+                clearError();
+                updatePricing();
+                if (id === 'sc-dest-city' || id === 'sc-dest-state' || id === 'sc-dest-zip') {
+                    scheduleLiveRateFetch();
+                }
+            });
+        });
+
+        document.getElementById('sc-refresh-rates-btn').addEventListener('click', () => {
+            scheduleLiveRateFetch({ force: true });
         });
 
         // =====================================================
@@ -3529,6 +4335,10 @@
         document.getElementById('calc-close').addEventListener('click', () => closeCalculator('close_button'));
         overlay.addEventListener('click', (e) => { if (e.target === overlay) closeCalculator('backdrop'); });
         document.getElementById('calc-done').addEventListener('click', () => { closeCalculator('success_done'); loadShipments(); });
+        document.getElementById('success-buy-label-btn').addEventListener('click', () => buySuccessLabel());
+        document.getElementById('success-download-label-btn').addEventListener('click', () => downloadPurchasedLabel());
+        document.getElementById('success-print-label-btn').addEventListener('click', () => printPurchasedLabel());
+        document.getElementById('success-void-label-btn').addEventListener('click', () => voidSuccessLabel());
         const openNewShipment = new URLSearchParams(window.location.search).get('new');
         if (openNewShipment === '1' || openNewShipment === 'true') {
             openCalculator();
@@ -3543,11 +4353,12 @@
         // VALIDATE & CREATE SHIPMENT
         // =====================================================
         function validateForm() {
-            const name = document.getElementById('sc-dest-name').value.trim();
-            const street = document.getElementById('sc-dest-street').value.trim();
-            const city = document.getElementById('sc-dest-city').value.trim();
-            const state = document.getElementById('sc-dest-state').value.trim().toUpperCase();
-            const zip = document.getElementById('sc-dest-zip').value.trim();
+            syncDestinationFromForm();
+            const name = sc.destination.name;
+            const street = sc.destination.street;
+            const city = sc.destination.city;
+            const state = sc.destination.state;
+            const zip = sc.destination.zip;
 
             if (sc.length < 1 || sc.length > 120) { showError('Length must be between 1 and 120 inches.'); return false; }
             if (sc.width < 1 || sc.width > 120) { showError('Width must be between 1 and 120 inches.'); return false; }
@@ -3562,6 +4373,23 @@
 
             sc.destination = { name, street, city, state, zip };
             sc.notes = document.getElementById('sc-notes').value.trim();
+
+            if (sc.shippingZone === 'live') {
+                if (sc.packageType !== 'box') {
+                    showError('Live carrier rates currently support parcel boxes only. Switch package type to Box or choose No Shipping Required.');
+                    return false;
+                }
+                if (Number(sc.quantity || 1) !== 1) {
+                    showError('Live carrier rate shopping currently supports single-package shipments only. Set quantity to 1 or choose a standard shipping zone.');
+                    return false;
+                }
+                const selectedRate = getSelectedLiveRate();
+                if (!selectedRate) {
+                    showError('Select a live carrier rate before creating the shipment.');
+                    scheduleLiveRateFetch({ force: true });
+                    return false;
+                }
+            }
 
             // Clear field errors
             document.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
@@ -3625,6 +4453,7 @@
 
             const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
             const quoteResult = calculateQuote();
+            const selectedLiveRate = getSelectedLiveRate();
             const d = sc.destination;
             const incomingItemsForSave = getIncomingItemsForSave();
 
@@ -3632,6 +4461,7 @@
                 package_type: sc.packageType,
                 quantity: sc.quantity,
                 shipping_zone: sc.shippingZone,
+                live_rate_selected: !!selectedLiveRate,
                 value: quoteResult.total
             });
 
@@ -3722,8 +4552,19 @@
                     dropship: quoteResult.dropship,
                     fba_prep: quoteResult.fbaPrepTotal || 0,
                     total: quoteResult.total,
-                    storage_days: PRICING.storageDays
+                    storage_days: PRICING.storageDays,
+                    shipping_source: sc.shippingZone === 'live' ? (sc.liveRateSource || 'shipstation') : 'legacy_zone'
                 },
+                live_rate_quote: selectedLiveRate ? {
+                    carrier: selectedLiveRate.carrierCode || selectedLiveRate.carrier,
+                    service: selectedLiveRate.service,
+                    service_code: selectedLiveRate.serviceCode || null,
+                    customer_cost_each: Number(selectedLiveRate.customerCost) || 0,
+                    customer_cost_total: quoteResult.shipping,
+                    delivery_days: selectedLiveRate.deliveryDays || null,
+                    source: sc.liveRateSource || 'shipstation',
+                    selected_at: new Date().toISOString()
+                } : null,
                 // BOL / Shipping Label data
                 bol_document: bolDocument,
                 cargo_items: cargoItemsEmbedded,
@@ -3732,7 +4573,7 @@
                 cargo_items_truncated: cargoItemsData.length > cargoItemsEmbedded.length || cargoItemsWereTrimmed,
                 // Incoming inventory items (itemized SKUs)
                 incoming_items: incomingItemsForSave,
-                notes: sc.notes || `Shipment: ${sc.quantity} ${sc.packageType}(s), Zone: ${getZoneLabel(sc.shippingZone)}`,
+                notes: sc.notes || `Shipment: ${sc.quantity} ${sc.packageType}(s), Method: ${selectedLiveRate ? `${selectedLiveRate.carrierCode || selectedLiveRate.carrier} ${selectedLiveRate.service}` : getZoneLabel(sc.shippingZone)}`,
                 // Packing List & Invoice documents
                 packing_list: docsState.packing_list.file ? {
                     filename: docsState.packing_list.file.name,
@@ -3770,102 +4611,14 @@
             }
 
             try {
-                const shipmentRef = await addDoc(collection(db, 'shipments'), newShipment);
-
-                // Log detailed billable events
-                try {
-                    const events = [];
-                    events.push({
-                        customer_id: currentUser.uid,
-                        event_type: 'storage',
-                        description: `Storage (${PRICING.storageDays}d) - ${trackingNumber}`,
-                        quantity: sc.quantity,
-                        unit: sc.packageType === 'pallet' ? 'pallets' : 'units',
-                        rate: sc.packageType === 'pallet' ? PRICING.palletStoragePerDay : PRICING.storagePerCubicFtDay,
-                        amount: quoteResult.storage,
-                        shipment_id: shipmentRef.id,
-                        invoiced: false,
-                        created_at: new Date().toISOString(),
-                        created_by: currentUser.uid
-                    });
-                    events.push({
-                        customer_id: currentUser.uid,
-                        event_type: 'handling',
-                        description: `Handling - ${trackingNumber}`,
-                        quantity: sc.quantity,
-                        unit: sc.packageType === 'pallet' ? 'pallets' : 'units',
-                        rate: sc.packageType === 'pallet' ? PRICING.palletHandling : PRICING.handlingFee,
-                        amount: quoteResult.handling,
-                        shipment_id: shipmentRef.id,
-                        invoiced: false,
-                        created_at: new Date().toISOString(),
-                        created_by: currentUser.uid
-                    });
-                    events.push({
-                        customer_id: currentUser.uid,
-                        event_type: 'pick_pack',
-                        description: `Pick & Pack - ${trackingNumber}`,
-                        quantity: sc.quantity,
-                        unit: sc.packageType === 'pallet' ? 'pallets' : 'items',
-                        rate: sc.packageType === 'pallet' ? PRICING.palletPickPack : PRICING.pickAndPack,
-                        amount: quoteResult.pickPack,
-                        shipment_id: shipmentRef.id,
-                        invoiced: false,
-                        created_at: new Date().toISOString(),
-                        created_by: currentUser.uid
-                    });
-                    if (quoteResult.shipping > 0) {
-                        events.push({
-                            customer_id: currentUser.uid,
-                            event_type: 'shipping',
-                            description: `Shipping (${getZoneLabel(sc.shippingZone)}) - ${trackingNumber}`,
-                            quantity: sc.quantity,
-                            unit: 'packages',
-                            rate: PRICING.shippingZones[sc.shippingZone],
-                            amount: quoteResult.shipping,
-                            shipment_id: shipmentRef.id,
-                            invoiced: false,
-                            created_at: new Date().toISOString(),
-                            created_by: currentUser.uid
-                        });
-                    }
-                    if (quoteResult.wrapping > 0) {
-                        events.push({
-                            customer_id: currentUser.uid,
-                            event_type: 'wrapping',
-                            description: `Black Wrapping - ${trackingNumber}`,
-                            quantity: sc.quantity,
-                            unit: 'pallets',
-                            rate: PRICING.blackWrapping,
-                            amount: quoteResult.wrapping,
-                            shipment_id: shipmentRef.id,
-                            invoiced: false,
-                            created_at: new Date().toISOString(),
-                            created_by: currentUser.uid
-                        });
-                    }
-                    if (quoteResult.dropship > 0) {
-                        events.push({
-                            customer_id: currentUser.uid,
-                            event_type: 'dropship',
-                            description: `Drop Ship - ${trackingNumber}`,
-                            quantity: 1,
-                            unit: 'shipment',
-                            rate: quoteResult.dropship,
-                            amount: quoteResult.dropship,
-                            shipment_id: shipmentRef.id,
-                            invoiced: false,
-                            created_at: new Date().toISOString(),
-                            created_by: currentUser.uid
-                        });
-                    }
-                    for (const ev of events) {
-                        await addDoc(collection(db, 'billable_events'), ev);
-                    }
-                    trackCalcEvent('shipment_billable_events_created', { events_count: events.length, value: quoteResult.total });
-                } catch (billingErr) {
-                    console.warn('Billing events failed:', billingErr.message);
-                }
+                const createResult = await createPortalShipmentCallable({
+                    shipment: newShipment
+                });
+                const authoritativeShipment = createResult?.data || {};
+                const shipmentRef = { id: authoritativeShipment.shipment_id };
+                const persistedTrackingNumber = authoritativeShipment.tracking_number || trackingNumber;
+                const authoritativeQuote = authoritativeShipment.quote_estimate || newShipment.quote_estimate;
+                const authoritativeLiveRate = authoritativeShipment.live_rate_quote || newShipment.live_rate_quote;
 
                 // Store individual cargo tracking items in Firestore
                 if (cargoItemsData.length > 0) {
@@ -3874,7 +4627,7 @@
                             await addDoc(collection(db, 'cargo_items'), {
                                 ...cargoItem,
                                 shipment_id: shipmentRef.id,
-                                tracking_number: trackingNumber,
+                                tracking_number: persistedTrackingNumber,
                                 user_id: currentUser.uid
                             });
                         }
@@ -3892,7 +4645,7 @@
                         const fileData = (bolState.fileDataUrl && bolState.file.size < safeFileLimit) ? bolState.fileDataUrl : null;
                         await addDoc(collection(db, 'bol_documents'), {
                             shipment_id: shipmentRef.id,
-                            tracking_number: trackingNumber,
+                            tracking_number: persistedTrackingNumber,
                             user_id: currentUser.uid,
                             ...bolDocument,
                             file_data: fileData,
@@ -3911,7 +4664,7 @@
                     try {
                         await addDoc(collection(db, 'shipment_documents'), {
                             shipment_id: shipmentRef.id,
-                            tracking_number: trackingNumber,
+                            tracking_number: persistedTrackingNumber,
                             user_id: currentUser.uid,
                             doc_type: 'packing_list',
                             filename: docsState.packing_list.file.name,
@@ -3930,7 +4683,7 @@
                     try {
                         await addDoc(collection(db, 'shipment_documents'), {
                             shipment_id: shipmentRef.id,
-                            tracking_number: trackingNumber,
+                            tracking_number: persistedTrackingNumber,
                             user_id: currentUser.uid,
                             doc_type: 'commercial_invoice',
                             filename: docsState.invoice.file.name,
@@ -3976,7 +4729,7 @@
                                 const updatedData = {
                                     quantity: (existingData.quantity || 0) + item.qty,
                                     last_updated: new Date().toISOString(),
-                                    last_shipment: trackingNumber
+                                    last_shipment: persistedTrackingNumber
                                 };
                                 if (item.upc && !existingData.upc) updatedData.upc = item.upc;
                                 if (item.tags.length > 0) {
@@ -4008,8 +4761,8 @@
                                     warehouse: warehouseId,
                                     location: 'Receiving',
                                     reorder_level: 10,
-                                    source_shipment: trackingNumber,
-                                    last_shipment: trackingNumber,
+                                    source_shipment: persistedTrackingNumber,
+                                    last_shipment: persistedTrackingNumber,
                                     last_updated: new Date().toISOString()
                                 };
                                 const newDocRef = await addDoc(collection(db, 'inventory'), newItem);
@@ -4020,38 +4773,67 @@
                                 });
                             }
                         }
-                        trackCalcEvent('inventory_items_synced', { count: validItems.length, tracking_number: trackingNumber });
+                        trackCalcEvent('inventory_items_synced', { count: validItems.length, tracking_number: persistedTrackingNumber });
                     } catch (invErr) {
                         console.warn('Inventory sync failed:', invErr.message);
                     }
                 }
 
+                labelPurchaseState.shipmentId = shipmentRef.id;
+                labelPurchaseState.shipmentTrackingNumber = persistedTrackingNumber;
+                labelPurchaseState.shipmentQuantity = sc.quantity;
+                labelPurchaseState.purchase = null;
+                labelPurchaseState.loading = false;
+                labelPurchaseState.voiding = false;
+                labelPurchaseState.error = '';
+                labelPurchaseState.quote = authoritativeLiveRate ? {
+                    carrierCode: authoritativeLiveRate.carrier,
+                    service: authoritativeLiveRate.service,
+                    serviceCode: authoritativeLiveRate.service_code || null,
+                    customerCost: Number(authoritativeLiveRate.customer_cost_each) || 0,
+                    weight_lbs: sc.weight,
+                    length: sc.length,
+                    width: sc.width,
+                    height: sc.height,
+                    recipient_name: d.name,
+                    recipient_street1: d.street,
+                    recipient_street2: '',
+                    recipient_city: d.city,
+                    recipient_state: d.state,
+                    recipient_zip: d.zip,
+                    recipient_phone: ''
+                } : null;
+
                 // GA4 tracking
                 if (window.MA3PLAnalytics) {
                     MA3PLAnalytics.track('shipment_created', {
                         method: 'calculator',
-                        tracking_number: trackingNumber,
+                        tracking_number: persistedTrackingNumber,
                         package_type: sc.packageType,
                         quantity: sc.quantity,
                         shipping_zone: sc.shippingZone,
                         has_wrapping: sc.blackWrapping,
                         currency: 'USD',
-                        value: quoteResult.total
+                        value: Number(authoritativeQuote.total) || quoteResult.total
                     });
                     MA3PLAnalytics.track('purchase', {
-                        transaction_id: trackingNumber,
+                        transaction_id: persistedTrackingNumber,
                         currency: 'USD',
-                        value: quoteResult.total,
-                        items: [{ item_name: sc.packageType + ' shipment', quantity: sc.quantity, price: quoteResult.total }]
+                        value: Number(authoritativeQuote.total) || quoteResult.total,
+                        items: [{ item_name: sc.packageType + ' shipment', quantity: sc.quantity, price: Number(authoritativeQuote.total) || quoteResult.total }]
                     });
                 }
 
                 // Show success
                 document.querySelector('#calc-body .quote-tool').style.display = 'none';
-                document.getElementById('success-tracking').textContent = trackingNumber;
+                document.getElementById('success-tracking').textContent = persistedTrackingNumber;
                 document.getElementById('calc-success').classList.add('active');
+                renderSuccessLabelPanel();
 
-                trackCalcEvent('shipment_created_success', { tracking_number: trackingNumber, value: quoteResult.total });
+                trackCalcEvent('shipment_created_success', {
+                    tracking_number: persistedTrackingNumber,
+                    value: Number(authoritativeQuote.total) || quoteResult.total
+                });
 
             } catch (error) {
                 console.error('Shipment creation error:', error);
@@ -4100,6 +4882,9 @@
             }
 
             loadShipments();
+            if (document.getElementById('calc-overlay')?.classList.contains('active')) {
+                scheduleLiveRateFetch({ force: true });
+            }
 
             // Initialize column preferences
             if (window.ColumnPrefs) {
@@ -4920,6 +5705,7 @@
         async function loadShipments() {
             const tbody = document.getElementById('shipments-list');
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Loading...</td></tr>';
+            shipmentActionCache.clear();
 
             try {
                 const statusFilter = document.getElementById('status-filter').value;
@@ -4945,6 +5731,7 @@
                 tbody.innerHTML = '';
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
+                    shipmentActionCache.set(docSnap.id, data);
                     const row = document.createElement('tr');
 
                     // BOL / Cargo / Docs column
@@ -4963,13 +5750,25 @@
                     }
                     // Always show upload link
                     bolCargoHtml += `<button class="shipment-upload-link" data-shipment-id="${docSnap.id}" data-tracking="${data.tracking_number}" title="Upload BOL or Invoice">📤 Upload</button>`;
+                    if (data.live_rate_quote && !data.shipstation_shipment_id && (data.package?.type || 'box') === 'box' && Number(data.package?.quantity || 1) === 1) {
+                        bolCargoHtml += `<button class="shipment-action-link shipment-buy-label-link" data-shipment-id="${docSnap.id}" title="Buy label from saved live rate">🏷️ Buy Label</button>`;
+                    }
+                    if (data.shipstation_shipment_id && data.shipping_label_status === 'created') {
+                        bolCargoHtml += `<button class="shipment-action-link danger shipment-void-label-link" data-shipment-id="${docSnap.id}" title="Void label">⛔ Void</button>`;
+                    }
+                    if (data.label_pdf_path) {
+                        bolCargoHtml += `<button class="shipment-action-link shipment-download-label-link" data-shipment-id="${docSnap.id}" title="Download stored label">⬇️ Label</button>`;
+                    }
+                    if (data.tracking_url) {
+                        bolCargoHtml += `<a class="shipment-action-link" href="${data.tracking_url}" target="_blank" rel="noopener noreferrer" title="Open carrier tracking">🔗 Carrier</a>`;
+                    }
 
                     row.innerHTML = `
                         <td><a href="tracking.html?id=${data.tracking_number}" style="color: var(--color-accent); font-weight: 500;">${data.tracking_number}</a></td>
                         <td>${data.destination?.name || 'N/A'}</td>
                         <td>${data.destination?.city || 'N/A'}, ${data.destination?.state || ''}</td>
                         <td>${bolCargoHtml}</td>
-                        <td style="text-transform: capitalize;">${data.service_type || data.shipping_zone || ''}</td>
+                        <td style="text-transform: capitalize;">${data.live_rate_quote?.service || data.service_type || data.shipping_zone || ''}</td>
                         <td><span class="badge badge-${data.status}">${data.status.replace('_', ' ')}</span></td>
                         <td>${new Date(data.created_at).toLocaleDateString()}</td>
                     `;
@@ -4985,6 +5784,51 @@
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     openDocUploadModal(btn.dataset.shipmentId, btn.dataset.tracking);
+                });
+            });
+            document.querySelectorAll('.shipment-buy-label-link').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    btn.disabled = true;
+                    const originalLabel = btn.textContent;
+                    btn.textContent = 'Buying...';
+                    try {
+                        await buyShipmentLabelFromRow(btn.dataset.shipmentId);
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = originalLabel;
+                    }
+                });
+            });
+            document.querySelectorAll('.shipment-void-label-link').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (!window.confirm('Void this shipping label? This action also reverses the shipping billable event.')) {
+                        return;
+                    }
+                    btn.disabled = true;
+                    const originalLabel = btn.textContent;
+                    btn.textContent = 'Voiding...';
+                    try {
+                        await voidShipmentLabelFromRow(btn.dataset.shipmentId);
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = originalLabel;
+                    }
+                });
+            });
+            document.querySelectorAll('.shipment-download-label-link').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    btn.disabled = true;
+                    const originalLabel = btn.textContent;
+                    btn.textContent = 'Loading...';
+                    try {
+                        await downloadShipmentLabelFromRow(btn.dataset.shipmentId);
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = originalLabel;
+                    }
                 });
             });
         }

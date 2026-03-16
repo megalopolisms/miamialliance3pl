@@ -18,6 +18,7 @@ const PRICING = window.MA3PLQuoteEngine
       storageDays: 30,
       minStorage: 5.0,
       shippingZones: {
+        live: 0,
         local: 0.45,
         regional: 0.65,
         national: 0.85,
@@ -667,6 +668,7 @@ class QuoteCalculator {
     const WH = window.MA3PLQuoteEngine && window.MA3PLQuoteEngine.WAREHOUSES;
     const wh = WH && WH[this.selectedWarehouse];
     const names = {
+      live: "Live Carrier Rate",
       local: wh ? wh.localZoneLabel : "Local (Florida)",
       regional: wh ? wh.regionalZoneLabel : "Regional (Southeast)",
       national: "National",

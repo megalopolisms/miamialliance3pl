@@ -75,6 +75,17 @@ service cloud.firestore {
         (isOwner(userId) && !isInventoryLockedForUser(userId));
     }
 
+    function ownerCanEditShipmentAttachmentFields() {
+      return request.resource.data.user_id == resource.data.user_id &&
+        request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'bol_document',
+          'commercial_invoice',
+          'packing_list',
+          'notes',
+          'updated_at'
+        ]);
+    }
+
     // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isStaff());
@@ -92,8 +103,11 @@ service cloud.firestore {
     // Shipments collection
     match /shipments/{shipmentId} {
       allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
-      allow create: if isAuthenticated();
-      allow update: if isStaff() || resource.data.user_id == request.auth.uid;
+      allow create: if isStaff();
+      allow update: if isStaff() || (
+        resource.data.user_id == request.auth.uid &&
+        ownerCanEditShipmentAttachmentFields()
+      );
       allow delete: if isAdmin();
     }
 
@@ -125,6 +139,12 @@ service cloud.firestore {
     match /billable_events/{eventId} {
       allow read: if isAuthenticated() && (resource.data.customer_id == request.auth.uid || isStaff());
       allow write: if isStaff();
+    }
+
+    // Shipping financials — internal carrier cost and margin details
+    match /shipping_financials/{shipmentId} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
     }
 
     // Pickup/Delivery Requests
@@ -187,6 +207,18 @@ service cloud.firestore {
     match /settings/column_labels {
       allow read: if isStaff();
       allow write: if isJorge();
+    }
+
+    // ShipStation webhook audit log — server writes, staff reads
+    match /shipstation_webhooks/{eventId} {
+      allow read: if isStaff();
+      allow write: if false; // Admin SDK only (Cloud Functions)
+    }
+
+    // Shipping settings — staff/admin only; customer rate display should go through callables
+    match /settings/shipping {
+      allow read: if isStaff();
+      allow write: if isAdmin();
     }
 
     // Settings (admin only write, staff read)

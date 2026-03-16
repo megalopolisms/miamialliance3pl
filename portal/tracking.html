@@ -100,6 +100,12 @@
                     <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: var(--spacing-md);">
                         <div>
                             <h2 style="font-size: var(--font-size-xl); color: var(--color-gray-900); margin-bottom: var(--spacing-xs);"><span data-i18n="portal.tracking.trackingHash">Tracking #</span> <span id="result-tracking"></span></h2>
+                            <p id="result-tracking-link-wrap" style="display:none; margin: 6px 0 0;">
+                                <a id="result-tracking-link" href="#" target="_blank" rel="noopener noreferrer" style="color: var(--color-accent); font-weight: 600; text-decoration: none;">Open carrier tracking</a>
+                            </p>
+                            <p id="result-label-action-wrap" style="display:none; margin: 6px 0 0;">
+                                <button id="result-label-download-btn" type="button" style="border: none; background: none; color: var(--color-accent); font-weight: 600; padding: 0; cursor: pointer;">Download shipping label</button>
+                            </p>
                             <p style="color: var(--color-gray-500);"><span data-i18n="portal.tracking.created">Created:</span> <span id="result-date"></span></p>
                         </div>
                         <span id="result-status" class="badge"></span>
@@ -127,6 +133,14 @@
                     <div class="dashboard-card">
                         <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);" data-i18n="portal.tracking.service">Service</h3>
                         <p id="result-service" style="color: var(--color-gray-900); text-transform: capitalize;"></p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">Carrier Tracking</h3>
+                        <p id="result-carrier-tracking" style="color: var(--color-gray-900);"></p>
+                    </div>
+                    <div class="dashboard-card" id="result-admin-financial-card" style="display: none;">
+                        <h3 style="font-size: var(--font-size-base); color: var(--color-gray-500); margin-bottom: var(--spacing-sm);">Shipping Margin</h3>
+                        <p id="result-cost-breakdown" style="color: var(--color-gray-900);"></p>
                     </div>
                 </div>
 
@@ -159,6 +173,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
         import { getFirestore, collection, query, where, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         const firebaseConfig = {
@@ -174,6 +189,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const fns = getFunctions(app);
+        const getShipmentLabelCallable = httpsCallable(fns, 'getShipmentLabel');
 
         // Fallback admin emails (used only if Firestore role check fails)
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
@@ -223,6 +240,11 @@
                 }
             }
 
+            if (isStaff()) {
+                const adminNav = document.getElementById('admin-nav');
+                if (adminNav) adminNav.style.display = 'block';
+            }
+
             // Check for URL parameter
             const urlParams = new URLSearchParams(window.location.search);
             const trackingId = urlParams.get('id');
@@ -264,7 +286,8 @@
                     return;
                 }
 
-                const shipmentData = snapshot.docs[0].data();
+                const shipmentDoc = snapshot.docs[0];
+                const shipmentData = shipmentDoc.data();
 
                 // Role-based access control:
                 // Staff (admin/employee) can track any shipment
@@ -281,18 +304,89 @@
                     }
                 }
 
-                displayShipment(shipmentData);
+                let shippingFinancial = null;
+                if (isStaff()) {
+                    try {
+                        const shippingFinancialDoc = await getDoc(doc(db, 'shipping_financials', shipmentDoc.id));
+                        if (shippingFinancialDoc.exists()) {
+                            shippingFinancial = shippingFinancialDoc.data();
+                        }
+                    } catch (financialError) {
+                        console.warn('Unable to load shipping financials:', financialError);
+                    }
+                }
+
+                displayShipment({ id: shipmentDoc.id, ...shipmentData }, shippingFinancial);
             } catch (error) {
                 console.error('Error tracking shipment:', error);
                 document.getElementById('no-result').style.display = 'block';
             }
         }
 
-        function displayShipment(data) {
+        function formatMoney(value) {
+            const amount = Number(value) || 0;
+            return '$' + amount.toFixed(2);
+        }
+
+        function downloadLabelPayload(payload) {
+            if (!payload?.label_pdf_base64) {
+                throw new Error('No label PDF is available for this shipment.');
+            }
+            const byteChars = atob(payload.label_pdf_base64);
+            const bytes = new Uint8Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+            const blob = new Blob([bytes], { type: payload.label_pdf_content_type || 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = payload.label_pdf_filename || `${payload.tracking_number || 'shipping-label'}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+        }
+
+        function displayShipment(data, shippingFinancial = null) {
             document.getElementById('tracking-result').style.display = 'block';
 
             document.getElementById('result-tracking').textContent = data.tracking_number;
             document.getElementById('result-date').textContent = new Date(data.created_at).toLocaleString();
+
+            const trackingLinkWrap = document.getElementById('result-tracking-link-wrap');
+            const trackingLink = document.getElementById('result-tracking-link');
+            const labelActionWrap = document.getElementById('result-label-action-wrap');
+            const labelDownloadBtn = document.getElementById('result-label-download-btn');
+            if (data.tracking_url) {
+                trackingLink.href = data.tracking_url;
+                trackingLink.textContent = 'Open carrier tracking';
+                trackingLinkWrap.style.display = 'block';
+            } else {
+                trackingLink.href = '#';
+                trackingLink.textContent = '';
+                trackingLinkWrap.style.display = 'none';
+            }
+
+            if (data.label_pdf_path) {
+                labelActionWrap.style.display = 'block';
+                labelDownloadBtn.disabled = false;
+                labelDownloadBtn.onclick = async () => {
+                    try {
+                        labelDownloadBtn.disabled = true;
+                        labelDownloadBtn.textContent = 'Loading label...';
+                        const result = await getShipmentLabelCallable({ shipment_id: data.id || data.shipment_id });
+                        downloadLabelPayload(result.data);
+                    } catch (error) {
+                        console.error('Label download failed:', error);
+                        window.alert(error?.message || 'Unable to download the stored shipping label right now.');
+                    } finally {
+                        labelDownloadBtn.disabled = false;
+                        labelDownloadBtn.textContent = 'Download shipping label';
+                    }
+                };
+            } else {
+                labelActionWrap.style.display = 'none';
+                labelDownloadBtn.onclick = null;
+            }
 
             const statusEl = document.getElementById('result-status');
             statusEl.className = 'badge badge-' + data.status;
@@ -319,12 +413,50 @@
             `;
 
             document.getElementById('result-package').innerHTML = `
-                Weight: ${data.package.weight} lbs<br>
-                Dimensions: ${data.package.length || '-'}×${data.package.width || '-'}×${data.package.height || '-'} in<br>
-                Quantity: ${data.package.quantity}
+                Weight: ${data.package?.weight || data.weight_lbs || '-'} lbs<br>
+                Dimensions: ${data.package?.length || '-'}×${data.package?.width || '-'}×${data.package?.height || '-'} in<br>
+                Quantity: ${data.package?.quantity || 1}
             `;
 
-            document.getElementById('result-service').textContent = data.service_type;
+            const serviceBits = [];
+            if (data.service_type || data.service_name || data.service) {
+                serviceBits.push(data.service_type || data.service_name || data.service);
+            }
+            if (data.shipping_label_status) {
+                serviceBits.push('Label: ' + data.shipping_label_status.replace('_', ' '));
+            }
+            document.getElementById('result-service').textContent = serviceBits.join(' • ') || 'Pending service assignment';
+
+            const carrierTrackingEl = document.getElementById('result-carrier-tracking');
+            if (data.tracking_url) {
+                carrierTrackingEl.innerHTML = `<a href="${data.tracking_url}" target="_blank" rel="noopener noreferrer" style="color: var(--color-accent); font-weight: 600; text-decoration: none;">${data.carrier_name || data.carrier || 'Carrier'} tracking</a>`;
+            } else if (data.shipstation_shipment_id) {
+                carrierTrackingEl.textContent = 'Label created. Carrier link pending.';
+            } else {
+                carrierTrackingEl.textContent = 'No live carrier label purchased yet.';
+            }
+
+            const adminFinancialCard = document.getElementById('result-admin-financial-card');
+            const costBreakdownEl = document.getElementById('result-cost-breakdown');
+            if (isStaff() && shippingFinancial) {
+                adminFinancialCard.style.display = 'block';
+                costBreakdownEl.innerHTML = `
+                    Customer: ${formatMoney(shippingFinancial.customer_cost)}<br>
+                    Carrier: ${formatMoney(shippingFinancial.carrier_cost)}<br>
+                    Margin: ${formatMoney(shippingFinancial.margin)}<br>
+                    Status: ${shippingFinancial.status || 'active'}
+                `;
+            } else if (isStaff() && data.customer_cost) {
+                adminFinancialCard.style.display = 'block';
+                costBreakdownEl.innerHTML = `
+                    Customer: ${formatMoney(data.customer_cost)}<br>
+                    Carrier: pending<br>
+                    Margin: pending
+                `;
+            } else {
+                adminFinancialCard.style.display = 'none';
+                costBreakdownEl.textContent = '';
+            }
 
             // Generate timeline
             const timeline = document.getElementById('tracking-timeline');

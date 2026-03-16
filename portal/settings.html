@@ -384,6 +384,117 @@
                 </div>
             </div>
 
+            <!-- SS-006: Shipping & Markup Configuration -->
+            <div class="settings-section" id="shipping-settings-section">
+                <h2>🚚 Shipping & Markup Configuration</h2>
+                <p style="color: var(--color-gray-600); margin-bottom: var(--spacing-md);">Configure ShipStation carrier rates and your profit markup. The markup is added on top of carrier costs before showing to customers.</p>
+
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <h3>ShipStation Integration</h3>
+                        <p>Enable live carrier rates from ShipStation API</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="shipping-enabled">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="form-group" style="margin-top: var(--spacing-md);">
+                    <label for="markup-type" style="font-weight:600;">Markup Type</label>
+                    <select id="markup-type" style="width:100%; padding:10px 12px; border:1px solid var(--color-gray-300); border-radius:var(--radius-md);">
+                        <option value="percentage">Percentage (%) — e.g. 15% on top of carrier cost</option>
+                        <option value="flat">Flat Fee ($) — fixed amount added per label</option>
+                        <option value="tiered">Tiered by Weight — different % for weight ranges</option>
+                    </select>
+                </div>
+
+                <div id="markup-percentage-group" class="form-group">
+                    <label for="markup-percentage" style="font-weight:600;">Markup Percentage (%)</label>
+                    <div class="input-group">
+                        <input type="number" id="markup-percentage" value="15" min="0" max="200" step="0.5">
+                        <span style="padding:8px 12px; color:var(--color-gray-500); background:var(--color-gray-50); border:1px solid var(--color-gray-300); border-radius:var(--radius-md);">%</span>
+                    </div>
+                    <p style="font-size:var(--font-size-sm); color:var(--color-gray-500); margin-top:4px;">Example: Carrier charges $10.00 → Customer pays $<span id="pct-example">11.50</span></p>
+                </div>
+
+                <div id="markup-flat-group" class="form-group" style="display:none;">
+                    <label for="markup-flat" style="font-weight:600;">Flat Fee per Label ($)</label>
+                    <div class="input-group">
+                        <span style="padding:8px 12px; color:var(--color-gray-500); background:var(--color-gray-50); border:1px solid var(--color-gray-300); border-radius:var(--radius-md);">$</span>
+                        <input type="number" id="markup-flat" value="3.00" min="0" max="100" step="0.25">
+                    </div>
+                    <p style="font-size:var(--font-size-sm); color:var(--color-gray-500); margin-top:4px;">Example: Carrier charges $10.00 → Customer pays $<span id="flat-example">13.00</span></p>
+                </div>
+
+                <div id="markup-tiered-group" style="display:none;">
+                    <label style="font-weight:600; display:block; margin-bottom:var(--spacing-sm);">Weight-Based Tiers</label>
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:var(--spacing-sm);">
+                        <thead>
+                            <tr style="border-bottom:2px solid var(--color-gray-200);">
+                                <th style="text-align:left; padding:8px; font-size:var(--font-size-sm); color:var(--color-gray-500);">Up to (lbs)</th>
+                                <th style="text-align:left; padding:8px; font-size:var(--font-size-sm); color:var(--color-gray-500);">Markup %</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tiered-rows"></tbody>
+                    </table>
+                    <button type="button" id="add-tier" class="btn-sm" style="background:var(--color-gray-100); color:var(--color-gray-700);">+ Add Tier</button>
+                </div>
+
+                <div class="form-group" style="margin-top: var(--spacing-md);">
+                    <label for="markup-minimum" style="font-weight:600;">Minimum Charge ($)</label>
+                    <div class="input-group">
+                        <span style="padding:8px 12px; color:var(--color-gray-500); background:var(--color-gray-50); border:1px solid var(--color-gray-300); border-radius:var(--radius-md);">$</span>
+                        <input type="number" id="markup-minimum" value="5.00" min="0" max="50" step="0.50">
+                    </div>
+                    <p style="font-size:var(--font-size-sm); color:var(--color-gray-500); margin-top:4px;">Customer will never be charged less than this amount.</p>
+                </div>
+
+                <div class="form-group" style="margin-top: var(--spacing-md);">
+                    <label style="font-weight:600; display:block; margin-bottom:var(--spacing-sm);">Enabled Carriers</label>
+                    <div style="display:flex; flex-wrap:wrap; gap:var(--spacing-sm);">
+                        <label style="display:flex; align-items:center; gap:6px; padding:8px 16px; background:var(--color-gray-50); border:1px solid var(--color-gray-200); border-radius:var(--radius-md); cursor:pointer;">
+                            <input type="checkbox" id="carrier-stamps_com" value="stamps_com" checked> USPS (Stamps.com)
+                        </label>
+                        <label style="display:flex; align-items:center; gap:6px; padding:8px 16px; background:var(--color-gray-50); border:1px solid var(--color-gray-200); border-radius:var(--radius-md); cursor:pointer;">
+                            <input type="checkbox" id="carrier-ups" value="ups" checked> UPS
+                        </label>
+                        <label style="display:flex; align-items:center; gap:6px; padding:8px 16px; background:var(--color-gray-50); border:1px solid var(--color-gray-200); border-radius:var(--radius-md); cursor:pointer;">
+                            <input type="checkbox" id="carrier-fedex" value="fedex" checked> FedEx
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: var(--spacing-md);">
+                    <label style="font-weight:600;">Ship From Address</label>
+                    <div style="padding:12px; background:var(--color-gray-50); border:1px solid var(--color-gray-200); border-radius:var(--radius-md); color:var(--color-gray-700);">Miami Alliance 3PL — 8780 NW 100th ST, Medley, FL 33178</div>
+                </div>
+
+                <div style="margin-top:var(--spacing-lg); padding-top:var(--spacing-md); border-top:1px solid var(--color-gray-200);">
+                    <h3 style="margin-bottom:var(--spacing-sm);">Test Rate Lookup</h3>
+                    <div class="company-info-grid">
+                        <div class="form-group">
+                            <label for="test-weight">Weight (lbs)</label>
+                            <input type="number" id="test-weight" value="5" min="1" max="150">
+                        </div>
+                        <div class="form-group">
+                            <label for="test-zip">Destination ZIP</label>
+                            <input type="text" id="test-zip" value="10001" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="button" id="test-rate-btn" class="btn-sm" style="width:100%; padding:10px;">Test Rate</button>
+                        </div>
+                    </div>
+                    <div id="test-rate-result" style="display:none; margin-top:var(--spacing-sm); padding:12px; background:var(--color-gray-50); border:1px solid var(--color-gray-200); border-radius:var(--radius-md);">
+                        <pre id="test-rate-output" style="font-size:var(--font-size-sm); white-space:pre-wrap; margin:0;"></pre>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-sm" id="save-shipping" style="margin-top:var(--spacing-lg); padding:12px 24px;">Save Shipping Settings</button>
+            </div>
+
             <!-- Danger Zone -->
             <div class="settings-section" style="border-color: #fecaca;">
                 <h2 style="color: #dc2626;" data-i18n="portal.settings.dangerZone">⚠️ Danger Zone</h2>
@@ -441,8 +552,11 @@
             }
 
             document.getElementById('user-name').innerHTML = `${user.displayName || user.email} <span class="admin-badge">ADMIN</span>`;
-            loadStats();
-            loadSettings();
+            await Promise.all([
+                loadStats(),
+                loadSettings(),
+                loadShippingSettings()
+            ]);
         });
 
         document.getElementById('logout-btn').addEventListener('click', async (e) => {
@@ -556,6 +670,175 @@
             if (!confirm('Are you sure you want to clear all test data? This cannot be undone.')) return;
             showToast('This feature is disabled for safety', 'error');
         });
+
+        // ============================================================
+        // SS-006: SHIPPING SETTINGS
+        // ============================================================
+
+        document.getElementById('markup-type').addEventListener('change', function() {
+            document.getElementById('markup-percentage-group').style.display = this.value === 'percentage' ? 'block' : 'none';
+            document.getElementById('markup-flat-group').style.display = this.value === 'flat' ? 'block' : 'none';
+            document.getElementById('markup-tiered-group').style.display = this.value === 'tiered' ? 'block' : 'none';
+        });
+
+        document.getElementById('markup-percentage').addEventListener('input', function() {
+            var pct = parseFloat(this.value) || 0;
+            document.getElementById('pct-example').textContent = (10 * (1 + pct / 100)).toFixed(2);
+        });
+
+        document.getElementById('markup-flat').addEventListener('input', function() {
+            var flat = parseFloat(this.value) || 0;
+            document.getElementById('flat-example').textContent = (10 + flat).toFixed(2);
+        });
+
+        var defaultTiers = [
+            { max_weight_lbs: 5, markup_pct: 25 },
+            { max_weight_lbs: 20, markup_pct: 15 },
+            { max_weight_lbs: 70, markup_pct: 10 },
+            { max_weight_lbs: 9999, markup_pct: 8 },
+        ];
+
+        function renderTieredRows(tiers) {
+            var tbody = document.getElementById('tiered-rows');
+            tbody.innerHTML = '';
+            (tiers || defaultTiers).forEach(function(tier) {
+                var tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid var(--color-gray-100)';
+                tr.innerHTML = '<td style="padding:6px;"><input type="number" class="tier-weight" value="' + tier.max_weight_lbs + '" min="1" max="9999" style="width:80px; padding:6px 8px; border:1px solid var(--color-gray-300); border-radius:var(--radius-md);"></td>' +
+                    '<td style="padding:6px;"><input type="number" class="tier-pct" value="' + tier.markup_pct + '" min="0" max="200" step="0.5" style="width:80px; padding:6px 8px; border:1px solid var(--color-gray-300); border-radius:var(--radius-md);">%</td>' +
+                    '<td style="padding:6px;"><button type="button" class="btn-sm btn-danger tier-remove" style="padding:4px 8px; font-size:0.75rem;">X</button></td>';
+                tr.querySelector('.tier-remove').addEventListener('click', function() { tr.remove(); });
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('add-tier').addEventListener('click', function() {
+            var tbody = document.getElementById('tiered-rows');
+            var tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--color-gray-100)';
+            tr.innerHTML = '<td style="padding:6px;"><input type="number" class="tier-weight" value="50" min="1" max="9999" style="width:80px; padding:6px 8px; border:1px solid var(--color-gray-300); border-radius:var(--radius-md);"></td>' +
+                '<td style="padding:6px;"><input type="number" class="tier-pct" value="12" min="0" max="200" step="0.5" style="width:80px; padding:6px 8px; border:1px solid var(--color-gray-300); border-radius:var(--radius-md);">%</td>' +
+                '<td style="padding:6px;"><button type="button" class="btn-sm btn-danger tier-remove" style="padding:4px 8px; font-size:0.75rem;">X</button></td>';
+            tr.querySelector('.tier-remove').addEventListener('click', function() { tr.remove(); });
+            tbody.appendChild(tr);
+        });
+
+        async function loadShippingSettings() {
+            try {
+                var shippingDoc = await getDoc(doc(db, 'settings', 'shipping'));
+                if (shippingDoc.exists()) {
+                    var data = shippingDoc.data();
+                    document.getElementById('shipping-enabled').checked = data.enabled !== false;
+                    if (data.markup) {
+                        document.getElementById('markup-type').value = data.markup.type || 'percentage';
+                        document.getElementById('markup-type').dispatchEvent(new Event('change'));
+                        document.getElementById('markup-percentage').value = data.markup.percentage || 15;
+                        document.getElementById('markup-percentage').dispatchEvent(new Event('input'));
+                        document.getElementById('markup-flat').value = data.markup.flat_fee || 3;
+                        document.getElementById('markup-flat').dispatchEvent(new Event('input'));
+                        document.getElementById('markup-minimum').value = data.markup.minimum_charge || 5;
+                        if (data.markup.tiered) renderTieredRows(data.markup.tiered);
+                        else renderTieredRows(defaultTiers);
+                    } else {
+                        renderTieredRows(defaultTiers);
+                    }
+                    var carriers = data.enabled_carriers || ['stamps_com', 'ups', 'fedex'];
+                    ['stamps_com', 'ups', 'fedex'].forEach(function(c) {
+                        var el = document.getElementById('carrier-' + c);
+                        if (el) el.checked = carriers.includes(c);
+                    });
+                } else {
+                    renderTieredRows(defaultTiers);
+                }
+            } catch (e) {
+                console.error('Error loading shipping settings:', e);
+                renderTieredRows(defaultTiers);
+            }
+        }
+
+        document.getElementById('save-shipping').addEventListener('click', async function() {
+            try {
+                var tiers = [];
+                document.querySelectorAll('#tiered-rows tr').forEach(function(tr) {
+                    tiers.push({
+                        max_weight_lbs: parseInt(tr.querySelector('.tier-weight').value) || 50,
+                        markup_pct: parseFloat(tr.querySelector('.tier-pct').value) || 10,
+                    });
+                });
+                tiers.sort(function(a, b) { return a.max_weight_lbs - b.max_weight_lbs; });
+
+                var carriers = [];
+                ['stamps_com', 'ups', 'fedex'].forEach(function(c) {
+                    if (document.getElementById('carrier-' + c).checked) carriers.push(c);
+                });
+
+                await setDoc(doc(db, 'settings', 'shipping'), {
+                    enabled: document.getElementById('shipping-enabled').checked,
+                    markup: {
+                        type: document.getElementById('markup-type').value,
+                        percentage: parseFloat(document.getElementById('markup-percentage').value) || 15,
+                        flat_fee: parseFloat(document.getElementById('markup-flat').value) || 3,
+                        minimum_charge: parseFloat(document.getElementById('markup-minimum').value) || 5,
+                        tiered: tiers,
+                    },
+                    enabled_carriers: carriers,
+                    origin: {
+                        name: 'Miami Alliance 3PL',
+                        company: 'Miami Alliance 3PL',
+                        street1: '8780 NW 100th ST',
+                        city: 'Medley',
+                        state: 'FL',
+                        postalCode: '33178',
+                        country: 'US',
+                        phone: '3052107188',
+                    },
+                    updatedAt: new Date().toISOString(),
+                });
+                showToast('Shipping settings saved!', 'success');
+            } catch (e) {
+                console.error('Error saving shipping settings:', e);
+                showToast('Error saving shipping settings', 'error');
+            }
+        });
+
+        document.getElementById('test-rate-btn').addEventListener('click', async function() {
+            var btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Testing...';
+            try {
+                var { getFunctions, httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js');
+                var fns = getFunctions(app);
+                var getShippingRatesLive = httpsCallable(fns, 'getShippingRatesLive');
+                var result = await getShippingRatesLive({
+                    weight_lbs: parseFloat(document.getElementById('test-weight').value) || 5,
+                    destination_zip: document.getElementById('test-zip').value || '10001',
+                    destination_state: 'NY',
+                    residential: true,
+                });
+                var data = result.data;
+                var output = data.count + ' rates found\n\n';
+                (data.rates || []).forEach(function(r) {
+                    output += r.carrierCode.toUpperCase().replace('STAMPS_COM','USPS') + ' - ' + r.service + '\n';
+                    if (r.carrierCost !== undefined) {
+                        output += '  Carrier: $' + r.carrierCost.toFixed(2) + ' -> Customer: $' + r.customerCost.toFixed(2);
+                        output += ' (margin: $' + r.margin.toFixed(2) + ')\n';
+                    } else {
+                        output += '  Price: $' + r.customerCost.toFixed(2) + '\n';
+                    }
+                    output += '  Est. ' + (r.deliveryDays || '?') + ' business days\n\n';
+                });
+                document.getElementById('test-rate-output').textContent = output;
+                document.getElementById('test-rate-result').style.display = 'block';
+            } catch (e) {
+                document.getElementById('test-rate-output').textContent = 'Error: ' + e.message;
+                document.getElementById('test-rate-result').style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Test Rate';
+            }
+        });
+
+        // Shipping settings load after auth/admin confirmation in onAuthStateChanged()
 
         function showToast(message, type) {
             const toast = document.createElement('div');
