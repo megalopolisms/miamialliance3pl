@@ -116,7 +116,7 @@
       },
       weight: clampNumber(source.weight, 25, 1, 2000),
       quantity: clampNumber(source.quantity, 1, 1, 1000),
-      shippingZone: normalizeZone(source.shippingZone || "regional"),
+      shippingZone: normalizeZone(source.shippingZone || "none"),
       storageDays: clampNumber(source.storageDays, PRICING.storageDays, 1, 365),
       blackWrapping: Boolean(source.blackWrapping),
       dropShipQty: normalizeDropShipQty(source.dropShipQty),

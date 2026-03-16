@@ -697,7 +697,7 @@
     );
     const cubicFt = getCubicFeetFromPackage(pkg);
     const billableWeight = getBillableWeightFromPackage(pkg);
-    let zone = shipment.shipping_zone || "regional";
+    let zone = shipment.shipping_zone || "none";
     const dropShipQty = shipment.dropship_qty || {};
     const overrides = (options && options.overrides) || getShipmentOverrides(shipment);
     const pricingChargeGroups = buildPricingCargoChargeGroups(shipment, storageDays);
