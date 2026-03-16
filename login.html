@@ -573,11 +573,30 @@
         // Reset password handler
         resetForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('reset-email').value;
+            const email = document.getElementById('reset-email').value.trim();
+            const submitBtn = resetForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
 
             try {
-                await sendPasswordResetEmail(auth, email);
-                showLoginToast('Password reset email sent! Check your inbox.', 'success');
+                // Action code settings: redirect user back to login after reset
+                const actionCodeSettings = {
+                    url: 'https://megalopolisms.github.io/miamialliance3pl/login.html',
+                    handleCodeInApp: false
+                };
+
+                await sendPasswordResetEmail(auth, email, actionCodeSettings);
+
+                // Show success with spam warning
+                showLoginToast('✅ Password reset email sent! Check your inbox and spam/junk folder.', 'success');
+
+                // Show a persistent info banner about checking spam
+                const infoBanner = document.createElement('div');
+                infoBanner.style.cssText = 'background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.85rem;color:#1e40af;line-height:1.5;';
+                infoBanner.innerHTML = '📧 <strong>Reset email sent to ' + email + '</strong><br>• Check your <strong>spam/junk folder</strong><br>• The email comes from <em>noreply@miamialliance3pl.firebaseapp.com</em><br>• Allow up to 5 minutes for delivery<br>• If not received, try again or contact support';
+                loginForm.parentNode.insertBefore(infoBanner, loginForm);
+                setTimeout(() => infoBanner.remove(), 30000);
+
                 // Show login form
                 loginForm.style.display = 'block';
                 signupForm.style.display = 'none';
@@ -586,7 +605,21 @@
                 signupFooter.style.display = 'none';
                 resetFooter.style.display = 'none';
             } catch (error) {
-                showLoginToast('Error: ' + error.message, 'error');
+                console.error('Password reset error:', error.code, error.message);
+                let msg = 'Error sending reset email. ';
+                if (error.code === 'auth/user-not-found') {
+                    msg = 'No account found with this email. Please check the address or sign up.';
+                } else if (error.code === 'auth/invalid-email') {
+                    msg = 'Please enter a valid email address.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    msg = 'Too many reset requests. Please wait a few minutes and try again.';
+                } else {
+                    msg += error.message;
+                }
+                showLoginToast(msg, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Reset Link';
             }
         });
     </script>
