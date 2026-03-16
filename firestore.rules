@@ -209,6 +209,12 @@ service cloud.firestore {
       allow write: if isJorge();
     }
 
+    // Shipping quotes — server writes, owner + staff reads
+    match /shipping_quotes/{quoteId} {
+      allow read: if isAuthenticated() && (resource.data.user_id == request.auth.uid || isStaff());
+      allow write: if false; // Admin SDK only (Cloud Functions)
+    }
+
     // ShipStation webhook audit log — server writes, staff reads
     match /shipstation_webhooks/{eventId} {
       allow read: if isStaff();

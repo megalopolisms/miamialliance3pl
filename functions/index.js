@@ -3121,8 +3121,32 @@ exports.getShippingRatesLive = functions.https.onCall(async (data, context) => {
     return cleaned;
   });
 
+  // Store quote snapshot for server-side validation during label purchase
+  let quoteId = null;
+  if (allRates.length > 0) {
+    const quoteRef = db.collection("shipping_quotes").doc();
+    const quoteExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min TTL
+    await quoteRef.set({
+      user_id: context.auth.uid,
+      request: {
+        destination_zip: data.destination_zip.trim(),
+        destination_state: data.destination_state || "",
+        weight_lbs: data.weight_lbs || 1,
+        dimensions: baseParams.dimensions,
+        residential: baseParams.residential,
+      },
+      rates: allRates,
+      markup_snapshot: { type: markupConfig.type },
+      expires_at: quoteExpiry,
+      created_at: new Date().toISOString(),
+      status: "open",
+    });
+    quoteId = quoteRef.id;
+  }
+
   return {
     rates: clientRates,
+    quote_id: quoteId,
     cheapest: cheapest
       ? { carrier: cheapest.carrier, service: cheapest.service, price: cheapest.customerCost, days: cheapest.deliveryDays }
       : null,
