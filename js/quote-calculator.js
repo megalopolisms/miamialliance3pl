@@ -81,7 +81,7 @@ class QuoteCalculator {
     this.quantity = 1;
     this.blackWrapping = false;
 
-    this.shippingZone = "regional";
+    this.shippingZone = "none";
     this.storageDays = 30;
     this.dropShipQty = { envelope: 0, small: 0, medium: 0, large: 0 };
     this.selectedWarehouse = "miami";
