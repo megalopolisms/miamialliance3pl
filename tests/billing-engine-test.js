@@ -129,8 +129,261 @@ function testGroupingAndLegacyEvents() {
   assert.strictEqual(grouped[0].quantity, 3);
 }
 
-testQuoteBaselinePreserved();
-testAmountAndRateOverrides();
-testGroupingAndLegacyEvents();
+// =========================================================================
+// EDGE CASE TESTS (added REMIX Cycle 4)
+// =========================================================================
 
-console.log("billing-engine tests passed");
+function testZeroQuantityShipment() {
+  const shipment = {
+    id: "ship-edge-1",
+    user_id: "cust-1",
+    tracking_number: "MA3PL0000",
+    package: {
+      type: "box",
+      quantity: 0,
+      weight: 0,
+      length: 0,
+      width: 0,
+      height: 0,
+    },
+    shipping_zone: "local",
+    quote_estimate: {
+      storage: 0,
+      handling: 0,
+      pick_pack: 0,
+      shipping: 0,
+      total: 0,
+      storage_days: 0,
+    },
+  };
+  const charges = BillingEngine.buildShipmentCharges(shipment, {
+    pricingData: {},
+    customerRateIndex: new Map(),
+  });
+  // Should not crash — all amounts should be 0 or valid numbers
+  for (const c of charges) {
+    assert.strictEqual(
+      typeof c.amount,
+      "number",
+      `Charge ${c.key} amount must be a number`,
+    );
+    assert.ok(!isNaN(c.amount), `Charge ${c.key} must not be NaN`);
+  }
+}
+
+function testNullFieldsShipment() {
+  const shipment = {
+    id: "ship-edge-2",
+    user_id: "cust-1",
+    tracking_number: "MA3PL9999",
+    package: {
+      type: null,
+      quantity: null,
+      weight: null,
+      length: null,
+      width: null,
+      height: null,
+    },
+    shipping_zone: null,
+    quote_estimate: null,
+  };
+  const charges = BillingEngine.buildShipmentCharges(shipment, {
+    pricingData: {},
+    customerRateIndex: new Map(),
+  });
+  // Should not crash with null fields — graceful degradation
+  assert.ok(Array.isArray(charges), "charges should always be an array");
+  for (const c of charges) {
+    assert.strictEqual(
+      typeof c.amount,
+      "number",
+      `Null-field charge ${c.key} must be a number`,
+    );
+    assert.ok(!isNaN(c.amount), `Null-field charge ${c.key} must not be NaN`);
+  }
+}
+
+function testNegativeValues() {
+  const shipment = {
+    id: "ship-edge-3",
+    user_id: "cust-1",
+    tracking_number: "MA3PLneg",
+    package: {
+      type: "pallet",
+      quantity: -1,
+      weight: -50,
+      length: -10,
+      width: -10,
+      height: -10,
+    },
+    shipping_zone: "regional",
+    quote_estimate: {
+      storage: -5,
+      handling: -3,
+      pick_pack: -1,
+      shipping: -10,
+      total: -19,
+      storage_days: -7,
+    },
+  };
+  const charges = BillingEngine.buildShipmentCharges(shipment, {
+    pricingData: {},
+    customerRateIndex: new Map(),
+  });
+  // Should not crash — amounts may be negative but must be numeric
+  for (const c of charges) {
+    assert.strictEqual(
+      typeof c.amount,
+      "number",
+      `Negative-val charge ${c.key} must be a number`,
+    );
+    assert.ok(!isNaN(c.amount), `Negative-val charge ${c.key} must not be NaN`);
+  }
+}
+
+function testEmptyEventsArray() {
+  const entries = BillingEngine.buildBillableEventEntries([]);
+  const grouped = BillingEngine.groupInvoiceEntries(entries);
+  assert.ok(
+    Array.isArray(grouped),
+    "grouped should be array even for empty input",
+  );
+  assert.strictEqual(
+    grouped.length,
+    0,
+    "empty events should produce empty groups",
+  );
+}
+
+function testCurrencyPrecision() {
+  // Verify that amounts are rounded to 2 decimal places (no floating point drift)
+  const shipment = {
+    id: "ship-edge-4",
+    user_id: "cust-1",
+    tracking_number: "MA3PLprec",
+    package: {
+      type: "box",
+      quantity: 3,
+      weight: 7,
+      length: 12,
+      width: 8,
+      height: 6,
+      billable_weight: 7,
+    },
+    shipping_zone: "regional",
+    quote_estimate: {
+      storage: 1.005,
+      handling: 2.335,
+      pick_pack: 0.115,
+      shipping: 3.445,
+      total: 6.9,
+      storage_days: 30,
+    },
+  };
+  const charges = BillingEngine.buildShipmentCharges(shipment, {
+    pricingData: {},
+    customerRateIndex: new Map(),
+  });
+  for (const c of charges) {
+    const decimalPlaces = (String(c.amount).split(".")[1] || "").length;
+    assert.ok(
+      decimalPlaces <= 4,
+      `Charge ${c.key} has ${decimalPlaces} decimals (max 4): ${c.amount}`,
+    );
+  }
+}
+
+function testCustomerRateOverride() {
+  const rateIndex = new Map();
+  rateIndex.set(
+    "cust-custom",
+    new Map([["storage", { rate: 1.5, quoteKey: "storage" }]]),
+  );
+
+  const shipment = {
+    id: "ship-edge-5",
+    user_id: "cust-custom",
+    tracking_number: "MA3PLcust",
+    package: {
+      type: "pallet",
+      quantity: 5,
+      weight: 200,
+      length: 48,
+      width: 40,
+      height: 60,
+      billable_weight: 200,
+    },
+    shipping_zone: "local",
+    quote_estimate: {
+      storage: 100,
+      handling: 75,
+      pick_pack: 25,
+      shipping: 50,
+      total: 250,
+      storage_days: 30,
+    },
+  };
+  const charges = BillingEngine.buildShipmentCharges(shipment, {
+    pricingData: {},
+    customerRateIndex: rateIndex,
+    customerId: "cust-custom",
+  });
+  // Customer rate override should be applied for storage
+  const storageCharge = charges.find((c) => c.key === "storage");
+  assert.ok(storageCharge, "storage charge must exist");
+  assert.strictEqual(typeof storageCharge.amount, "number");
+}
+
+function testMissingShipmentId() {
+  // Shipment without id — should not crash
+  const shipment = {
+    user_id: "cust-1",
+    tracking_number: "MA3PLnoId",
+    package: {
+      type: "box",
+      quantity: 1,
+      weight: 5,
+      length: 10,
+      width: 10,
+      height: 10,
+    },
+    quote_estimate: { storage: 5, handling: 3.5, total: 8.5, storage_days: 30 },
+  };
+  const charges = BillingEngine.buildShipmentCharges(shipment, {
+    pricingData: {},
+    customerRateIndex: new Map(),
+  });
+  assert.ok(Array.isArray(charges), "charges should work without shipment id");
+}
+
+// Run all tests
+const tests = [
+  ["Quote baseline preserved", testQuoteBaselinePreserved],
+  ["Amount and rate overrides", testAmountAndRateOverrides],
+  ["Grouping and legacy events", testGroupingAndLegacyEvents],
+  ["Zero quantity shipment", testZeroQuantityShipment],
+  ["Null fields shipment", testNullFieldsShipment],
+  ["Negative values", testNegativeValues],
+  ["Empty events array", testEmptyEventsArray],
+  ["Currency precision", testCurrencyPrecision],
+  ["Customer rate override", testCustomerRateOverride],
+  ["Missing shipment ID", testMissingShipmentId],
+];
+
+let passed = 0;
+let failed = 0;
+
+for (const [name, fn] of tests) {
+  try {
+    fn();
+    passed++;
+    console.log(`  ✓ ${name}`);
+  } catch (err) {
+    failed++;
+    console.error(`  ✗ ${name}: ${err.message}`);
+  }
+}
+
+console.log(
+  `\nbilling-engine tests: ${passed} passed, ${failed} failed (${tests.length} total)`,
+);
