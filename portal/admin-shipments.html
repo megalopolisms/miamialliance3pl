@@ -2385,6 +2385,65 @@
             return { valid: true, items: getPanelIncomingItemsForSave() };
         }
 
+        function getShipmentCargoItems(shipment) {
+            if (Array.isArray(shipment.cargo_items) && shipment.cargo_items.length) return shipment.cargo_items;
+            if (Array.isArray(shipment.tracking_cargo_items) && shipment.tracking_cargo_items.length) return shipment.tracking_cargo_items;
+            return [];
+        }
+
+        function inferShipmentPackageType(shipment, pkg, cargoItems) {
+            if (pkg.type) return pkg.type;
+            const serviceType = typeof shipment.service_type === 'string' ? shipment.service_type.toLowerCase() : '';
+            if (['pallet', 'box', 'mixed'].includes(serviceType)) return serviceType;
+            const palletItemCount = cargoItems.filter(item => item && item.type === 'pallet').length;
+            if (palletItemCount && palletItemCount === cargoItems.length) return 'pallet';
+            if (palletItemCount && cargoItems.length > palletItemCount) return 'mixed';
+            if (cargoItems.length) return 'box';
+            return '';
+        }
+
+        function normalizeShipmentPanelDetail(shipment) {
+            const pkg = shipment.package || {};
+            const quote = shipment.quote_estimate || {};
+            const cargoItems = getShipmentCargoItems(shipment);
+            const packageType = inferShipmentPackageType(shipment, pkg, cargoItems);
+            const cargoCount = Number(shipment.cargo_count || cargoItems.length || 0);
+            const quantity = Number(pkg.quantity || cargoCount || shipment.pallet_count || shipment.pallets || 1);
+            const palletCount = Number(pkg.pallet_count || shipment.pallet_count || shipment.pallets || 0)
+                || (packageType === 'pallet' ? quantity : 0)
+                || cargoItems.filter(item => item && item.type === 'pallet').length;
+            const totalWeight = Number(pkg.total_weight || pkg.weight || shipment.weight || 0);
+            const estCost = Number(quote.total || shipment.estimated_cost || 0);
+            const shippingZone = shipment.shipping_zone || '';
+            const services = [];
+            if (packageType) services.push(packageType === 'pallet' ? 'Pallet Storage' : packageType === 'mixed' ? 'Mixed Cargo' : 'Box/Package');
+            if (shippingZone) services.push(shippingZone.replace(/_/g, ' '));
+            if (shipment.black_wrapping) services.push('Black Wrapping');
+            if (shipment.fba_prep && shipment.fba_prep.enabled) {
+                const fbaKeys = shipment.fba_prep.services ? Object.keys(shipment.fba_prep.services).map(k => k.replace(/_/g, ' ')) : [];
+                if (fbaKeys.length) services.push('FBA Prep (' + fbaKeys.join(', ') + ')');
+            }
+            const breakdown = [];
+            if (quote.storage) breakdown.push('Storage: $' + parseFloat(quote.storage).toFixed(2));
+            if (quote.handling) breakdown.push('Handling: $' + parseFloat(quote.handling).toFixed(2));
+            if (quote.pick_pack) breakdown.push('Pick & Pack: $' + parseFloat(quote.pick_pack).toFixed(2));
+            if (quote.shipping) breakdown.push('Shipping: $' + parseFloat(quote.shipping).toFixed(2));
+            if (quote.wrapping) breakdown.push('Wrapping: $' + parseFloat(quote.wrapping).toFixed(2));
+            if (quote.fba_prep) breakdown.push('FBA Prep: $' + parseFloat(quote.fba_prep).toFixed(2));
+            if (quote.dropship) breakdown.push('Dropship: $' + parseFloat(quote.dropship).toFixed(2));
+
+            return {
+                pkg,
+                quantity,
+                palletCount,
+                totalWeight,
+                estCost,
+                shippingZone,
+                servicesText: services.length ? services.join(' | ') : 'Standard',
+                breakdownText: breakdown.join(' · ') || 'No breakdown available'
+            };
+        }
+
         // ============================================================
         // SLIDE-OUT PANEL
         // ============================================================
@@ -2396,7 +2455,8 @@
             const customer = usersMap[shipment.user_id] || {};
             const origin = shipment.origin || {};
             const dest = shipment.destination || {};
-            const pkg = shipment.package || {};
+            const detail = normalizeShipmentPanelDetail(shipment);
+            const pkg = detail.pkg;
 
             // Header
             document.getElementById('panel-tracking').textContent = shipment.tracking_number || 'No Tracking #';
@@ -2422,40 +2482,21 @@
             document.getElementById('panel-dest-zip').value = dest.zip || '';
 
             // Package
-            document.getElementById('panel-pkg-weight').value = pkg.total_weight || pkg.weight || '';
+            document.getElementById('panel-pkg-weight').value = detail.totalWeight || '';
             document.getElementById('panel-pkg-length').value = pkg.length || '';
             document.getElementById('panel-pkg-width').value = pkg.width || '';
             document.getElementById('panel-pkg-height').value = pkg.height || '';
-            document.getElementById('panel-pkg-quantity').value = pkg.quantity || 1;
-            document.getElementById('panel-pkg-pallets').value = pkg.pallet_count || 0;
+            document.getElementById('panel-pkg-quantity').value = detail.quantity || 1;
+            document.getElementById('panel-pkg-pallets').value = detail.palletCount || 0;
 
             // Quote Estimate & Services
-            const quote = shipment.quote_estimate || {};
             const quoteSummaryEl = document.getElementById('panel-quote-summary');
-            if (quote.total) {
+            if (detail.estCost || detail.shippingZone || detail.servicesText !== 'Standard') {
                 quoteSummaryEl.style.display = 'block';
-                document.getElementById('panel-est-cost').textContent = '$' + parseFloat(quote.total).toFixed(2);
-                // Build cost breakdown
-                const breakdown = [];
-                if (quote.storage) breakdown.push('Storage: $' + parseFloat(quote.storage).toFixed(2));
-                if (quote.handling) breakdown.push('Handling: $' + parseFloat(quote.handling).toFixed(2));
-                if (quote.pick_pack) breakdown.push('Pick & Pack: $' + parseFloat(quote.pick_pack).toFixed(2));
-                if (quote.shipping) breakdown.push('Shipping: $' + parseFloat(quote.shipping).toFixed(2));
-                if (quote.wrapping) breakdown.push('Wrapping: $' + parseFloat(quote.wrapping).toFixed(2));
-                if (quote.fba_prep) breakdown.push('FBA Prep: $' + parseFloat(quote.fba_prep).toFixed(2));
-                if (quote.dropship) breakdown.push('Dropship: $' + parseFloat(quote.dropship).toFixed(2));
-                document.getElementById('panel-cost-breakdown').textContent = breakdown.join(' · ') || 'No breakdown available';
-                // Services
-                const svcList = [];
-                if (pkg.type) svcList.push(pkg.type === 'pallet' ? 'Pallet Storage' : 'Box/Package');
-                if (shipment.black_wrapping) svcList.push('Black Wrapping');
-                if (shipment.fba_prep && shipment.fba_prep.enabled) {
-                    const fbaKeys = shipment.fba_prep.services ? Object.keys(shipment.fba_prep.services).map(k => k.replace(/_/g, ' ')) : [];
-                    if (fbaKeys.length) svcList.push('FBA Prep (' + fbaKeys.join(', ') + ')');
-                }
-                document.getElementById('panel-services').textContent = svcList.length ? svcList.join(' | ') : 'Standard';
-                // Shipping zone
-                document.getElementById('panel-shipping-zone').textContent = shipment.shipping_zone ? shipment.shipping_zone.replace(/_/g, ' ') : 'N/A';
+                document.getElementById('panel-est-cost').textContent = detail.estCost ? '$' + parseFloat(detail.estCost).toFixed(2) : 'N/A';
+                document.getElementById('panel-cost-breakdown').textContent = detail.breakdownText;
+                document.getElementById('panel-services').textContent = detail.servicesText;
+                document.getElementById('panel-shipping-zone').textContent = detail.shippingZone ? detail.shippingZone.replace(/_/g, ' ') : 'N/A';
             } else {
                 quoteSummaryEl.style.display = 'none';
             }
