@@ -347,14 +347,30 @@
                 </a>
                 <a href="billing.html" class="portal-nav-item"><span>💵</span> <span>Billing</span></a>
                 <a href="contracts.html" class="portal-nav-item"><span>📄</span> <span>Contracts</span></a>
+                <div id="employee-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
+                    <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" data-i18n="portal.sidebar.staffLabel">Staff</div>
+                    <a href="customers.html" class="portal-nav-item active" aria-current="page">
+                        <span>👥</span> <span data-i18n="portal.sidebar.allCustomers">All Customers</span>
+                    </a>
+                    <a href="admin-shipments.html" class="portal-nav-item">
+                        <span>📋</span> <span data-i18n="portal.sidebar.allShipments">All Shipments</span>
+                    </a>
+                </div>
                 <div id="admin-nav" style="display: none; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-gray-200);">
                     <div style="padding: 8px 16px; font-size: 0.75rem; color: var(--color-gray-500); text-transform: uppercase;" data-i18n="portal.sidebar.adminLabel">Admin</div>
                     <a href="admin-panel.html" class="portal-nav-item">
                         <span>🛡️</span> <span>Admin Control Panel</span>
-                    </a>                    <a href="admin-pickups.html" class="portal-nav-item">
+                    </a>
+                    <a href="admin-pickups.html" class="portal-nav-item">
                         <span aria-hidden="true">🚛</span> <span>All Pickup Requests</span>
                     </a>
                     <a href="admin-billing.html" class="portal-nav-item"><span>📝</span> <span>Activity Billing</span></a>
+                    <a href="invoices.html" class="portal-nav-item">
+                        <span>💵</span> <span data-i18n="portal.sidebar.invoices">Invoices</span>
+                    </a>
+                    <a href="storage-log.html" class="portal-nav-item">
+                        <span>📊</span> <span data-i18n="portal.sidebar.storagelog">Storage Log</span>
+                    </a>
                     <a href="pricing.html" class="portal-nav-item">
                         <span>💰</span> <span data-i18n="portal.sidebar.pricing">Pricing</span>
                     </a>
@@ -363,6 +379,9 @@
                     </a>
                     <a href="team.html" class="portal-nav-item">
                         <span>👔</span> <span data-i18n="portal.sidebar.team">Manage Team</span>
+                    </a>
+                    <a href="changelog.html" class="portal-nav-item">
+                        <span>📝</span> <span data-i18n="portal.sidebar.changelog">Changelog</span>
                     </a>
                 </div>
             </nav>
@@ -515,9 +534,15 @@
             }
 
             const userNameEl = document.getElementById('user-name');
+            const employeeNav = document.getElementById('employee-nav');
+            const adminNav = document.getElementById('admin-nav');
             if (isAdmin) {
+                if (employeeNav) employeeNav.style.display = 'block';
+                if (adminNav) adminNav.style.display = 'block';
                 userNameEl.innerHTML = `${userName} <span class="admin-badge">ADMIN</span>`;
             } else if (isEmployee) {
+                if (employeeNav) employeeNav.style.display = 'block';
+                if (adminNav) adminNav.style.display = 'none';
                 userNameEl.innerHTML = `${userName} <span class="admin-badge">EMPLOYEE</span>`;
             }
 
