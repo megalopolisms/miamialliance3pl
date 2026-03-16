@@ -343,6 +343,31 @@
             return currentUserRole === 'admin';
         }
 
+        function getUserDisplayName(userData = {}, fallbackId = '') {
+            return userData.company_name || userData.name || userData.email || fallbackId || 'Unknown';
+        }
+
+        function getInventoryOwnerId(item) {
+            if (!item || typeof item !== 'object') return '';
+            return item.user_id || item.customer_id || '';
+        }
+
+        function normalizeInventoryItem(docSnap) {
+            const data = docSnap.data() || {};
+            const ownerId = getInventoryOwnerId(data);
+            return {
+                id: docSnap.id,
+                ...data,
+                user_id: data.user_id || ownerId || '',
+                customer_id: data.customer_id || ownerId || ''
+            };
+        }
+
+        function shouldIncludeInCustomerSelectors(userData, userId, activeOwnerIds) {
+            const role = (userData.role || '').toLowerCase();
+            return role === 'customer' || role === '' || activeOwnerIds.has(userId);
+        }
+
         function isCustomerInventoryLocked(customerId) {
             if (!customerId) return false;
             if (!isStaff() && currentUser && customerId === currentUser.uid) {
@@ -388,41 +413,66 @@
         }
 
         // Load customers list for staff (also populates lock status)
-        // Loads ALL users so customersMap covers every inventory owner,
-        // but only shows customer-role users in form dropdowns.
+        // Loads all users for row rendering, then keeps selector options scoped
+        // to customer-role users plus any legacy/active owners found in operations data.
         async function loadCustomers() {
             if (!isStaff()) return;
 
             try {
-                // Load ALL users so every inventory item can resolve its owner name
-                const usersSnapshot = await getDocs(collection(db, 'users'));
+                const [usersSnapshot, inventorySnapshot, shipmentsSnapshot] = await Promise.all([
+                    getDocs(collection(db, 'users')),
+                    getDocs(collection(db, 'inventory')),
+                    getDocs(collection(db, 'shipments'))
+                ]);
                 const customerSelect = document.getElementById('item-customer');
                 const lockCustomerSelect = document.getElementById('lock-customer-select');
+                customersMap = {};
+                customersLockMap = {};
                 customerSelect.innerHTML = '<option value="">-- Select Customer --</option>';
                 lockCustomerSelect.innerHTML = '<option value="">-- Select Customer --</option>';
+                const activeOwnerIds = new Set();
+                const customerOptions = [];
+
+                inventorySnapshot.forEach((docSnap) => {
+                    const ownerId = getInventoryOwnerId(docSnap.data());
+                    if (ownerId) activeOwnerIds.add(ownerId);
+                });
+
+                shipmentsSnapshot.forEach((docSnap) => {
+                    const ownerId = docSnap.data()?.user_id;
+                    if (ownerId) activeOwnerIds.add(ownerId);
+                });
 
                 usersSnapshot.forEach((docSnap) => {
-                    const userData = docSnap.data();
-                    const displayName = userData.name || userData.email || docSnap.id;
+                    const userData = docSnap.data() || {};
+                    const displayName = getUserDisplayName(userData, docSnap.id);
 
                     // Always populate the name/lock maps (so inventory rows resolve correctly)
                     customersMap[docSnap.id] = displayName;
                     customersLockMap[docSnap.id] = userData.inventory_locked === true;
 
-                    // Only add customer-role (or no-role) users to the form dropdowns
-                    const role = (userData.role || '').toLowerCase();
-                    if (role === 'customer' || role === '') {
+                    if (shouldIncludeInCustomerSelectors(userData, docSnap.id, activeOwnerIds)) {
+                        customerOptions.push({
+                            id: docSnap.id,
+                            label: displayName,
+                            locked: userData.inventory_locked === true
+                        });
+                    }
+                });
+
+                customerOptions
+                    .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }))
+                    .forEach((customer) => {
                         const option = document.createElement('option');
-                        option.value = docSnap.id;
-                        option.textContent = displayName;
+                        option.value = customer.id;
+                        option.textContent = customer.label;
                         customerSelect.appendChild(option);
 
                         const lockOption = document.createElement('option');
-                        lockOption.value = docSnap.id;
-                        lockOption.textContent = displayName + (userData.inventory_locked ? ' 🔒' : '');
+                        lockOption.value = customer.id;
+                        lockOption.textContent = customer.label + (customer.locked ? ' 🔒' : '');
                         lockCustomerSelect.appendChild(lockOption);
-                    }
-                });
+                    });
             } catch (error) {
                 console.error('Error loading customers:', error);
                 showToast('Error loading customer list: ' + error.message, 'error');
@@ -445,15 +495,15 @@
 
                 // Check role from Firestore, fallback to admin check by email
                 if (userData.role) {
-                    currentUserRole = userData.role;
-                } else if (FALLBACK_ADMIN_EMAILS.includes(user.email)) {
+                    currentUserRole = String(userData.role).toLowerCase();
+                } else if (FALLBACK_ADMIN_EMAILS.includes((user.email || '').toLowerCase())) {
                     currentUserRole = 'admin';
                 } else {
                     currentUserRole = 'customer';
                 }
             } else {
                 // No user doc - check fallback admin emails
-                if (FALLBACK_ADMIN_EMAILS.includes(user.email)) {
+                if (FALLBACK_ADMIN_EMAILS.includes((user.email || '').toLowerCase())) {
                     currentUserRole = 'admin';
                 } else {
                     currentUserRole = 'customer';
@@ -529,11 +579,13 @@
             let filtered = inventoryData;
 
             if (search) {
-                filtered = filtered.filter(item =>
-                    item.sku.toLowerCase().includes(search) ||
-                    item.name.toLowerCase().includes(search) ||
-                    (customersMap[item.user_id] && customersMap[item.user_id].toLowerCase().includes(search))
-                );
+                filtered = filtered.filter((item) => {
+                    const ownerId = getInventoryOwnerId(item);
+                    const customerName = customersMap[ownerId] || item.customer_name || ownerId || '';
+                    return String(item.sku || '').toLowerCase().includes(search) ||
+                        String(item.name || '').toLowerCase().includes(search) ||
+                        customerName.toLowerCase().includes(search);
+                });
             }
 
             if (whFilter) {
@@ -580,6 +632,7 @@
 
             const itemData = {
                 user_id: itemUserId,
+                customer_id: itemUserId,
                 sku: document.getElementById('item-sku').value,
                 name: document.getElementById('item-name').value,
                 quantity: parseInt(document.getElementById('item-qty').value),
@@ -618,7 +671,7 @@
 
             const id = document.getElementById('edit-id').value;
             const existingItem = inventoryData.find((entry) => entry.id === id);
-            const itemUserId = existingItem?.user_id || currentUser.uid;
+            const itemUserId = getInventoryOwnerId(existingItem) || currentUser.uid;
 
             if (!canManageInventoryForCustomer(itemUserId)) {
                 showToast('This inventory is locked. Only an administrator can make changes right now.', 'error');
@@ -640,6 +693,7 @@
                 sku: document.getElementById('edit-sku').value,
                 name: document.getElementById('edit-name').value,
                 quantity: parseInt(document.getElementById('edit-qty').value),
+                customer_id: itemUserId,
                 upc: document.getElementById('edit-upc').value.trim() || '',
                 tags: (document.getElementById('edit-tags').value || '').split(',').map(t => t.trim()).filter(Boolean),
                 location: document.getElementById('edit-location').value || 'Unassigned',
@@ -679,8 +733,9 @@
         async function adjustQuantity(itemId, delta) {
             const item = inventoryData.find(i => i.id === itemId);
             if (!item) return;
+            const itemUserId = getInventoryOwnerId(item);
 
-            if (!canManageInventoryForCustomer(item.user_id)) {
+            if (!canManageInventoryForCustomer(itemUserId)) {
                 showToast('This inventory is locked. Only an administrator can make changes right now.', 'error');
                 return;
             }
@@ -689,6 +744,7 @@
             try {
                 await updateDoc(doc(db, 'inventory', itemId), {
                     quantity: newQty,
+                    customer_id: itemUserId || null,
                     last_updated: new Date().toISOString()
                 });
                 showToast(`Quantity ${delta > 0 ? 'increased' : 'decreased'} to ${newQty}`, 'success');
@@ -794,10 +850,10 @@
                 let lowStock = 0;
 
                 snapshot.forEach((docSnap) => {
-                    const data = { id: docSnap.id, ...docSnap.data() };
+                    const data = normalizeInventoryItem(docSnap);
                     inventoryData.push(data);
-                    totalUnits += data.quantity;
-                    if (data.quantity <= (data.reorder_level || 10)) {
+                    totalUnits += parseInt(data.quantity, 10) || 0;
+                    if ((parseInt(data.quantity, 10) || 0) <= (parseInt(data.reorder_level, 10) || 10)) {
                         lowStock++;
                     }
                 });
@@ -832,18 +888,19 @@
             tbody.innerHTML = '';
             items.forEach((item) => {
                 const isLowStock = item.quantity <= (item.reorder_level || 10);
-                const customerName = customersMap[item.user_id] || 'Unknown';
+                const ownerId = getInventoryOwnerId(item);
+                const customerName = customersMap[ownerId] || item.customer_name || ownerId || 'Unknown';
                 const row = document.createElement('tr');
 
                 // Build customer column HTML for staff (with lock indicator) — escaped to prevent XSS
-                const isCustomerLocked = customersLockMap[item.user_id] === true;
+                const isCustomerLocked = customersLockMap[ownerId] === true;
                 const safeCustomerName = esc(customerName);
                 const safeName = esc(item.name);
                 const customerCol = isStaff() ? `<td style="color: var(--color-gray-600); font-size: var(--font-size-sm);">${safeCustomerName}${isCustomerLocked ? ' <span title="Inventory locked" style="color:#dc2626;">🔒</span>' : ''}</td>` : '';
 
                 // Build actions based on role and lock status
                 let actionsHtml = '';
-                const canManageItem = canManageInventoryForCustomer(item.user_id);
+                const canManageItem = canManageInventoryForCustomer(ownerId);
 
                 if (isAdmin()) {
                     actionsHtml = `
