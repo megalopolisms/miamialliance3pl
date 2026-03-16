@@ -313,6 +313,27 @@
         let inventoryLocked = false; // Whether current customer's inventory is locked by admin
         let customersLockMap = {}; // Map of user_id -> lock status (admin view)
 
+        // Sanitize string for safe HTML attribute/content injection (prevent XSS)
+        function esc(str) {
+            if (str == null) return '';
+            const d = document.createElement('div');
+            d.textContent = String(str);
+            return d.innerHTML;
+        }
+
+        // Real-time lock re-check: fetch fresh lock status from Firestore before save
+        async function recheckInventoryLock(userId) {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', userId));
+                if (userDoc.exists()) {
+                    return userDoc.data().inventory_locked === true;
+                }
+            } catch (e) {
+                console.warn('Lock re-check failed, using cached value:', e.message);
+            }
+            return inventoryLocked;
+        }
+
         // Helper to check if user is staff (admin or employee)
         function isStaff() {
             return currentUserRole === 'admin' || currentUserRole === 'employee';
@@ -535,6 +556,18 @@
                 return;
             }
 
+            // Real-time lock re-check to prevent race condition
+            // (admin may have locked between page load and form submission)
+            if (!isAdmin()) {
+                const freshLock = await recheckInventoryLock(itemUserId);
+                if (freshLock) {
+                    inventoryLocked = true;
+                    document.getElementById('locked-banner').style.display = 'block';
+                    showToast('Inventory was just locked by an administrator. Your changes cannot be saved.', 'error');
+                    return;
+                }
+            }
+
             const itemData = {
                 user_id: itemUserId,
                 sku: document.getElementById('item-sku').value,
@@ -580,6 +613,17 @@
             if (!canManageInventoryForCustomer(itemUserId)) {
                 showToast('This inventory is locked. Only an administrator can make changes right now.', 'error');
                 return;
+            }
+
+            // Real-time lock re-check (race condition guard)
+            if (!isAdmin()) {
+                const freshLock = await recheckInventoryLock(itemUserId);
+                if (freshLock) {
+                    inventoryLocked = true;
+                    document.getElementById('locked-banner').style.display = 'block';
+                    showToast('Inventory was just locked by an administrator. Your changes cannot be saved.', 'error');
+                    return;
+                }
             }
 
             const updateData = {
@@ -777,9 +821,11 @@
                 const customerName = customersMap[item.user_id] || 'Unknown';
                 const row = document.createElement('tr');
 
-                // Build customer column HTML for staff (with lock indicator)
+                // Build customer column HTML for staff (with lock indicator) — escaped to prevent XSS
                 const isCustomerLocked = customersLockMap[item.user_id] === true;
-                const customerCol = isStaff() ? `<td style="color: var(--color-gray-600); font-size: var(--font-size-sm);">${customerName}${isCustomerLocked ? ' <span title="Inventory locked" style="color:#dc2626;">🔒</span>' : ''}</td>` : '';
+                const safeCustomerName = esc(customerName);
+                const safeName = esc(item.name);
+                const customerCol = isStaff() ? `<td style="color: var(--color-gray-600); font-size: var(--font-size-sm);">${safeCustomerName}${isCustomerLocked ? ' <span title="Inventory locked" style="color:#dc2626;">🔒</span>' : ''}</td>` : '';
 
                 // Build actions based on role and lock status
                 let actionsHtml = '';
@@ -788,18 +834,18 @@
                 if (isAdmin()) {
                     actionsHtml = `
                         <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-                            <button class="btn-qty-minus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Decrease quantity" aria-label="Decrease quantity for ${item.name}">-</button>
-                            <button class="btn-qty-plus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Increase quantity" aria-label="Increase quantity for ${item.name}">+</button>
-                            <button class="btn-edit" data-id="${item.id}" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Edit ${item.name}">Edit</button>
-                            <button class="btn-delete" data-id="${item.id}" data-name="${item.name}" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Delete ${item.name}">Delete</button>
+                            <button class="btn-qty-minus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Decrease quantity" aria-label="Decrease quantity for ${safeName}">-</button>
+                            <button class="btn-qty-plus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Increase quantity" aria-label="Increase quantity for ${safeName}">+</button>
+                            <button class="btn-edit" data-id="${item.id}" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Edit ${safeName}">Edit</button>
+                            <button class="btn-delete" data-id="${item.id}" data-name="${safeName}" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Delete ${safeName}">Delete</button>
                         </div>
                     `;
                 } else if (canManageItem) {
                     actionsHtml = `
                         <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-                            <button class="btn-qty-minus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Decrease quantity" aria-label="Decrease quantity for ${item.name}">-</button>
-                            <button class="btn-qty-plus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Increase quantity" aria-label="Increase quantity for ${item.name}">+</button>
-                            <button class="btn-edit" data-id="${item.id}" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Edit ${item.name}">Edit</button>
+                            <button class="btn-qty-minus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Decrease quantity" aria-label="Decrease quantity for ${safeName}">-</button>
+                            <button class="btn-qty-plus" data-id="${item.id}" style="background: var(--color-gray-200); border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-weight: bold;" title="Increase quantity" aria-label="Increase quantity for ${safeName}">+</button>
+                            <button class="btn-edit" data-id="${item.id}" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 4px 8px; font-size: var(--font-size-sm);" aria-label="Edit ${safeName}">Edit</button>
                         </div>
                     `;
                 } else {
@@ -811,23 +857,23 @@
                 const whLabel = whId === 'biloxi' ? '📍 Biloxi' : '📍 Miami';
                 const whColor = whId === 'biloxi' ? '#8b5cf6' : '#14b8a6';
 
-                const upcVal = item.upc || '';
+                const upcVal = esc(item.upc || '');
                 const tagsArr = Array.isArray(item.tags) ? item.tags : (typeof item.tags === 'string' && item.tags ? item.tags.split(',').map(t => t.trim()) : []);
-                const tagsHtml = tagsArr.length > 0 ? tagsArr.map(t => `<span style="background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:8px;font-size:0.7rem;font-weight:600;margin:1px;">${t}</span>`).join(' ') : '<span style="color:var(--color-gray-400);font-size:0.75rem;">—</span>';
+                const tagsHtml = tagsArr.length > 0 ? tagsArr.map(t => `<span style="background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:8px;font-size:0.7rem;font-weight:600;margin:1px;">${esc(t)}</span>`).join(' ') : '<span style="color:var(--color-gray-400);font-size:0.75rem;">—</span>';
 
                 row.innerHTML = `
-                    <td><strong>${item.sku}</strong></td>
-                    <td>${item.name}</td>
+                    <td><strong>${esc(item.sku)}</strong></td>
+                    <td>${safeName}</td>
                     ${customerCol}
                     <td style="color: ${isLowStock ? 'var(--color-accent)' : 'inherit'}; font-weight: ${isLowStock ? '600' : '400'};">
-                        ${item.quantity}
+                        ${parseInt(item.quantity) || 0}
                         ${isLowStock ? '<span style="font-size: var(--font-size-sm); margin-left: 4px;">Low Stock</span>' : ''}
                     </td>
                     <td style="font-family:monospace;font-size:0.8rem;color:var(--color-gray-600);">${upcVal || '<span style="color:var(--color-gray-400);">—</span>'}</td>
                     <td style="max-width:150px;">${tagsHtml}</td>
                     <td><span style="background: ${whColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">${whLabel}</span></td>
-                    <td>${item.location}</td>
-                    <td>${new Date(item.last_updated).toLocaleDateString()}</td>
+                    <td>${esc(item.location)}</td>
+                    <td>${item.last_updated ? new Date(item.last_updated).toLocaleDateString() : '—'}</td>
                     <td>${actionsHtml}</td>
                 `;
                 tbody.appendChild(row);

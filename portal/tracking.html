@@ -288,17 +288,25 @@
             }
         }
 
+        // Sanitize string to prevent XSS when using innerHTML
+        function esc(str) {
+            if (str == null) return '';
+            const d = document.createElement('div');
+            d.textContent = String(str);
+            return d.innerHTML;
+        }
+
         function displayShipment(data) {
             document.getElementById('tracking-result').style.display = 'block';
 
-            document.getElementById('result-tracking').textContent = data.tracking_number;
-            document.getElementById('result-date').textContent = new Date(data.created_at).toLocaleString();
+            document.getElementById('result-tracking').textContent = data.tracking_number || '';
+            document.getElementById('result-date').textContent = data.created_at ? new Date(data.created_at).toLocaleString() : '';
 
             const statusEl = document.getElementById('result-status');
-            statusEl.className = 'badge badge-' + data.status;
-            statusEl.textContent = data.status.replace('_', ' ');
+            statusEl.className = 'badge badge-' + (data.status || 'pending');
+            statusEl.textContent = (data.status || 'pending').replace('_', ' ');
 
-            // Warehouse location
+            // Warehouse location (static values — safe HTML)
             const whId = data.warehouse || data.warehouseId || 'miami';
             const warehouseEl = document.getElementById('result-warehouse');
             if (whId === 'biloxi') {
@@ -307,21 +315,27 @@
                 warehouseEl.innerHTML = '<span style="background: linear-gradient(135deg, #14b8a6, #0d9488); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">📍 Miami, FL</span><br><span style="font-size: 0.8rem; color: var(--color-gray-500);">8780 NW 100th ST, Medley, FL 33178</span>';
             }
 
+            // Origin — escaped to prevent XSS
+            const origin = data.origin || {};
             document.getElementById('result-origin').innerHTML = `
-                ${data.origin.street}<br>
-                ${data.origin.city}, ${data.origin.state} ${data.origin.zip}
+                ${esc(origin.street)}<br>
+                ${esc(origin.city)}${origin.state ? ', ' + esc(origin.state) : ''} ${esc(origin.zip)}
             `;
 
+            // Destination — escaped to prevent XSS
+            const dest = data.destination || {};
             document.getElementById('result-destination').innerHTML = `
-                ${data.destination.name}<br>
-                ${data.destination.street}<br>
-                ${data.destination.city}, ${data.destination.state} ${data.destination.zip}
+                ${esc(dest.name)}<br>
+                ${esc(dest.street)}<br>
+                ${esc(dest.city)}${dest.state ? ', ' + esc(dest.state) : ''} ${esc(dest.zip)}
             `;
 
+            // Package info — escaped to prevent XSS
+            const pkg = data.package || {};
             document.getElementById('result-package').innerHTML = `
-                Weight: ${data.package.weight} lbs<br>
-                Dimensions: ${data.package.length || '-'}×${data.package.width || '-'}×${data.package.height || '-'} in<br>
-                Quantity: ${data.package.quantity}
+                Weight: ${esc(pkg.weight)} lbs<br>
+                Dimensions: ${esc(pkg.length || '-')}×${esc(pkg.width || '-')}×${esc(pkg.height || '-')} in<br>
+                Quantity: ${esc(pkg.quantity)}
             `;
 
             document.getElementById('result-service').textContent = data.service_type;

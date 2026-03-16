@@ -3865,6 +3865,10 @@
                     trackCalcEvent('shipment_billable_events_created', { events_count: events.length, value: quoteResult.total });
                 } catch (billingErr) {
                     console.warn('Billing events failed:', billingErr.message);
+                    // Surface billing failure to admins — shipment was saved but billing record was not
+                    if (typeof showToast === 'function') {
+                        showToast('⚠️ Shipment created but billing events could not be recorded. Admin will need to reconcile.', 'warning');
+                    }
                 }
 
                 // Store individual cargo tracking items in Firestore
@@ -3881,6 +3885,9 @@
                         trackCalcEvent('cargo_items_created', { count: cargoItemsData.length });
                     } catch (cargoErr) {
                         console.warn('Cargo items storage failed:', cargoErr.message);
+                        if (typeof showToast === 'function') {
+                            showToast('⚠️ Cargo item records could not be saved. Shipment exists but cargo tracking may be incomplete.', 'warning');
+                        }
                     }
                 }
 
