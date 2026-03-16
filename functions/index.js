@@ -3419,6 +3419,12 @@ exports.voidShippingLabel = functions.https.onCall(async (data, context) => {
     if (shipData.status === "voided") {
       throw new functions.https.HttpsError("failed-precondition", "Label already voided");
     }
+    if (["delivered", "in_transit", "out_for_delivery"].includes(shipData.status)) {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "Cannot void a label that is already " + shipData.status.replace(/_/g, " "),
+      );
+    }
 
     if (
       shipData.shipstation_shipment_id &&
@@ -3552,6 +3558,18 @@ exports.shipstationWebhook = functions.https.onRequest(async (req, res) => {
     );
     const db = admin.firestore();
     let updated = 0;
+
+    // Idempotency check: skip if we've already processed this exact resource_url
+    if (resourceUrl) {
+      const existingWebhook = await db.collection("shipstation_webhooks")
+        .where("resource_url", "==", resourceUrl)
+        .limit(1)
+        .get();
+      if (!existingWebhook.empty) {
+        res.status(200).json({ received: true, processed: false, reason: "duplicate" });
+        return;
+      }
+    }
 
     if (resourceUrl) {
       console.log("ShipStation webhook received:", resourceType, resourceUrl);

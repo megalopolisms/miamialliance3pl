@@ -65,6 +65,24 @@ function getApiKey() {
  * @param {object|null} body - Request body (POST only)
  * @returns {Promise<{status: number, data: object}>}
  */
+function sleep(ms) {
+  return new Promise(function (resolve) { setTimeout(resolve, ms); });
+}
+
+function requestWithRetry(options, body, retries) {
+  if (retries === undefined) retries = 1;
+  return requestWithOptions(options, body).catch(function (err) {
+    if (err.code === 429 && retries > 0) {
+      var waitMs = Math.min((parseInt(err.reset, 10) || 2) * 1000, 10000);
+      console.warn("ShipStation 429 - retrying in " + waitMs + "ms");
+      return sleep(waitMs).then(function () {
+        return requestWithRetry(options, body, retries - 1);
+      });
+    }
+    throw err;
+  });
+}
+
 function requestWithOptions(options, body) {
   return new Promise(function (resolve, reject) {
     var req = https.request(options, function (res) {
@@ -240,7 +258,19 @@ function getRatesMultiCarrier(carriers, baseParams) {
  * @returns {Promise<{status: number, data: {shipmentId, trackingNumber, shipmentCost, labelData}}>}
  */
 function createLabel(params) {
-  return request("POST", "/shipments/createlabel", params);
+  return requestWithRetry(
+    {
+      hostname: V1_BASE_HOST,
+      path: "/shipments/createlabel",
+      method: "POST",
+      headers: {
+        Authorization: getAuthHeader(),
+        "Content-Type": "application/json",
+      },
+    },
+    params,
+    1,
+  );
 }
 
 /**
@@ -250,7 +280,19 @@ function createLabel(params) {
  * @returns {Promise<{status: number, data: {approved: boolean, message: string}}>}
  */
 function voidLabel(shipmentId) {
-  return request("POST", "/shipments/voidlabel", { shipmentId: shipmentId });
+  return requestWithRetry(
+    {
+      hostname: V1_BASE_HOST,
+      path: "/shipments/voidlabel",
+      method: "POST",
+      headers: {
+        Authorization: getAuthHeader(),
+        "Content-Type": "application/json",
+      },
+    },
+    { shipmentId: shipmentId },
+    1,
+  );
 }
 
 // ============================================================
