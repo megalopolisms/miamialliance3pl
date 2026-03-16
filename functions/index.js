@@ -2057,6 +2057,14 @@ function buildCarrierTrackingUrl(carrierCode, trackingNumber) {
     case "fedex":
       return "https://www.fedex.com/fedextrack/?trknbr=" +
         encodeURIComponent(trackingNumber);
+    case "dhl_express":
+    case "dhl_express_worldwide":
+    case "dhl":
+      return "https://www.dhl.com/en/express/tracking.html?AWB=" +
+        encodeURIComponent(trackingNumber);
+    case "ontrac":
+      return "https://www.ontrac.com/tracking/?number=" +
+        encodeURIComponent(trackingNumber);
     default:
       return "";
   }
@@ -2502,9 +2510,10 @@ async function getAuthoritativeLiveRateQuote(
     );
   }
 
+  const rawShip = parseFloat(matchedRate.shipmentCost || 0);
+  const rawOther = parseFloat(matchedRate.otherCost || 0);
   const carrierCost = roundCurrency(
-    parseFloat(matchedRate.shipmentCost || 0) +
-    parseFloat(matchedRate.otherCost || 0),
+    (isNaN(rawShip) ? 0 : rawShip) + (isNaN(rawOther) ? 0 : rawOther),
   );
   const customerCostEach = applyMarkup(carrierCost, pkg.weight, markupConfig);
 
@@ -2565,6 +2574,23 @@ function mapShipStationTrackingToShipmentStatus(trackingData) {
     statusText.includes("picked up")
   ) {
     return "shipped";
+  }
+
+  if (
+    statusCode.includes("return") ||
+    statusText.includes("return to sender") ||
+    statusText.includes("returned")
+  ) {
+    return "returned";
+  }
+
+  if (
+    statusCode.includes("exception") ||
+    statusText.includes("exception") ||
+    statusText.includes("undeliverable") ||
+    statusText.includes("refused")
+  ) {
+    return "exception";
   }
 
   return null;

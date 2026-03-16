@@ -100,13 +100,23 @@ const sandbox = {
   Math,
   Number,
   Object,
+  String,
+  Boolean,
+  Date,
   parseInt,
   parseFloat,
+  isNaN,
   Promise,
+  encodeURIComponent,
 };
 
 [
   "cleanString",
+  "cleanOptionalString",
+  "roundCurrency",
+  "buildPortalTrackingNumber",
+  "normalizePortalDestination",
+  "isStaffRole",
   "getZoneFromZip",
   "toolGetShippingRates",
   "normalizeLegacyRateResponse",
@@ -154,7 +164,7 @@ describe("ShipStation source helpers", function () {
     assert.equal(result.rates[0].margin, 0);
   });
 
-  it("builds carrier tracking URLs for USPS, UPS, and FedEx", function () {
+  it("builds carrier tracking URLs for USPS, UPS, FedEx, DHL, and OnTrac", function () {
     assert.equal(
       sandbox.buildCarrierTrackingUrl("stamps_com", "9400111899223856929134"),
       "https://tools.usps.com/go/TrackConfirmAction?tLabels=9400111899223856929134",
@@ -167,32 +177,129 @@ describe("ShipStation source helpers", function () {
       sandbox.buildCarrierTrackingUrl("fedex", "123456789012"),
       "https://www.fedex.com/fedextrack/?trknbr=123456789012",
     );
+    assert.equal(
+      sandbox.buildCarrierTrackingUrl("dhl_express", "1234567890"),
+      "https://www.dhl.com/en/express/tracking.html?AWB=1234567890",
+    );
+    assert.equal(
+      sandbox.buildCarrierTrackingUrl("ontrac", "D100000001"),
+      "https://www.ontrac.com/tracking/?number=D100000001",
+    );
+    // Empty for unknown carrier
+    assert.equal(sandbox.buildCarrierTrackingUrl("unknown_carrier", "ABC123"), "");
+    // Empty for missing inputs
+    assert.equal(sandbox.buildCarrierTrackingUrl(null, "ABC123"), "");
+    assert.equal(sandbox.buildCarrierTrackingUrl("ups", null), "");
   });
 
   it("maps ShipStation tracking payloads into portal shipment statuses", function () {
     assert.equal(
-      sandbox.mapShipStationTrackingToShipmentStatus({
-        status_description: "Delivered",
-      }),
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_description: "Delivered" }),
       "delivered",
     );
     assert.equal(
-      sandbox.mapShipStationTrackingToShipmentStatus({
-        status_description: "Out for delivery",
-      }),
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_description: "Out for delivery" }),
       "out_for_delivery",
     );
     assert.equal(
-      sandbox.mapShipStationTrackingToShipmentStatus({
-        status_code: "IN_TRANSIT",
-      }),
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_code: "IN_TRANSIT" }),
       "in_transit",
     );
     assert.equal(
-      sandbox.mapShipStationTrackingToShipmentStatus({
-        status_description: "Shipment information sent to carrier",
-      }),
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_description: "Shipment information sent to carrier" }),
       "shipped",
     );
+    assert.equal(
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_description: "Label created" }),
+      "shipped",
+    );
+    // New: exception and return statuses
+    assert.equal(
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_code: "RETURN_TO_SENDER" }),
+      "returned",
+    );
+    assert.equal(
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_description: "Return to sender" }),
+      "returned",
+    );
+    assert.equal(
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_code: "EXCEPTION" }),
+      "exception",
+    );
+    assert.equal(
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_description: "Undeliverable" }),
+      "exception",
+    );
+    assert.equal(
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_description: "Refused by recipient" }),
+      "exception",
+    );
+    // Unknown status returns null
+    assert.equal(
+      sandbox.mapShipStationTrackingToShipmentStatus({ status_description: "some unknown thing" }),
+      null,
+    );
+  });
+});
+
+describe("Utility helpers (extracted from source)", function () {
+  it("cleanString trims and truncates", function () {
+    assert.equal(sandbox.cleanString("  hello world  ", 5), "hello");
+    assert.equal(sandbox.cleanString("", 10), "");
+    assert.equal(sandbox.cleanString(null, 10), "");
+    assert.equal(sandbox.cleanString(undefined, 10), "");
+    assert.equal(sandbox.cleanString("test"), "test");
+  });
+
+  it("cleanOptionalString returns null for empty", function () {
+    assert.equal(sandbox.cleanOptionalString(""), null);
+    assert.equal(sandbox.cleanOptionalString(null), null);
+    assert.equal(sandbox.cleanOptionalString("hello"), "hello");
+  });
+
+  it("roundCurrency rounds to 2 decimal places", function () {
+    assert.equal(sandbox.roundCurrency(10.555), 10.56);
+    assert.equal(sandbox.roundCurrency(10.554), 10.55);
+    assert.equal(sandbox.roundCurrency(0), 0);
+    assert.equal(sandbox.roundCurrency("12.345"), 12.35);
+    assert.equal(sandbox.roundCurrency(null), 0);
+    assert.equal(sandbox.roundCurrency(undefined), 0);
+    assert.equal(sandbox.roundCurrency("not_a_number"), 0);
+  });
+
+  it("buildPortalTrackingNumber sanitizes input or generates fallback", function () {
+    assert.equal(sandbox.buildPortalTrackingNumber("1Z-ABC-123"), "1Z-ABC-123");
+    assert.equal(sandbox.buildPortalTrackingNumber("track#@!456"), "TRACK456");
+    // Fallback generates MA3PL prefix
+    const fallback = sandbox.buildPortalTrackingNumber("");
+    assert.ok(fallback.startsWith("MA3PL"));
+    assert.ok(fallback.length > 5);
+  });
+
+  it("normalizePortalDestination handles missing fields", function () {
+    const result = sandbox.normalizePortalDestination({});
+    assert.equal(result.name, "Customer");
+    assert.equal(result.country, "US");
+    assert.equal(result.street, "");
+
+    const full = sandbox.normalizePortalDestination({
+      name: "Jane Doe",
+      street1: "123 Main St",
+      city: "Miami",
+      state: "fl",
+      zip: "33178",
+    });
+    assert.equal(full.name, "Jane Doe");
+    assert.equal(full.street1, "123 Main St");
+    assert.equal(full.state, "FL");
+    assert.equal(full.zip, "33178");
+  });
+
+  it("isStaffRole identifies admin and employee", function () {
+    assert.equal(sandbox.isStaffRole("admin"), true);
+    assert.equal(sandbox.isStaffRole("employee"), true);
+    assert.equal(sandbox.isStaffRole("customer"), false);
+    assert.equal(sandbox.isStaffRole(null), false);
+    assert.equal(sandbox.isStaffRole(undefined), false);
   });
 });
