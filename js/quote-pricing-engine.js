@@ -275,6 +275,77 @@
     };
   }
 
+  /**
+   * Calculate estimate for multiple cargo items with shared options.
+   * @param {Array} items - Array of { packageType, dimensions: {length, width, height}, weight, quantity, blackWrapping }
+   * @param {Object} sharedOptions - { shippingZone, storageDays, dropShipQty, fbaPrep }
+   * @returns {Object} { items: [per-item results], totals: { storage, handling, pickPack, shipping, wrapping, dropship, fbaPrepTotal, total } }
+   */
+  function calculateMultiEstimate(items, sharedOptions) {
+    var shared = sharedOptions || {};
+    var itemResults = [];
+    var totals = {
+      storage: 0,
+      handling: 0,
+      pickPack: 0,
+      shipping: 0,
+      wrapping: 0,
+      dropship: 0,
+      fbaPrepTotal: 0,
+      total: 0,
+    };
+
+    // Calculate each item individually
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i] || {};
+      var itemInput = {
+        packageType: item.packageType,
+        dimensions: item.dimensions,
+        weight: item.weight,
+        quantity: item.quantity,
+        shippingZone: shared.shippingZone,
+        storageDays: shared.storageDays,
+        blackWrapping: Boolean(item.blackWrapping),
+        dropShipQty: shared.dropShipQty,
+        fbaPrep: i === 0 ? shared.fbaPrep : { enabled: false, services: {} },
+      };
+      var result = calculateEstimate(itemInput);
+      // Only count dropship and fbaPrep once (on first item)
+      if (i > 0) {
+        result.dropship = 0;
+        result.fbaPrepTotal = 0;
+      }
+      // Recalculate item total without duplicated shared costs
+      if (i > 0) {
+        result.total =
+          result.storage +
+          result.handling +
+          result.pickPack +
+          result.shipping +
+          result.wrapping;
+      }
+      itemResults.push(result);
+      totals.storage += result.storage;
+      totals.handling += result.handling;
+      totals.pickPack += result.pickPack;
+      totals.shipping += result.shipping;
+      totals.wrapping += result.wrapping;
+      totals.dropship += result.dropship;
+      totals.fbaPrepTotal += result.fbaPrepTotal;
+    }
+
+    totals.total =
+      totals.storage +
+      totals.handling +
+      totals.pickPack +
+      totals.shipping +
+      totals.wrapping +
+      totals.dropship +
+      totals.fbaPrepTotal;
+
+    return { items: itemResults, totals: totals };
+  }
+
   function getWarehouse(warehouseId) {
     return Object.prototype.hasOwnProperty.call(WAREHOUSES, warehouseId)
       ? WAREHOUSES[warehouseId]
@@ -303,5 +374,6 @@
     getFbaPrepTotal: getFbaPrepTotal,
     getZoneLabel: getZoneLabel,
     calculateEstimate: calculateEstimate,
+    calculateMultiEstimate: calculateMultiEstimate,
   };
 })(window);

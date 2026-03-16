@@ -64,15 +64,27 @@ const COMPANY_LOGO_BASE64 =
 
 class QuoteCalculator {
   constructor() {
+    // Multi-item cargo support
+    this.cargoItems = [{
+      packageType: "box",
+      dimensions: { length: 12, width: 12, height: 12 },
+      weight: 25,
+      quantity: 1,
+      blackWrapping: false,
+    }];
+    this.activeCargoIndex = 0; // Which item drives the 3D viewer
+
+    // Legacy single-item accessors (backward compat)
     this.packageType = "box";
     this.dimensions = { length: 12, width: 12, height: 12 };
     this.weight = 25;
     this.quantity = 1;
+    this.blackWrapping = false;
+
     this.shippingZone = "regional";
     this.storageDays = 30;
-    this.blackWrapping = false; // Black wrapping option - $7/pallet
-    this.dropShipQty = { envelope: 0, small: 0, medium: 0, large: 0 }; // Drop ship unit quantities
-    this.selectedWarehouse = "miami"; // Default warehouse location
+    this.dropShipQty = { envelope: 0, small: 0, medium: 0, large: 0 };
+    this.selectedWarehouse = "miami";
     this.fbaPrep = {
       enabled: false,
       services: {
@@ -94,137 +106,19 @@ class QuoteCalculator {
     if (warehouseSelect) {
       warehouseSelect.addEventListener("change", (e) => {
         this.selectedWarehouse = e.target.value;
-        // Update shipping zone labels based on warehouse
         this.updateZoneLabels();
         this.calculate();
       });
     }
 
-    // Package type toggle
-    document.querySelectorAll(".package-option").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        document
-          .querySelectorAll(".package-option")
-          .forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        this.packageType = btn.dataset.type;
+    // Initialize cargo items system
+    this.initCargoItems();
 
-        // Set default pallet dimensions
-        if (this.packageType === "pallet") {
-          this.setDimensions(48, 40, 48);
-          document.getElementById("dim-length").value = 48;
-          document.getElementById("dim-width").value = 40;
-          document.getElementById("dim-height").value = 48;
-          document.getElementById("weight-slider").value = 500;
-          document.getElementById("weight-input").value = 500;
-          this.weight = 500;
-        } else {
-          this.setDimensions(12, 12, 12);
-          document.getElementById("dim-length").value = 12;
-          document.getElementById("dim-width").value = 12;
-          document.getElementById("dim-height").value = 12;
-          document.getElementById("weight-slider").value = 25;
-          document.getElementById("weight-input").value = 25;
-          this.weight = 25;
-        }
-
-        this.calculate();
-
-        // Show/hide black wrapping option based on package type
-        const blackWrapGroup = document.getElementById("black-wrapping-group");
-        if (blackWrapGroup) {
-          blackWrapGroup.style.display =
-            this.packageType === "pallet" ? "block" : "none";
-          // Reset checkbox when switching away from pallet
-          if (this.packageType !== "pallet") {
-            const checkbox = document.getElementById("black-wrapping");
-            if (checkbox) checkbox.checked = false;
-            this.blackWrapping = false;
-          }
-        }
-
-        // Notify 3D viewer if available
-        if (window.quote3D) {
-          window.quote3D.setPackageType(this.packageType);
-          window.quote3D.updateDimensions(
-            this.dimensions.length,
-            this.dimensions.width,
-            this.dimensions.height,
-          );
-        }
-      });
-    });
-
-    // Dimension inputs
-    ["length", "width", "height"].forEach((dim) => {
-      const input = document.getElementById(`dim-${dim}`);
-      if (input) {
-        input.addEventListener("input", (e) => {
-          const value = Math.max(
-            1,
-            Math.min(120, parseInt(e.target.value) || 1),
-          );
-          this.dimensions[dim] = value;
-          this.calculate();
-
-          if (window.quote3D) {
-            window.quote3D.updateDimensions(
-              this.dimensions.length,
-              this.dimensions.width,
-              this.dimensions.height,
-            );
-          }
-        });
-      }
-    });
-
-    // Weight slider
-    const weightSlider = document.getElementById("weight-slider");
-    const weightInput = document.getElementById("weight-input");
-
-    if (weightSlider) {
-      weightSlider.addEventListener("input", (e) => {
-        this.weight = parseInt(e.target.value);
-        if (weightInput) weightInput.value = this.weight;
-        this.calculate();
-      });
-    }
-
-    if (weightInput) {
-      weightInput.addEventListener("input", (e) => {
-        this.weight = Math.max(
-          1,
-          Math.min(2000, parseInt(e.target.value) || 1),
-        );
-        if (weightSlider) weightSlider.value = Math.min(500, this.weight);
-        this.calculate();
-      });
-    }
-
-    // Quantity controls
-    const qtyInput = document.getElementById("quantity-input");
-    const qtyBtns = document.querySelectorAll(".quantity-controls .qty-btn");
-
-    qtyBtns.forEach((btn) => {
-      btn.addEventListener("click", (event) => {
-        event.preventDefault();
-        if (btn.dataset.action === "increase") {
-          this.quantity = Math.min(1000, this.quantity + 1);
-        } else {
-          this.quantity = Math.max(1, this.quantity - 1);
-        }
-        if (qtyInput) qtyInput.value = this.quantity;
-        this.calculate();
-      });
-    });
-
-    if (qtyInput) {
-      qtyInput.addEventListener("input", (e) => {
-        this.quantity = Math.max(
-          1,
-          Math.min(1000, parseInt(e.target.value) || 1),
-        );
-        this.calculate();
+    // Add cargo item button
+    const addBtn = document.getElementById("add-cargo-item");
+    if (addBtn) {
+      addBtn.addEventListener("click", () => {
+        this.addCargoItem();
       });
     }
 
@@ -280,14 +174,7 @@ class QuoteCalculator {
       }
     });
 
-    // Black wrapping checkbox (pallets only - $7/pallet)
-    const blackWrappingCheck = document.getElementById("black-wrapping");
-    if (blackWrappingCheck) {
-      blackWrappingCheck.addEventListener("change", (e) => {
-        this.blackWrapping = e.target.checked;
-        this.calculate();
-      });
-    }
+    // Black wrapping is now per-item inside cargo items
 
     // FBA Prep master toggle
     const fbaPrepEnabled = document.getElementById("fba-prep-enabled");
@@ -386,6 +273,303 @@ class QuoteCalculator {
     this.calculate();
   }
 
+  // ===== Cargo Items System =====
+
+  initCargoItems() {
+    const list = document.getElementById("cargo-items-list");
+    if (!list) return;
+    const items = list.querySelectorAll(".cargo-item");
+    items.forEach((itemEl, idx) => {
+      this.bindCargoItemEvents(itemEl, idx);
+    });
+    this.updateRemoveButtons();
+  }
+
+  addCargoItem() {
+    const list = document.getElementById("cargo-items-list");
+    if (!list) return;
+    const newIndex = this.cargoItems.length;
+    const newItem = {
+      packageType: "box",
+      dimensions: { length: 12, width: 12, height: 12 },
+      weight: 25,
+      quantity: 1,
+      blackWrapping: false,
+    };
+    this.cargoItems.push(newItem);
+
+    // Create new cargo item DOM
+    const div = document.createElement("div");
+    div.className = "cargo-item";
+    div.dataset.index = newIndex;
+    div.innerHTML = `
+      <div class="cargo-item-header">
+        <span class="cargo-item-number">Item #${newIndex + 1}</span>
+        <button type="button" class="cargo-item-remove" title="Remove item">✕</button>
+      </div>
+      <div class="cargo-item-type">
+        <button type="button" class="package-option active" data-type="box">
+          <span class="package-icon">📦</span>
+          <span class="package-name">Box</span>
+        </button>
+        <button type="button" class="package-option" data-type="pallet">
+          <span class="package-icon">🏗️</span>
+          <span class="package-name">Pallet</span>
+        </button>
+      </div>
+      <div class="cargo-item-details">
+        <div class="cargo-dim-row">
+          <div class="cargo-dim-group">
+            <input type="number" class="cargo-dim-input" data-dim="length" value="12" min="1" max="120" placeholder="L">
+            <span class="cargo-dim-label">L</span>
+          </div>
+          <span class="cargo-dim-x">×</span>
+          <div class="cargo-dim-group">
+            <input type="number" class="cargo-dim-input" data-dim="width" value="12" min="1" max="120" placeholder="W">
+            <span class="cargo-dim-label">W</span>
+          </div>
+          <span class="cargo-dim-x">×</span>
+          <div class="cargo-dim-group">
+            <input type="number" class="cargo-dim-input" data-dim="height" value="12" min="1" max="120" placeholder="H">
+            <span class="cargo-dim-label">H</span>
+          </div>
+          <span class="cargo-dim-unit">in</span>
+        </div>
+        <div class="cargo-weight-qty-row">
+          <div class="cargo-weight-group">
+            <input type="number" class="cargo-weight-input" value="25" min="1" max="2000" placeholder="Weight">
+            <span class="cargo-dim-label">lbs</span>
+          </div>
+          <div class="cargo-qty-group">
+            <button type="button" class="qty-btn cargo-qty-dec">−</button>
+            <input type="number" class="cargo-qty-input" value="1" min="1" max="1000">
+            <button type="button" class="qty-btn cargo-qty-inc">+</button>
+          </div>
+        </div>
+        <div class="cargo-wrapping-row" style="display:none;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;">
+            <input type="checkbox" class="cargo-wrapping-check">
+            <span>Black Wrapping (+$7/pallet)</span>
+          </label>
+        </div>
+      </div>
+    `;
+    list.appendChild(div);
+    this.bindCargoItemEvents(div, newIndex);
+    this.updateRemoveButtons();
+    this.calculate();
+  }
+
+  removeCargoItem(index) {
+    if (this.cargoItems.length <= 1) return;
+    this.cargoItems.splice(index, 1);
+
+    // Rebuild DOM indices
+    const list = document.getElementById("cargo-items-list");
+    if (!list) return;
+    const items = list.querySelectorAll(".cargo-item");
+    const itemToRemove = Array.from(items).find(
+      (el) => parseInt(el.dataset.index) === index,
+    );
+    if (itemToRemove) itemToRemove.remove();
+
+    // Re-index remaining items
+    const remaining = list.querySelectorAll(".cargo-item");
+    remaining.forEach((el, idx) => {
+      el.dataset.index = idx;
+      const numSpan = el.querySelector(".cargo-item-number");
+      if (numSpan) numSpan.textContent = `Item #${idx + 1}`;
+    });
+
+    if (this.activeCargoIndex >= this.cargoItems.length) {
+      this.activeCargoIndex = this.cargoItems.length - 1;
+    }
+    this.syncLegacyState();
+    this.updateRemoveButtons();
+    this.calculate();
+  }
+
+  updateRemoveButtons() {
+    const list = document.getElementById("cargo-items-list");
+    if (!list) return;
+    const items = list.querySelectorAll(".cargo-item");
+    items.forEach((el) => {
+      const btn = el.querySelector(".cargo-item-remove");
+      if (btn) {
+        btn.style.display = items.length > 1 ? "flex" : "none";
+      }
+    });
+  }
+
+  bindCargoItemEvents(itemEl, index) {
+    const self = this;
+
+    // Package type toggle
+    const typeBtns = itemEl.querySelectorAll(".cargo-item-type .package-option");
+    typeBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(itemEl.dataset.index);
+        typeBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        self.cargoItems[idx].packageType = btn.dataset.type;
+
+        // Set defaults for type
+        if (btn.dataset.type === "pallet") {
+          self.cargoItems[idx].dimensions = { length: 48, width: 40, height: 48 };
+          self.cargoItems[idx].weight = 500;
+          const dims = itemEl.querySelectorAll(".cargo-dim-input");
+          dims.forEach((d) => {
+            if (d.dataset.dim === "length") d.value = 48;
+            if (d.dataset.dim === "width") d.value = 40;
+            if (d.dataset.dim === "height") d.value = 48;
+          });
+          const wInput = itemEl.querySelector(".cargo-weight-input");
+          if (wInput) wInput.value = 500;
+        } else {
+          self.cargoItems[idx].dimensions = { length: 12, width: 12, height: 12 };
+          self.cargoItems[idx].weight = 25;
+          const dims = itemEl.querySelectorAll(".cargo-dim-input");
+          dims.forEach((d) => {
+            if (d.dataset.dim === "length") d.value = 12;
+            if (d.dataset.dim === "width") d.value = 12;
+            if (d.dataset.dim === "height") d.value = 12;
+          });
+          const wInput = itemEl.querySelector(".cargo-weight-input");
+          if (wInput) wInput.value = 25;
+          // Reset wrapping when switching from pallet
+          self.cargoItems[idx].blackWrapping = false;
+          const wrapCheck = itemEl.querySelector(".cargo-wrapping-check");
+          if (wrapCheck) wrapCheck.checked = false;
+        }
+
+        // Show/hide wrapping row
+        const wrapRow = itemEl.querySelector(".cargo-wrapping-row");
+        if (wrapRow) {
+          wrapRow.style.display = btn.dataset.type === "pallet" ? "block" : "none";
+        }
+
+        self.activeCargoIndex = idx;
+        self.syncLegacyState();
+        self.calculate();
+
+        // 3D viewer
+        if (window.quote3D) {
+          window.quote3D.setPackageType(self.cargoItems[idx].packageType);
+          window.quote3D.updateDimensions(
+            self.cargoItems[idx].dimensions.length,
+            self.cargoItems[idx].dimensions.width,
+            self.cargoItems[idx].dimensions.height,
+          );
+        }
+      });
+    });
+
+    // Dimension inputs
+    itemEl.querySelectorAll(".cargo-dim-input").forEach((input) => {
+      input.addEventListener("input", (e) => {
+        const idx = parseInt(itemEl.dataset.index);
+        const dim = e.target.dataset.dim;
+        const value = Math.max(1, Math.min(120, parseInt(e.target.value) || 1));
+        self.cargoItems[idx].dimensions[dim] = value;
+        self.activeCargoIndex = idx;
+        self.syncLegacyState();
+        self.calculate();
+
+        if (window.quote3D) {
+          window.quote3D.updateDimensions(
+            self.cargoItems[idx].dimensions.length,
+            self.cargoItems[idx].dimensions.width,
+            self.cargoItems[idx].dimensions.height,
+          );
+        }
+      });
+    });
+
+    // Weight input
+    const weightInput = itemEl.querySelector(".cargo-weight-input");
+    if (weightInput) {
+      weightInput.addEventListener("input", (e) => {
+        const idx = parseInt(itemEl.dataset.index);
+        self.cargoItems[idx].weight = Math.max(
+          1,
+          Math.min(2000, parseInt(e.target.value) || 1),
+        );
+        self.activeCargoIndex = idx;
+        self.syncLegacyState();
+        self.calculate();
+      });
+    }
+
+    // Quantity controls
+    const qtyDec = itemEl.querySelector(".cargo-qty-dec");
+    const qtyInc = itemEl.querySelector(".cargo-qty-inc");
+    const qtyInput = itemEl.querySelector(".cargo-qty-input");
+
+    if (qtyDec) {
+      qtyDec.addEventListener("click", (e) => {
+        e.preventDefault();
+        const idx = parseInt(itemEl.dataset.index);
+        self.cargoItems[idx].quantity = Math.max(1, self.cargoItems[idx].quantity - 1);
+        if (qtyInput) qtyInput.value = self.cargoItems[idx].quantity;
+        self.syncLegacyState();
+        self.calculate();
+      });
+    }
+    if (qtyInc) {
+      qtyInc.addEventListener("click", (e) => {
+        e.preventDefault();
+        const idx = parseInt(itemEl.dataset.index);
+        self.cargoItems[idx].quantity = Math.min(1000, self.cargoItems[idx].quantity + 1);
+        if (qtyInput) qtyInput.value = self.cargoItems[idx].quantity;
+        self.syncLegacyState();
+        self.calculate();
+      });
+    }
+    if (qtyInput) {
+      qtyInput.addEventListener("input", (e) => {
+        const idx = parseInt(itemEl.dataset.index);
+        self.cargoItems[idx].quantity = Math.max(
+          1,
+          Math.min(1000, parseInt(e.target.value) || 1),
+        );
+        self.syncLegacyState();
+        self.calculate();
+      });
+    }
+
+    // Black wrapping checkbox
+    const wrapCheck = itemEl.querySelector(".cargo-wrapping-check");
+    if (wrapCheck) {
+      wrapCheck.addEventListener("change", (e) => {
+        const idx = parseInt(itemEl.dataset.index);
+        self.cargoItems[idx].blackWrapping = e.target.checked;
+        self.syncLegacyState();
+        self.calculate();
+      });
+    }
+
+    // Remove button
+    const removeBtn = itemEl.querySelector(".cargo-item-remove");
+    if (removeBtn) {
+      removeBtn.addEventListener("click", () => {
+        const idx = parseInt(itemEl.dataset.index);
+        self.removeCargoItem(idx);
+      });
+    }
+  }
+
+  syncLegacyState() {
+    // Keep legacy single-item state in sync with active cargo item
+    const active = this.cargoItems[this.activeCargoIndex] || this.cargoItems[0];
+    if (active) {
+      this.packageType = active.packageType;
+      this.dimensions = { ...active.dimensions };
+      this.weight = active.weight;
+      this.quantity = active.quantity;
+      this.blackWrapping = active.blackWrapping;
+    }
+  }
+
   setDimensions(length, width, height) {
     this.dimensions = { length, width, height };
   }
@@ -417,120 +601,165 @@ class QuoteCalculator {
   }
 
   calculate() {
-    const estimateInput = {
-      packageType: this.packageType,
-      dimensions: this.dimensions,
-      weight: this.weight,
-      quantity: this.quantity,
+    // Build multi-item input
+    const items = this.cargoItems.map((item) => ({
+      packageType: item.packageType,
+      dimensions: item.dimensions,
+      weight: item.weight,
+      quantity: item.quantity,
+      blackWrapping: item.blackWrapping,
+    }));
+    const sharedOptions = {
       shippingZone: this.shippingZone,
       storageDays: this.storageDays,
-      blackWrapping: this.blackWrapping,
       dropShipQty: this.dropShipQty,
       fbaPrep: this.fbaPrep,
     };
 
-    const result = window.MA3PLQuoteEngine
-      ? window.MA3PLQuoteEngine.calculateEstimate(estimateInput)
-      : (() => {
-          const cubicFt = this.getCubicFeet();
-          const dimWeight = this.getDimensionalWeight();
-          const billableWeight = this.getBillableWeight();
-          let storage = 0;
-          let handling = 0;
-          let pickPack = 0;
-          let shipping = 0;
-          let wrapping = 0;
-          let dropship = 0;
+    let multiResult = null;
+    let result = null;
 
-          if (this.packageType === "pallet") {
-            storage =
-              PRICING.palletStoragePerDay * this.storageDays * this.quantity;
-            handling = PRICING.palletHandling * this.quantity;
-            pickPack = PRICING.palletPickPack * this.quantity;
-            if (this.shippingZone === "dropship") {
-              dropship = this.calculateDropShipTotal();
-            } else if (this.shippingZone !== "none") {
-              shipping =
-                billableWeight *
-                PRICING.shippingZones[this.shippingZone] *
-                this.quantity;
-            }
-            if (this.blackWrapping) {
-              wrapping = PRICING.blackWrapping * this.quantity;
-            }
-          } else {
-            storage =
-              cubicFt *
-              PRICING.storagePerCubicFtDay *
-              this.storageDays *
-              this.quantity;
-            handling = PRICING.handlingFee * this.quantity;
-            pickPack = PRICING.pickAndPack * this.quantity;
-            if (this.shippingZone === "dropship") {
-              dropship = this.calculateDropShipTotal();
-            } else if (this.shippingZone !== "none") {
-              shipping =
-                billableWeight *
-                PRICING.shippingZones[this.shippingZone] *
-                this.quantity;
-            }
-          }
+    if (
+      window.MA3PLQuoteEngine &&
+      window.MA3PLQuoteEngine.calculateMultiEstimate
+    ) {
+      multiResult = window.MA3PLQuoteEngine.calculateMultiEstimate(
+        items,
+        sharedOptions,
+      );
+      result = multiResult.totals;
+      // Use active item for dim/cubic display
+      const activeItemResult =
+        multiResult.items[this.activeCargoIndex] || multiResult.items[0];
+      result.dimWeight = activeItemResult.dimWeight;
+      result.cubicFt = activeItemResult.cubicFt;
+      result.billableWeight = activeItemResult.billableWeight;
+    } else if (window.MA3PLQuoteEngine) {
+      // Fallback: single item via old method
+      const singleResult = window.MA3PLQuoteEngine.calculateEstimate({
+        packageType: this.packageType,
+        dimensions: this.dimensions,
+        weight: this.weight,
+        quantity: this.quantity,
+        shippingZone: this.shippingZone,
+        storageDays: this.storageDays,
+        blackWrapping: this.blackWrapping,
+        dropShipQty: this.dropShipQty,
+        fbaPrep: this.fbaPrep,
+      });
+      result = singleResult;
+    } else {
+      // Inline fallback for single item
+      const cubicFt = this.getCubicFeet();
+      const dimWeight = this.getDimensionalWeight();
+      const billableWeight = this.getBillableWeight();
+      let storage = 0,
+        handling = 0,
+        pickPack = 0,
+        shipping = 0,
+        wrapping = 0,
+        dropship = 0;
 
-          storage = Math.max(storage, PRICING.minStorage || 5.0);
-          // Calculate FBA prep total (fallback)
-          let fbaPrepTotal = 0;
-          if (this.fbaPrep && this.fbaPrep.enabled && PRICING.fbaPrep) {
-            Object.keys(this.fbaPrep.services).forEach((key) => {
-              const svc = this.fbaPrep.services[key];
-              if (svc && svc.selected && svc.qty > 0 && PRICING.fbaPrep[key]) {
-                fbaPrepTotal += svc.qty * PRICING.fbaPrep[key].rate;
-              }
-            });
+      if (this.packageType === "pallet") {
+        storage =
+          PRICING.palletStoragePerDay * this.storageDays * this.quantity;
+        handling = PRICING.palletHandling * this.quantity;
+        pickPack = PRICING.palletPickPack * this.quantity;
+        if (this.shippingZone === "dropship") {
+          dropship = this.calculateDropShipTotal();
+        } else if (this.shippingZone !== "none") {
+          shipping =
+            billableWeight *
+            PRICING.shippingZones[this.shippingZone] *
+            this.quantity;
+        }
+        if (this.blackWrapping) {
+          wrapping = PRICING.blackWrapping * this.quantity;
+        }
+      } else {
+        storage =
+          cubicFt *
+          PRICING.storagePerCubicFtDay *
+          this.storageDays *
+          this.quantity;
+        handling = PRICING.handlingFee * this.quantity;
+        pickPack = PRICING.pickAndPack * this.quantity;
+        if (this.shippingZone === "dropship") {
+          dropship = this.calculateDropShipTotal();
+        } else if (this.shippingZone !== "none") {
+          shipping =
+            billableWeight *
+            PRICING.shippingZones[this.shippingZone] *
+            this.quantity;
+        }
+      }
+
+      storage = Math.max(storage, PRICING.minStorage || 5.0);
+      let fbaPrepTotal = 0;
+      if (this.fbaPrep && this.fbaPrep.enabled && PRICING.fbaPrep) {
+        Object.keys(this.fbaPrep.services).forEach((key) => {
+          const svc = this.fbaPrep.services[key];
+          if (svc && svc.selected && svc.qty > 0 && PRICING.fbaPrep[key]) {
+            fbaPrepTotal += svc.qty * PRICING.fbaPrep[key].rate;
           }
-          const total =
-            storage +
-            handling +
-            pickPack +
-            shipping +
-            wrapping +
-            dropship +
-            fbaPrepTotal;
-          return {
-            cubicFt,
-            dimWeight,
-            billableWeight,
-            storage,
-            handling,
-            pickPack,
-            shipping,
-            wrapping,
-            dropship,
-            fbaPrepTotal,
-            total,
-          };
-        })();
+        });
+      }
+      const total =
+        storage +
+        handling +
+        pickPack +
+        shipping +
+        wrapping +
+        dropship +
+        fbaPrepTotal;
+      result = {
+        cubicFt,
+        dimWeight,
+        billableWeight,
+        storage,
+        handling,
+        pickPack,
+        shipping,
+        wrapping,
+        dropship,
+        fbaPrepTotal,
+        total,
+      };
+    }
+
+    // Store multiResult for PDF generation
+    this._lastMultiResult = multiResult;
 
     // Update UI
     this.updateDisplay({
-      dimWeight: result.dimWeight.toFixed(1),
-      cubicFt: result.cubicFt.toFixed(1),
+      dimWeight: (result.dimWeight || 0).toFixed
+        ? result.dimWeight.toFixed(1)
+        : "0.0",
+      cubicFt: (result.cubicFt || 0).toFixed
+        ? result.cubicFt.toFixed(1)
+        : "0.0",
       storage: result.storage,
       handling: result.handling,
       pickPack: result.pickPack,
       shipping: result.shipping,
-      wrapping: result.wrapping,
+      wrapping: result.wrapping || 0,
       dropship: result.dropship,
       fbaPrepTotal: result.fbaPrepTotal || 0,
       total: result.total,
     });
 
+    // Render per-item breakdown
+    this.renderCargoBreakdown(multiResult);
+
     // Track quote calculation (debounced)
     if (window.MA3PLAnalytics && !this._calcDebounce) {
       this._calcDebounce = setTimeout(() => {
+        const activeItem =
+          this.cargoItems[this.activeCargoIndex] || this.cargoItems[0];
         MA3PLAnalytics.trackQuoteCalculation(
-          this.packageType,
-          `${this.dimensions.length}x${this.dimensions.width}x${this.dimensions.height}`,
-          this.quantity,
+          activeItem.packageType,
+          `${activeItem.dimensions.length}x${activeItem.dimensions.width}x${activeItem.dimensions.height}`,
+          activeItem.quantity,
           result.total,
         );
         this._calcDebounce = null;
@@ -542,7 +771,7 @@ class QuoteCalculator {
       handling: result.handling,
       pickPack: result.pickPack,
       shipping: result.shipping,
-      wrapping: result.wrapping,
+      wrapping: result.wrapping || 0,
       dropship: result.dropship,
       fbaPrepTotal: result.fbaPrepTotal || 0,
       total: result.total,
@@ -568,11 +797,13 @@ class QuoteCalculator {
       if (el) el.textContent = value;
     }
 
-    // Show/hide wrapping row based on pallet + option selected
+    // Show/hide wrapping row - show if any cargo item has wrapping
     const wrappingRow = document.getElementById("wrapping-row");
     if (wrappingRow) {
-      wrappingRow.style.display =
-        this.packageType === "pallet" && this.blackWrapping ? "flex" : "none";
+      const anyWrapping = this.cargoItems.some(
+        (item) => item.packageType === "pallet" && item.blackWrapping,
+      );
+      wrappingRow.style.display = anyWrapping ? "flex" : "none";
     }
 
     // Show/hide drop ship row
@@ -601,6 +832,41 @@ class QuoteCalculator {
           ? "none"
           : "flex";
     }
+  }
+
+  renderCargoBreakdown(multiResult) {
+    const container = document.getElementById("cargo-items-breakdown");
+    if (!container) return;
+
+    // Only show breakdown if multiple items
+    if (!multiResult || multiResult.items.length <= 1) {
+      container.innerHTML = "";
+      return;
+    }
+
+    let html = "";
+    multiResult.items.forEach((itemResult, idx) => {
+      const item = this.cargoItems[idx];
+      if (!item) return;
+      const typeLabel = item.packageType === "pallet" ? "Pallet" : "Box";
+      const dims = `${item.dimensions.length}×${item.dimensions.width}×${item.dimensions.height}"`;
+      const itemTotal =
+        itemResult.storage +
+        itemResult.handling +
+        itemResult.pickPack +
+        itemResult.shipping +
+        itemResult.wrapping;
+      html += `<div class="cargo-item-subtotal">
+        <div class="cargo-item-subtotal-header">
+          <span>Item #${idx + 1}: ${typeLabel} ${dims} × ${item.quantity}</span>
+          <span>${this.formatCurrency(itemTotal)}</span>
+        </div>
+        <div class="cargo-item-subtotal-details">
+          ${item.weight}lbs · Storage ${this.formatCurrency(itemResult.storage)} · Handling ${this.formatCurrency(itemResult.handling)} · P&P ${this.formatCurrency(itemResult.pickPack)}${itemResult.shipping > 0 ? " · Ship " + this.formatCurrency(itemResult.shipping) : ""}${itemResult.wrapping > 0 ? " · Wrap " + this.formatCurrency(itemResult.wrapping) : ""}
+        </div>
+      </div>`;
+    });
+    container.innerHTML = html;
   }
 
   calculateDropShipTotal() {
@@ -790,20 +1056,32 @@ class QuoteCalculator {
 
     yPos += 12;
 
-    // Package info with styled rows
-    const packageDetails = [
-      ["Type", this.packageType === "pallet" ? "PALLET" : "BOX"],
-      [
-        "Dimensions",
-        `${this.dimensions.length}" x ${this.dimensions.width}" x ${this.dimensions.height}"`,
-      ],
-      ["Weight", `${this.weight} lbs (actual)`],
-      ["DIM Weight", `${dimWeight.toFixed(1)} lbs`],
-      ["Billable", `${billableWeight.toFixed(1)} lbs`],
-      ["Volume", `${cubicFt.toFixed(2)} cu ft`],
-      ["Quantity", `${this.quantity} unit${this.quantity > 1 ? "s" : ""}`],
-      ["Zone", this.getZoneName(this.shippingZone)],
-    ];
+    // Package info with styled rows - multi-item support
+    const packageDetails = [];
+    if (this.cargoItems.length > 1) {
+      this.cargoItems.forEach((item, idx) => {
+        const typeLabel = item.packageType === "pallet" ? "PALLET" : "BOX";
+        packageDetails.push([
+          `Item #${idx + 1}`,
+          `${typeLabel} ${item.dimensions.length}"x${item.dimensions.width}"x${item.dimensions.height}" ${item.weight}lbs x${item.quantity}`,
+        ]);
+      });
+      packageDetails.push(["Zone", this.getZoneName(this.shippingZone)]);
+    } else {
+      packageDetails.push(
+        ["Type", this.packageType === "pallet" ? "PALLET" : "BOX"],
+        [
+          "Dimensions",
+          `${this.dimensions.length}" x ${this.dimensions.width}" x ${this.dimensions.height}"`,
+        ],
+        ["Weight", `${this.weight} lbs (actual)`],
+        ["DIM Weight", `${dimWeight.toFixed(1)} lbs`],
+        ["Billable", `${billableWeight.toFixed(1)} lbs`],
+        ["Volume", `${cubicFt.toFixed(2)} cu ft`],
+        ["Quantity", `${this.quantity} unit${this.quantity > 1 ? "s" : ""}`],
+        ["Zone", this.getZoneName(this.shippingZone)],
+      );
+    }
 
     doc.setFontSize(9);
     packageDetails.forEach(([label, value], index) => {
@@ -861,8 +1139,11 @@ class QuoteCalculator {
     } else {
       priceRows.push(["Est. Shipping", this.formatCurrency(results.shipping)]);
     }
-    // Add black wrapping if selected (pallet only)
-    if (this.packageType === "pallet" && this.blackWrapping) {
+    // Add black wrapping if any item has it selected
+    const anyWrappingPdf = this.cargoItems.some(
+      (item) => item.packageType === "pallet" && item.blackWrapping,
+    );
+    if (anyWrappingPdf && results.wrapping > 0) {
       priceRows.push(["Black Wrapping", this.formatCurrency(results.wrapping)]);
     }
 
@@ -927,12 +1208,19 @@ class QuoteCalculator {
     doc.setFontSize(8);
     doc.setTextColor(...grayColor);
 
-    const rates = [
-      `Storage: ${this.packageType === "pallet" ? "$0.75/pallet/day" : "$0.025/cu ft/day"}`,
-      `Handling: ${this.packageType === "pallet" ? "$15.00/pallet" : "$3.50/unit"}`,
-      `Pick & Pack: ${this.packageType === "pallet" ? "$5.00/pallet" : "$1.25/item"}`,
-    ];
-    // Add shipping rate detail based on zone
+    const hasPallet = this.cargoItems.some(
+      (item) => item.packageType === "pallet",
+    );
+    const hasBox = this.cargoItems.some(
+      (item) => item.packageType === "box",
+    );
+    const rates = [];
+    if (hasBox) {
+      rates.push("Box: $0.025/cu ft/day | $3.50 handling | $1.25 P&P");
+    }
+    if (hasPallet) {
+      rates.push("Pallet: $0.75/day | $15.00 handling | $5.00 P&P");
+    }
     if (this.shippingZone === "none") {
       rates.push("Shipping: N/A");
     } else if (this.shippingZone === "dropship") {
@@ -942,8 +1230,7 @@ class QuoteCalculator {
         `Shipping: $${PRICING.shippingZones[this.shippingZone].toFixed(2)}/lb (${this.getZoneName(this.shippingZone)})`,
       );
     }
-    // Add black wrapping rate if applicable
-    if (this.packageType === "pallet") {
+    if (hasPallet) {
       rates.push(`Black Wrap: $${PRICING.blackWrapping.toFixed(2)}/pallet`);
     }
     doc.text(rates.join("   |   "), 105, yPos, { align: "center" });

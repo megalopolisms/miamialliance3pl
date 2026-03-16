@@ -1555,60 +1555,67 @@
                             </select>
                         </div>
 
-                        <!-- Package Type -->
-                        <div class="quote-control-group">
-                            <label class="quote-label" data-i18n="quote.package.label">Package Type</label>
-                            <div class="package-toggle">
-                                <button type="button" class="package-option active" data-type="box">
-                                    <span class="package-icon">📦</span>
-                                    <span class="package-name" data-i18n="quote.package.box">Box</span>
-                                </button>
-                                <button type="button" class="package-option" data-type="pallet">
-                                    <span class="package-icon">🏗️</span>
-                                    <span class="package-name" data-i18n="quote.package.pallet">Pallet</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Dimensions -->
-                        <div class="quote-control-group">
-                            <label class="quote-label" data-i18n="quote.dimensions.label">Dimensions (inches)</label>
-                            <div class="dimension-row">
-                                <div class="dimension-input-group">
-                                    <input type="number" id="sc-length" class="dimension-input" value="12" min="1" max="120">
-                                    <span class="dimension-label" data-i18n="quote.dimensions.length">Length</span>
+                        <!-- Cargo Items (Multi-Size Support) -->
+                        <div class="quote-control-group" id="sc-cargo-items-container">
+                            <label class="quote-label">Cargo Items</label>
+                            <div id="sc-cargo-items-list">
+                                <!-- Item 1 (default) -->
+                                <div class="cargo-item" data-index="0">
+                                    <div class="cargo-item-header">
+                                        <span class="cargo-item-number">Item #1</span>
+                                        <button type="button" class="cargo-item-remove" title="Remove item" style="display:none;">✕</button>
+                                    </div>
+                                    <div class="cargo-item-type">
+                                        <button type="button" class="package-option active" data-type="box">
+                                            <span class="package-icon">📦</span>
+                                            <span class="package-name">Box</span>
+                                        </button>
+                                        <button type="button" class="package-option" data-type="pallet">
+                                            <span class="package-icon">🏗️</span>
+                                            <span class="package-name">Pallet</span>
+                                        </button>
+                                    </div>
+                                    <div class="cargo-item-details">
+                                        <div class="cargo-dim-row">
+                                            <div class="cargo-dim-group">
+                                                <input type="number" class="cargo-dim-input" data-dim="length" value="12" min="1" max="120" placeholder="L">
+                                                <span class="cargo-dim-label">L</span>
+                                            </div>
+                                            <span class="cargo-dim-x">×</span>
+                                            <div class="cargo-dim-group">
+                                                <input type="number" class="cargo-dim-input" data-dim="width" value="12" min="1" max="120" placeholder="W">
+                                                <span class="cargo-dim-label">W</span>
+                                            </div>
+                                            <span class="cargo-dim-x">×</span>
+                                            <div class="cargo-dim-group">
+                                                <input type="number" class="cargo-dim-input" data-dim="height" value="12" min="1" max="120" placeholder="H">
+                                                <span class="cargo-dim-label">H</span>
+                                            </div>
+                                            <span class="cargo-dim-unit">in</span>
+                                        </div>
+                                        <div class="cargo-weight-qty-row">
+                                            <div class="cargo-weight-group">
+                                                <input type="number" class="cargo-weight-input" value="25" min="1" max="2000" placeholder="Weight">
+                                                <span class="cargo-dim-label">lbs</span>
+                                            </div>
+                                            <div class="cargo-qty-group">
+                                                <button type="button" class="qty-btn cargo-qty-dec">−</button>
+                                                <input type="number" class="cargo-qty-input" value="1" min="1" max="1000">
+                                                <button type="button" class="qty-btn cargo-qty-inc">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="cargo-wrapping-row" style="display:none;">
+                                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;">
+                                                <input type="checkbox" class="cargo-wrapping-check">
+                                                <span>Black Wrapping (+$7/pallet)</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="dimension-input-group">
-                                    <input type="number" id="sc-width" class="dimension-input" value="12" min="1" max="120">
-                                    <span class="dimension-label" data-i18n="quote.dimensions.width">Width</span>
-                                </div>
-                                <div class="dimension-input-group">
-                                    <input type="number" id="sc-height" class="dimension-input" value="12" min="1" max="120">
-                                    <span class="dimension-label" data-i18n="quote.dimensions.height">Height</span>
-                                </div>
                             </div>
-                        </div>
-
-                        <!-- Weight -->
-                        <div class="quote-control-group">
-                            <label class="quote-label" data-i18n="quote.weight.label">Weight (lbs)</label>
-                            <div class="weight-input-wrapper">
-                                <input type="range" id="sc-weight-slider" min="1" max="500" value="25" class="weight-slider">
-                                <div class="weight-display">
-                                    <input type="number" id="sc-weight-input" value="25" min="1" max="2000" class="weight-number">
-                                    <span class="weight-unit">lbs</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Quantity -->
-                        <div class="quote-control-group">
-                            <label class="quote-label" data-i18n="quote.quantity.label">Quantity</label>
-                            <div class="quantity-controls">
-                                <button type="button" class="qty-btn" id="sc-qty-dec">-</button>
-                                <input type="number" id="sc-qty" value="1" min="1" max="1000" class="quantity-input">
-                                <button type="button" class="qty-btn" id="sc-qty-inc">+</button>
-                            </div>
+                            <button type="button" id="sc-add-cargo-item" class="btn-add-cargo">
+                                + Add Another Item
+                            </button>
                         </div>
 
                         <!-- Shipping Zone -->
@@ -1678,13 +1685,7 @@
                             </div>
                         </div>
 
-                        <!-- Black Wrapping (Pallet Only) -->
-                        <div class="quote-control-group" id="sc-wrapping-group" style="display: none;">
-                            <label class="quote-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" id="sc-wrapping" style="width: 18px; height: 18px; cursor: pointer;">
-                                <span data-i18n="quote.wrapping">Black Wrapping (+$7/pallet)</span>
-                            </label>
-                        </div>
+                        <!-- Black Wrapping is now per-item inside cargo items -->
 
                         <!-- FBA Prep Services -->
                         <div class="quote-control-group" id="sc-fba-prep-group">
@@ -1788,6 +1789,8 @@
                                 <span id="sc-r-cubicft">1.0 ft³</span>
                             </div>
 
+                            <!-- Per-item breakdown -->
+                            <div id="sc-cargo-items-breakdown"></div>
                             <div class="quote-divider"></div>
 
                             <div class="quote-line">
@@ -2589,6 +2592,16 @@
         // CALCULATOR STATE (mirrors quote.html state)
         // =====================================================
         const sc = {
+            // Multi-item cargo support
+            cargoItems: [{
+                packageType: 'box',
+                dimensions: { length: 12, width: 12, height: 12 },
+                weight: 25,
+                quantity: 1,
+                blackWrapping: false
+            }],
+            activeCargoIndex: 0,
+            // Legacy single-item accessors (backward compat)
             packageType: 'box',
             selectedWarehouse: 'miami',
             length: 12, width: 12, height: 12,
@@ -2613,10 +2626,49 @@
             incomingItems: [{ sku: '', name: '', qty: 1, upc: '', tags: '', photos: [] }]
         };
 
+        // Sync legacy single-item state from active cargo item
+        function scSyncLegacy() {
+            const active = sc.cargoItems[sc.activeCargoIndex] || sc.cargoItems[0];
+            if (active) {
+                sc.packageType = active.packageType;
+                sc.length = active.dimensions.length;
+                sc.width = active.dimensions.width;
+                sc.height = active.dimensions.height;
+                sc.weight = active.weight;
+                sc.quantity = active.quantity;
+                sc.blackWrapping = active.blackWrapping;
+            }
+        }
+
         // =====================================================
         // PRICING CALCULATION (uses shared engine)
         // =====================================================
         function calculateQuote() {
+            // Multi-item support
+            if (QuoteEngine && QuoteEngine.calculateMultiEstimate) {
+                const items = sc.cargoItems.map(item => ({
+                    packageType: item.packageType,
+                    dimensions: item.dimensions,
+                    weight: item.weight,
+                    quantity: item.quantity,
+                    blackWrapping: item.blackWrapping
+                }));
+                const sharedOptions = {
+                    shippingZone: sc.shippingZone,
+                    storageDays: PRICING.storageDays,
+                    dropShipQty: sc.dropShipQty,
+                    fbaPrep: sc.fbaPrep
+                };
+                const multiResult = QuoteEngine.calculateMultiEstimate(items, sharedOptions);
+                sc._lastMultiResult = multiResult;
+                const activeItem = multiResult.items[sc.activeCargoIndex] || multiResult.items[0];
+                return {
+                    ...multiResult.totals,
+                    cubicFt: activeItem.cubicFt,
+                    dimWeight: activeItem.dimWeight,
+                    billableWeight: activeItem.billableWeight
+                };
+            }
             if (QuoteEngine) {
                 return QuoteEngine.calculateEstimate({
                     packageType: sc.packageType,
@@ -2654,7 +2706,6 @@
                     dropship += qty * PRICING.dropShipRates[size];
                 }
             }
-            // FBA Prep calculation (inline fallback)
             let fbaPrepTotal = 0;
             if (sc.fbaPrep && sc.fbaPrep.enabled && PRICING.fbaPrep) {
                 for (const [key, svc] of Object.entries(sc.fbaPrep.services)) {
@@ -2694,26 +2745,60 @@
             set('sc-r-fbaprep', fmt(q.fbaPrepTotal || 0));
             set('sc-r-total', fmt(q.total));
 
-            // Show/hide wrapping row (pallet + option selected) — same as quote.html
+            // Show/hide wrapping row - show if any cargo item has wrapping
             const wrappingRow = document.getElementById('sc-r-wrapping-row');
-            if (wrappingRow) wrappingRow.style.display = (sc.packageType === 'pallet' && sc.blackWrapping) ? 'flex' : 'none';
+            const anyWrapping = sc.cargoItems.some(item => item.packageType === 'pallet' && item.blackWrapping);
+            if (wrappingRow) wrappingRow.style.display = anyWrapping ? 'flex' : 'none';
 
-            // Show/hide drop ship row — same as quote.html
+            // Show/hide drop ship row
             const dropshipRow = document.getElementById('sc-r-dropship-row');
             if (dropshipRow) dropshipRow.style.display = (sc.shippingZone === 'dropship' && q.dropship > 0) ? 'flex' : 'none';
 
-            // Show/hide FBA prep row — same as quote.html
+            // Show/hide FBA prep row
             const fbaPrepRow = document.getElementById('sc-r-fbaprep-row');
             if (fbaPrepRow) fbaPrepRow.style.display = (sc.fbaPrep.enabled && (q.fbaPrepTotal || 0) > 0) ? 'flex' : 'none';
 
-            // Show/hide shipping row (hide when no shipping or dropship) — same as quote.html
+            // Show/hide shipping row (hide when no shipping or dropship)
             const shippingRow = document.getElementById('sc-r-shipping-row');
             if (shippingRow) shippingRow.style.display = (sc.shippingZone === 'none' || sc.shippingZone === 'dropship') ? 'none' : 'flex';
 
-            // Sync 3D viewer (same as quote.html)
-            if (viewer3D && viewer3D.active) {
-                viewer3D.updateDimensions(sc.length, sc.width, sc.height);
+            // Render per-item breakdown
+            scRenderCargoBreakdown();
+
+            // Sync 3D viewer
+            const activeItem = sc.cargoItems[sc.activeCargoIndex] || sc.cargoItems[0];
+            if (viewer3D && viewer3D.active && activeItem) {
+                viewer3D.updateDimensions(activeItem.dimensions.length, activeItem.dimensions.width, activeItem.dimensions.height);
             }
+        }
+
+        function scRenderCargoBreakdown() {
+            const container = document.getElementById('sc-cargo-items-breakdown');
+            if (!container) return;
+            const multiResult = sc._lastMultiResult;
+            if (!multiResult || multiResult.items.length <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+            let html = '';
+            multiResult.items.forEach((itemResult, idx) => {
+                const item = sc.cargoItems[idx];
+                if (!item) return;
+                const typeLabel = item.packageType === 'pallet' ? 'Pallet' : 'Box';
+                const dims = item.dimensions.length + '\u00d7' + item.dimensions.width + '\u00d7' + item.dimensions.height + '"';
+                const itemTotal = itemResult.storage + itemResult.handling + itemResult.pickPack + itemResult.shipping + itemResult.wrapping;
+                html += '<div class="cargo-item-subtotal">' +
+                    '<div class="cargo-item-subtotal-header">' +
+                    '<span>Item #' + (idx + 1) + ': ' + typeLabel + ' ' + dims + ' \u00d7 ' + item.quantity + '</span>' +
+                    '<span>' + fmt(itemTotal) + '</span>' +
+                    '</div>' +
+                    '<div class="cargo-item-subtotal-details">' +
+                    item.weight + 'lbs \u00b7 Storage ' + fmt(itemResult.storage) + ' \u00b7 Handling ' + fmt(itemResult.handling) + ' \u00b7 P&P ' + fmt(itemResult.pickPack) +
+                    (itemResult.shipping > 0 ? ' \u00b7 Ship ' + fmt(itemResult.shipping) : '') +
+                    (itemResult.wrapping > 0 ? ' \u00b7 Wrap ' + fmt(itemResult.wrapping) : '') +
+                    '</div></div>';
+            });
+            container.innerHTML = html;
         }
 
         function trackCalcEvent(eventName, params = {}) {
@@ -2787,16 +2872,28 @@
             doc.text('PACKAGE DETAILS', 25, y + 5.5);
             y += 14;
 
-            const pkgDetails = [
-                ['Type', sc.packageType === 'pallet' ? 'Pallet' : 'Box'],
-                ['Dimensions', `${sc.length}" x ${sc.width}" x ${sc.height}"`],
-                ['Weight', `${sc.weight} lbs`],
-                ['DIM Weight', `${q.dimWeight.toFixed(1)} lbs`],
-                ['Billable Weight', `${q.billableWeight.toFixed(1)} lbs`],
-                ['Volume', `${q.cubicFt.toFixed(2)} cu ft`],
-                ['Quantity', `${sc.quantity}`],
-                ['Zone', getZoneLabel(sc.shippingZone)]
-            ];
+            const pkgDetails = [];
+            if (sc.cargoItems.length > 1) {
+                sc.cargoItems.forEach((item, idx) => {
+                    const typeLabel = item.packageType === 'pallet' ? 'Pallet' : 'Box';
+                    pkgDetails.push([
+                        'Item #' + (idx + 1),
+                        typeLabel + ' ' + item.dimensions.length + '"x' + item.dimensions.width + '"x' + item.dimensions.height + '" ' + item.weight + 'lbs x' + item.quantity
+                    ]);
+                });
+                pkgDetails.push(['Zone', getZoneLabel(sc.shippingZone)]);
+            } else {
+                pkgDetails.push(
+                    ['Type', sc.packageType === 'pallet' ? 'Pallet' : 'Box'],
+                    ['Dimensions', sc.length + '" x ' + sc.width + '" x ' + sc.height + '"'],
+                    ['Weight', sc.weight + ' lbs'],
+                    ['DIM Weight', q.dimWeight.toFixed(1) + ' lbs'],
+                    ['Billable Weight', q.billableWeight.toFixed(1) + ' lbs'],
+                    ['Volume', q.cubicFt.toFixed(2) + ' cu ft'],
+                    ['Quantity', '' + sc.quantity],
+                    ['Zone', getZoneLabel(sc.shippingZone)]
+                );
+            }
 
             doc.setFontSize(8);
             pkgDetails.forEach(([label, value], i) => {
@@ -2873,9 +2970,13 @@
             doc.setFontSize(7);
             doc.setTextColor(148, 163, 184);
             doc.setFont('helvetica', 'normal');
-            let rateText = sc.packageType === 'pallet'
-                ? `Pallet: $0.75/day | Handling: $15.00/unit | Pick & Pack: $5.00/unit${sc.blackWrapping ? ' | Wrapping: $7.00/pallet' : ''}`
-                : `Box: $0.025/cu ft/day | Handling: $3.50/unit | Pick & Pack: $1.25/unit`;
+            const hasPalletPdf = sc.cargoItems.some(item => item.packageType === 'pallet');
+            const hasBoxPdf = sc.cargoItems.some(item => item.packageType === 'box');
+            const anyWrapPdf = sc.cargoItems.some(item => item.packageType === 'pallet' && item.blackWrapping);
+            let rateText = '';
+            if (hasBoxPdf) rateText += 'Box: $0.025/cu ft/day | $3.50 | $1.25';
+            if (hasBoxPdf && hasPalletPdf) rateText += '  ||  ';
+            if (hasPalletPdf) rateText += 'Pallet: $0.75/day | $15.00 | $5.00' + (anyWrapPdf ? ' | Wrap: $7.00' : '');
             if (sc.fbaPrep && sc.fbaPrep.enabled && (q.fbaPrepTotal || 0) > 0) {
                 rateText += ' | FBA Prep included';
             }
@@ -2971,6 +3072,15 @@
         }
 
         function resetCalculator() {
+            // Reset cargo items to single default
+            sc.cargoItems = [{
+                packageType: 'box',
+                dimensions: { length: 12, width: 12, height: 12 },
+                weight: 25,
+                quantity: 1,
+                blackWrapping: false
+            }];
+            sc.activeCargoIndex = 0;
             sc.packageType = 'box';
             sc.length = 12; sc.width = 12; sc.height = 12;
             sc.weight = 25; sc.quantity = 1;
@@ -2992,22 +3102,42 @@
             sc.notes = '';
             sc.incomingItems = [{ sku: '', name: '', qty: 1, upc: '', tags: '', photos: [] }];
 
-            // Reset UI inputs
-            document.querySelectorAll('#calc-overlay .package-option').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.type === 'box');
-            });
-            document.getElementById('sc-length').value = 12;
-            document.getElementById('sc-width').value = 12;
-            document.getElementById('sc-height').value = 12;
-            document.getElementById('sc-weight-slider').value = 25;
-            document.getElementById('sc-weight-input').value = 25;
-            document.getElementById('sc-qty').value = 1;
+            // Reset cargo items UI - remove all but first, reset first
+            const cargoList = document.getElementById('sc-cargo-items-list');
+            if (cargoList) {
+                const items = cargoList.querySelectorAll('.cargo-item');
+                // Remove extra items
+                for (let i = items.length - 1; i > 0; i--) {
+                    items[i].remove();
+                }
+                // Reset first item
+                const firstItem = cargoList.querySelector('.cargo-item');
+                if (firstItem) {
+                    firstItem.dataset.index = '0';
+                    firstItem.querySelector('.cargo-item-number').textContent = 'Item #1';
+                    firstItem.querySelectorAll('.cargo-item-type .package-option').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.type === 'box');
+                    });
+                    firstItem.querySelectorAll('.cargo-dim-input').forEach(d => {
+                        d.value = 12;
+                    });
+                    const wInput = firstItem.querySelector('.cargo-weight-input');
+                    if (wInput) wInput.value = 25;
+                    const qInput = firstItem.querySelector('.cargo-qty-input');
+                    if (qInput) qInput.value = 1;
+                    const wrapCheck = firstItem.querySelector('.cargo-wrapping-check');
+                    if (wrapCheck) wrapCheck.checked = false;
+                    const wrapRow = firstItem.querySelector('.cargo-wrapping-row');
+                    if (wrapRow) wrapRow.style.display = 'none';
+                }
+                scUpdateRemoveButtons();
+            }
+
+            // Reset shared UI inputs
             document.getElementById('sc-zone').value = 'regional';
             var scWhSel = document.getElementById('sc-warehouse-select');
             if (scWhSel) scWhSel.value = 'miami';
             sc.selectedWarehouse = 'miami';
-            document.getElementById('sc-wrapping').checked = false;
-            document.getElementById('sc-wrapping-group').style.display = 'none';
             document.getElementById('sc-dropship-group').style.display = 'none';
             ['envelope', 'small', 'medium', 'large'].forEach(s => {
                 document.getElementById('sc-ds-' + s).value = 0;
@@ -3343,98 +3473,234 @@
         }
 
         // =====================================================
-        // EVENT HANDLERS — Package Type (+ 3D sync)
+        // CARGO ITEMS SYSTEM (Multi-Size Support)
         // =====================================================
-        document.querySelectorAll('#calc-overlay .package-option').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#calc-overlay .package-option').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                sc.packageType = btn.dataset.type;
+        function scBindCargoItemEvents(itemEl) {
+            // Package type toggle
+            const typeBtns = itemEl.querySelectorAll('.cargo-item-type .package-option');
+            typeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(itemEl.dataset.index);
+                    typeBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    sc.cargoItems[idx].packageType = btn.dataset.type;
 
-                // Show/hide black wrapping
-                document.getElementById('sc-wrapping-group').style.display = sc.packageType === 'pallet' ? 'block' : 'none';
-                if (sc.packageType !== 'pallet') {
-                    sc.blackWrapping = false;
-                    document.getElementById('sc-wrapping').checked = false;
-                }
+                    if (btn.dataset.type === 'pallet') {
+                        sc.cargoItems[idx].dimensions = { length: 48, width: 40, height: 48 };
+                        sc.cargoItems[idx].weight = 500;
+                        itemEl.querySelectorAll('.cargo-dim-input').forEach(d => {
+                            if (d.dataset.dim === 'length') d.value = 48;
+                            if (d.dataset.dim === 'width') d.value = 40;
+                            if (d.dataset.dim === 'height') d.value = 48;
+                        });
+                        const wInput = itemEl.querySelector('.cargo-weight-input');
+                        if (wInput) wInput.value = 500;
+                    } else {
+                        sc.cargoItems[idx].dimensions = { length: 12, width: 12, height: 12 };
+                        sc.cargoItems[idx].weight = 25;
+                        itemEl.querySelectorAll('.cargo-dim-input').forEach(d => {
+                            if (d.dataset.dim === 'length') d.value = 12;
+                            if (d.dataset.dim === 'width') d.value = 12;
+                            if (d.dataset.dim === 'height') d.value = 12;
+                        });
+                        const wInput = itemEl.querySelector('.cargo-weight-input');
+                        if (wInput) wInput.value = 25;
+                        sc.cargoItems[idx].blackWrapping = false;
+                        const wrapCheck = itemEl.querySelector('.cargo-wrapping-check');
+                        if (wrapCheck) wrapCheck.checked = false;
+                    }
 
-                // Match quote.html behavior: switching package type resets to canonical defaults.
-                if (sc.packageType === 'pallet') {
-                    sc.length = 48; sc.width = 40; sc.height = 48; sc.weight = 500;
-                    document.getElementById('sc-length').value = 48;
-                    document.getElementById('sc-width').value = 40;
-                    document.getElementById('sc-height').value = 48;
-                    document.getElementById('sc-weight-slider').value = 500;
-                    document.getElementById('sc-weight-input').value = 500;
-                } else {
-                    sc.length = 12; sc.width = 12; sc.height = 12; sc.weight = 25;
-                    document.getElementById('sc-length').value = 12;
-                    document.getElementById('sc-width').value = 12;
-                    document.getElementById('sc-height').value = 12;
-                    document.getElementById('sc-weight-slider').value = 25;
-                    document.getElementById('sc-weight-input').value = 25;
-                }
+                    const wrapRow = itemEl.querySelector('.cargo-wrapping-row');
+                    if (wrapRow) wrapRow.style.display = btn.dataset.type === 'pallet' ? 'block' : 'none';
 
-                // Sync 3D viewer
-                if (viewer3D && viewer3D.active) {
-                    viewer3D.setPackageType(sc.packageType);
-                    viewer3D.updateDimensions(sc.length, sc.width, sc.height);
-                }
+                    sc.activeCargoIndex = idx;
+                    scSyncLegacy();
 
-                clearError();
-                updatePricing();
-                trackCalcEvent('shipment_package_selected', { type: sc.packageType });
+                    if (viewer3D && viewer3D.active) {
+                        viewer3D.setPackageType(sc.cargoItems[idx].packageType);
+                        viewer3D.updateDimensions(sc.cargoItems[idx].dimensions.length, sc.cargoItems[idx].dimensions.width, sc.cargoItems[idx].dimensions.height);
+                    }
+
+                    clearError();
+                    updatePricing();
+                    trackCalcEvent('shipment_package_selected', { type: sc.cargoItems[idx].packageType });
+                });
             });
-        });
 
-        // =====================================================
-        // EVENT HANDLERS — Dimensions (+ 3D sync)
-        // =====================================================
-        ['sc-length', 'sc-width', 'sc-height'].forEach(id => {
-            document.getElementById(id).addEventListener('input', (e) => {
-                const field = id.replace('sc-', '');
-                sc[field] = Math.max(1, Math.min(120, parseInt(e.target.value) || 1));
-                clearError();
-                updatePricing();
+            // Dimension inputs
+            itemEl.querySelectorAll('.cargo-dim-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const idx = parseInt(itemEl.dataset.index);
+                    const dim = e.target.dataset.dim;
+                    sc.cargoItems[idx].dimensions[dim] = Math.max(1, Math.min(120, parseInt(e.target.value) || 1));
+                    sc.activeCargoIndex = idx;
+                    scSyncLegacy();
+                    clearError();
+                    updatePricing();
+                });
             });
-        });
 
-        // =====================================================
-        // EVENT HANDLERS — Weight
-        // =====================================================
-        document.getElementById('sc-weight-slider').addEventListener('input', (e) => {
-            sc.weight = parseInt(e.target.value);
-            document.getElementById('sc-weight-input').value = sc.weight;
-            clearError();
-            updatePricing();
-        });
-        document.getElementById('sc-weight-input').addEventListener('input', (e) => {
-            sc.weight = Math.max(1, Math.min(2000, parseInt(e.target.value) || 1));
-            document.getElementById('sc-weight-slider').value = Math.min(500, sc.weight);
-            clearError();
-            updatePricing();
-        });
+            // Weight input
+            const weightInput = itemEl.querySelector('.cargo-weight-input');
+            if (weightInput) {
+                weightInput.addEventListener('input', (e) => {
+                    const idx = parseInt(itemEl.dataset.index);
+                    sc.cargoItems[idx].weight = Math.max(1, Math.min(2000, parseInt(e.target.value) || 1));
+                    sc.activeCargoIndex = idx;
+                    scSyncLegacy();
+                    clearError();
+                    updatePricing();
+                });
+            }
 
-        // =====================================================
-        // EVENT HANDLERS — Quantity
-        // =====================================================
-        document.getElementById('sc-qty-dec').addEventListener('click', () => {
-            sc.quantity = Math.max(1, sc.quantity - 1);
-            document.getElementById('sc-qty').value = sc.quantity;
+            // Quantity controls
+            const qtyDec = itemEl.querySelector('.cargo-qty-dec');
+            const qtyInc = itemEl.querySelector('.cargo-qty-inc');
+            const qtyInput = itemEl.querySelector('.cargo-qty-input');
+
+            if (qtyDec) {
+                qtyDec.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const idx = parseInt(itemEl.dataset.index);
+                    sc.cargoItems[idx].quantity = Math.max(1, sc.cargoItems[idx].quantity - 1);
+                    if (qtyInput) qtyInput.value = sc.cargoItems[idx].quantity;
+                    scSyncLegacy();
+                    clearError();
+                    updatePricing();
+                });
+            }
+            if (qtyInc) {
+                qtyInc.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const idx = parseInt(itemEl.dataset.index);
+                    sc.cargoItems[idx].quantity = Math.min(1000, sc.cargoItems[idx].quantity + 1);
+                    if (qtyInput) qtyInput.value = sc.cargoItems[idx].quantity;
+                    scSyncLegacy();
+                    clearError();
+                    updatePricing();
+                });
+            }
+            if (qtyInput) {
+                qtyInput.addEventListener('input', (e) => {
+                    const idx = parseInt(itemEl.dataset.index);
+                    sc.cargoItems[idx].quantity = Math.max(1, Math.min(1000, parseInt(e.target.value) || 1));
+                    scSyncLegacy();
+                    clearError();
+                    updatePricing();
+                });
+            }
+
+            // Black wrapping checkbox
+            const wrapCheck = itemEl.querySelector('.cargo-wrapping-check');
+            if (wrapCheck) {
+                wrapCheck.addEventListener('change', (e) => {
+                    const idx = parseInt(itemEl.dataset.index);
+                    sc.cargoItems[idx].blackWrapping = e.target.checked;
+                    scSyncLegacy();
+                    clearError();
+                    updatePricing();
+                });
+            }
+
+            // Remove button
+            const removeBtn = itemEl.querySelector('.cargo-item-remove');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => {
+                    const idx = parseInt(itemEl.dataset.index);
+                    scRemoveCargoItem(idx);
+                });
+            }
+        }
+
+        function scAddCargoItem() {
+            const list = document.getElementById('sc-cargo-items-list');
+            if (!list) return;
+            const newIndex = sc.cargoItems.length;
+            sc.cargoItems.push({
+                packageType: 'box',
+                dimensions: { length: 12, width: 12, height: 12 },
+                weight: 25,
+                quantity: 1,
+                blackWrapping: false
+            });
+
+            const div = document.createElement('div');
+            div.className = 'cargo-item';
+            div.dataset.index = newIndex;
+            div.innerHTML = '<div class="cargo-item-header">' +
+                '<span class="cargo-item-number">Item #' + (newIndex + 1) + '</span>' +
+                '<button type="button" class="cargo-item-remove" title="Remove item">\u2715</button>' +
+                '</div>' +
+                '<div class="cargo-item-type">' +
+                '<button type="button" class="package-option active" data-type="box"><span class="package-icon">\ud83d\udce6</span><span class="package-name">Box</span></button>' +
+                '<button type="button" class="package-option" data-type="pallet"><span class="package-icon">\ud83c\udfd7\ufe0f</span><span class="package-name">Pallet</span></button>' +
+                '</div>' +
+                '<div class="cargo-item-details">' +
+                '<div class="cargo-dim-row">' +
+                '<div class="cargo-dim-group"><input type="number" class="cargo-dim-input" data-dim="length" value="12" min="1" max="120" placeholder="L"><span class="cargo-dim-label">L</span></div>' +
+                '<span class="cargo-dim-x">\u00d7</span>' +
+                '<div class="cargo-dim-group"><input type="number" class="cargo-dim-input" data-dim="width" value="12" min="1" max="120" placeholder="W"><span class="cargo-dim-label">W</span></div>' +
+                '<span class="cargo-dim-x">\u00d7</span>' +
+                '<div class="cargo-dim-group"><input type="number" class="cargo-dim-input" data-dim="height" value="12" min="1" max="120" placeholder="H"><span class="cargo-dim-label">H</span></div>' +
+                '<span class="cargo-dim-unit">in</span>' +
+                '</div>' +
+                '<div class="cargo-weight-qty-row">' +
+                '<div class="cargo-weight-group"><input type="number" class="cargo-weight-input" value="25" min="1" max="2000" placeholder="Weight"><span class="cargo-dim-label">lbs</span></div>' +
+                '<div class="cargo-qty-group"><button type="button" class="qty-btn cargo-qty-dec">\u2212</button><input type="number" class="cargo-qty-input" value="1" min="1" max="1000"><button type="button" class="qty-btn cargo-qty-inc">+</button></div>' +
+                '</div>' +
+                '<div class="cargo-wrapping-row" style="display:none;"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;"><input type="checkbox" class="cargo-wrapping-check"><span>Black Wrapping (+$7/pallet)</span></label></div>' +
+                '</div>';
+            list.appendChild(div);
+            scBindCargoItemEvents(div);
+            scUpdateRemoveButtons();
             clearError();
             updatePricing();
-        });
-        document.getElementById('sc-qty-inc').addEventListener('click', () => {
-            sc.quantity = Math.min(1000, sc.quantity + 1);
-            document.getElementById('sc-qty').value = sc.quantity;
+        }
+
+        function scRemoveCargoItem(index) {
+            if (sc.cargoItems.length <= 1) return;
+            sc.cargoItems.splice(index, 1);
+            const list = document.getElementById('sc-cargo-items-list');
+            if (!list) return;
+            const items = list.querySelectorAll('.cargo-item');
+            const itemToRemove = Array.from(items).find(el => parseInt(el.dataset.index) === index);
+            if (itemToRemove) itemToRemove.remove();
+            // Re-index
+            list.querySelectorAll('.cargo-item').forEach((el, idx) => {
+                el.dataset.index = idx;
+                const numSpan = el.querySelector('.cargo-item-number');
+                if (numSpan) numSpan.textContent = 'Item #' + (idx + 1);
+            });
+            if (sc.activeCargoIndex >= sc.cargoItems.length) {
+                sc.activeCargoIndex = sc.cargoItems.length - 1;
+            }
+            scSyncLegacy();
+            scUpdateRemoveButtons();
             clearError();
             updatePricing();
+        }
+
+        function scUpdateRemoveButtons() {
+            const list = document.getElementById('sc-cargo-items-list');
+            if (!list) return;
+            const items = list.querySelectorAll('.cargo-item');
+            items.forEach(el => {
+                const btn = el.querySelector('.cargo-item-remove');
+                if (btn) btn.style.display = items.length > 1 ? 'flex' : 'none';
+            });
+        }
+
+        // Initialize existing cargo items
+        document.querySelectorAll('#sc-cargo-items-list .cargo-item').forEach(el => {
+            scBindCargoItemEvents(el);
         });
-        document.getElementById('sc-qty').addEventListener('input', (e) => {
-            sc.quantity = Math.max(1, Math.min(1000, parseInt(e.target.value) || 1));
-            clearError();
-            updatePricing();
-        });
+        scUpdateRemoveButtons();
+
+        // Add cargo item button
+        const scAddBtn = document.getElementById('sc-add-cargo-item');
+        if (scAddBtn) {
+            scAddBtn.addEventListener('click', () => { scAddCargoItem(); });
+        }
 
         // =====================================================
         // EVENT HANDLERS — Shipping Zone
@@ -3473,13 +3739,7 @@
             });
         });
 
-        // =====================================================
-        // EVENT HANDLERS — Black Wrapping
-        // =====================================================
-        document.getElementById('sc-wrapping').addEventListener('change', (e) => {
-            sc.blackWrapping = e.target.checked;
-            updatePricing();
-        });
+        // Black wrapping is now per-item inside cargo items
 
         // =====================================================
         // EVENT HANDLERS — FBA Prep Services
@@ -3580,11 +3840,16 @@
             const state = document.getElementById('sc-dest-state').value.trim().toUpperCase();
             const zip = document.getElementById('sc-dest-zip').value.trim();
 
-            if (sc.length < 1 || sc.length > 120) { showError('Length must be between 1 and 120 inches.'); return false; }
-            if (sc.width < 1 || sc.width > 120) { showError('Width must be between 1 and 120 inches.'); return false; }
-            if (sc.height < 1 || sc.height > 120) { showError('Height must be between 1 and 120 inches.'); return false; }
-            if (sc.weight < 1 || sc.weight > 2000) { showError('Weight must be between 1 and 2000 lbs.'); return false; }
-            if (sc.quantity < 1 || sc.quantity > 1000) { showError('Quantity must be between 1 and 1000.'); return false; }
+            // Validate all cargo items
+            for (let ci = 0; ci < sc.cargoItems.length; ci++) {
+                const item = sc.cargoItems[ci];
+                const n = ci + 1;
+                if (item.dimensions.length < 1 || item.dimensions.length > 120) { showError('Item #' + n + ': Length must be between 1 and 120 inches.'); return false; }
+                if (item.dimensions.width < 1 || item.dimensions.width > 120) { showError('Item #' + n + ': Width must be between 1 and 120 inches.'); return false; }
+                if (item.dimensions.height < 1 || item.dimensions.height > 120) { showError('Item #' + n + ': Height must be between 1 and 120 inches.'); return false; }
+                if (item.weight < 1 || item.weight > 2000) { showError('Item #' + n + ': Weight must be between 1 and 2000 lbs.'); return false; }
+                if (item.quantity < 1 || item.quantity > 1000) { showError('Item #' + n + ': Quantity must be between 1 and 1000.'); return false; }
+            }
             if (!name) { showError('Recipient name is required.'); document.getElementById('sc-dest-name').focus(); return false; }
             if (!street) { showError('Street address is required.'); document.getElementById('sc-dest-street').focus(); return false; }
             if (!city) { showError('City is required.'); document.getElementById('sc-dest-city').focus(); return false; }
@@ -3731,9 +3996,17 @@
                     billable_weight: quoteResult.billableWeight,
                     cubic_ft: quoteResult.cubicFt
                 },
+                // Multi-item cargo details
+                cargo_items: sc.cargoItems.map(item => ({
+                    packageType: item.packageType,
+                    dimensions: { ...item.dimensions },
+                    weight: item.weight,
+                    quantity: item.quantity,
+                    blackWrapping: item.blackWrapping
+                })),
                 warehouse: sc.selectedWarehouse || 'miami',
                 shipping_zone: sc.shippingZone,
-                black_wrapping: sc.blackWrapping,
+                black_wrapping: sc.cargoItems.some(item => item.packageType === 'pallet' && item.blackWrapping),
                 dropship_qty: sc.shippingZone === 'dropship' ? { ...sc.dropShipQty } : null,
                 fba_prep: sc.fbaPrep.enabled ? {
                     enabled: true,
@@ -4617,38 +4890,68 @@
             // Package type
             if (data.packageType) {
                 sc.packageType = data.packageType;
-                document.querySelectorAll('#calc-overlay .package-option').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.type === data.packageType);
-                });
-                document.getElementById('sc-wrapping-group').style.display = data.packageType === 'pallet' ? 'block' : 'none';
+                sc.cargoItems[0].packageType = data.packageType;
+                // Update first cargo item type buttons
+                const firstCargoItem = document.querySelector('#sc-cargo-items-list .cargo-item[data-index="0"]');
+                if (firstCargoItem) {
+                    firstCargoItem.querySelectorAll('.cargo-item-type .package-option').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.type === data.packageType);
+                    });
+                    const wrapRow = firstCargoItem.querySelector('.cargo-wrapping-row');
+                    if (wrapRow) wrapRow.style.display = data.packageType === 'pallet' ? 'block' : 'none';
+                }
                 if (viewer3D && viewer3D.active) viewer3D.setPackageType(data.packageType);
             }
 
-            // Dimensions
+            // Dimensions - update first cargo item
             if (data.length && data.length >= 1 && data.length <= 120) {
                 sc.length = Math.round(data.length);
-                document.getElementById('sc-length').value = sc.length;
+                sc.cargoItems[0].dimensions.length = sc.length;
+                const firstItem = document.querySelector('#sc-cargo-items-list .cargo-item[data-index="0"]');
+                if (firstItem) {
+                    const lenInput = firstItem.querySelector('.cargo-dim-input[data-dim="length"]');
+                    if (lenInput) lenInput.value = sc.length;
+                }
             }
             if (data.width && data.width >= 1 && data.width <= 120) {
                 sc.width = Math.round(data.width);
-                document.getElementById('sc-width').value = sc.width;
+                sc.cargoItems[0].dimensions.width = sc.width;
+                const firstItem = document.querySelector('#sc-cargo-items-list .cargo-item[data-index="0"]');
+                if (firstItem) {
+                    const wInput = firstItem.querySelector('.cargo-dim-input[data-dim="width"]');
+                    if (wInput) wInput.value = sc.width;
+                }
             }
             if (data.height && data.height >= 1 && data.height <= 120) {
                 sc.height = Math.round(data.height);
-                document.getElementById('sc-height').value = sc.height;
+                sc.cargoItems[0].dimensions.height = sc.height;
+                const firstItem = document.querySelector('#sc-cargo-items-list .cargo-item[data-index="0"]');
+                if (firstItem) {
+                    const hInput = firstItem.querySelector('.cargo-dim-input[data-dim="height"]');
+                    if (hInput) hInput.value = sc.height;
+                }
             }
 
-            // Weight
+            // Weight - update first cargo item
             if (data.weight && data.weight >= 1 && data.weight <= 2000) {
                 sc.weight = Math.round(data.weight);
-                document.getElementById('sc-weight-input').value = sc.weight;
-                document.getElementById('sc-weight-slider').value = Math.min(500, sc.weight);
+                sc.cargoItems[0].weight = sc.weight;
+                const firstItem = document.querySelector('#sc-cargo-items-list .cargo-item[data-index="0"]');
+                if (firstItem) {
+                    const wInput = firstItem.querySelector('.cargo-weight-input');
+                    if (wInput) wInput.value = sc.weight;
+                }
             }
 
-            // Quantity
+            // Quantity - update first cargo item
             if (data.quantity && data.quantity >= 1 && data.quantity <= 1000) {
                 sc.quantity = data.quantity;
-                document.getElementById('sc-qty').value = sc.quantity;
+                sc.cargoItems[0].quantity = data.quantity;
+                const firstItem = document.querySelector('#sc-cargo-items-list .cargo-item[data-index="0"]');
+                if (firstItem) {
+                    const qInput = firstItem.querySelector('.cargo-qty-input');
+                    if (qInput) qInput.value = data.quantity;
+                }
             }
 
             // Destination

@@ -297,60 +297,67 @@
                             </div>
                         </div>
 
-                        <!-- Package Type -->
-                        <div class="quote-control-group">
-                            <label class="quote-label" data-i18n="quote.package.label">Package Type</label>
-                            <div class="package-toggle">
-                                <button class="package-option active" data-type="box">
-                                    <span class="package-icon">📦</span>
-                                    <span class="package-name" data-i18n="quote.package.box">Box</span>
-                                </button>
-                                <button class="package-option" data-type="pallet">
-                                    <span class="package-icon">🏗️</span>
-                                    <span class="package-name" data-i18n="quote.package.pallet">Pallet</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Dimensions -->
-                        <div class="quote-control-group">
-                            <label class="quote-label" data-i18n="quote.dimensions.label">Dimensions (inches)</label>
-                            <div class="dimension-row">
-                                <div class="dimension-input-group">
-                                    <input type="number" id="dim-length" class="dimension-input" value="12" min="1" max="120">
-                                    <span class="dimension-label" data-i18n="quote.dimensions.length">Length</span>
+                        <!-- Cargo Items (Multi-Size Support) -->
+                        <div class="quote-control-group" id="cargo-items-container">
+                            <label class="quote-label">Cargo Items</label>
+                            <div id="cargo-items-list">
+                                <!-- Item 1 (default) -->
+                                <div class="cargo-item" data-index="0">
+                                    <div class="cargo-item-header">
+                                        <span class="cargo-item-number">Item #1</span>
+                                        <button type="button" class="cargo-item-remove" title="Remove item" style="display:none;">✕</button>
+                                    </div>
+                                    <div class="cargo-item-type">
+                                        <button type="button" class="package-option active" data-type="box">
+                                            <span class="package-icon">📦</span>
+                                            <span class="package-name">Box</span>
+                                        </button>
+                                        <button type="button" class="package-option" data-type="pallet">
+                                            <span class="package-icon">🏗️</span>
+                                            <span class="package-name">Pallet</span>
+                                        </button>
+                                    </div>
+                                    <div class="cargo-item-details">
+                                        <div class="cargo-dim-row">
+                                            <div class="cargo-dim-group">
+                                                <input type="number" class="cargo-dim-input" data-dim="length" value="12" min="1" max="120" placeholder="L">
+                                                <span class="cargo-dim-label">L</span>
+                                            </div>
+                                            <span class="cargo-dim-x">×</span>
+                                            <div class="cargo-dim-group">
+                                                <input type="number" class="cargo-dim-input" data-dim="width" value="12" min="1" max="120" placeholder="W">
+                                                <span class="cargo-dim-label">W</span>
+                                            </div>
+                                            <span class="cargo-dim-x">×</span>
+                                            <div class="cargo-dim-group">
+                                                <input type="number" class="cargo-dim-input" data-dim="height" value="12" min="1" max="120" placeholder="H">
+                                                <span class="cargo-dim-label">H</span>
+                                            </div>
+                                            <span class="cargo-dim-unit">in</span>
+                                        </div>
+                                        <div class="cargo-weight-qty-row">
+                                            <div class="cargo-weight-group">
+                                                <input type="number" class="cargo-weight-input" value="25" min="1" max="2000" placeholder="Weight">
+                                                <span class="cargo-dim-label">lbs</span>
+                                            </div>
+                                            <div class="cargo-qty-group">
+                                                <button type="button" class="qty-btn cargo-qty-dec">−</button>
+                                                <input type="number" class="cargo-qty-input" value="1" min="1" max="1000">
+                                                <button type="button" class="qty-btn cargo-qty-inc">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="cargo-wrapping-row" style="display:none;">
+                                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;">
+                                                <input type="checkbox" class="cargo-wrapping-check">
+                                                <span>Black Wrapping (+$7/pallet)</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="dimension-input-group">
-                                    <input type="number" id="dim-width" class="dimension-input" value="12" min="1" max="120">
-                                    <span class="dimension-label" data-i18n="quote.dimensions.width">Width</span>
-                                </div>
-                                <div class="dimension-input-group">
-                                    <input type="number" id="dim-height" class="dimension-input" value="12" min="1" max="120">
-                                    <span class="dimension-label" data-i18n="quote.dimensions.height">Height</span>
-                                </div>
                             </div>
-                        </div>
-
-                        <!-- Weight -->
-                        <div class="quote-control-group">
-                            <label class="quote-label" data-i18n="quote.weight.label">Weight (lbs)</label>
-                            <div class="weight-input-wrapper">
-                                <input type="range" id="weight-slider" min="1" max="500" value="25" class="weight-slider">
-                                <div class="weight-display">
-                                    <input type="number" id="weight-input" value="25" min="1" max="2000" class="weight-number">
-                                    <span class="weight-unit">lbs</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Quantity -->
-                        <div class="quote-control-group">
-                            <label class="quote-label" data-i18n="quote.quantity.label">Quantity</label>
-                            <div class="quantity-controls">
-                                <button class="qty-btn" data-action="decrease">-</button>
-                                <input type="number" id="quantity-input" value="1" min="1" max="1000" class="quantity-input">
-                                <button class="qty-btn" data-action="increase">+</button>
-                            </div>
+                            <button type="button" id="add-cargo-item" class="btn-add-cargo">
+                                + Add Another Item
+                            </button>
                         </div>
 
                         <!-- Shipping Zone -->
@@ -420,13 +427,7 @@
                             </div>
                         </div>
 
-                        <!-- Black Wrapping (Pallet Only) - Added by Master Jorge - $7/pallet OPTIONAL -->
-                        <div class="quote-control-group" id="black-wrapping-group" style="display: none;">
-                            <label class="quote-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" id="black-wrapping" style="width: 18px; height: 18px; cursor: pointer;">
-                                <span data-i18n="quote.wrapping">Black Wrapping (+$7/pallet)</span>
-                            </label>
-                        </div>
+                        <!-- Black Wrapping is now per-item inside cargo items -->
 
                         <!-- FBA Prep Services -->
                         <div class="quote-control-group" id="fba-prep-group">
@@ -530,6 +531,8 @@
                                 <span id="result-cubic-ft">1.0 ft³</span>
                             </div>
 
+                            <!-- Per-item breakdown -->
+                            <div id="cargo-items-breakdown"></div>
                             <div class="quote-divider"></div>
 
                             <div class="quote-line">
