@@ -388,11 +388,14 @@
         }
 
         // Load customers list for staff (also populates lock status)
+        // Loads ALL users so customersMap covers every inventory owner,
+        // but only shows customer-role users in form dropdowns.
         async function loadCustomers() {
             if (!isStaff()) return;
 
             try {
-                const usersSnapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'customer')));
+                // Load ALL users so every inventory item can resolve its owner name
+                const usersSnapshot = await getDocs(collection(db, 'users'));
                 const customerSelect = document.getElementById('item-customer');
                 const lockCustomerSelect = document.getElementById('lock-customer-select');
                 customerSelect.innerHTML = '<option value="">-- Select Customer --</option>';
@@ -401,21 +404,28 @@
                 usersSnapshot.forEach((docSnap) => {
                     const userData = docSnap.data();
                     const displayName = userData.name || userData.email || docSnap.id;
+
+                    // Always populate the name/lock maps (so inventory rows resolve correctly)
                     customersMap[docSnap.id] = displayName;
                     customersLockMap[docSnap.id] = userData.inventory_locked === true;
 
-                    const option = document.createElement('option');
-                    option.value = docSnap.id;
-                    option.textContent = displayName;
-                    customerSelect.appendChild(option);
+                    // Only add customer-role (or no-role) users to the form dropdowns
+                    const role = (userData.role || '').toLowerCase();
+                    if (role === 'customer' || role === '') {
+                        const option = document.createElement('option');
+                        option.value = docSnap.id;
+                        option.textContent = displayName;
+                        customerSelect.appendChild(option);
 
-                    const lockOption = document.createElement('option');
-                    lockOption.value = docSnap.id;
-                    lockOption.textContent = displayName + (userData.inventory_locked ? ' 🔒' : '');
-                    lockCustomerSelect.appendChild(lockOption);
+                        const lockOption = document.createElement('option');
+                        lockOption.value = docSnap.id;
+                        lockOption.textContent = displayName + (userData.inventory_locked ? ' 🔒' : '');
+                        lockCustomerSelect.appendChild(lockOption);
+                    }
                 });
             } catch (error) {
                 console.error('Error loading customers:', error);
+                showToast('Error loading customer list: ' + error.message, 'error');
             }
         }
 
@@ -802,7 +812,11 @@
             } catch (error) {
                 console.error('Error loading inventory:', error);
                 const colspan = isStaff() ? 10 : 9;
-                tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; padding: var(--spacing-xl); color: var(--color-gray-500);">Error loading inventory</td></tr>`;
+                const errMsg = error.code === 'permission-denied'
+                    ? 'Permission denied — your account may not have staff/admin role in Firestore. Contact support.'
+                    : 'Error loading inventory: ' + error.message;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; padding: var(--spacing-xl); color: #ef4444; font-weight: 500;">${errMsg}</td></tr>`;
+                showToast(errMsg, 'error');
             }
         }
 
