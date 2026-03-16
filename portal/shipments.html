@@ -3982,6 +3982,7 @@
                                 const existingData = existingEntry;
                                 const updatedData = {
                                     quantity: (existingData.quantity || 0) + item.qty,
+                                    customer_id: currentUser.uid,
                                     last_updated: new Date().toISOString(),
                                     last_shipment: trackingNumber
                                 };
@@ -4006,6 +4007,7 @@
                                 // Create new inventory item
                                 const newItem = {
                                     user_id: currentUser.uid,
+                                    customer_id: currentUser.uid,
                                     sku: item.sku,
                                     name: item.name,
                                     quantity: item.qty,
