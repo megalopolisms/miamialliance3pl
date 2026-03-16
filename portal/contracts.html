@@ -736,8 +736,12 @@
                 renderContractsTable(allContracts);
             } catch (e) {
                 console.error('Error loading contracts:', e);
+                const errMsg = e.code === 'permission-denied' ? 'Permission denied. Please contact your administrator.'
+                    : e.code === 'unavailable' ? 'Database temporarily unavailable. Please try again.'
+                    : 'Error loading contracts: ' + e.message;
                 document.getElementById('contracts-tbody').innerHTML =
-                    '<tr><td colspan="7" class="empty-state">Error loading contracts. The contracts collection may not exist yet.</td></tr>';
+                    `<tr><td colspan="7" class="empty-state">${errMsg}</td></tr>`;
+                if (typeof showToast === 'function') showToast(errMsg, 'error');
             }
         }
 

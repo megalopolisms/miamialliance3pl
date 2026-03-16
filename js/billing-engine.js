@@ -1,8 +1,8 @@
 (function (global) {
   "use strict";
 
-  var QuoteEngine = global.MA3PLQuoteEngine || null;
-  var BASE_PRICING = QuoteEngine
+  const QuoteEngine = global.MA3PLQuoteEngine || null;
+  const BASE_PRICING = QuoteEngine
     ? QuoteEngine.PRICING
     : {
         dimensionalFactor: 139,
@@ -42,7 +42,7 @@
         },
       };
 
-  var BILLING_ITEMS = Object.freeze({
+  const BILLING_ITEMS = Object.freeze({
     storage: {
       label: "Storage",
       defaultUnit: "pallet-days",
@@ -198,7 +198,7 @@
     },
   });
 
-  var QUOTE_KEYS = Object.freeze([
+  const QUOTE_KEYS = Object.freeze([
     "storage",
     "handling",
     "pick_pack",
@@ -208,12 +208,12 @@
   ]);
 
   function parseFiniteNumber(value) {
-    var parsed = Number(value);
+    let parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   }
 
   function toNumber(value, fallback) {
-    var parsed = parseFiniteNumber(value);
+    let parsed = parseFiniteNumber(value);
     return parsed === null ? fallback : parsed;
   }
 
@@ -242,8 +242,8 @@
   }
 
   function mapServiceToItem(serviceValue) {
-    var key = normalizeServiceKey(serviceValue);
-    var directMap = {
+    let key = normalizeServiceKey(serviceValue);
+    const directMap = {
       storage: "storage",
       pallet_storage_daily: "storage",
       pallet_storage: "storage",
@@ -284,15 +284,15 @@
   }
 
   function buildCustomerRateIndex(pricingData) {
-    var index = new Map();
-    var rates = Array.isArray(pricingData && pricingData.customerRates)
+    const index = new Map();
+    const rates = Array.isArray(pricingData && pricingData.customerRates)
       ? pricingData.customerRates
       : [];
 
     rates.forEach(function (row) {
-      var customerId = row && row.customerId;
-      var itemKey = mapServiceToItem(row && row.service);
-      var rate = parseFiniteNumber(row && row.rate);
+      const customerId = row && row.customerId;
+      const itemKey = mapServiceToItem(row && row.service);
+      let rate = parseFiniteNumber(row && row.rate);
 
       if (!customerId || !itemKey || rate === null) return;
 
@@ -300,8 +300,8 @@
         index.set(customerId, new Map());
       }
 
-      var customerMap = index.get(customerId);
-      var entry = {
+      const customerMap = index.get(customerId);
+      const entry = {
         rate: rate,
         unit: String((row && row.unit) || "").trim(),
         sourceService: (row && row.service) || itemKey,
@@ -309,7 +309,7 @@
 
       customerMap.set(itemKey, entry);
 
-      var quoteKey = BILLING_ITEMS[itemKey] && BILLING_ITEMS[itemKey].quoteKey;
+      const quoteKey = BILLING_ITEMS[itemKey] && BILLING_ITEMS[itemKey].quoteKey;
       if (quoteKey && quoteKey !== "extra" && !customerMap.has(quoteKey)) {
         customerMap.set(quoteKey, entry);
       }
@@ -320,14 +320,14 @@
 
   function resolveCustomerRate(customerRateIndex, customerId, activityType) {
     if (!customerRateIndex || !customerId || !activityType) return null;
-    var customerMap = customerRateIndex.get(customerId);
+    const customerMap = customerRateIndex.get(customerId);
     if (!customerMap) return null;
 
     if (customerMap.has(activityType)) {
       return customerMap.get(activityType);
     }
 
-    var quoteKey = getQuoteCategory(activityType);
+    const quoteKey = getQuoteCategory(activityType);
     if (quoteKey && quoteKey !== "extra" && customerMap.has(quoteKey)) {
       return customerMap.get(quoteKey);
     }
@@ -336,12 +336,12 @@
   }
 
   function getRateMeta(pricingData, customerRateIndex, activityType, customerId) {
-    var item = BILLING_ITEMS[activityType];
+    const item = BILLING_ITEMS[activityType];
     if (!item) {
       return { rate: 0, source: "unknown", path: null, customerRate: null };
     }
 
-    var customerRate = resolveCustomerRate(
+    const customerRate = resolveCustomerRate(
       customerRateIndex,
       customerId,
       activityType,
@@ -356,7 +356,7 @@
     }
 
     if (item.ratePath) {
-      var value = getNestedValue(pricingData, item.ratePath);
+      const value = getNestedValue(pricingData, item.ratePath);
       if (parseFiniteNumber(value) !== null) {
         return {
           rate: toNumber(value, 0),
@@ -388,7 +388,7 @@
   }
 
   function getQuoteCategoryLabel(quoteKey) {
-    var labels = {
+    const labels = {
       storage: "Storage",
       handling: "Handling",
       pick_pack: "Pick & Pack",
@@ -405,9 +405,9 @@
     if (parseFiniteNumber(pkg.cubic_ft) !== null) {
       return toNumber(pkg.cubic_ft, 0);
     }
-    var length = toNumber(pkg.length, 0);
-    var width = toNumber(pkg.width, 0);
-    var height = toNumber(pkg.height, 0);
+    const length = toNumber(pkg.length, 0);
+    const width = toNumber(pkg.width, 0);
+    const height = toNumber(pkg.height, 0);
     if (length > 0 && width > 0 && height > 0) {
       return (length * width * height) / 1728;
     }
@@ -420,11 +420,11 @@
       return toNumber(pkg.billable_weight, 0);
     }
 
-    var weight = toNumber(pkg.weight, 0);
-    var length = toNumber(pkg.length, 0);
-    var width = toNumber(pkg.width, 0);
-    var height = toNumber(pkg.height, 0);
-    var dimWeight =
+    const weight = toNumber(pkg.weight, 0);
+    const length = toNumber(pkg.length, 0);
+    const width = toNumber(pkg.width, 0);
+    const height = toNumber(pkg.height, 0);
+    const dimWeight =
       length > 0 && width > 0 && height > 0
         ? (length * width * height) / BASE_PRICING.dimensionalFactor
         : 0;
@@ -433,7 +433,7 @@
   }
 
   function getQuoteAmount(shipment, key) {
-    var quote = (shipment && shipment.quote_estimate) || {};
+    const quote = (shipment && shipment.quote_estimate) || {};
     if (key === "pick_pack") {
       return toNumber(quote.pick_pack, toNumber(quote.pickPack, 0));
     }
@@ -441,11 +441,11 @@
   }
 
   function normalizeLineOverride(rawOverride, legacyRate) {
-    var overrideObject =
+    const overrideObject =
       rawOverride && typeof rawOverride === "object" && !Array.isArray(rawOverride)
         ? rawOverride
         : {};
-    var overrideRate =
+    const overrideRate =
       parseFiniteNumber(overrideObject.rate) !== null
         ? toNumber(overrideObject.rate, 0)
         : parseFiniteNumber(rawOverride) !== null
@@ -453,7 +453,7 @@
           : parseFiniteNumber(legacyRate) !== null
             ? toNumber(legacyRate, 0)
             : null;
-    var overrideAmount =
+    const overrideAmount =
       parseFiniteNumber(overrideObject.amount) !== null
         ? toNumber(overrideObject.amount, 0)
         : null;
@@ -466,13 +466,13 @@
   }
 
   function getShipmentOverrides(shipment) {
-    var detailOverrides =
+    const detailOverrides =
       shipment && shipment.billing_override_detail
         ? shipment.billing_override_detail
         : {};
-    var legacyOverrides =
+    const legacyOverrides =
       shipment && shipment.billing_override ? shipment.billing_override : {};
-    var keys = {};
+    const keys = {};
     Object.keys(detailOverrides).forEach(function (key) {
       keys[key] = true;
     });
@@ -480,7 +480,7 @@
       keys[key] = true;
     });
 
-    var overrides = {};
+    const overrides = {};
     Object.keys(keys).forEach(function (key) {
       overrides[key] = normalizeLineOverride(detailOverrides[key], legacyOverrides[key]);
     });
@@ -492,7 +492,7 @@
       return toNumber(rateMeta && rateMeta.rate, BASE_PRICING.palletStoragePerDay);
     }
 
-    var monthlyRate = getNestedValue(pricingData, "storage.cubicFoot");
+    const monthlyRate = getNestedValue(pricingData, "storage.cubicFoot");
     if (parseFiniteNumber(monthlyRate) !== null && toNumber(monthlyRate, 0) > 0) {
       return toNumber(monthlyRate, 0) / 30;
     }
@@ -501,7 +501,7 @@
   }
 
   function getBoxStorageMinimum(pricingData) {
-    var minMonthly = getNestedValue(pricingData, "storage.minMonthly");
+    const minMonthly = getNestedValue(pricingData, "storage.minMonthly");
     if (parseFiniteNumber(minMonthly) !== null) {
       return toNumber(minMonthly, BASE_PRICING.minStorage);
     }
@@ -509,7 +509,7 @@
   }
 
   function getShippingRate(zone) {
-    var safeZone = zone || "regional";
+    const safeZone = zone || "regional";
     if (BASE_PRICING.shippingZones[safeZone] !== undefined) {
       return BASE_PRICING.shippingZones[safeZone];
     }
@@ -517,7 +517,7 @@
   }
 
   function getDropshipUnits(dropShipQty) {
-    var sizes = dropShipQty || {};
+    const sizes = dropShipQty || {};
     return (
       toNumber(sizes.envelope, 0) +
       toNumber(sizes.small, 0) +
@@ -527,18 +527,18 @@
   }
 
   function buildFbaPrepDetail(shipment) {
-    var fbaPrep = shipment && shipment.fba_prep;
-    var services = (fbaPrep && fbaPrep.services) || {};
-    var parts = [];
-    var totalQty = 0;
+    const fbaPrep = shipment && shipment.fba_prep;
+    const services = (fbaPrep && fbaPrep.services) || {};
+    const parts = [];
+    let totalQty = 0;
 
     Object.keys(services).forEach(function (key) {
-      var service = services[key] || {};
-      var qty = toNumber(service.qty, 0);
+      const service = services[key] || {};
+      const qty = toNumber(service.qty, 0);
       if (qty <= 0) return;
 
       totalQty += qty;
-      var catalog = BASE_PRICING.fbaPrep[key] || {};
+      const catalog = BASE_PRICING.fbaPrep[key] || {};
       parts.push((catalog.label || key) + ": " + qty);
     });
 
@@ -550,25 +550,25 @@
   }
 
   function buildShipmentCharges(shipment, options) {
-    var pricingData = (options && options.pricingData) || {};
-    var customerRateIndex =
+    const pricingData = (options && options.pricingData) || {};
+    const customerRateIndex =
       (options && options.customerRateIndex) || buildCustomerRateIndex(pricingData);
-    var customerId =
+    const customerId =
       (options && options.customerId) || shipment.user_id || shipment.customer_id || null;
-    var pkg = shipment.package || {};
-    var quote = shipment.quote_estimate || {};
-    var pkgType = pkg.type === "pallet" ? "pallet" : "box";
-    var qty = Math.max(toNumber(pkg.quantity, 1), 1);
-    var storageDays = Math.max(
+    const pkg = shipment.package || {};
+    const quote = shipment.quote_estimate || {};
+    let pkgType = pkg.type === "pallet" ? "pallet" : "box";
+    const qty = Math.max(toNumber(pkg.quantity, 1), 1);
+    const storageDays = Math.max(
       toNumber(quote.storage_days, BASE_PRICING.storageDays),
       1,
     );
-    var cubicFt = getCubicFeetFromPackage(pkg);
-    var billableWeight = getBillableWeightFromPackage(pkg);
-    var zone = shipment.shipping_zone || "regional";
-    var dropShipQty = shipment.dropship_qty || {};
-    var overrides = (options && options.overrides) || getShipmentOverrides(shipment);
-    var charges = [];
+    const cubicFt = getCubicFeetFromPackage(pkg);
+    const billableWeight = getBillableWeightFromPackage(pkg);
+    let zone = shipment.shipping_zone || "regional";
+    const dropShipQty = shipment.dropship_qty || {};
+    const overrides = (options && options.overrides) || getShipmentOverrides(shipment);
+    const charges = [];
 
     function addCharge(config) {
       if (!config) return;
@@ -580,17 +580,17 @@
     }
 
     (function addStorageCharge() {
-      var quoteAmount = getQuoteAmount(shipment, "storage");
-      var rateMeta = getRateMeta(pricingData, customerRateIndex, "storage", customerId);
-      var quantity = pkgType === "pallet" ? qty * storageDays : cubicFt * qty * storageDays;
-      var unit = pkgType === "pallet" ? "pallet-days" : "cubic-ft-days";
-      var override = overrides.storage || normalizeLineOverride();
-      var baseRate =
+      let quoteAmount = getQuoteAmount(shipment, "storage");
+      const rateMeta = getRateMeta(pricingData, customerRateIndex, "storage", customerId);
+      let quantity = pkgType === "pallet" ? qty * storageDays : cubicFt * qty * storageDays;
+      const unit = pkgType === "pallet" ? "pallet-days" : "cubic-ft-days";
+      const override = overrides.storage || normalizeLineOverride();
+      let baseRate =
         quantity > 0 && quoteAmount > 0
           ? quoteAmount / quantity
           : getStorageFallbackRate(pkgType, pricingData, rateMeta);
-      var rate = override.rate !== null ? override.rate : baseRate;
-      var amount;
+      let rate = override.rate !== null ? override.rate : baseRate;
+      let amount;
 
       if (override.amount !== null) {
         amount = override.amount;
@@ -637,15 +637,15 @@
     })();
 
     (function addHandlingCharge() {
-      var quoteAmount = getQuoteAmount(shipment, "handling");
-      var rateMeta = getRateMeta(pricingData, customerRateIndex, "handling", customerId);
-      var override = overrides.handling || normalizeLineOverride();
-      var quantity = qty;
-      var unit = pkgType === "pallet" ? "pallets" : "units";
-      var baseRate =
+      let quoteAmount = getQuoteAmount(shipment, "handling");
+      const rateMeta = getRateMeta(pricingData, customerRateIndex, "handling", customerId);
+      const override = overrides.handling || normalizeLineOverride();
+      let quantity = qty;
+      const unit = pkgType === "pallet" ? "pallets" : "units";
+      let baseRate =
         quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
-      var rate = override.rate !== null ? override.rate : baseRate;
-      var amount =
+      let rate = override.rate !== null ? override.rate : baseRate;
+      let amount =
         override.amount !== null
           ? override.amount
           : override.rate !== null || quoteAmount <= 0
@@ -672,15 +672,15 @@
     })();
 
     (function addPickPackCharge() {
-      var quoteAmount = getQuoteAmount(shipment, "pick_pack");
-      var rateMeta = getRateMeta(pricingData, customerRateIndex, "pick_pack", customerId);
-      var override = overrides.pick_pack || normalizeLineOverride();
-      var quantity = qty;
-      var unit = pkgType === "pallet" ? "pallets" : "items";
-      var baseRate =
+      let quoteAmount = getQuoteAmount(shipment, "pick_pack");
+      const rateMeta = getRateMeta(pricingData, customerRateIndex, "pick_pack", customerId);
+      const override = overrides.pick_pack || normalizeLineOverride();
+      let quantity = qty;
+      const unit = pkgType === "pallet" ? "pallets" : "items";
+      let baseRate =
         quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
-      var rate = override.rate !== null ? override.rate : baseRate;
-      var amount =
+      let rate = override.rate !== null ? override.rate : baseRate;
+      let amount =
         override.amount !== null
           ? override.amount
           : override.rate !== null || quoteAmount <= 0
@@ -708,17 +708,17 @@
 
     if (zone !== "none" && zone !== "dropship") {
       (function addShippingCharge() {
-        var quoteAmount = getQuoteAmount(shipment, "shipping");
-        var rateMeta = getRateMeta(pricingData, customerRateIndex, "shipping", customerId);
-        var override = overrides.shipping || normalizeLineOverride();
-        var quantity = Math.max(roundQuantity(billableWeight * qty), 1);
-        var unit = "lb";
-        var baseRate =
+        let quoteAmount = getQuoteAmount(shipment, "shipping");
+        const rateMeta = getRateMeta(pricingData, customerRateIndex, "shipping", customerId);
+        const override = overrides.shipping || normalizeLineOverride();
+        let quantity = Math.max(roundQuantity(billableWeight * qty), 1);
+        const unit = "lb";
+        let baseRate =
           quantity > 0 && quoteAmount > 0
             ? quoteAmount / quantity
             : getShippingRate(zone);
-        var rate = override.rate !== null ? override.rate : baseRate;
-        var amount =
+        let rate = override.rate !== null ? override.rate : baseRate;
+        let amount =
           override.amount !== null
             ? override.amount
             : override.rate !== null || quoteAmount <= 0
@@ -752,13 +752,13 @@
 
     if (zone === "dropship") {
       (function addDropshipCharge() {
-        var quoteAmount = getQuoteAmount(shipment, "dropship");
-        var rateMeta = getRateMeta(pricingData, customerRateIndex, "dropship", customerId);
-        var override = overrides.dropship || normalizeLineOverride();
-        var quantity = Math.max(getDropshipUnits(dropShipQty), 1);
-        var unit = "units";
-        var baseRate;
-        var amount;
+        let quoteAmount = getQuoteAmount(shipment, "dropship");
+        const rateMeta = getRateMeta(pricingData, customerRateIndex, "dropship", customerId);
+        const override = overrides.dropship || normalizeLineOverride();
+        let quantity = Math.max(getDropshipUnits(dropShipQty), 1);
+        const unit = "units";
+        let baseRate;
+        let amount;
 
         if (quoteAmount > 0) {
           baseRate = quoteAmount / quantity;
@@ -775,7 +775,7 @@
           }
         }
 
-        var rate = override.rate !== null ? override.rate : baseRate;
+        let rate = override.rate !== null ? override.rate : baseRate;
         if (override.amount !== null) {
           amount = override.amount;
         } else if (override.rate !== null || quoteAmount <= 0) {
@@ -812,15 +812,15 @@
 
     if (shipment.black_wrapping) {
       (function addWrappingCharge() {
-        var quoteAmount = getQuoteAmount(shipment, "wrapping");
-        var rateMeta = getRateMeta(pricingData, customerRateIndex, "wrapping", customerId);
-        var override = overrides.wrapping || normalizeLineOverride();
-        var quantity = qty;
-        var unit = "pallets";
-        var baseRate =
+        let quoteAmount = getQuoteAmount(shipment, "wrapping");
+        const rateMeta = getRateMeta(pricingData, customerRateIndex, "wrapping", customerId);
+        const override = overrides.wrapping || normalizeLineOverride();
+        let quantity = qty;
+        const unit = "pallets";
+        let baseRate =
           quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
-        var rate = override.rate !== null ? override.rate : baseRate;
-        var amount =
+        let rate = override.rate !== null ? override.rate : baseRate;
+        let amount =
           override.amount !== null
             ? override.amount
             : override.rate !== null || quoteAmount <= 0
@@ -849,16 +849,16 @@
 
     if (shipment.fba_prep || getQuoteAmount(shipment, "fba_prep") > 0) {
       (function addFbaPrepCharge() {
-        var quoteAmount = getQuoteAmount(shipment, "fba_prep");
-        var rateMeta = getRateMeta(pricingData, customerRateIndex, "custom", customerId);
-        var override = overrides.fba_prep || normalizeLineOverride();
-        var fbaDetail = buildFbaPrepDetail(shipment);
-        var quantity = fbaDetail.quantity;
-        var unit = fbaDetail.unit;
-        var baseRate =
+        let quoteAmount = getQuoteAmount(shipment, "fba_prep");
+        const rateMeta = getRateMeta(pricingData, customerRateIndex, "custom", customerId);
+        const override = overrides.fba_prep || normalizeLineOverride();
+        const fbaDetail = buildFbaPrepDetail(shipment);
+        let quantity = fbaDetail.quantity;
+        const unit = fbaDetail.unit;
+        let baseRate =
           quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : quoteAmount || 0;
-        var rate = override.rate !== null ? override.rate : baseRate;
-        var amount =
+        let rate = override.rate !== null ? override.rate : baseRate;
+        let amount =
           override.amount !== null
             ? override.amount
             : override.rate !== null || quoteAmount <= 0
@@ -893,7 +893,7 @@
   }
 
   function getOriginalShipmentTotal(shipment) {
-    var quote = (shipment && shipment.quote_estimate) || {};
+    const quote = (shipment && shipment.quote_estimate) || {};
     return roundCurrency(
       toNumber(quote.total, 0) ||
         (toNumber(quote.storage, 0) +
@@ -907,20 +907,20 @@
   }
 
   function buildShipmentActivityEntries(shipment, options) {
-    var charges = buildShipmentCharges(shipment, options);
-    var tracking = shipment.tracking_number || shipment.id || "shipment";
-    var customerName =
+    const charges = buildShipmentCharges(shipment, options);
+    const tracking = shipment.tracking_number || shipment.id || "shipment";
+    const customerName =
       (options && options.customerName) ||
       shipment.customer_name ||
       shipment.user_name ||
       "Unknown";
-    var createdAt =
+    const createdAt =
       (shipment.created_at && String(shipment.created_at)) || new Date().toISOString();
-    var baseDate = createdAt.split("T")[0];
+    const baseDate = createdAt.split("T")[0];
 
     return charges.map(function (charge) {
-      var itemKey = charge.billingItemKey || charge.key;
-      var rateSource = "quote";
+      const itemKey = charge.billingItemKey || charge.key;
+      let rateSource = "quote";
       if (charge.override.amount !== null) {
         rateSource = "manual_amount_override";
       } else if (charge.override.rate !== null) {
@@ -969,19 +969,19 @@
   }
 
   function buildStorageSnapshotEntries(snapshots, options) {
-    var pricingData = (options && options.pricingData) || {};
-    var customerRateIndex =
+    const pricingData = (options && options.pricingData) || {};
+    const customerRateIndex =
       (options && options.customerRateIndex) || buildCustomerRateIndex(pricingData);
-    var customerId = options && options.customerId;
-    var rateMeta = getRateMeta(pricingData, customerRateIndex, "storage", customerId);
-    var rate = toNumber(rateMeta.rate, BASE_PRICING.palletStoragePerDay);
+    const customerId = options && options.customerId;
+    const rateMeta = getRateMeta(pricingData, customerRateIndex, "storage", customerId);
+    let rate = toNumber(rateMeta.rate, BASE_PRICING.palletStoragePerDay);
 
     return (snapshots || [])
       .filter(function (snapshot) {
         return !snapshot.billed && !snapshot.invoiced && toNumber(snapshot.pallet_count, 0) > 0;
       })
       .map(function (snapshot) {
-        var quantity = toNumber(snapshot.pallet_count, 0);
+        let quantity = toNumber(snapshot.pallet_count, 0);
         return {
           source_type: "storage_snapshot",
           source_id: snapshot.id,
@@ -1013,11 +1013,11 @@
         return !event.invoiced;
       })
       .map(function (event) {
-        var amount =
+        let amount =
           parseFiniteNumber(event.amount) !== null
             ? toNumber(event.amount, 0)
             : toNumber(event.quantity, 0) * toNumber(event.rate, 0);
-        var itemKey = event.billing_item_id || event.event_type || "custom";
+        const itemKey = event.billing_item_id || event.event_type || "custom";
         return {
           source_type: "billable_event",
           source_id: event.id,
@@ -1043,11 +1043,11 @@
   }
 
   function groupInvoiceEntries(entries) {
-    var grouped = {};
+    const grouped = {};
 
     (entries || []).forEach(function (entry) {
-      var itemKey = entry.billing_item_id || entry.activity_type || "custom";
-      var key = [
+      const itemKey = entry.billing_item_id || entry.activity_type || "custom";
+      let key = [
         itemKey,
         entry.description || getActivityLabel(itemKey),
         entry.unit || "",
@@ -1079,7 +1079,7 @@
 
     return Object.keys(grouped)
       .map(function (key) {
-        var row = grouped[key];
+        const row = grouped[key];
         row.quantity = roundQuantity(row.quantity);
         row.amount = roundCurrency(row.amount);
         return row;

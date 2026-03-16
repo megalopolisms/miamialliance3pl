@@ -509,8 +509,8 @@
                 box_count: parseInt(document.getElementById('snapshot-boxes').value) || 0,
                 sqft: parseFloat(document.getElementById('snapshot-sqft').value) || 0,
                 notes: document.getElementById('snapshot-notes').value,
-                recorded_by: auth.currentUser.uid,
-                recorded_by_email: auth.currentUser.email,
+                recorded_by: auth.currentUser?.uid || 'unknown',
+                recorded_by_email: auth.currentUser?.email || 'unknown',
                 created_at: new Date().toISOString()
             };
 

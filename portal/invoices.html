@@ -922,9 +922,9 @@
                         for (const entry of shipmentRef.entries) {
                             const activityRef = await addDoc(collection(db, 'activity_log'), {
                                 ...entry,
-                                logged_by: auth.currentUser.uid,
-                                logged_by_name: auth.currentUser.email,
-                                logged_by_email: auth.currentUser.email,
+                                logged_by: auth.currentUser?.uid || 'unknown',
+                                logged_by_name: auth.currentUser?.email || 'unknown',
+                                logged_by_email: auth.currentUser?.email || 'unknown',
                                 billed: true,
                                 invoice_id: docRef.id,
                                 created_at: new Date().toISOString()

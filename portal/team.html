@@ -681,7 +681,7 @@
                     role: role,
                     name: name,
                     invited_at: new Date().toISOString(),
-                    invited_by: auth.currentUser.email
+                    invited_by: auth.currentUser?.email || 'unknown'
                 });
 
                 showToast(`Invite sent! ${email} will be ${role} when they sign up.`, 'success');
