@@ -24,15 +24,3 @@ Crawl-delay: 1
 
 # Sitemap location
 Sitemap: https://miamialliance3pl.com/sitemap.xml
-
-# Google specific
-User-agent: Googlebot
-Allow: /
-Disallow: /portal/
-Disallow: /login.html
-
-# Bing specific
-User-agent: Bingbot
-Allow: /
-Disallow: /portal/
-Disallow: /login.html
