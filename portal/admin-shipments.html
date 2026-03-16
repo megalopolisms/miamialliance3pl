@@ -1681,6 +1681,26 @@
                         <label for="panel-pkg-quantity">Quantity</label>
                         <input type="number" id="panel-pkg-quantity" placeholder="1" min="1">
                     </div>
+                    <div class="panel-field">
+                        <label for="panel-pkg-pallets">Pallets</label>
+                        <input type="number" id="panel-pkg-pallets" placeholder="0" min="0" readonly style="background: var(--color-gray-100);">
+                    </div>
+                </div>
+                <!-- Estimated Cost & Services (read-only from quote calculation) -->
+                <div id="panel-quote-summary" style="margin-top: 12px; padding: 12px 16px; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-radius: 8px; border: 1px solid #bbf7d0; display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: 600; font-size: 0.85rem; color: #166534;">💰 Estimated Cost</span>
+                        <span id="panel-est-cost" style="font-weight: 700; font-size: 1.1rem; color: #15803d;">--</span>
+                    </div>
+                    <div id="panel-cost-breakdown" style="font-size: 0.8rem; color: #4b5563; line-height: 1.6;"></div>
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #d1fae5;">
+                        <span style="font-weight: 600; font-size: 0.8rem; color: #166534;">📋 Services:</span>
+                        <span id="panel-services" style="font-size: 0.8rem; color: #4b5563;">--</span>
+                    </div>
+                    <div style="margin-top: 4px;">
+                        <span style="font-weight: 600; font-size: 0.8rem; color: #166534;">📍 Zone:</span>
+                        <span id="panel-shipping-zone" style="font-size: 0.8rem; color: #4b5563;">--</span>
+                    </div>
                 </div>
             </div>
 
@@ -2402,11 +2422,43 @@
             document.getElementById('panel-dest-zip').value = dest.zip || '';
 
             // Package
-            document.getElementById('panel-pkg-weight').value = pkg.weight || '';
+            document.getElementById('panel-pkg-weight').value = pkg.total_weight || pkg.weight || '';
             document.getElementById('panel-pkg-length').value = pkg.length || '';
             document.getElementById('panel-pkg-width').value = pkg.width || '';
             document.getElementById('panel-pkg-height').value = pkg.height || '';
             document.getElementById('panel-pkg-quantity').value = pkg.quantity || 1;
+            document.getElementById('panel-pkg-pallets').value = pkg.pallet_count || 0;
+
+            // Quote Estimate & Services
+            const quote = shipment.quote_estimate || {};
+            const quoteSummaryEl = document.getElementById('panel-quote-summary');
+            if (quote.total) {
+                quoteSummaryEl.style.display = 'block';
+                document.getElementById('panel-est-cost').textContent = '$' + parseFloat(quote.total).toFixed(2);
+                // Build cost breakdown
+                const breakdown = [];
+                if (quote.storage) breakdown.push('Storage: $' + parseFloat(quote.storage).toFixed(2));
+                if (quote.handling) breakdown.push('Handling: $' + parseFloat(quote.handling).toFixed(2));
+                if (quote.pick_pack) breakdown.push('Pick & Pack: $' + parseFloat(quote.pick_pack).toFixed(2));
+                if (quote.shipping) breakdown.push('Shipping: $' + parseFloat(quote.shipping).toFixed(2));
+                if (quote.wrapping) breakdown.push('Wrapping: $' + parseFloat(quote.wrapping).toFixed(2));
+                if (quote.fba_prep) breakdown.push('FBA Prep: $' + parseFloat(quote.fba_prep).toFixed(2));
+                if (quote.dropship) breakdown.push('Dropship: $' + parseFloat(quote.dropship).toFixed(2));
+                document.getElementById('panel-cost-breakdown').textContent = breakdown.join(' · ') || 'No breakdown available';
+                // Services
+                const svcList = [];
+                if (pkg.type) svcList.push(pkg.type === 'pallet' ? 'Pallet Storage' : 'Box/Package');
+                if (shipment.black_wrapping) svcList.push('Black Wrapping');
+                if (shipment.fba_prep && shipment.fba_prep.enabled) {
+                    const fbaKeys = shipment.fba_prep.services ? Object.keys(shipment.fba_prep.services).map(k => k.replace(/_/g, ' ')) : [];
+                    if (fbaKeys.length) svcList.push('FBA Prep (' + fbaKeys.join(', ') + ')');
+                }
+                document.getElementById('panel-services').textContent = svcList.length ? svcList.join(' | ') : 'Standard';
+                // Shipping zone
+                document.getElementById('panel-shipping-zone').textContent = shipment.shipping_zone ? shipment.shipping_zone.replace(/_/g, ' ') : 'N/A';
+            } else {
+                quoteSummaryEl.style.display = 'none';
+            }
 
             panelIncomingItems = normalizeIncomingItemsForPanel(shipment.incoming_items || []);
             renderPanelIncomingItemsEditor();

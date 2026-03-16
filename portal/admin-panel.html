@@ -1687,7 +1687,7 @@
                             </div>
                             <div class="detail-group">
                                 <h4>Items</h4>
-                                <p>${s.pallets || s.items?.length || '?'} pallets</p>
+                                <p>${s.package?.pallet_count || s.package?.quantity || s.pallets || s.items?.length || '?'} pallets</p>
                             </div>
                             <div class="detail-group">
                                 <h4>Date</h4>
@@ -1703,7 +1703,7 @@
                                 <option value="cancelled" ${s.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                             </select>
                             <button class="btn-action btn-view" onclick="viewShipmentDetail('${s.id}')">View Details</button>
-                            ${s.estimated_cost ? `<span style="color: var(--color-gray-600); font-size: var(--font-size-sm);">Est: $${parseFloat(s.estimated_cost).toFixed(2)}</span>` : ''}
+                            ${(s.quote_estimate?.total || s.estimated_cost) ? `<span style="color: var(--color-gray-600); font-size: var(--font-size-sm);">Est: $${parseFloat(s.quote_estimate?.total || s.estimated_cost).toFixed(2)}</span>` : ''}
                         </div>
                     </div>`;
             }).join('');
@@ -1750,17 +1750,46 @@
             const s = allShipments.find(s => s.id === shipmentId);
             if (!s) return;
             const user = usersMap[s.user_id] || {};
+            // Extract data from correct nested fields
+            const pkg = s.package || {};
+            const quote = s.quote_estimate || {};
+            const palletCount = pkg.pallet_count || pkg.quantity || 0;
+            const totalWeight = pkg.total_weight || pkg.weight || 0;
+            const estCost = quote.total || 0;
+            // Build services list from shipment data
+            const servicesList = [];
+            if (s.shipping_zone) servicesList.push(s.shipping_zone.replace(/_/g, ' '));
+            if (s.black_wrapping) servicesList.push('Black Wrapping');
+            if (s.fba_prep && s.fba_prep.enabled) {
+                const fbaServices = s.fba_prep.services ? Object.keys(s.fba_prep.services).map(k => k.replace(/_/g, ' ')) : [];
+                if (fbaServices.length) servicesList.push('FBA Prep: ' + fbaServices.join(', '));
+            }
+            if (pkg.type) servicesList.unshift(pkg.type === 'pallet' ? 'Pallet' : 'Box/Package');
+            const servicesStr = servicesList.length ? servicesList.join(' | ') : 'Standard';
+            // Build cost breakdown
+            const costBreakdown = [];
+            if (quote.storage) costBreakdown.push('Storage: $' + parseFloat(quote.storage).toFixed(2));
+            if (quote.handling) costBreakdown.push('Handling: $' + parseFloat(quote.handling).toFixed(2));
+            if (quote.pick_pack) costBreakdown.push('Pick & Pack: $' + parseFloat(quote.pick_pack).toFixed(2));
+            if (quote.shipping) costBreakdown.push('Shipping: $' + parseFloat(quote.shipping).toFixed(2));
+            if (quote.wrapping) costBreakdown.push('Wrapping: $' + parseFloat(quote.wrapping).toFixed(2));
+            if (quote.fba_prep) costBreakdown.push('FBA Prep: $' + parseFloat(quote.fba_prep).toFixed(2));
+            if (quote.dropship) costBreakdown.push('Dropship: $' + parseFloat(quote.dropship).toFixed(2));
             const html = `
                 <div style="display: grid; gap: var(--spacing-md);">
                     <div><strong>Tracking #:</strong> ${escapeHTML(s.tracking_number || 'N/A')}</div>
                     <div><strong>Customer:</strong> ${escapeHTML(user.company_name || user.name || user.email || 'Unknown')}</div>
                     <div><strong>Status:</strong> <span class="badge badge-${escapeHTML(s.status)}">${escapeHTML((s.status || 'pending').replace(/_/g, ' '))}</span></div>
-                    <div><strong>Origin:</strong> ${s.origin ? `${escapeHTML(s.origin.address || '')}, ${escapeHTML(s.origin.city || '')}, ${escapeHTML(s.origin.state || '')} ${escapeHTML(s.origin.zip || '')}` : 'N/A'}</div>
-                    <div><strong>Destination:</strong> ${s.destination ? `${escapeHTML(s.destination.address || '')}, ${escapeHTML(s.destination.city || '')}, ${escapeHTML(s.destination.state || '')} ${escapeHTML(s.destination.zip || '')}` : 'N/A'}</div>
-                    <div><strong>Pallets:</strong> ${escapeHTML(s.pallets || 'N/A')}</div>
-                    <div><strong>Weight:</strong> ${s.weight ? escapeHTML(s.weight) + ' lbs' : 'N/A'}</div>
-                    <div><strong>Est. Cost:</strong> ${s.estimated_cost ? '$' + parseFloat(s.estimated_cost).toFixed(2) : 'N/A'}</div>
-                    <div><strong>Services:</strong> ${s.services ? (Array.isArray(s.services) ? escapeHTML(s.services.join(', ')) : escapeHTML(s.services)) : 'N/A'}</div>
+                    <div><strong>Origin:</strong> ${s.origin ? `${escapeHTML(s.origin.street || s.origin.address || '')}, ${escapeHTML(s.origin.city || '')}, ${escapeHTML(s.origin.state || '')} ${escapeHTML(s.origin.zip || '')}` : 'N/A'}</div>
+                    <div><strong>Destination:</strong> ${s.destination ? `${escapeHTML(s.destination.street || s.destination.address || '')}, ${escapeHTML(s.destination.city || '')}, ${escapeHTML(s.destination.state || '')} ${escapeHTML(s.destination.zip || '')}` : 'N/A'}</div>
+                    <div><strong>Package Type:</strong> ${escapeHTML(pkg.type || 'N/A')} ${pkg.summary_label ? '(' + escapeHTML(pkg.summary_label) + ')' : ''}</div>
+                    <div><strong>Pallets:</strong> ${palletCount || 'N/A'}</div>
+                    <div><strong>Weight:</strong> ${totalWeight ? escapeHTML(totalWeight) + ' lbs' : 'N/A'}${pkg.billable_weight ? ' (Billable: ' + escapeHTML(pkg.billable_weight) + ' lbs)' : ''}</div>
+                    <div><strong>Dimensions:</strong> ${pkg.length ? escapeHTML(pkg.length) + '" × ' + escapeHTML(pkg.width) + '" × ' + escapeHTML(pkg.height) + '"' : 'N/A'}${pkg.cubic_ft ? ' (' + parseFloat(pkg.cubic_ft).toFixed(1) + ' cu ft)' : ''}</div>
+                    <div><strong>Shipping Zone:</strong> ${escapeHTML(s.shipping_zone ? s.shipping_zone.replace(/_/g, ' ') : 'N/A')}</div>
+                    <div><strong>Est. Cost:</strong> ${estCost ? '<span style="color: var(--color-primary); font-weight: 700;">$' + parseFloat(estCost).toFixed(2) + '</span>' : 'N/A'}</div>
+                    ${costBreakdown.length ? '<div style="padding-left: 16px; font-size: 0.85rem; color: var(--color-gray-600);">' + costBreakdown.join(' · ') + '</div>' : ''}
+                    <div><strong>Services:</strong> ${escapeHTML(servicesStr)}</div>
                     <div><strong>Notes:</strong> ${escapeHTML(s.notes || s.special_instructions || 'None')}</div>
                     <div><strong>Created:</strong> ${s.created_at ? new Date(s.created_at).toLocaleString() : 'N/A'}</div>
                     ${s.packing_list ? `<div><strong>Packing List:</strong> <span style="color: var(--color-accent); font-weight: 600;">📋 ${escapeHTML(s.packing_list.filename || 'Uploaded')}</span> <span style="color: var(--color-gray-500); font-size: 0.8rem;">(${s.packing_list.file_size ? formatFileSize(s.packing_list.file_size) : ''})</span></div>` : (s.packing_list_url ? `<div><strong>Packing List:</strong> <a href="${escapeHTML(s.packing_list_url)}" target="_blank" style="color: var(--color-accent);">View Document</a></div>` : '')}
@@ -2316,8 +2345,8 @@
                     type: 'shipment',
                     id: s.id,
                     customer: user.company_name || user.name || user.email || 'Unknown',
-                    description: `${s.pallets || '?'} pallets | ${s.destination?.city || 'Unknown'}, ${s.destination?.state || ''}`,
-                    cost: s.estimated_cost ? parseFloat(s.estimated_cost) : 0,
+                    description: `${s.package?.pallet_count || s.package?.quantity || s.pallets || '?'} pallets | ${s.destination?.city || 'Unknown'}, ${s.destination?.state || ''}`,
+                    cost: s.quote_estimate?.total || s.estimated_cost ? parseFloat(s.quote_estimate?.total || s.estimated_cost) : 0,
                     date: s.created_at ? new Date(s.created_at) : new Date(),
                     dateStr: s.created_at ? new Date(s.created_at).toLocaleDateString() : 'N/A',
                     status: s.status || 'pending',
