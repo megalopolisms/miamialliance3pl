@@ -141,6 +141,8 @@ class QuoteCalculator {
             });
           }
         }
+        // Show/hide flat rate info hint for local delivery & pickup
+        this.updateFlatRateHint();
         this.calculate();
       });
     }
@@ -667,6 +669,10 @@ class QuoteCalculator {
         pickPack = PRICING.palletPickPack * this.quantity;
         if (this.shippingZone === "dropship") {
           dropship = this.calculateDropShipTotal();
+        } else if (this.shippingZone === "localDelivery") {
+          shipping = PRICING.localDeliveryFlat.pallet * this.quantity;
+        } else if (this.shippingZone === "pickup") {
+          shipping = PRICING.pickupFlat.pallet * this.quantity;
         } else if (this.shippingZone !== "none") {
           shipping =
             billableWeight *
@@ -686,6 +692,10 @@ class QuoteCalculator {
         pickPack = PRICING.pickAndPack * this.quantity;
         if (this.shippingZone === "dropship") {
           dropship = this.calculateDropShipTotal();
+        } else if (this.shippingZone === "localDelivery") {
+          shipping = PRICING.localDeliveryFlat.box * this.quantity;
+        } else if (this.shippingZone === "pickup") {
+          shipping = PRICING.pickupFlat.box * this.quantity;
         } else if (this.shippingZone !== "none") {
           shipping =
             billableWeight *
@@ -929,6 +939,31 @@ class QuoteCalculator {
     return `MA3PL-${dateStr}-${random}`;
   }
 
+  updateFlatRateHint() {
+    let hint = document.getElementById("flat-rate-hint");
+    if (!hint) {
+      // Create the hint element if it doesn't exist
+      const zoneSelect = document.getElementById("shipping-zone");
+      if (zoneSelect && zoneSelect.parentElement) {
+        hint = document.createElement("div");
+        hint.id = "flat-rate-hint";
+        hint.style.cssText = "margin-top:6px;padding:8px 12px;background:#f0f9ff;border-left:3px solid #1e3a5f;border-radius:4px;font-size:0.85rem;color:#1e3a5f;display:none;";
+        zoneSelect.parentElement.appendChild(hint);
+      }
+    }
+    if (!hint) return;
+    const P = window.MA3PLQuoteEngine ? window.MA3PLQuoteEngine.PRICING : PRICING;
+    if (this.shippingZone === "localDelivery") {
+      hint.innerHTML = `<strong>Pre-established flat rates:</strong> Box — $${P.localDeliveryFlat.box.toFixed(2)} | Pallet — $${P.localDeliveryFlat.pallet.toFixed(2)} per unit`;
+      hint.style.display = "block";
+    } else if (this.shippingZone === "pickup") {
+      hint.innerHTML = `<strong>Pre-established flat rates:</strong> Box — $${P.pickupFlat.box.toFixed(2)} | Pallet — $${P.pickupFlat.pallet.toFixed(2)} per unit`;
+      hint.style.display = "block";
+    } else {
+      hint.style.display = "none";
+    }
+  }
+
   getZoneName(zone) {
     const WH = window.MA3PLQuoteEngine && window.MA3PLQuoteEngine.WAREHOUSES;
     const wh = WH && WH[this.selectedWarehouse];
@@ -938,6 +973,8 @@ class QuoteCalculator {
       national: "National",
       none: "No Shipping Required",
       dropship: "Drop Ship (by unit)",
+      localDelivery: "Local Delivery (Flat Rate)",
+      pickup: "Warehouse Pick Up (Flat Rate)",
     };
     return names[zone] || zone;
   }
@@ -1136,6 +1173,10 @@ class QuoteCalculator {
       } else {
         priceRows.push(["Drop Ship", "$0.00"]);
       }
+    } else if (this.shippingZone === "localDelivery") {
+      priceRows.push(["Local Delivery (Flat)", this.formatCurrency(results.shipping)]);
+    } else if (this.shippingZone === "pickup") {
+      priceRows.push(["Warehouse Pick Up (Flat)", this.formatCurrency(results.shipping)]);
     } else {
       priceRows.push(["Est. Shipping", this.formatCurrency(results.shipping)]);
     }
@@ -1225,6 +1266,10 @@ class QuoteCalculator {
       rates.push("Shipping: N/A");
     } else if (this.shippingZone === "dropship") {
       rates.push("Drop Ship: Env $1.50 | Sm $3.00 | Med $5.00 | Lg $20.00");
+    } else if (this.shippingZone === "localDelivery") {
+      rates.push(`Local Delivery: Box $${PRICING.localDeliveryFlat.box.toFixed(2)} | Pallet $${PRICING.localDeliveryFlat.pallet.toFixed(2)} (flat rate)`);
+    } else if (this.shippingZone === "pickup") {
+      rates.push(`Warehouse Pick Up: Box $${PRICING.pickupFlat.box.toFixed(2)} | Pallet $${PRICING.pickupFlat.pallet.toFixed(2)} (flat rate)`);
     } else {
       rates.push(
         `Shipping: $${PRICING.shippingZones[this.shippingZone].toFixed(2)}/lb (${this.getZoneName(this.shippingZone)})`,

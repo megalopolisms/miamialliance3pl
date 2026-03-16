@@ -2837,6 +2837,29 @@
             return labels[zone] || zone;
         }
 
+        function updateShipmentFlatRateHint() {
+            let hint = document.getElementById('sc-flat-rate-hint');
+            if (!hint) {
+                const zoneEl = document.getElementById('sc-zone');
+                if (zoneEl && zoneEl.parentElement) {
+                    hint = document.createElement('div');
+                    hint.id = 'sc-flat-rate-hint';
+                    hint.style.cssText = 'margin-top:6px;padding:8px 12px;background:#f0f9ff;border-left:3px solid #1e3a5f;border-radius:4px;font-size:0.85rem;color:#1e3a5f;display:none;';
+                    zoneEl.parentElement.appendChild(hint);
+                }
+            }
+            if (!hint) return;
+            if (sc.shippingZone === 'localDelivery') {
+                hint.innerHTML = '<strong>Pre-established flat rates:</strong> Box — $' + PRICING.localDeliveryFlat.box.toFixed(2) + ' | Pallet — $' + PRICING.localDeliveryFlat.pallet.toFixed(2) + ' per unit';
+                hint.style.display = 'block';
+            } else if (sc.shippingZone === 'pickup') {
+                hint.innerHTML = '<strong>Pre-established flat rates:</strong> Box — $' + PRICING.pickupFlat.box.toFixed(2) + ' | Pallet — $' + PRICING.pickupFlat.pallet.toFixed(2) + ' per unit';
+                hint.style.display = 'block';
+            } else {
+                hint.style.display = 'none';
+            }
+        }
+
         // =====================================================
         // PRICING DISPLAY UPDATE + 3D VIEWER SYNC
         // =====================================================
@@ -3823,6 +3846,8 @@
                     document.getElementById('sc-ds-' + size).value = 0;
                 });
             }
+            // Show/hide flat rate info for local delivery & pickup
+            updateShipmentFlatRateHint();
             clearError();
             updatePricing();
             trackCalcEvent('shipment_zone_selected', { zone: sc.shippingZone });
