@@ -124,6 +124,7 @@ const sandbox = {
   "normalizePortalDestination",
   "isStaffRole",
   "canAdvanceStatus",
+  "resolveMarkupConfig",
   "getZoneFromZip",
   "toolGetShippingRates",
   "normalizeLegacyRateResponse",
@@ -333,5 +334,43 @@ describe("Utility helpers (extracted from source)", function () {
     // Null new status blocked
     assert.equal(sandbox.canAdvanceStatus("pending", null), false);
     assert.equal(sandbox.canAdvanceStatus("pending", undefined), false);
+  });
+
+  it("resolveMarkupConfig uses service > carrier > default precedence", function () {
+    const config = {
+      type: "percentage",
+      percentage: 15,
+      minimum_charge: 5,
+      by_carrier: {
+        ups: { percentage: 10, minimum_charge: 3 },
+      },
+      by_service: {
+        ups_ground: { percentage: 8, minimum_charge: 2 },
+      },
+    };
+
+    // Default (no carrier/service)
+    const def = sandbox.resolveMarkupConfig(config, null, null);
+    assert.equal(def.percentage, 15);
+    assert.equal(def.minimum_charge, 5);
+
+    // Carrier override
+    const carrier = sandbox.resolveMarkupConfig(config, "ups", "ups_2day");
+    assert.equal(carrier.percentage, 10);
+    assert.equal(carrier.minimum_charge, 3);
+
+    // Service override (highest priority)
+    const service = sandbox.resolveMarkupConfig(config, "ups", "ups_ground");
+    assert.equal(service.percentage, 8);
+    assert.equal(service.minimum_charge, 2);
+
+    // Unknown carrier falls back to default
+    const unknown = sandbox.resolveMarkupConfig(config, "fedex", "fedex_ground");
+    assert.equal(unknown.percentage, 15);
+
+    // Null config returns safe default
+    const nullCfg = sandbox.resolveMarkupConfig(null, "ups", "ups_ground");
+    assert.equal(nullCfg.type, "percentage");
+    assert.equal(nullCfg.percentage, 15);
   });
 });

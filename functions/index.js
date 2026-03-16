@@ -1939,6 +1939,32 @@ function getZoneFromZip(zip) {
  * @param {object} markupConfig - Markup configuration from settings/shipping
  * @returns {number} Customer-facing price (rounded to 2 decimals)
  */
+/**
+ * Resolve the effective markup config with service > carrier > default precedence.
+ * @param {object} markupConfig - Full markup config from settings/shipping
+ * @param {string} [carrierCode] - e.g., "ups"
+ * @param {string} [serviceCode] - e.g., "ups_ground"
+ * @returns {object} Effective markup config to pass to applyMarkup
+ */
+function resolveMarkupConfig(markupConfig, carrierCode, serviceCode) {
+  if (!markupConfig) return { type: "percentage", percentage: 15, minimum_charge: 0 };
+
+  // Check service-level override first (highest priority)
+  const byService = markupConfig.by_service || {};
+  if (serviceCode && byService[serviceCode]) {
+    return Object.assign({}, markupConfig, byService[serviceCode]);
+  }
+
+  // Then carrier-level override
+  const byCarrier = markupConfig.by_carrier || {};
+  if (carrierCode && byCarrier[carrierCode]) {
+    return Object.assign({}, markupConfig, byCarrier[carrierCode]);
+  }
+
+  // Default
+  return markupConfig;
+}
+
 function applyMarkup(carrierCost, weightLbs, markupConfig) {
   let customerCost;
   switch (markupConfig.type) {
@@ -2515,7 +2541,8 @@ async function getAuthoritativeLiveRateQuote(
   const carrierCost = roundCurrency(
     (isNaN(rawShip) ? 0 : rawShip) + (isNaN(rawOther) ? 0 : rawOther),
   );
-  const customerCostEach = applyMarkup(carrierCost, pkg.weight, markupConfig);
+  const effectiveMarkup = resolveMarkupConfig(markupConfig, selectedRate.carrier, matchedRate.serviceCode);
+  const customerCostEach = applyMarkup(carrierCost, pkg.weight, effectiveMarkup);
 
   return {
     carrier: selectedRate.carrier,
@@ -3021,7 +3048,8 @@ exports.getShippingRatesLive = functions.https.onCall(async (data, context) => {
       const rawShipment = parseFloat(rate.shipmentCost);
       const rawOther = parseFloat(rate.otherCost || 0);
       const carrierCost = (isNaN(rawShipment) ? 0 : rawShipment) + (isNaN(rawOther) ? 0 : rawOther);
-      const customerCost = applyMarkup(carrierCost, data.weight_lbs || 1, markupConfig);
+      const effectiveMarkup = resolveMarkupConfig(markupConfig, result.carrier, rate.serviceCode);
+      const customerCost = applyMarkup(carrierCost, data.weight_lbs || 1, effectiveMarkup);
 
       allRates.push({
         carrier: result.carrier,
@@ -3233,7 +3261,8 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
     (isNaN(rawShipCost) ? 0 : rawShipCost) +
     (isNaN(rawOtherCost) ? 0 : rawOtherCost) +
     (isNaN(rawInsuranceCost) ? 0 : rawInsuranceCost);
-  const customerCost = applyMarkup(carrierCost, data.weight_lbs, markupConfig);
+  const effectiveMarkup = resolveMarkupConfig(markupConfig, data.carrierCode, data.serviceCode);
+  const customerCost = applyMarkup(carrierCost, data.weight_lbs, effectiveMarkup);
   const margin = Math.round((customerCost - carrierCost) * 100) / 100;
   const trackingUrl = buildCarrierTrackingUrl(data.carrierCode, label.trackingNumber);
   const shipmentRef = data.shipment_id
