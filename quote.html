@@ -300,6 +300,9 @@
                         <!-- Cargo Items (Multi-Size Support) -->
                         <div class="quote-control-group" id="cargo-items-container">
                             <label class="quote-label">Cargo Items</label>
+                            <div style="margin:-2px 0 10px; font-size:0.82rem; color:var(--color-gray-500); line-height:1.45;">
+                                Add another cargo line whenever a box or pallet has a different size, weight, or wrapping requirement.
+                            </div>
                             <div id="cargo-items-list">
                                 <!-- Item 1 (default) -->
                                 <div class="cargo-item" data-index="0">
@@ -356,7 +359,7 @@
                                 </div>
                             </div>
                             <button type="button" id="add-cargo-item" class="btn-add-cargo">
-                                + Add Another Item
+                                + Add Another Size / Weight
                             </button>
                         </div>
 
@@ -694,7 +697,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <!-- Shared pricing engine -->
-    <script src="js/quote-pricing-engine.js" defer></script>
+    <script src="js/quote-pricing-engine.js?v=20260316-1" defer></script>
 
     <!-- Quote Calculator (non-module) -->
     <script src="js/quote-calculator.js?v=20260303-1" defer></script>

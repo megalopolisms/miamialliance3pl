@@ -195,6 +195,7 @@
 
   function calculateEstimate(input) {
     var config = normalizeEstimateInput(input);
+    var applyMinimumStorage = !input || input.applyMinimumStorage !== false;
     var cubicFt = getCubicFeet(config.dimensions);
     var dimWeight = getDimensionalWeight(config.dimensions);
     var billableWeight = getBillableWeight(config.weight, config.dimensions);
@@ -240,7 +241,10 @@
       }
     }
 
-    storage = Math.max(storage, PRICING.minStorage);
+    var rawStorage = storage;
+    if (applyMinimumStorage) {
+      storage = Math.max(storage, PRICING.minStorage);
+    }
     var fbaPrepTotal = getFbaPrepTotal(config.fbaPrep);
     var total =
       storage +
@@ -264,6 +268,8 @@
       cubicFt: cubicFt,
       dimWeight: dimWeight,
       billableWeight: billableWeight,
+      rawStorage: rawStorage,
+      storageMinimumApplied: storage - rawStorage,
       storage: storage,
       handling: handling,
       pickPack: pickPack,
@@ -308,6 +314,7 @@
         blackWrapping: Boolean(item.blackWrapping),
         dropShipQty: shared.dropShipQty,
         fbaPrep: i === 0 ? shared.fbaPrep : { enabled: false, services: {} },
+        applyMinimumStorage: false,
       };
       var result = calculateEstimate(itemInput);
       // Only count dropship and fbaPrep once (on first item)
@@ -332,6 +339,14 @@
       totals.wrapping += result.wrapping;
       totals.dropship += result.dropship;
       totals.fbaPrepTotal += result.fbaPrepTotal;
+    }
+
+    if (itemResults.length > 0 && totals.storage < PRICING.minStorage) {
+      var storageAdjustment = PRICING.minStorage - totals.storage;
+      itemResults[0].storage += storageAdjustment;
+      itemResults[0].storageMinimumApplied += storageAdjustment;
+      itemResults[0].total += storageAdjustment;
+      totals.storage = PRICING.minStorage;
     }
 
     totals.total =

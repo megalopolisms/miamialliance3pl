@@ -19,6 +19,7 @@ loadScript("js/quote-pricing-engine.js");
 loadScript("js/billing-engine.js");
 
 const BillingEngine = sandbox.MA3PLBillingEngine;
+const QuoteEngine = sandbox.MA3PLQuoteEngine;
 
 function testQuoteBaselinePreserved() {
   const shipment = {
@@ -356,6 +357,114 @@ function testMissingShipmentId() {
   assert.ok(Array.isArray(charges), "charges should work without shipment id");
 }
 
+function testMixedStorageMinimumAppliesOnce() {
+  const result = QuoteEngine.calculateMultiEstimate(
+    [
+      {
+        packageType: "box",
+        dimensions: { length: 12, width: 12, height: 12 },
+        weight: 5,
+        quantity: 1,
+      },
+      {
+        packageType: "box",
+        dimensions: { length: 12, width: 12, height: 12 },
+        weight: 5,
+        quantity: 1,
+      },
+    ],
+    {
+      shippingZone: "none",
+      storageDays: 30,
+    },
+  );
+
+  assert.strictEqual(result.totals.storage, 5);
+  assert.strictEqual(
+    Math.round((result.items[0].storage + result.items[1].storage) * 100) / 100,
+    5,
+  );
+}
+
+function testMixedShipmentChargesSplitByPackageType() {
+  const shipment = {
+    id: "ship-mixed-1",
+    user_id: "cust-mixed",
+    tracking_number: "MA3PLMIXED",
+    package: {
+      type: "mixed",
+      quantity: 5,
+      weight: 500,
+      length: 48,
+      width: 40,
+      height: 48,
+    },
+    pricing_cargo_items: [
+      {
+        packageType: "box",
+        dimensions: { length: 24, width: 18, height: 18 },
+        weight: 30,
+        quantity: 3,
+        cubic_ft: 4.5,
+        billable_weight: 56,
+        quote_estimate: {
+          storage: 10.13,
+          handling: 10.5,
+          pick_pack: 3.75,
+          shipping: 109.2,
+          total: 133.58,
+        },
+      },
+      {
+        packageType: "pallet",
+        dimensions: { length: 48, width: 40, height: 60 },
+        weight: 500,
+        quantity: 2,
+        blackWrapping: true,
+        cubic_ft: 66.67,
+        billable_weight: 500,
+        quote_estimate: {
+          storage: 45,
+          handling: 30,
+          pick_pack: 10,
+          shipping: 650,
+          wrapping: 14,
+          total: 749,
+        },
+      },
+    ],
+    shipping_zone: "regional",
+    black_wrapping: true,
+    quote_estimate: {
+      storage: 55.13,
+      handling: 40.5,
+      pick_pack: 13.75,
+      shipping: 759.2,
+      wrapping: 14,
+      total: 882.58,
+      storage_days: 30,
+    },
+  };
+
+  const charges = BillingEngine.buildShipmentCharges(shipment, {
+    pricingData: {},
+    customerRateIndex: new Map(),
+  });
+
+  assert.strictEqual(charges.find((row) => row.key === "storage_box").amount, 10.13);
+  assert.strictEqual(charges.find((row) => row.key === "storage_pallet").amount, 45);
+  assert.strictEqual(charges.find((row) => row.key === "shipping_box").amount, 109.2);
+  assert.strictEqual(charges.find((row) => row.key === "shipping_pallet").amount, 650);
+  assert.strictEqual(charges.find((row) => row.key === "wrapping_pallet").amount, 14);
+
+  const entries = BillingEngine.buildShipmentActivityEntries(shipment, {
+    pricingData: {},
+    customerRateIndex: new Map(),
+  });
+  const sourceKeys = entries.map((entry) => entry.source_charge_key);
+  assert.strictEqual(new Set(sourceKeys).size, sourceKeys.length);
+}
+
 // Run all tests
 const tests = [
   ["Quote baseline preserved", testQuoteBaselinePreserved],
@@ -368,6 +477,8 @@ const tests = [
   ["Currency precision", testCurrencyPrecision],
   ["Customer rate override", testCustomerRateOverride],
   ["Missing shipment ID", testMissingShipmentId],
+  ["Mixed storage minimum applies once", testMixedStorageMinimumAppliesOnce],
+  ["Mixed shipment charges split by package type", testMixedShipmentChargesSplitByPackageType],
 ];
 
 let passed = 0;
@@ -387,3 +498,7 @@ for (const [name, fn] of tests) {
 console.log(
   `\nbilling-engine tests: ${passed} passed, ${failed} failed (${tests.length} total)`,
 );
+
+if (failed > 0) {
+  process.exitCode = 1;
+}

@@ -980,7 +980,7 @@
     <div id="toast" class="toast"></div>
 
     <script src="../js/column-prefs.js"></script>
-    <script src="../js/billing-engine.js"></script>
+    <script src="../js/billing-engine.js?v=20260316-1"></script>
     <script src="../js/lang/es.js"></script>
     <script src="../js/lang/pt-br.js"></script>
     <script src="../js/i18n.js"></script>
@@ -2233,6 +2233,9 @@
                 const pkg = shipment.package || {};
                 const pkgType = pkg.type || 'box';
                 const pkgQty = pkg.quantity || 1;
+                const pkgSummary = shipment.package_summary?.summary_label
+                    || `${pkgQty} ${pkgType}${pkgQty === 1 ? '' : 's'}`;
+                const pkgIcon = pkgType === 'mixed' ? '📦🔲' : (pkgType === 'pallet' ? '🔲' : '📦');
                 const status = shipment.billing_status || 'pending';
                 const charges = buildShipmentCharges(shipment);
                 const originalTotal = getOriginalTotal(shipment);
@@ -2297,7 +2300,7 @@
                             <div class="meta">
                                 <span>${createdDate}</span>
                                 <span>${customerName}</span>
-                                <span>${pkgType === 'pallet' ? '🔲' : '📦'} ${pkgQty} ${pkgType}(s)</span>
+                                <span>${pkgIcon} ${pkgSummary}</span>
                                 <span style="font-weight: 700; color: var(--color-primary);">${formatCurrency(currentTotal)}</span>
                             </div>
                         </div>

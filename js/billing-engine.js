@@ -526,6 +526,138 @@
     );
   }
 
+  function getPackageTypeLabel(packageType) {
+    return packageType === "pallet" ? "Pallet" : "Box";
+  }
+
+  function getPricingCargoItems(shipment) {
+    const sourceItems = Array.isArray(shipment && shipment.pricing_cargo_items)
+      ? shipment.pricing_cargo_items
+      : Array.isArray(shipment && shipment.quote_estimate && shipment.quote_estimate.itemized)
+        ? shipment.quote_estimate.itemized
+        : [];
+
+    return sourceItems
+      .map(function (item, index) {
+        const pkg = item || {};
+        const dimensions = pkg.dimensions || {};
+        const quoteEstimate = pkg.quote_estimate || pkg.estimate || {};
+        const packageType =
+          pkg.packageType === "pallet" || pkg.package_type === "pallet"
+            ? "pallet"
+            : "box";
+        const quantity = Math.max(toNumber(pkg.quantity, 1), 1);
+        const weight = Math.max(toNumber(pkg.weight, 0), 0);
+        const length = Math.max(toNumber(dimensions.length || pkg.length, 0), 0);
+        const width = Math.max(toNumber(dimensions.width || pkg.width, 0), 0);
+        const height = Math.max(toNumber(dimensions.height || pkg.height, 0), 0);
+        const cubicFt =
+          parseFiniteNumber(pkg.cubic_ft) !== null
+            ? toNumber(pkg.cubic_ft, 0)
+            : length > 0 && width > 0 && height > 0
+              ? (length * width * height) / 1728
+              : 0;
+        const billableWeight =
+          parseFiniteNumber(pkg.billable_weight) !== null
+            ? toNumber(pkg.billable_weight, 0)
+            : Math.max(
+                weight,
+                length > 0 && width > 0 && height > 0
+                  ? (length * width * height) / BASE_PRICING.dimensionalFactor
+                  : 0,
+              );
+
+        return {
+          index: index,
+          packageType: packageType,
+          quantity: quantity,
+          weight: weight,
+          dimensions: {
+            length: length,
+            width: width,
+            height: height,
+          },
+          cubicFt: cubicFt,
+          billableWeight: billableWeight,
+          blackWrapping: Boolean(pkg.blackWrapping || pkg.black_wrapping),
+          quoteEstimate: {
+            storage: toNumber(quoteEstimate.storage, 0),
+            handling: toNumber(quoteEstimate.handling, 0),
+            pick_pack: toNumber(
+              quoteEstimate.pick_pack,
+              toNumber(quoteEstimate.pickPack, 0),
+            ),
+            shipping: toNumber(quoteEstimate.shipping, 0),
+            wrapping: toNumber(quoteEstimate.wrapping, 0),
+            total: toNumber(quoteEstimate.total, 0),
+          },
+        };
+      })
+      .filter(function (item) {
+        return item.quantity > 0;
+      });
+  }
+
+  function buildPricingCargoChargeGroups(shipment, storageDays) {
+    const items = getPricingCargoItems(shipment);
+    if (!items.length) return [];
+
+    const groups = {};
+
+    items.forEach(function (item) {
+      const groupKey = item.packageType;
+      if (!groups[groupKey]) {
+        groups[groupKey] = {
+          packageType: item.packageType,
+          packageTypeLabel: getPackageTypeLabel(item.packageType),
+          lineCount: 0,
+          totalUnits: 0,
+          storageQuantity: 0,
+          handlingQuantity: 0,
+          pickPackQuantity: 0,
+          shippingQuantity: 0,
+          wrappingQuantity: 0,
+          storageAmount: 0,
+          handlingAmount: 0,
+          pickPackAmount: 0,
+          shippingAmount: 0,
+          wrappingAmount: 0,
+        };
+      }
+
+      const group = groups[groupKey];
+      group.lineCount += 1;
+      group.totalUnits += item.quantity;
+      group.storageQuantity +=
+        item.packageType === "pallet"
+          ? item.quantity * storageDays
+          : item.cubicFt * item.quantity * storageDays;
+      group.handlingQuantity += item.quantity;
+      group.pickPackQuantity += item.quantity;
+      group.shippingQuantity += item.billableWeight * item.quantity;
+      group.wrappingQuantity += item.blackWrapping ? item.quantity : 0;
+      group.storageAmount += toNumber(item.quoteEstimate.storage, 0);
+      group.handlingAmount += toNumber(item.quoteEstimate.handling, 0);
+      group.pickPackAmount += toNumber(item.quoteEstimate.pick_pack, 0);
+      group.shippingAmount += toNumber(item.quoteEstimate.shipping, 0);
+      group.wrappingAmount += toNumber(item.quoteEstimate.wrapping, 0);
+    });
+
+    return Object.keys(groups).map(function (key) {
+      return groups[key];
+    });
+  }
+
+  function resolveChargeOverride(overrides, chargeKey, genericKey, allowGenericFallback) {
+    if (overrides[chargeKey]) {
+      return overrides[chargeKey];
+    }
+    if (allowGenericFallback && overrides[genericKey]) {
+      return overrides[genericKey];
+    }
+    return normalizeLineOverride();
+  }
+
   function buildFbaPrepDetail(shipment) {
     const fbaPrep = shipment && shipment.fba_prep;
     const services = (fbaPrep && fbaPrep.services) || {};
@@ -568,6 +700,8 @@
     let zone = shipment.shipping_zone || "regional";
     const dropShipQty = shipment.dropship_qty || {};
     const overrides = (options && options.overrides) || getShipmentOverrides(shipment);
+    const pricingChargeGroups = buildPricingCargoChargeGroups(shipment, storageDays);
+    const allowGenericGroupOverrides = pricingChargeGroups.length <= 1;
     const charges = [];
 
     function addCharge(config) {
@@ -578,145 +712,327 @@
       config.quoteAmount = roundCurrency(config.quoteAmount);
       charges.push(config);
     }
+    if (pricingChargeGroups.length) {
+      pricingChargeGroups.forEach(function (group) {
+        const suffix = pricingChargeGroups.length > 1 ? "_" + group.packageType : "";
+        const groupName =
+          group.packageTypeLabel +
+          " mix (" +
+          group.totalUnits +
+          " unit" +
+          (group.totalUnits === 1 ? "" : "s") +
+          " across " +
+          group.lineCount +
+          " line" +
+          (group.lineCount === 1 ? "" : "s") +
+          ")";
 
-    (function addStorageCharge() {
-      let quoteAmount = getQuoteAmount(shipment, "storage");
-      const rateMeta = getRateMeta(pricingData, customerRateIndex, "storage", customerId);
-      let quantity = pkgType === "pallet" ? qty * storageDays : cubicFt * qty * storageDays;
-      const unit = pkgType === "pallet" ? "pallet-days" : "cubic-ft-days";
-      const override = overrides.storage || normalizeLineOverride();
-      let baseRate =
-        quantity > 0 && quoteAmount > 0
-          ? quoteAmount / quantity
-          : getStorageFallbackRate(pkgType, pricingData, rateMeta);
-      let rate = override.rate !== null ? override.rate : baseRate;
-      let amount;
+        (function addGroupedStorageCharge() {
+          let quoteAmount = roundCurrency(group.storageAmount);
+          const rateMeta = getRateMeta(pricingData, customerRateIndex, "storage", customerId);
+          let quantity = Math.max(roundQuantity(group.storageQuantity), quoteAmount > 0 ? 1 : 0);
+          const unit = group.packageType === "pallet" ? "pallet-days" : "cubic-ft-days";
+          const override = resolveChargeOverride(
+            overrides,
+            "storage" + suffix,
+            "storage",
+            allowGenericGroupOverrides,
+          );
+          let baseRate =
+            quantity > 0 && quoteAmount > 0
+              ? quoteAmount / quantity
+              : getStorageFallbackRate(group.packageType, pricingData, rateMeta);
+          let rate = override.rate !== null ? override.rate : baseRate;
+          let amount;
 
-      if (override.amount !== null) {
-        amount = override.amount;
-      } else if (override.rate !== null || quoteAmount <= 0) {
-        amount = quantity * rate;
-        if (pkgType !== "pallet") {
-          amount = Math.max(amount, getBoxStorageMinimum(pricingData));
+          if (override.amount !== null) {
+            amount = override.amount;
+          } else if (override.rate !== null || quoteAmount <= 0) {
+            amount = quantity * rate;
+            if (group.packageType !== "pallet") {
+              amount = Math.max(amount, getBoxStorageMinimum(pricingData));
+            }
+          } else {
+            amount = quoteAmount;
+          }
+
+          if (override.amount !== null && quantity > 0 && override.rate === null) {
+            rate = amount / quantity;
+          }
+
+          addCharge({
+            key: "storage" + suffix,
+            billingItemKey: "storage",
+            label: "Storage",
+            description: "Storage (" + groupName + ")",
+            quantity: quantity,
+            unit: unit,
+            rate: rate,
+            amount: amount,
+            quoteAmount: quoteAmount,
+            rateMeta: rateMeta,
+            override: override,
+            detail:
+              group.packageType === "pallet"
+                ? groupName +
+                  " x " +
+                  storageDays +
+                  " days x $" +
+                  roundQuantity(rate).toFixed(2) +
+                  "/day"
+                : groupName +
+                  ", " +
+                  roundQuantity(group.storageQuantity / storageDays).toFixed(2) +
+                  " cf/day x " +
+                  storageDays +
+                  " days x $" +
+                  roundQuantity(rate).toFixed(3) +
+                  "/cf/day",
+          });
+        })();
+
+        (function addGroupedHandlingCharge() {
+          let quoteAmount = roundCurrency(group.handlingAmount);
+          const rateMeta = getRateMeta(pricingData, customerRateIndex, "handling", customerId);
+          const override = resolveChargeOverride(
+            overrides,
+            "handling" + suffix,
+            "handling",
+            allowGenericGroupOverrides,
+          );
+          let quantity = Math.max(roundQuantity(group.handlingQuantity), quoteAmount > 0 ? 1 : 0);
+          const unit = group.packageType === "pallet" ? "pallets" : "units";
+          let baseRate =
+            quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
+          let rate = override.rate !== null ? override.rate : baseRate;
+          let amount =
+            override.amount !== null
+              ? override.amount
+              : override.rate !== null || quoteAmount <= 0
+                ? quantity * rate
+                : quoteAmount;
+
+          if (override.amount !== null && quantity > 0 && override.rate === null) {
+            rate = amount / quantity;
+          }
+
+          addCharge({
+            key: "handling" + suffix,
+            billingItemKey: "handling",
+            label: "Handling / Receiving",
+            description: "Handling / Receiving (" + groupName + ")",
+            quantity: quantity,
+            unit: unit,
+            rate: rate,
+            amount: amount,
+            quoteAmount: quoteAmount,
+            rateMeta: rateMeta,
+            override: override,
+            detail: groupName + " x $" + roundQuantity(rate).toFixed(2),
+          });
+        })();
+
+        (function addGroupedPickPackCharge() {
+          let quoteAmount = roundCurrency(group.pickPackAmount);
+          const rateMeta = getRateMeta(pricingData, customerRateIndex, "pick_pack", customerId);
+          const override = resolveChargeOverride(
+            overrides,
+            "pick_pack" + suffix,
+            "pick_pack",
+            allowGenericGroupOverrides,
+          );
+          let quantity = Math.max(roundQuantity(group.pickPackQuantity), quoteAmount > 0 ? 1 : 0);
+          const unit = group.packageType === "pallet" ? "pallets" : "items";
+          let baseRate =
+            quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
+          let rate = override.rate !== null ? override.rate : baseRate;
+          let amount =
+            override.amount !== null
+              ? override.amount
+              : override.rate !== null || quoteAmount <= 0
+                ? quantity * rate
+                : quoteAmount;
+
+          if (override.amount !== null && quantity > 0 && override.rate === null) {
+            rate = amount / quantity;
+          }
+
+          addCharge({
+            key: "pick_pack" + suffix,
+            billingItemKey: "pick_pack",
+            label: "Pick & Pack",
+            description: "Pick & Pack (" + groupName + ")",
+            quantity: quantity,
+            unit: unit,
+            rate: rate,
+            amount: amount,
+            quoteAmount: quoteAmount,
+            rateMeta: rateMeta,
+            override: override,
+            detail: groupName + " x $" + roundQuantity(rate).toFixed(2),
+          });
+        })();
+
+        if (zone !== "none" && zone !== "dropship") {
+          (function addGroupedShippingCharge() {
+            let quoteAmount = roundCurrency(group.shippingAmount);
+            const rateMeta = getRateMeta(pricingData, customerRateIndex, "shipping", customerId);
+            const override = resolveChargeOverride(
+              overrides,
+              "shipping" + suffix,
+              "shipping",
+              allowGenericGroupOverrides,
+            );
+            let quantity = Math.max(roundQuantity(group.shippingQuantity), quoteAmount > 0 ? 1 : 0);
+            const unit = "lb";
+            let baseRate =
+              quantity > 0 && quoteAmount > 0
+                ? quoteAmount / quantity
+                : getShippingRate(zone);
+            let rate = override.rate !== null ? override.rate : baseRate;
+            let amount =
+              override.amount !== null
+                ? override.amount
+                : override.rate !== null || quoteAmount <= 0
+                  ? quantity * rate
+                  : quoteAmount;
+
+            if (override.amount !== null && quantity > 0 && override.rate === null) {
+              rate = amount / quantity;
+            }
+
+            addCharge({
+              key: "shipping" + suffix,
+              billingItemKey: "shipping",
+              label: "Shipping",
+              description: "Shipping (" + groupName + ")",
+              quantity: quantity,
+              unit: unit,
+              rate: rate,
+              amount: amount,
+              quoteAmount: quoteAmount,
+              rateMeta: rateMeta,
+              override: override,
+              detail:
+                groupName +
+                ", " +
+                zone +
+                " zone, " +
+                roundQuantity(group.shippingQuantity).toFixed(1) +
+                " billable lbs",
+            });
+          })();
         }
-      } else {
-        amount = quoteAmount;
-      }
 
-      if (override.amount !== null && quantity > 0 && override.rate === null) {
-        rate = amount / quantity;
-      }
+        if (group.wrappingQuantity > 0 || group.wrappingAmount > 0) {
+          (function addGroupedWrappingCharge() {
+            let quoteAmount = roundCurrency(group.wrappingAmount);
+            const rateMeta = getRateMeta(pricingData, customerRateIndex, "wrapping", customerId);
+            const override = resolveChargeOverride(
+              overrides,
+              "wrapping" + suffix,
+              "wrapping",
+              allowGenericGroupOverrides,
+            );
+            let quantity = Math.max(roundQuantity(group.wrappingQuantity), quoteAmount > 0 ? 1 : 0);
+            const unit = "pallets";
+            let baseRate =
+              quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
+            let rate = override.rate !== null ? override.rate : baseRate;
+            let amount =
+              override.amount !== null
+                ? override.amount
+                : override.rate !== null || quoteAmount <= 0
+                  ? quantity * rate
+                  : quoteAmount;
 
-      addCharge({
-        key: "storage",
-        billingItemKey: "storage",
-        label: "Storage",
-        quantity: quantity,
-        unit: unit,
-        rate: rate,
-        amount: amount,
-        quoteAmount: quoteAmount,
-        rateMeta: rateMeta,
-        override: override,
-        detail:
-          pkgType === "pallet"
-            ? qty +
-              " pallet(s) x " +
-              storageDays +
-              " days x $" +
-              roundQuantity(rate).toFixed(2) +
-              "/day"
-            : cubicFt.toFixed(2) +
-              " cf x " +
-              storageDays +
-              " days x $" +
-              roundQuantity(rate).toFixed(3) +
-              "/cf/day x " +
-              qty,
+            if (override.amount !== null && quantity > 0 && override.rate === null) {
+              rate = amount / quantity;
+            }
+
+            addCharge({
+              key: "wrapping" + suffix,
+              billingItemKey: "wrapping",
+              label: "Black Wrapping",
+              description: "Black Wrapping (" + groupName + ")",
+              quantity: quantity,
+              unit: unit,
+              rate: rate,
+              amount: amount,
+              quoteAmount: quoteAmount,
+              rateMeta: rateMeta,
+              override: override,
+              detail: groupName + " x $" + roundQuantity(rate).toFixed(2),
+            });
+          })();
+        }
       });
-    })();
-
-    (function addHandlingCharge() {
-      let quoteAmount = getQuoteAmount(shipment, "handling");
-      const rateMeta = getRateMeta(pricingData, customerRateIndex, "handling", customerId);
-      const override = overrides.handling || normalizeLineOverride();
-      let quantity = qty;
-      const unit = pkgType === "pallet" ? "pallets" : "units";
-      let baseRate =
-        quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
-      let rate = override.rate !== null ? override.rate : baseRate;
-      let amount =
-        override.amount !== null
-          ? override.amount
-          : override.rate !== null || quoteAmount <= 0
-            ? quantity * rate
-            : quoteAmount;
-
-      if (override.amount !== null && quantity > 0 && override.rate === null) {
-        rate = amount / quantity;
-      }
-
-      addCharge({
-        key: "handling",
-        billingItemKey: "handling",
-        label: "Handling / Receiving",
-        quantity: quantity,
-        unit: unit,
-        rate: rate,
-        amount: amount,
-        quoteAmount: quoteAmount,
-        rateMeta: rateMeta,
-        override: override,
-        detail: quantity + " " + unit + " x $" + roundQuantity(rate).toFixed(2),
-      });
-    })();
-
-    (function addPickPackCharge() {
-      let quoteAmount = getQuoteAmount(shipment, "pick_pack");
-      const rateMeta = getRateMeta(pricingData, customerRateIndex, "pick_pack", customerId);
-      const override = overrides.pick_pack || normalizeLineOverride();
-      let quantity = qty;
-      const unit = pkgType === "pallet" ? "pallets" : "items";
-      let baseRate =
-        quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
-      let rate = override.rate !== null ? override.rate : baseRate;
-      let amount =
-        override.amount !== null
-          ? override.amount
-          : override.rate !== null || quoteAmount <= 0
-            ? quantity * rate
-            : quoteAmount;
-
-      if (override.amount !== null && quantity > 0 && override.rate === null) {
-        rate = amount / quantity;
-      }
-
-      addCharge({
-        key: "pick_pack",
-        billingItemKey: "pick_pack",
-        label: "Pick & Pack",
-        quantity: quantity,
-        unit: unit,
-        rate: rate,
-        amount: amount,
-        quoteAmount: quoteAmount,
-        rateMeta: rateMeta,
-        override: override,
-        detail: quantity + " " + unit + " x $" + roundQuantity(rate).toFixed(2),
-      });
-    })();
-
-    if (zone !== "none" && zone !== "dropship") {
-      (function addShippingCharge() {
-        let quoteAmount = getQuoteAmount(shipment, "shipping");
-        const rateMeta = getRateMeta(pricingData, customerRateIndex, "shipping", customerId);
-        const override = overrides.shipping || normalizeLineOverride();
-        let quantity = Math.max(roundQuantity(billableWeight * qty), 1);
-        const unit = "lb";
+    } else {
+      (function addStorageCharge() {
+        let quoteAmount = getQuoteAmount(shipment, "storage");
+        const rateMeta = getRateMeta(pricingData, customerRateIndex, "storage", customerId);
+        let quantity = pkgType === "pallet" ? qty * storageDays : cubicFt * qty * storageDays;
+        const unit = pkgType === "pallet" ? "pallet-days" : "cubic-ft-days";
+        const override = overrides.storage || normalizeLineOverride();
         let baseRate =
           quantity > 0 && quoteAmount > 0
             ? quoteAmount / quantity
-            : getShippingRate(zone);
+            : getStorageFallbackRate(pkgType, pricingData, rateMeta);
+        let rate = override.rate !== null ? override.rate : baseRate;
+        let amount;
+
+        if (override.amount !== null) {
+          amount = override.amount;
+        } else if (override.rate !== null || quoteAmount <= 0) {
+          amount = quantity * rate;
+          if (pkgType !== "pallet") {
+            amount = Math.max(amount, getBoxStorageMinimum(pricingData));
+          }
+        } else {
+          amount = quoteAmount;
+        }
+
+        if (override.amount !== null && quantity > 0 && override.rate === null) {
+          rate = amount / quantity;
+        }
+
+        addCharge({
+          key: "storage",
+          billingItemKey: "storage",
+          label: "Storage",
+          quantity: quantity,
+          unit: unit,
+          rate: rate,
+          amount: amount,
+          quoteAmount: quoteAmount,
+          rateMeta: rateMeta,
+          override: override,
+          detail:
+            pkgType === "pallet"
+              ? qty +
+                " pallet(s) x " +
+                storageDays +
+                " days x $" +
+                roundQuantity(rate).toFixed(2) +
+                "/day"
+              : cubicFt.toFixed(2) +
+                " cf x " +
+                storageDays +
+                " days x $" +
+                roundQuantity(rate).toFixed(3) +
+                "/cf/day x " +
+                qty,
+        });
+      })();
+
+      (function addHandlingCharge() {
+        let quoteAmount = getQuoteAmount(shipment, "handling");
+        const rateMeta = getRateMeta(pricingData, customerRateIndex, "handling", customerId);
+        const override = overrides.handling || normalizeLineOverride();
+        let quantity = qty;
+        const unit = pkgType === "pallet" ? "pallets" : "units";
+        let baseRate =
+          quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
         let rate = override.rate !== null ? override.rate : baseRate;
         let amount =
           override.amount !== null
@@ -730,9 +1046,9 @@
         }
 
         addCharge({
-          key: "shipping",
-          billingItemKey: "shipping",
-          label: "Shipping",
+          key: "handling",
+          billingItemKey: "handling",
+          label: "Handling / Receiving",
           quantity: quantity,
           unit: unit,
           rate: rate,
@@ -740,14 +1056,88 @@
           quoteAmount: quoteAmount,
           rateMeta: rateMeta,
           override: override,
-          detail:
-            zone +
-            " zone, " +
-            billableWeight.toFixed(1) +
-            " billable lbs x " +
-            qty,
+          detail: quantity + " " + unit + " x $" + roundQuantity(rate).toFixed(2),
         });
       })();
+
+      (function addPickPackCharge() {
+        let quoteAmount = getQuoteAmount(shipment, "pick_pack");
+        const rateMeta = getRateMeta(pricingData, customerRateIndex, "pick_pack", customerId);
+        const override = overrides.pick_pack || normalizeLineOverride();
+        let quantity = qty;
+        const unit = pkgType === "pallet" ? "pallets" : "items";
+        let baseRate =
+          quantity > 0 && quoteAmount > 0 ? quoteAmount / quantity : rateMeta.rate;
+        let rate = override.rate !== null ? override.rate : baseRate;
+        let amount =
+          override.amount !== null
+            ? override.amount
+            : override.rate !== null || quoteAmount <= 0
+              ? quantity * rate
+              : quoteAmount;
+
+        if (override.amount !== null && quantity > 0 && override.rate === null) {
+          rate = amount / quantity;
+        }
+
+        addCharge({
+          key: "pick_pack",
+          billingItemKey: "pick_pack",
+          label: "Pick & Pack",
+          quantity: quantity,
+          unit: unit,
+          rate: rate,
+          amount: amount,
+          quoteAmount: quoteAmount,
+          rateMeta: rateMeta,
+          override: override,
+          detail: quantity + " " + unit + " x $" + roundQuantity(rate).toFixed(2),
+        });
+      })();
+
+      if (zone !== "none" && zone !== "dropship") {
+        (function addShippingCharge() {
+          let quoteAmount = getQuoteAmount(shipment, "shipping");
+          const rateMeta = getRateMeta(pricingData, customerRateIndex, "shipping", customerId);
+          const override = overrides.shipping || normalizeLineOverride();
+          let quantity = Math.max(roundQuantity(billableWeight * qty), 1);
+          const unit = "lb";
+          let baseRate =
+            quantity > 0 && quoteAmount > 0
+              ? quoteAmount / quantity
+              : getShippingRate(zone);
+          let rate = override.rate !== null ? override.rate : baseRate;
+          let amount =
+            override.amount !== null
+              ? override.amount
+              : override.rate !== null || quoteAmount <= 0
+                ? quantity * rate
+                : quoteAmount;
+
+          if (override.amount !== null && quantity > 0 && override.rate === null) {
+            rate = amount / quantity;
+          }
+
+          addCharge({
+            key: "shipping",
+            billingItemKey: "shipping",
+            label: "Shipping",
+            quantity: quantity,
+            unit: unit,
+            rate: rate,
+            amount: amount,
+            quoteAmount: quoteAmount,
+            rateMeta: rateMeta,
+            override: override,
+            detail:
+              zone +
+              " zone, " +
+              billableWeight.toFixed(1) +
+              " billable lbs x " +
+              qty,
+          });
+        })();
+      }
     }
 
     if (zone === "dropship") {
@@ -810,7 +1200,7 @@
       })();
     }
 
-    if (shipment.black_wrapping) {
+    if (!pricingChargeGroups.length && shipment.black_wrapping) {
       (function addWrappingCharge() {
         let quoteAmount = getQuoteAmount(shipment, "wrapping");
         const rateMeta = getRateMeta(pricingData, customerRateIndex, "wrapping", customerId);
@@ -920,6 +1310,7 @@
 
     return charges.map(function (charge) {
       const itemKey = charge.billingItemKey || charge.key;
+      const sourceChargeKey = charge.sourceKey || charge.key;
       let rateSource = "quote";
       if (charge.override.amount !== null) {
         rateSource = "manual_amount_override";
@@ -941,7 +1332,7 @@
         billing_item_label: charge.label,
         quote_category: getQuoteCategory(itemKey),
         calculator_item: Boolean(BILLING_ITEMS[itemKey] && BILLING_ITEMS[itemKey].calculatorItem),
-        description: charge.label + " - Shipment " + tracking,
+        description: (charge.description || charge.label) + " - Shipment " + tracking,
         quantity: charge.quantity,
         unit: charge.unit,
         rate: charge.rate,
@@ -958,7 +1349,7 @@
           : "Shipment-derived billing entry",
         source_shipment_id: shipment.id || null,
         source_shipment_tracking: tracking,
-        source_charge_key: charge.key,
+        source_charge_key: sourceChargeKey,
         quote_amount: charge.quoteAmount,
         override_note: charge.override.note || "",
         billed: false,

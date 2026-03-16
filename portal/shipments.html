@@ -1558,6 +1558,9 @@
                         <!-- Cargo Items (Multi-Size Support) -->
                         <div class="quote-control-group" id="sc-cargo-items-container">
                             <label class="quote-label">Cargo Items</label>
+                            <div style="margin:-2px 0 10px; font-size:0.82rem; color:var(--color-gray-500); line-height:1.45;">
+                                Add another cargo line whenever a box or pallet has a different size, weight, or wrapping requirement.
+                            </div>
                             <div id="sc-cargo-items-list">
                                 <!-- Item 1 (default) -->
                                 <div class="cargo-item" data-index="0">
@@ -1614,7 +1617,7 @@
                                 </div>
                             </div>
                             <button type="button" id="sc-add-cargo-item" class="btn-add-cargo">
-                                + Add Another Item
+                                + Add Another Size / Weight
                             </button>
                         </div>
 
@@ -2058,7 +2061,8 @@
     <script src="../js/lang/es.js"></script>
     <script src="../js/lang/pt-br.js"></script>
     <script src="../js/i18n.js"></script>
-    <script src="../js/quote-pricing-engine.js"></script>
+    <script src="../js/quote-pricing-engine.js?v=20260316-1"></script>
+    <script src="../js/billing-engine.js?v=20260316-1"></script>
 
     <!-- Three.js Import Map (same as quote.html) -->
     <script type="importmap">
@@ -2108,6 +2112,7 @@
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
 
         let currentUser = null;
+        let currentUserProfile = null;
         let currentUserRole = 'customer';
         let isStaff = false;
 
@@ -2563,6 +2568,7 @@
         // SHARED PRICING ENGINE
         // =====================================================
         const QuoteEngine = window.MA3PLQuoteEngine || null;
+        const BillingEngine = window.MA3PLBillingEngine || null;
         const PRICING = QuoteEngine
             ? QuoteEngine.PRICING
             : {
@@ -2638,6 +2644,97 @@
                 sc.quantity = active.quantity;
                 sc.blackWrapping = active.blackWrapping;
             }
+        }
+
+        function buildPricingCargoItems() {
+            const itemResults = (sc._lastMultiResult && Array.isArray(sc._lastMultiResult.items))
+                ? sc._lastMultiResult.items
+                : [];
+
+            return sc.cargoItems.map((item, idx) => {
+                const quoteItem = itemResults[idx] || {};
+                return {
+                    packageType: item.packageType,
+                    dimensions: { ...item.dimensions },
+                    weight: item.weight,
+                    quantity: item.quantity,
+                    blackWrapping: item.blackWrapping,
+                    cubic_ft: Number(quoteItem.cubicFt || 0),
+                    dim_weight: Number(quoteItem.dimWeight || 0),
+                    billable_weight: Number(quoteItem.billableWeight || 0),
+                    quote_estimate: {
+                        storage: Number(quoteItem.storage || 0),
+                        handling: Number(quoteItem.handling || 0),
+                        pick_pack: Number(quoteItem.pickPack || 0),
+                        shipping: Number(quoteItem.shipping || 0),
+                        wrapping: Number(quoteItem.wrapping || 0),
+                        total: Number(quoteItem.total || 0)
+                    }
+                };
+            });
+        }
+
+        function buildPackageSummary(pricingCargoItems) {
+            const items = Array.isArray(pricingCargoItems) ? pricingCargoItems : [];
+            const typeSet = new Set();
+            const sizeSet = new Set();
+            const weightSet = new Set();
+            let totalUnits = 0;
+            let totalWeight = 0;
+            let totalCubicFt = 0;
+            let totalBillableWeight = 0;
+            let boxCount = 0;
+            let palletCount = 0;
+
+            items.forEach((item) => {
+                const packageType = item.packageType === 'pallet' ? 'pallet' : 'box';
+                const dims = item.dimensions || {};
+                const quantity = Number(item.quantity || 0);
+                const cubicFt = Number(item.cubic_ft || 0);
+                const billableWeight = Number(item.billable_weight || 0);
+                const weight = Number(item.weight || 0);
+
+                typeSet.add(packageType);
+                sizeSet.add([packageType, dims.length || 0, dims.width || 0, dims.height || 0].join(':'));
+                weightSet.add([packageType, weight].join(':'));
+                totalUnits += quantity;
+                totalWeight += weight * quantity;
+                totalCubicFt += cubicFt * quantity;
+                totalBillableWeight += billableWeight * quantity;
+                if (packageType === 'pallet') palletCount += quantity;
+                else boxCount += quantity;
+            });
+
+            const summaryParts = [];
+            if (boxCount > 0) summaryParts.push(boxCount + ' box' + (boxCount === 1 ? '' : 'es'));
+            if (palletCount > 0) summaryParts.push(palletCount + ' pallet' + (palletCount === 1 ? '' : 's'));
+
+            const mixedPackageTypes = typeSet.size > 1;
+            const mixedSizes = sizeSet.size > 1;
+            const mixedWeights = weightSet.size > 1;
+
+            return {
+                line_item_count: items.length,
+                total_units: totalUnits,
+                total_weight: totalWeight,
+                total_cubic_ft: totalCubicFt,
+                total_billable_weight: totalBillableWeight,
+                box_count: boxCount,
+                pallet_count: palletCount,
+                mixed_package_types: mixedPackageTypes,
+                mixed_sizes: mixedSizes,
+                mixed_weights: mixedWeights,
+                is_mixed: mixedPackageTypes || mixedSizes || mixedWeights,
+                primary_package_type: mixedPackageTypes ? 'mixed' : (items[0]?.packageType || 'box'),
+                summary_label: summaryParts.join(' + ') || (totalUnits + ' package' + (totalUnits === 1 ? '' : 's'))
+            };
+        }
+
+        function buildShipmentNote(packageSummary) {
+            const summary = packageSummary || {};
+            const lineCount = Number(summary.line_item_count || 0);
+            const packageSummaryLabel = summary.summary_label || (summary.total_units || 1) + ' package(s)';
+            return 'Shipment: ' + packageSummaryLabel + ' across ' + lineCount + ' cargo line' + (lineCount === 1 ? '' : 's') + ', Zone: ' + getZoneLabel(sc.shippingZone);
         }
 
         // =====================================================
@@ -3921,12 +4018,15 @@
 
             const trackingNumber = 'MA3PL' + Date.now().toString().slice(-8);
             const quoteResult = calculateQuote();
+            const pricingCargoItems = buildPricingCargoItems();
+            const packageSummary = buildPackageSummary(pricingCargoItems);
             const d = sc.destination;
             const incomingItemsForSave = getIncomingItemsForSave();
 
             trackCalcEvent('shipment_submit_attempt', {
-                package_type: sc.packageType,
-                quantity: sc.quantity,
+                package_type: packageSummary.primary_package_type || sc.packageType,
+                quantity: packageSummary.total_units || sc.quantity,
+                cargo_line_count: packageSummary.line_item_count || sc.cargoItems.length,
                 shipping_zone: sc.shippingZone,
                 value: quoteResult.total
             });
@@ -3989,21 +4089,26 @@
                 })(),
                 destination: { name: d.name, street: d.street, city: d.city, state: d.state, zip: d.zip },
                 package: {
-                    type: sc.packageType,
+                    type: packageSummary.primary_package_type || sc.packageType,
                     length: sc.length, width: sc.width, height: sc.height,
-                    weight: sc.weight, quantity: sc.quantity,
+                    weight: sc.weight,
+                    quantity: packageSummary.total_units || sc.quantity,
                     dim_weight: quoteResult.dimWeight,
                     billable_weight: quoteResult.billableWeight,
-                    cubic_ft: quoteResult.cubicFt
+                    cubic_ft: quoteResult.cubicFt,
+                    line_item_count: packageSummary.line_item_count || sc.cargoItems.length,
+                    box_count: packageSummary.box_count || 0,
+                    pallet_count: packageSummary.pallet_count || 0,
+                    mixed_sizes: !!packageSummary.mixed_sizes,
+                    mixed_package_types: !!packageSummary.mixed_package_types,
+                    total_weight: packageSummary.total_weight || 0,
+                    total_cubic_ft: packageSummary.total_cubic_ft || 0,
+                    total_billable_weight: packageSummary.total_billable_weight || 0,
+                    summary_label: packageSummary.summary_label || ''
                 },
-                // Multi-item cargo details
-                cargo_items: sc.cargoItems.map(item => ({
-                    packageType: item.packageType,
-                    dimensions: { ...item.dimensions },
-                    weight: item.weight,
-                    quantity: item.quantity,
-                    blackWrapping: item.blackWrapping
-                })),
+                pricing_cargo_items: pricingCargoItems,
+                pricing_cargo_items_count: pricingCargoItems.length,
+                package_summary: packageSummary,
                 warehouse: sc.selectedWarehouse || 'miami',
                 shipping_zone: sc.shippingZone,
                 black_wrapping: sc.cargoItems.some(item => item.packageType === 'pallet' && item.blackWrapping),
@@ -4026,17 +4131,22 @@
                     dropship: quoteResult.dropship,
                     fba_prep: quoteResult.fbaPrepTotal || 0,
                     total: quoteResult.total,
-                    storage_days: PRICING.storageDays
+                    storage_days: PRICING.storageDays,
+                    line_item_count: packageSummary.line_item_count || sc.cargoItems.length,
+                    total_units: packageSummary.total_units || sc.quantity,
+                    mixed_package_types: !!packageSummary.mixed_package_types,
+                    mixed_sizes: !!packageSummary.mixed_sizes,
+                    mixed_weights: !!packageSummary.mixed_weights
                 },
                 // BOL / Shipping Label data
                 bol_document: bolDocument,
-                cargo_items: cargoItemsEmbedded,
+                tracking_cargo_items: cargoItemsEmbedded,
                 cargo_count: cargoItemsData.length,
-                cargo_items_embedded_count: cargoItemsEmbedded.length,
-                cargo_items_truncated: cargoItemsData.length > cargoItemsEmbedded.length || cargoItemsWereTrimmed,
+                tracking_cargo_embedded_count: cargoItemsEmbedded.length,
+                tracking_cargo_truncated: cargoItemsData.length > cargoItemsEmbedded.length || cargoItemsWereTrimmed,
                 // Incoming inventory items (itemized SKUs)
                 incoming_items: incomingItemsForSave,
-                notes: sc.notes || `Shipment: ${sc.quantity} ${sc.packageType}(s), Zone: ${getZoneLabel(sc.shippingZone)}`,
+                notes: sc.notes || buildShipmentNote(packageSummary),
                 // Packing List & Invoice documents
                 packing_list: docsState.packing_list.file ? {
                     filename: docsState.packing_list.file.name,
@@ -4060,11 +4170,11 @@
 
             // Firestore has a strict 1 MiB per-document limit; trim embedded cargo preview first, then hard-fail if still too large.
             let shipmentPayloadSize = estimatePayloadBytes(newShipment);
-            if (shipmentPayloadSize > FIRESTORE_DOC_SAFE_LIMIT_BYTES && Array.isArray(newShipment.cargo_items) && newShipment.cargo_items.length > 0) {
-                newShipment.cargo_items = [];
-                newShipment.cargo_items_embedded_count = 0;
-                newShipment.cargo_items_truncated = cargoItemsData.length > 0 || cargoItemsWereTrimmed;
-                newShipment.cargo_items_omitted_for_size = true;
+            if (shipmentPayloadSize > FIRESTORE_DOC_SAFE_LIMIT_BYTES && Array.isArray(newShipment.tracking_cargo_items) && newShipment.tracking_cargo_items.length > 0) {
+                newShipment.tracking_cargo_items = [];
+                newShipment.tracking_cargo_embedded_count = 0;
+                newShipment.tracking_cargo_truncated = cargoItemsData.length > 0 || cargoItemsWereTrimmed;
+                newShipment.tracking_cargo_omitted_for_size = true;
                 shipmentPayloadSize = estimatePayloadBytes(newShipment);
             }
             if (shipmentPayloadSize > FIRESTORE_DOC_HARD_LIMIT_BYTES - 8192) {
@@ -4078,95 +4188,44 @@
 
                 // Log detailed billable events
                 try {
-                    const events = [];
-                    events.push({
-                        customer_id: currentUser.uid,
-                        event_type: 'storage',
-                        description: `Storage (${PRICING.storageDays}d) - ${trackingNumber}`,
-                        quantity: sc.quantity,
-                        unit: sc.packageType === 'pallet' ? 'pallets' : 'units',
-                        rate: sc.packageType === 'pallet' ? PRICING.palletStoragePerDay : PRICING.storagePerCubicFtDay,
-                        amount: quoteResult.storage,
-                        shipment_id: shipmentRef.id,
-                        invoiced: false,
-                        created_at: new Date().toISOString(),
-                        created_by: currentUser.uid
-                    });
-                    events.push({
-                        customer_id: currentUser.uid,
-                        event_type: 'handling',
-                        description: `Handling - ${trackingNumber}`,
-                        quantity: sc.quantity,
-                        unit: sc.packageType === 'pallet' ? 'pallets' : 'units',
-                        rate: sc.packageType === 'pallet' ? PRICING.palletHandling : PRICING.handlingFee,
-                        amount: quoteResult.handling,
-                        shipment_id: shipmentRef.id,
-                        invoiced: false,
-                        created_at: new Date().toISOString(),
-                        created_by: currentUser.uid
-                    });
-                    events.push({
-                        customer_id: currentUser.uid,
-                        event_type: 'pick_pack',
-                        description: `Pick & Pack - ${trackingNumber}`,
-                        quantity: sc.quantity,
-                        unit: sc.packageType === 'pallet' ? 'pallets' : 'items',
-                        rate: sc.packageType === 'pallet' ? PRICING.palletPickPack : PRICING.pickAndPack,
-                        amount: quoteResult.pickPack,
-                        shipment_id: shipmentRef.id,
-                        invoiced: false,
-                        created_at: new Date().toISOString(),
-                        created_by: currentUser.uid
-                    });
-                    if (quoteResult.shipping > 0) {
-                        events.push({
+                    const nowIso = new Date().toISOString();
+                    const shipmentForBilling = { id: shipmentRef.id, ...newShipment };
+                    const derivedEntries = BillingEngine
+                        ? BillingEngine.buildShipmentActivityEntries(shipmentForBilling, {
+                            pricingData: {},
+                            customerRateIndex: new Map(),
+                            customerName: (currentUserProfile && (currentUserProfile.company_name || currentUserProfile.name)) || currentUser.email || 'Customer'
+                        })
+                        : [];
+                    const events = derivedEntries
+                        .filter((entry) => Number(entry.amount || 0) > 0)
+                        .map((entry) => ({
                             customer_id: currentUser.uid,
-                            event_type: 'shipping',
-                            description: `Shipping (${getZoneLabel(sc.shippingZone)}) - ${trackingNumber}`,
-                            quantity: sc.quantity,
-                            unit: 'packages',
-                            rate: PRICING.shippingZones[sc.shippingZone],
-                            amount: quoteResult.shipping,
+                            customer_name: entry.customer_name || (currentUserProfile && (currentUserProfile.company_name || currentUserProfile.name)) || currentUser.email || 'Customer',
+                            warehouse: newShipment.warehouse || 'miami',
+                            event_type: entry.billing_item_id || entry.activity_type,
+                            billing_item_id: entry.billing_item_id || entry.activity_type,
+                            description: entry.description,
+                            quantity: entry.quantity,
+                            unit: entry.unit,
+                            rate: entry.rate,
+                            amount: entry.amount,
                             shipment_id: shipmentRef.id,
+                            source_charge_key: entry.source_charge_key || (entry.billing_item_id || entry.activity_type),
                             invoiced: false,
-                            created_at: new Date().toISOString(),
-                            created_by: currentUser.uid
-                        });
-                    }
-                    if (quoteResult.wrapping > 0) {
-                        events.push({
-                            customer_id: currentUser.uid,
-                            event_type: 'wrapping',
-                            description: `Black Wrapping - ${trackingNumber}`,
-                            quantity: sc.quantity,
-                            unit: 'pallets',
-                            rate: PRICING.blackWrapping,
-                            amount: quoteResult.wrapping,
-                            shipment_id: shipmentRef.id,
-                            invoiced: false,
-                            created_at: new Date().toISOString(),
-                            created_by: currentUser.uid
-                        });
-                    }
-                    if (quoteResult.dropship > 0) {
-                        events.push({
-                            customer_id: currentUser.uid,
-                            event_type: 'dropship',
-                            description: `Drop Ship - ${trackingNumber}`,
-                            quantity: 1,
-                            unit: 'shipment',
-                            rate: quoteResult.dropship,
-                            amount: quoteResult.dropship,
-                            shipment_id: shipmentRef.id,
-                            invoiced: false,
-                            created_at: new Date().toISOString(),
-                            created_by: currentUser.uid
-                        });
-                    }
+                            date: entry.date || nowIso.split('T')[0],
+                            created_at: nowIso,
+                            created_by: currentUser.uid,
+                            notes: entry.notes || ''
+                        }));
                     for (const ev of events) {
                         await addDoc(collection(db, 'billable_events'), ev);
                     }
-                    trackCalcEvent('shipment_billable_events_created', { events_count: events.length, value: quoteResult.total });
+                    trackCalcEvent('shipment_billable_events_created', {
+                        events_count: events.length,
+                        cargo_line_count: packageSummary.line_item_count || sc.cargoItems.length,
+                        value: quoteResult.total
+                    });
                 } catch (billingErr) {
                     console.warn('Billing events failed:', billingErr.message);
                     // Surface billing failure to admins — shipment was saved but billing record was not
@@ -4399,6 +4458,7 @@
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             if (userDoc.exists()) {
                 const userData = userDoc.data();
+                currentUserProfile = userData;
                 document.getElementById('user-name').textContent = 'Welcome, ' + userData.name;
                 if (userData.role) {
                     currentUserRole = userData.role;
@@ -4408,6 +4468,7 @@
                     currentUserRole = isStaff ? 'admin' : 'customer';
                 }
             } else {
+                currentUserProfile = null;
                 isStaff = FALLBACK_ADMIN_EMAILS.includes(user.email);
                 currentUserRole = isStaff ? 'admin' : 'customer';
             }
