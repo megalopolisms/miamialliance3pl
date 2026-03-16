@@ -2972,7 +2972,7 @@ exports.getShippingRatesLive = functions.https.onCall(async (data, context) => {
   // Build ShipStation rate request
   const baseParams = {
     fromPostalCode: origin.postalCode || "33178",
-    toPostalCode: data.destination_zip,
+    toPostalCode: data.destination_zip.trim(),
     toState: data.destination_state || "",
     toCity: data.destination_city || "",
     toCountry: "US",
@@ -3045,6 +3045,7 @@ exports.getShippingRatesLive = functions.https.onCall(async (data, context) => {
     origin: { city: origin.city || "Medley", state: origin.state || "FL", zip: origin.postalCode || "33178" },
     markup: callerIsStaff ? { type: markupConfig.type, value: markupConfig.percentage || markupConfig.flat_fee || 0 } : null,
     count: allRates.length,
+    source: "shipstation",
   };
 });
 
@@ -3072,6 +3073,12 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
   }
   if (!/^\d{5}(-\d{4})?$/.test(String(data.recipient_zip).trim())) {
     throw new functions.https.HttpsError("invalid-argument", "Valid recipient ZIP code is required");
+  }
+  if (!/^[a-z0-9_]+$/i.test(String(data.carrierCode))) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid carrier code format");
+  }
+  if (!/^[a-z0-9_]+$/i.test(String(data.serviceCode))) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid service code format");
   }
 
   const db = admin.firestore();
@@ -3341,6 +3348,11 @@ exports.purchaseShippingLabel = functions.https.onCall(async (data, context) => 
     amount: customerCost,
     total: customerCost,
     customer_cost: customerCost,
+    carrier_cost: carrierCost,
+    margin: margin,
+    carrier_code: data.carrierCode,
+    service_code: data.serviceCode,
+    source: "shipstation",
     shipment_id: shipmentRef.id,
     tracking_number: label.trackingNumber,
     invoiced: false,
