@@ -2250,6 +2250,206 @@
             })).filter(item => item.sku && item.name && item.qty > 0);
         }
 
+        function normalizeInventorySyncItem(item) {
+            return {
+                sku: String((item && item.sku) || '').trim(),
+                name: String((item && item.name) || '').trim(),
+                qty: Math.max(0, Math.floor(Number(item && item.qty) || 0)),
+                upc: String((item && item.upc) || '').trim(),
+                tags: parseTags(item && item.tags),
+                photos: Array.isArray(item && item.photos) ? item.photos.filter(Boolean).slice(0, 10) : []
+            };
+        }
+
+        function buildShipmentInventorySyncState(items, warehouseId) {
+            const resolvedWarehouse = warehouseId || 'miami';
+            const groupedItems = new Map();
+
+            (Array.isArray(items) ? items : []).forEach((rawItem) => {
+                const item = normalizeInventorySyncItem(rawItem);
+                if (!item.sku || !item.name || item.qty < 1) return;
+
+                const itemKey = `${item.sku.toLowerCase()}::${resolvedWarehouse}`;
+                const existing = groupedItems.get(itemKey);
+                if (existing) {
+                    existing.qty += item.qty;
+                    if (!existing.upc && item.upc) existing.upc = item.upc;
+                    if (!existing.name && item.name) existing.name = item.name;
+                    if (item.tags.length > 0) {
+                        existing.tags = [...new Set([...existing.tags, ...item.tags])];
+                    }
+                    if (item.photos.length > 0) {
+                        existing.photos = [...existing.photos, ...item.photos].slice(0, 10);
+                    }
+                    return;
+                }
+
+                groupedItems.set(itemKey, {
+                    ...item,
+                    warehouse: resolvedWarehouse
+                });
+            });
+
+            return {
+                warehouse: resolvedWarehouse,
+                items: Array.from(groupedItems.values()).sort((a, b) =>
+                    a.sku.localeCompare(b.sku, undefined, { sensitivity: 'base' })
+                )
+            };
+        }
+
+        function getShipmentInventorySyncState(shipment) {
+            const syncState = shipment && shipment._inventory_sync_state;
+            if (syncState && Array.isArray(syncState.items)) {
+                return buildShipmentInventorySyncState(
+                    syncState.items,
+                    syncState.warehouse || shipment.warehouse || 'miami'
+                );
+            }
+
+            if (shipment && shipment._inventory_synced) {
+                return buildShipmentInventorySyncState(
+                    shipment.incoming_items || [],
+                    shipment.warehouse || 'miami'
+                );
+            }
+
+            return buildShipmentInventorySyncState([], (shipment && shipment.warehouse) || 'miami');
+        }
+
+        async function reconcileShipmentInventory({ shipmentRef, shipmentUserId, trackingNumber, previousState, nextState }) {
+            if (!shipmentUserId) {
+                throw new Error('Shipment has no user_id — cannot sync.');
+            }
+
+            const nowIso = new Date().toISOString();
+            const existingInventorySnapshot = await getDocs(
+                query(collection(db, 'inventory'), where('user_id', '==', shipmentUserId))
+            );
+            const existingInventoryByKey = new Map();
+
+            existingInventorySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const skuKey = String(data.sku || '').trim().toLowerCase();
+                const warehouseKey = data.warehouse || 'miami';
+                if (!skuKey) return;
+                existingInventoryByKey.set(`${skuKey}::${warehouseKey}`, {
+                    id: docSnap.id,
+                    ref: docSnap.ref,
+                    ...data
+                });
+            });
+
+            const previousByKey = new Map();
+            (previousState.items || []).forEach((item) => {
+                previousByKey.set(
+                    `${String(item.sku || '').trim().toLowerCase()}::${item.warehouse || previousState.warehouse || 'miami'}`,
+                    item
+                );
+            });
+
+            const nextByKey = new Map();
+            (nextState.items || []).forEach((item) => {
+                nextByKey.set(
+                    `${String(item.sku || '').trim().toLowerCase()}::${item.warehouse || nextState.warehouse || 'miami'}`,
+                    item
+                );
+            });
+
+            const allKeys = new Set([...previousByKey.keys(), ...nextByKey.keys()]);
+            let created = 0;
+            let updated = 0;
+
+            for (const itemKey of allKeys) {
+                const previousItem = previousByKey.get(itemKey);
+                const nextItem = nextByKey.get(itemKey);
+                const delta = (nextItem ? nextItem.qty : 0) - (previousItem ? previousItem.qty : 0);
+                const existingEntry = existingInventoryByKey.get(itemKey);
+                const referenceItem = nextItem || previousItem;
+
+                if (existingEntry) {
+                    const existingData = existingEntry;
+                    const updatedData = {
+                        quantity: Math.max(0, (Number(existingData.quantity) || 0) + delta),
+                        customer_id: shipmentUserId,
+                        warehouse: (referenceItem && referenceItem.warehouse) || existingData.warehouse || 'miami',
+                        last_updated: nowIso,
+                        last_shipment: trackingNumber || existingData.last_shipment || ''
+                    };
+
+                    if (referenceItem) {
+                        if (referenceItem.upc) updatedData.upc = referenceItem.upc;
+                        if (referenceItem.name) updatedData.name = referenceItem.name;
+                        updatedData.tags = [...new Set([
+                            ...parseTags(existingData.tags),
+                            ...parseTags(referenceItem.tags)
+                        ])];
+                        if (referenceItem.photos && referenceItem.photos.length > 0) {
+                            const existingPhotos = Array.isArray(existingData.photos) ? existingData.photos : [];
+                            updatedData.photos = [...existingPhotos, ...referenceItem.photos].slice(0, 10);
+                        }
+                    }
+
+                    await setDoc(existingEntry.ref, updatedData, { merge: true });
+                    existingInventoryByKey.set(itemKey, { ...existingData, ...updatedData });
+                    updated++;
+                    continue;
+                }
+
+                if (delta > 0 && nextItem) {
+                    const newItem = {
+                        user_id: shipmentUserId,
+                        customer_id: shipmentUserId,
+                        sku: nextItem.sku,
+                        name: nextItem.name,
+                        quantity: delta,
+                        upc: nextItem.upc || '',
+                        tags: Array.isArray(nextItem.tags) ? nextItem.tags : [],
+                        photos: Array.isArray(nextItem.photos) ? nextItem.photos : [],
+                        warehouse: nextItem.warehouse || nextState.warehouse || 'miami',
+                        location: 'Receiving',
+                        reorder_level: 10,
+                        source_shipment: trackingNumber || '',
+                        last_shipment: trackingNumber || '',
+                        last_updated: nowIso
+                    };
+                    const newDocRef = await addDoc(collection(db, 'inventory'), newItem);
+                    existingInventoryByKey.set(itemKey, { id: newDocRef.id, ref: newDocRef, ...newItem });
+                    created++;
+                    continue;
+                }
+
+                if (delta < 0) {
+                    console.warn('Inventory reconcile skipped missing document for negative delta:', itemKey, trackingNumber || '');
+                }
+            }
+
+            const syncMeta = {
+                _inventory_synced: true,
+                _inventory_synced_at: nowIso,
+                _inventory_sync_state: {
+                    warehouse: nextState.warehouse || 'miami',
+                    items: (nextState.items || []).map((item) => ({
+                        sku: item.sku,
+                        name: item.name,
+                        qty: item.qty,
+                        upc: item.upc || '',
+                        tags: Array.isArray(item.tags) ? item.tags : [],
+                        photos: Array.isArray(item.photos) ? item.photos.slice(0, 10) : []
+                    }))
+                }
+            };
+
+            await updateDoc(shipmentRef, syncMeta);
+
+            return {
+                created,
+                updated,
+                total: (nextState.items || []).length,
+                syncMeta
+            };
+        }
+
         function clearPanelIncomingFieldErrors() {
             document.querySelectorAll('#panel-incoming-items .incoming-field-error').forEach(el => {
                 el.classList.remove('incoming-field-error');
@@ -2776,94 +2976,33 @@
                 };
 
                 const shipmentRef = doc(db, 'shipments', currentShipmentId);
+                const previousInventoryState = getShipmentInventorySyncState(shipment);
                 await updateDoc(shipmentRef, updateData);
 
-                // ── Sync incoming items to inventory collection ──
-                const validItems = formData.incoming_items || [];
-                const shipmentUserId = shipment.user_id;
-                if (validItems.length > 0 && shipmentUserId && !shipment._inventory_synced) {
+                let inventorySyncMeta = null;
+                let inventorySyncError = null;
+                const nextInventoryState = buildShipmentInventorySyncState(formData.incoming_items || [], formData.warehouse || 'miami');
+                if (shipment.user_id && (previousInventoryState.items.length > 0 || nextInventoryState.items.length > 0)) {
                     try {
-                        const existingInventorySnapshot = await getDocs(
-                            query(collection(db, 'inventory'), where('user_id', '==', shipmentUserId))
-                        );
-                        const existingInventoryByKey = new Map();
-
-                        existingInventorySnapshot.forEach((docSnap) => {
-                            const data = docSnap.data();
-                            const skuKey = String(data.sku || '').trim().toLowerCase();
-                            const warehouseKey = data.warehouse || 'miami';
-                            if (!skuKey) return;
-                            existingInventoryByKey.set(`${skuKey}::${warehouseKey}`, {
-                                id: docSnap.id,
-                                ref: docSnap.ref,
-                                ...data
-                            });
+                        const syncResult = await reconcileShipmentInventory({
+                            shipmentRef,
+                            shipmentUserId: shipment.user_id,
+                            trackingNumber: shipment.tracking_number || '',
+                            previousState: previousInventoryState,
+                            nextState: nextInventoryState
                         });
-
-                        const warehouseId = formData.warehouse || 'miami';
-
-                        for (const item of validItems) {
-                            const itemKey = `${String(item.sku || '').trim().toLowerCase()}::${warehouseId}`;
-                            const existingEntry = existingInventoryByKey.get(itemKey);
-
-                            if (existingEntry) {
-                                const existingData = existingEntry;
-                                const updatedData = {
-                                    quantity: (existingData.quantity || 0) + (item.qty || 0),
-                                    customer_id: shipmentUserId,
-                                    last_updated: new Date().toISOString(),
-                                    last_shipment: shipment.tracking_number || ''
-                                };
-                                if (item.upc && !existingData.upc) updatedData.upc = item.upc;
-                                if (item.name && !existingData.name) updatedData.name = item.name;
-                                if (Array.isArray(item.tags) && item.tags.length > 0) {
-                                    const oldTags = Array.isArray(existingData.tags)
-                                        ? existingData.tags
-                                        : String(existingData.tags || '').split(',').map(t => t.trim()).filter(Boolean);
-                                    updatedData.tags = [...new Set([...oldTags, ...item.tags])];
-                                }
-                                if (item.photos && item.photos.length > 0) {
-                                    const existingPhotos = Array.isArray(existingData.photos) ? existingData.photos : [];
-                                    updatedData.photos = [...existingPhotos, ...item.photos].slice(0, 10);
-                                }
-                                await setDoc(existingEntry.ref, updatedData, { merge: true });
-                                existingInventoryByKey.set(itemKey, { ...existingData, ...updatedData });
-                            } else {
-                                const newItem = {
-                                    user_id: shipmentUserId,
-                                    customer_id: shipmentUserId,
-                                    sku: item.sku,
-                                    name: item.name,
-                                    quantity: item.qty || 0,
-                                    upc: item.upc || '',
-                                    tags: Array.isArray(item.tags) ? item.tags : [],
-                                    photos: item.photos || [],
-                                    warehouse: warehouseId,
-                                    location: 'Receiving',
-                                    reorder_level: 10,
-                                    source_shipment: shipment.tracking_number || '',
-                                    last_shipment: shipment.tracking_number || '',
-                                    last_updated: new Date().toISOString()
-                                };
-                                const newDocRef = await addDoc(collection(db, 'inventory'), newItem);
-                                existingInventoryByKey.set(itemKey, { id: newDocRef.id, ref: newDocRef, ...newItem });
-                            }
-                        }
-
-                        // Mark shipment as inventory-synced to prevent double-sync
-                        await updateDoc(shipmentRef, { _inventory_synced: true });
-                        shipment._inventory_synced = true;
-
-                        console.log(`Inventory synced: ${validItems.length} item(s) for user ${shipmentUserId}`);
+                        inventorySyncMeta = syncResult.syncMeta;
+                        console.log(`Inventory reconciled: ${syncResult.created} created, ${syncResult.updated} updated for ${shipment.tracking_number || currentShipmentId}`);
                     } catch (invErr) {
+                        inventorySyncError = invErr;
                         console.warn('Inventory sync failed:', invErr.message);
-                        showToast('Shipment saved but inventory sync failed: ' + invErr.message, 'warning');
                     }
+                } else if (!shipment.user_id && nextInventoryState.items.length > 0) {
+                    inventorySyncError = new Error('Shipment has no user_id — cannot sync.');
                 }
-                // ── End inventory sync ──
 
                 // Update local data
-                Object.assign(shipment, updateData);
+                Object.assign(shipment, updateData, inventorySyncMeta || {});
                 originalPanelData = getPanelFormData();
 
                 // Refresh UI
@@ -2874,7 +3013,11 @@
                 // Update timestamps in panel
                 document.getElementById('panel-updated-at').textContent = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
-                showToast(`Shipment ${shipment.tracking_number} updated successfully!`, 'success');
+                if (inventorySyncError) {
+                    showToast(`Shipment ${shipment.tracking_number} updated, but inventory sync failed: ${inventorySyncError.message}`, 'warning');
+                } else {
+                    showToast(`Shipment ${shipment.tracking_number} updated successfully!`, 'success');
+                }
             } catch (error) {
                 console.error('Error saving shipment:', error);
                 showToast('Error saving: ' + error.message, 'error');
@@ -2897,83 +3040,28 @@
             syncBtn.innerHTML = '<span class="spinner"></span> Syncing...';
 
             try {
-                const items = shipment.incoming_items || [];
-                const shipmentUserId = shipment.user_id;
-
-                if (!items.length) {
+                const previousInventoryState = getShipmentInventorySyncState(shipment);
+                const nextInventoryState = buildShipmentInventorySyncState(shipment.incoming_items || [], shipment.warehouse || 'miami');
+                if (!nextInventoryState.items.length && !previousInventoryState.items.length) {
                     showToast('No incoming items to sync.', 'warning');
                     return;
                 }
-                if (!shipmentUserId) {
+                if (!shipment.user_id) {
                     showToast('Shipment has no user_id — cannot sync.', 'error');
                     return;
                 }
 
-                const existingSnapshot = await getDocs(
-                    query(collection(db, 'inventory'), where('user_id', '==', shipmentUserId))
-                );
-                const existingByKey = new Map();
-                existingSnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const skuKey = String(data.sku || '').trim().toLowerCase();
-                    const warehouseKey = data.warehouse || 'miami';
-                    if (!skuKey) return;
-                    existingByKey.set(`${skuKey}::${warehouseKey}`, { id: docSnap.id, ref: docSnap.ref, ...data });
+                const shipmentRef = doc(db, 'shipments', currentShipmentId);
+                const syncResult = await reconcileShipmentInventory({
+                    shipmentRef,
+                    shipmentUserId: shipment.user_id,
+                    trackingNumber: shipment.tracking_number || '',
+                    previousState: previousInventoryState,
+                    nextState: nextInventoryState
                 });
 
-                const warehouseId = shipment.warehouse || 'miami';
-                let created = 0, updated = 0;
-
-                for (const item of items) {
-                    const itemKey = `${String(item.sku || '').trim().toLowerCase()}::${warehouseId}`;
-                    const existing = existingByKey.get(itemKey);
-
-                    if (existing) {
-                        const updatedData = {
-                            quantity: (existing.quantity || 0) + (item.qty || 0),
-                            customer_id: shipmentUserId,
-                            last_updated: new Date().toISOString(),
-                            last_shipment: shipment.tracking_number || ''
-                        };
-                        if (item.upc && !existing.upc) updatedData.upc = item.upc;
-                        if (item.name && !existing.name) updatedData.name = item.name;
-                        if (Array.isArray(item.tags) && item.tags.length > 0) {
-                            const oldTags = Array.isArray(existing.tags)
-                                ? existing.tags
-                                : String(existing.tags || '').split(',').map(t => t.trim()).filter(Boolean);
-                            updatedData.tags = [...new Set([...oldTags, ...item.tags])];
-                        }
-                        await setDoc(existing.ref, updatedData, { merge: true });
-                        existingByKey.set(itemKey, { ...existing, ...updatedData });
-                        updated++;
-                    } else {
-                        const newItem = {
-                            user_id: shipmentUserId,
-                            customer_id: shipmentUserId,
-                            sku: item.sku,
-                            name: item.name,
-                            quantity: item.qty || 0,
-                            upc: item.upc || '',
-                            tags: Array.isArray(item.tags) ? item.tags : [],
-                            photos: item.photos || [],
-                            warehouse: warehouseId,
-                            location: 'Receiving',
-                            reorder_level: 10,
-                            source_shipment: shipment.tracking_number || '',
-                            last_shipment: shipment.tracking_number || '',
-                            last_updated: new Date().toISOString()
-                        };
-                        await addDoc(collection(db, 'inventory'), newItem);
-                        created++;
-                    }
-                }
-
-                // Mark synced
-                const shipmentRef = doc(db, 'shipments', currentShipmentId);
-                await updateDoc(shipmentRef, { _inventory_synced: true });
-                shipment._inventory_synced = true;
-
-                showToast(`Inventory synced: ${created} created, ${updated} updated (${items.length} total items)`, 'success');
+                Object.assign(shipment, syncResult.syncMeta || {});
+                showToast(`Inventory reconciled: ${syncResult.created} created, ${syncResult.updated} updated (${syncResult.total} SKU(s))`, 'success');
             } catch (err) {
                 console.error('Force inventory sync error:', err);
                 showToast('Inventory sync failed: ' + err.message, 'error');

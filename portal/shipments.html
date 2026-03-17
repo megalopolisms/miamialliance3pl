@@ -3554,6 +3554,46 @@
             return getNormalizedIncomingItems().filter(i => i.sku && i.name && i.qty > 0);
         }
 
+        function buildShipmentInventorySyncState(items, warehouseId) {
+            const resolvedWarehouse = warehouseId || 'miami';
+            const groupedItems = new Map();
+
+            (Array.isArray(items) ? items : []).forEach((rawItem) => {
+                const item = normalizeIncomingItem(rawItem);
+                if (!item.sku || !item.name || item.qty < 1) return;
+
+                const itemKey = `${item.sku.toLowerCase()}::${resolvedWarehouse}`;
+                const existing = groupedItems.get(itemKey);
+                if (existing) {
+                    existing.qty += item.qty;
+                    if (!existing.upc && item.upc) existing.upc = item.upc;
+                    if (item.tags.length > 0) {
+                        existing.tags = [...new Set([...existing.tags, ...item.tags])];
+                    }
+                    if (item.photos.length > 0) {
+                        existing.photos = [...existing.photos, ...item.photos].slice(0, 10);
+                    }
+                    return;
+                }
+
+                groupedItems.set(itemKey, {
+                    sku: item.sku,
+                    name: item.name,
+                    qty: item.qty,
+                    upc: item.upc || '',
+                    tags: item.tags,
+                    photos: item.photos.slice(0, 10)
+                });
+            });
+
+            return {
+                warehouse: resolvedWarehouse,
+                items: Array.from(groupedItems.values()).sort((a, b) =>
+                    a.sku.localeCompare(b.sku, undefined, { sensitivity: 'base' })
+                )
+            };
+        }
+
         // Add item button
         document.getElementById('add-incoming-item-btn').addEventListener('click', () => {
             sc.incomingItems.push({ sku: '', name: '', qty: 1, upc: '', tags: '', photos: [] });
@@ -4428,6 +4468,12 @@
                                 });
                             }
                         }
+                        const syncState = buildShipmentInventorySyncState(validItems, sc.selectedWarehouse || 'miami');
+                        await updateDoc(doc(db, 'shipments', shipmentRef.id), {
+                            _inventory_synced: true,
+                            _inventory_synced_at: new Date().toISOString(),
+                            _inventory_sync_state: syncState
+                        });
                         trackCalcEvent('inventory_items_synced', { count: validItems.length, tracking_number: trackingNumber });
                     } catch (invErr) {
                         console.warn('Inventory sync failed:', invErr.message);
