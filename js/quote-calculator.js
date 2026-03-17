@@ -1120,7 +1120,14 @@ class QuoteCalculator {
     }
 
     doc.setFontSize(9);
-    packageDetails.forEach(([label, value], index) => {
+    // Limit package details to avoid overflow — show max 12 items, summarize rest
+    const maxPkgRows = 12;
+    const pkgToShow = packageDetails.slice(0, maxPkgRows);
+    const pkgOverflow = packageDetails.length - maxPkgRows;
+    if (pkgOverflow > 0) {
+      pkgToShow.push([`+ ${pkgOverflow} more items`, "see breakdown"]);
+    }
+    pkgToShow.forEach(([label, value], index) => {
       const rowY = yPos + index * 7;
       if (index % 2 === 0) {
         doc.setFillColor(248, 250, 252);
@@ -1131,8 +1138,11 @@ class QuoteCalculator {
       doc.text(label + ":", leftCol + 3, rowY);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(...primaryColor);
-      doc.text(value, leftCol + 77, rowY, { align: "right" });
+      // Truncate long values to prevent horizontal overflow
+      const truncVal = value.length > 30 ? value.substring(0, 28) + "…" : value;
+      doc.text(truncVal, leftCol + 77, rowY, { align: "right" });
     });
+    const leftColBottom = yPos + pkgToShow.length * 7;
 
     // ===== PRICING BREAKDOWN - RIGHT COLUMN =====
     yPos = 90;
@@ -1200,8 +1210,23 @@ class QuoteCalculator {
       }
     }
 
+    // Limit pricing rows to max 15 to prevent overflow — summarize extras
+    const maxPriceRows = 15;
+    let priceRowsToShow = priceRows;
+    let priceOverflowCount = 0;
+    if (priceRows.length > maxPriceRows) {
+      priceRowsToShow = priceRows.slice(0, maxPriceRows - 1);
+      priceOverflowCount = priceRows.length - (maxPriceRows - 1);
+      // Sum the overflow items
+      const overflowTotal = priceRows.slice(maxPriceRows - 1).reduce((sum, row) => {
+        const val = parseFloat(row[1].replace(/[^0-9.-]/g, "")) || 0;
+        return sum + val;
+      }, 0);
+      priceRowsToShow.push([`+ ${priceOverflowCount} more items`, this.formatCurrency(overflowTotal)]);
+    }
+
     doc.setFontSize(10);
-    priceRows.forEach(([service, amount], index) => {
+    priceRowsToShow.forEach(([service, amount], index) => {
       const rowY = yPos + index * 9;
       if (index % 2 === 0) {
         doc.setFillColor(248, 250, 252);
@@ -1209,15 +1234,17 @@ class QuoteCalculator {
       }
       doc.setFont("helvetica", "normal");
       doc.setTextColor(...grayColor);
-      doc.text(service, rightCol + 3, rowY + 1);
+      // Truncate long service names
+      const truncService = service.length > 28 ? service.substring(0, 26) + "…" : service;
+      doc.text(truncService, rightCol + 3, rowY + 1);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(...primaryColor);
       doc.text(amount, rightCol + 77, rowY + 1, { align: "right" });
     });
+    const rightColBottom = yPos + priceRowsToShow.length * 9;
 
-    // TOTAL - Big and bold (adjust for extra rows)
-    const extraRows = priceRows.length - 4; // base is 4 rows (storage, handling, pick&pack, shipping)
-    const totalY = yPos + 45 + (extraRows > 0 ? extraRows * 9 : 0);
+    // TOTAL - Big and bold — positioned dynamically after pricing rows
+    const totalY = rightColBottom + 8;
     doc.setFillColor(...primaryColor);
     doc.roundedRect(rightCol, totalY - 6, 80, 16, 2, 2, "F");
     doc.setFont("helvetica", "bold");
@@ -1230,8 +1257,16 @@ class QuoteCalculator {
       align: "right",
     });
 
-    // ===== RATE DETAILS =====
-    yPos = 165;
+    // ===== RATE DETAILS — dynamic Y based on tallest column =====
+    const totalBoxBottom = totalY + 12;
+    yPos = Math.max(leftColBottom, totalBoxBottom) + 10;
+
+    // Check if we need a new page (page height ~290mm usable)
+    const pageLimit = 260;
+    if (yPos > pageLimit) {
+      doc.addPage();
+      yPos = 20;
+    }
 
     doc.setDrawColor(...lightGray);
     doc.setLineWidth(0.5);
@@ -1291,8 +1326,14 @@ class QuoteCalculator {
       }
     }
 
-    // ===== IMPORTANT NOTES =====
+    // ===== IMPORTANT NOTES — dynamic Y =====
     yPos += 15;
+
+    // Check if notes section needs a new page
+    if (yPos + 35 > pageLimit) {
+      doc.addPage();
+      yPos = 20;
+    }
 
     doc.setFillColor(254, 249, 195); // Yellow background
     doc.roundedRect(20, yPos - 5, 170, 35, 3, 3, "F");
@@ -1316,8 +1357,14 @@ class QuoteCalculator {
       doc.text("• " + note, 25, yPos + 11 + i * 6);
     });
 
-    // ===== CALL TO ACTION =====
-    yPos = 235;
+    // ===== CALL TO ACTION — dynamic Y =====
+    yPos += 45;
+
+    // Check if CTA needs a new page
+    if (yPos + 25 > pageLimit) {
+      doc.addPage();
+      yPos = 20;
+    }
 
     doc.setFillColor(...primaryColor);
     doc.roundedRect(20, yPos, 170, 25, 3, 3, "F");
@@ -1345,7 +1392,7 @@ class QuoteCalculator {
       url: "https://miamialliance3pl.com/contact.html",
     });
 
-    // ===== FOOTER =====
+    // ===== FOOTER — always at bottom of current page =====
     const footerY = 275;
     const pdfWarehouseInfo = getWarehouseCompanyInfo(this.selectedWarehouse);
 
