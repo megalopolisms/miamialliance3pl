@@ -1019,6 +1019,61 @@ class QuoteCalculator {
     const dimWeight = this.getDimensionalWeight();
     const billableWeight = this.getBillableWeight();
     const results = this.calculate();
+    const multiResult = this._lastMultiResult;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const pageStartY = 20;
+    const pdfWarehouseInfo = getWarehouseCompanyInfo(this.selectedWarehouse);
+    const warehouseLabel = pdfWarehouseInfo.warehouseName
+      ? pdfWarehouseInfo.warehouseName + " — "
+      : "";
+    const footerY = pageHeight - 22;
+    const pageLimit = footerY - 8;
+    const cargoSummary = {
+      distinctItems: this.cargoItems.length,
+      totalUnits: this.cargoItems.reduce((sum, item) => sum + item.quantity, 0),
+      boxLines: this.cargoItems.filter((item) => item.packageType === "box").length,
+      boxUnits: this.cargoItems.reduce(
+        (sum, item) => sum + (item.packageType === "box" ? item.quantity : 0),
+        0,
+      ),
+      palletLines: this.cargoItems.filter((item) => item.packageType === "pallet").length,
+      palletUnits: this.cargoItems.reduce(
+        (sum, item) => sum + (item.packageType === "pallet" ? item.quantity : 0),
+        0,
+      ),
+      wrappedPallets: this.cargoItems.reduce(
+        (sum, item) =>
+          sum +
+          (item.packageType === "pallet" && item.blackWrapping ? item.quantity : 0),
+        0,
+      ),
+    };
+
+    const drawFooter = () => {
+      doc.setDrawColor(...lightGray);
+      doc.line(20, footerY, 190, footerY);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(...grayColor);
+      doc.text(
+        warehouseLabel + pdfWarehouseInfo.address + ", " + pdfWarehouseInfo.city,
+        105,
+        footerY + 7,
+        { align: "center" },
+      );
+      doc.text(
+        `${pdfWarehouseInfo.phone}  |  ${pdfWarehouseInfo.email}  |  ${pdfWarehouseInfo.website}`,
+        105,
+        footerY + 13,
+        { align: "center" },
+      );
+    };
+
+    const startNewPage = () => {
+      drawFooter();
+      doc.addPage();
+    };
 
     // ===== HEADER - DRAMATIC GRADIENT BAR =====
     // Dark gradient background
@@ -1095,14 +1150,27 @@ class QuoteCalculator {
     // Package info with styled rows - multi-item support
     const packageDetails = [];
     if (this.cargoItems.length > 1) {
-      this.cargoItems.forEach((item, idx) => {
-        const typeLabel = item.packageType === "pallet" ? "PALLET" : "BOX";
+      packageDetails.push(
+        ["Distinct Items", `${cargoSummary.distinctItems}`],
+        ["Total Units", `${cargoSummary.totalUnits}`],
+      );
+      if (cargoSummary.boxLines > 0) {
         packageDetails.push([
-          `Item #${idx + 1}`,
-          `${typeLabel} ${item.dimensions.length}"x${item.dimensions.width}"x${item.dimensions.height}" ${item.weight}lbs x${item.quantity}`,
+          "Box Lines",
+          `${cargoSummary.boxLines} (${cargoSummary.boxUnits} units)`,
         ]);
-      });
+      }
+      if (cargoSummary.palletLines > 0) {
+        packageDetails.push([
+          "Pallet Lines",
+          `${cargoSummary.palletLines} (${cargoSummary.palletUnits} units)`,
+        ]);
+      }
+      if (cargoSummary.wrappedPallets > 0) {
+        packageDetails.push(["Wrapped Pallets", `${cargoSummary.wrappedPallets}`]);
+      }
       packageDetails.push(["Zone", this.getZoneName(this.shippingZone)]);
+      packageDetails.push(["Details", "See itemized cargo pages"]);
     } else {
       packageDetails.push(
         ["Type", this.packageType === "pallet" ? "PALLET" : "BOX"],
@@ -1261,11 +1329,10 @@ class QuoteCalculator {
     const totalBoxBottom = totalY + 12;
     yPos = Math.max(leftColBottom, totalBoxBottom) + 10;
 
-    // Check if we need a new page (page height ~290mm usable)
-    const pageLimit = 260;
+    // Check if we need a new page before the detail sections begin
     if (yPos > pageLimit) {
-      doc.addPage();
-      yPos = 20;
+      startNewPage();
+      yPos = pageStartY;
     }
 
     doc.setDrawColor(...lightGray);
@@ -1312,27 +1379,31 @@ class QuoteCalculator {
     if (hasPallet) {
       rates.push(`Black Wrap: $${PRICING.blackWrapping.toFixed(2)}/pallet`);
     }
-    doc.text(rates.join("   |   "), 105, yPos, { align: "center" });
+    const rateLines = doc.splitTextToSize(rates.join("   |   "), 170);
+    doc.text(rateLines, 105, yPos, { align: "center" });
+    yPos += rateLines.length * 4;
 
     // FBA Prep rate details (separate line if enabled)
     if (this.fbaPrep && this.fbaPrep.enabled) {
       const fbaBreakdown = this.getFbaPrepBreakdown();
       if (fbaBreakdown.length > 0) {
-        yPos += 6;
+        yPos += 4;
         const fbaRateStr = fbaBreakdown
           .map((item) => `${item.label}: $${item.rate.toFixed(2)}/${item.unit}`)
           .join("   |   ");
-        doc.text("FBA Prep: " + fbaRateStr, 105, yPos, { align: "center" });
+        const fbaRateLines = doc.splitTextToSize("FBA Prep: " + fbaRateStr, 170);
+        doc.text(fbaRateLines, 105, yPos, { align: "center" });
+        yPos += fbaRateLines.length * 4;
       }
     }
 
     // ===== IMPORTANT NOTES — dynamic Y =====
-    yPos += 15;
+    yPos += 10;
 
     // Check if notes section needs a new page
     if (yPos + 35 > pageLimit) {
-      doc.addPage();
-      yPos = 20;
+      startNewPage();
+      yPos = pageStartY;
     }
 
     doc.setFillColor(254, 249, 195); // Yellow background
@@ -1358,12 +1429,12 @@ class QuoteCalculator {
     });
 
     // ===== CALL TO ACTION — dynamic Y =====
-    yPos += 45;
+    yPos += 40;
 
     // Check if CTA needs a new page
     if (yPos + 25 > pageLimit) {
-      doc.addPage();
-      yPos = 20;
+      startNewPage();
+      yPos = pageStartY;
     }
 
     doc.setFillColor(...primaryColor);
@@ -1392,31 +1463,105 @@ class QuoteCalculator {
       url: "https://miamialliance3pl.com/contact.html",
     });
 
+    if (cargoSummary.distinctItems > 1) {
+      const itemizedResults =
+        multiResult && Array.isArray(multiResult.items) ? multiResult.items : [];
+      let itemY = pageStartY;
+
+      const beginItemizedPage = (continued = false) => {
+        itemY = pageStartY;
+        doc.setFillColor(...primaryColor);
+        doc.roundedRect(20, itemY - 6, 170, 10, 2, 2, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(255, 255, 255);
+        doc.text(
+          continued ? "ITEMIZED CARGO (CONT.)" : "ITEMIZED CARGO",
+          25,
+          itemY + 1,
+        );
+
+        itemY += 14;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(...grayColor);
+        doc.text(
+          `${cargoSummary.distinctItems} distinct items  |  ${cargoSummary.totalUnits} total units`,
+          20,
+          itemY,
+        );
+        itemY += 8;
+      };
+
+      startNewPage();
+      beginItemizedPage(false);
+
+      this.cargoItems.forEach((item, idx) => {
+        const itemResult = itemizedResults[idx] || null;
+        const typeLabel = item.packageType === "pallet" ? "Pallet" : "Box";
+        const dims =
+          `${item.dimensions.length}"x${item.dimensions.width}"x${item.dimensions.height}"`;
+        const itemTotal = itemResult
+          ? itemResult.storage +
+            itemResult.handling +
+            itemResult.pickPack +
+            itemResult.shipping +
+            itemResult.wrapping
+          : null;
+        const detailParts = [
+          `${typeLabel} ${dims}`,
+          `${item.weight}lbs x${item.quantity}`,
+        ];
+
+        if (itemResult) {
+          detailParts.push(
+            `Storage ${this.formatCurrency(itemResult.storage)}`,
+            `Handling ${this.formatCurrency(itemResult.handling)}`,
+            `P&P ${this.formatCurrency(itemResult.pickPack)}`,
+          );
+          if (itemResult.shipping > 0) {
+            detailParts.push(`Ship ${this.formatCurrency(itemResult.shipping)}`);
+          }
+          if (itemResult.wrapping > 0) {
+            detailParts.push(`Wrap ${this.formatCurrency(itemResult.wrapping)}`);
+          }
+        }
+
+        const detailLines = doc.splitTextToSize(detailParts.join("   |   "), 160);
+        const rowHeight = 12 + detailLines.length * 4;
+
+        if (itemY + rowHeight > pageLimit) {
+          startNewPage();
+          beginItemizedPage(true);
+        }
+
+        if (idx % 2 === 0) {
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(20, itemY - 5, 170, rowHeight, 2, 2, "F");
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(...primaryColor);
+        doc.text(`Item #${idx + 1}`, 24, itemY + 1);
+        doc.text(
+          itemTotal === null ? "Included in total" : this.formatCurrency(itemTotal),
+          186,
+          itemY + 1,
+          { align: "right" },
+        );
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(...grayColor);
+        doc.text(detailLines, 24, itemY + 8);
+
+        itemY += rowHeight + 4;
+      });
+    }
+
     // ===== FOOTER — always at bottom of current page =====
-    const footerY = 275;
-    const pdfWarehouseInfo = getWarehouseCompanyInfo(this.selectedWarehouse);
-
-    doc.setDrawColor(...lightGray);
-    doc.line(20, footerY, 190, footerY);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(...grayColor);
-    const warehouseLabel = pdfWarehouseInfo.warehouseName
-      ? pdfWarehouseInfo.warehouseName + " — "
-      : "";
-    doc.text(
-      warehouseLabel + pdfWarehouseInfo.address + ", " + pdfWarehouseInfo.city,
-      105,
-      footerY + 7,
-      { align: "center" },
-    );
-    doc.text(
-      `${pdfWarehouseInfo.phone}  |  ${pdfWarehouseInfo.email}  |  ${pdfWarehouseInfo.website}`,
-      105,
-      footerY + 13,
-      { align: "center" },
-    );
+    drawFooter();
 
     // Track PDF download
     if (window.MA3PLAnalytics) {
