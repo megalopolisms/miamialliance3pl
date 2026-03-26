@@ -753,4 +753,27 @@
         <priority>0.90</priority>
     </url>
 
+    <!-- Blog: Omnichannel Fulfillment Multi-Channel Selling Miami 3PL (NEW Mar 26) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/omnichannel-fulfillment-multi-channel-selling-miami-3pl.html</loc>
+        <lastmod>2026-03-26</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
+    <!-- Blog: Strait of Hormuz Shipping Crisis 2026 Miami Importers Guide (NEW Mar 26) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/strait-of-hormuz-shipping-crisis-2026-miami-importers-guide.html</loc>
+        <lastmod>2026-03-26</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
+    <url>
+        <loc>https://miamialliance3pl.com/blog/q2-2026-logistics-outlook-hormuz-carrier-surcharges-miami.html</loc>
+        <lastmod>2026-03-26</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
 </urlset>
