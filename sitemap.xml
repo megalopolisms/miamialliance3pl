@@ -776,4 +776,28 @@
         <priority>0.90</priority>
     </url>
 
+    <!-- Wholesale 3PL Landing Page - Factory & Brand Fulfillment (NEW Mar 27) -->
+    <url>
+        <loc>https://miamialliance3pl.com/wholesale-3pl.html</loc>
+        <lastmod>2026-03-27</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.95</priority>
+    </url>
+
+    <!-- 3PL for Brands - Brand Fulfillment Center (NEW Mar 27) -->
+    <url>
+        <loc>https://miamialliance3pl.com/3pl-for-brands.html</loc>
+        <lastmod>2026-03-27</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.95</priority>
+    </url>
+
+    <!-- 3PL for Factories & Manufacturers (NEW Mar 27) -->
+    <url>
+        <loc>https://miamialliance3pl.com/3pl-for-factories.html</loc>
+        <lastmod>2026-03-27</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.95</priority>
+    </url>
+
 </urlset>
