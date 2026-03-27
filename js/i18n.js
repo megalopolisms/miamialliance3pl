@@ -1,7 +1,7 @@
 /**
  * Miami Alliance 3PL — Internationalization Engine
  * Lightweight, zero-dependency i18n with language switcher
- * Supports: English (en) + Spanish (es) + Portuguese (pt-br)
+ * Supports: English (en) + Spanish (es) + Portuguese (pt-br) + Chinese (zh)
  * Built by Symbio for Master Jorge
  */
 (function () {
@@ -9,7 +9,7 @@
 
   var STORAGE_KEY = "ma3pl_lang";
   var DEFAULT_LANG = "en";
-  var SUPPORTED = ["en", "es", "pt-br"];
+  var SUPPORTED = ["en", "es", "pt-br", "zh"];
 
   // ── Flag SVGs (inline, no external deps) ────────────────────────────
   var FLAGS = {
@@ -43,6 +43,16 @@
       '<circle cx="30" cy="15" r="7" fill="#002776"/>' +
       '<path d="M23,15 Q30,10 37,15" stroke="#fff" stroke-width="0.8" fill="none"/>' +
       "</svg>",
+    zh:
+      '<svg viewBox="0 0 60 30" width="24" height="12" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="60" height="30" fill="#DE2910"/>' +
+      '<g fill="#FFDE00" transform="translate(7,5)">' +
+      '<polygon points="5,0 6.5,3 10,3.5 7.5,6 8,9.5 5,8 2,9.5 2.5,6 0,3.5 3.5,3"/>' +
+      '<polygon points="14,1 14.6,2.5 16,2 15,3.3 15.8,4.5 14.3,4 13.5,5.3 13.5,3.8 12,3.3 13.5,2.8" transform="rotate(23,14,3)"/>' +
+      '<polygon points="17,4 17.6,5.5 19,5 18,6.3 18.8,7.5 17.3,7 16.5,8.3 16.5,6.8 15,6.3 16.5,5.8" transform="rotate(46,17,6)"/>' +
+      '<polygon points="17,9 17.6,10.5 19,10 18,11.3 18.8,12.5 17.3,12 16.5,13.3 16.5,11.8 15,11.3 16.5,10.8" transform="rotate(24,17,11)"/>' +
+      '<polygon points="14,13 14.6,14.5 16,14 15,15.3 15.8,16.5 14.3,16 13.5,17.3 13.5,15.8 12,15.3 13.5,14.8" transform="rotate(-10,14,15)"/>' +
+      "</g></svg>",
   };
 
   // ── Detect initial language ─────────────────────────────────────────
@@ -59,6 +69,7 @@
     preferred = String(preferred).toLowerCase();
     if (preferred.indexOf("es") === 0) return "es";
     if (preferred.indexOf("pt") === 0) return "pt-br";
+    if (preferred.indexOf("zh") === 0) return "zh";
     return DEFAULT_LANG;
   }
 
@@ -84,6 +95,10 @@
     }
     for (var k = 0; k < ptBlocks.length; k++) {
       ptBlocks[k].style.display = lang === "pt-br" ? "" : "none";
+    }
+    var zhBlocks = document.querySelectorAll(".lang-zh");
+    for (var l = 0; l < zhBlocks.length; l++) {
+      zhBlocks[l].style.display = lang === "zh" ? "" : "none";
     }
   }
 
@@ -235,6 +250,13 @@
       '" data-lang="pt-br" title="Português" aria-label="Mudar para Português">' +
       FLAGS["pt-br"] +
       '<span class="lang-label">PT</span>' +
+      "</button>" +
+      '<span class="lang-divider">|</span>' +
+      '<button class="lang-btn' +
+      (currentLang === "zh" ? " active" : "") +
+      '" data-lang="zh" title="中文" aria-label="切换到中文">' +
+      FLAGS.zh +
+      '<span class="lang-label">中文</span>' +
       "</button>" +
       "</div>";
 
