@@ -344,7 +344,7 @@ def create_invoice():
     # Footer
     footer_text = """
     <b>Miami Alliance 3PL</b> | 8780 NW 100th ST, Medley, FL 33178<br/>
-    info@miamialliance3pl.com | www.miamialliance3pl.com
+    contact@miami3pl.com | www.miamialliance3pl.com
     """
     
     footer_para = Paragraph(footer_text, 
