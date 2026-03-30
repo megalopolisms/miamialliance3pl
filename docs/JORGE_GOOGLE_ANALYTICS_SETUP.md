@@ -40,7 +40,7 @@ If you have a Google account (Gmail) you use for business:
 If you want a dedicated business account:
 
 1. Go to: https://accounts.google.com/signup
-2. Create: `contact@miami3pl.com` (if you have Google Workspace) OR
+2. Create: `contact@miamialliance3pl.com` (if you have Google Workspace) OR
 3. Create: `miamialliance3pl@gmail.com` as backup
 
 ---
