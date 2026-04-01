@@ -732,6 +732,7 @@
                 sku: document.getElementById('edit-sku').value,
                 name: document.getElementById('edit-name').value,
                 quantity: parseInt(document.getElementById('edit-qty').value),
+                user_id: itemUserId,
                 customer_id: itemUserId,
                 upc: document.getElementById('edit-upc').value.trim() || '',
                 tags: (document.getElementById('edit-tags').value || '').split(',').map(t => t.trim()).filter(Boolean),
@@ -1031,7 +1032,6 @@
     <script src="../js/main.js"></script>
     <script src="../js/lang/es.js"></script>
     <script src="../js/lang/pt-br.js"></script>
-    <script src="../js/lang/zh.js"></script>
     <script src="../js/i18n.js"></script>
 </body>
 </html>
