@@ -337,7 +337,9 @@ function validateRequired(data, fields) {
 }
 
 function normalizeEmail(value) {
-  return String(value || "").trim().toLowerCase();
+  return String(value || "")
+    .trim()
+    .toLowerCase();
 }
 
 function isAllowedPasswordResetContinueUrl(value) {
@@ -655,10 +657,10 @@ exports.createCheckoutSession = functions.https.onCall(
       },
       success_url:
         successUrl ||
-        `https://megalopolisms.github.io/miamialliance3pl/portal/billing.html?payment=success&invoice=${invoiceId}`,
+        `https://megalopolisms.github.io/miamialliance3pl/portal/admin-billing.html?payment=success&invoice=${invoiceId}`,
       cancel_url:
         cancelUrl ||
-        `https://megalopolisms.github.io/miamialliance3pl/portal/billing.html?payment=cancelled`,
+        `https://megalopolisms.github.io/miamialliance3pl/portal/admin-billing.html?payment=cancelled`,
     });
 
     return { sessionId: session.id, url: session.url };
@@ -812,7 +814,7 @@ exports.createPaymentLink = functions.https.onCall(async (data, context) => {
     after_completion: {
       type: "redirect",
       redirect: {
-        url: `https://megalopolisms.github.io/miamialliance3pl/portal/billing.html?payment=success&invoice=${invoiceId}`,
+        url: `https://megalopolisms.github.io/miamialliance3pl/portal/admin-billing.html?payment=success&invoice=${invoiceId}`,
       },
     },
   });
@@ -2057,7 +2059,7 @@ async function toolSendDocument(input, customerPhone) {
         const invoice = invoiceSnap.docs[0].data();
         documentUrl =
           invoice.pdf_url ||
-          `https://megalopolisms.github.io/miamialliance3pl/portal/billing.html?invoice=${input.reference_id}`;
+          `https://megalopolisms.github.io/miamialliance3pl/portal/admin-billing.html?invoice=${input.reference_id}`;
         documentName = `Invoice ${input.reference_id}`;
       }
       break;
