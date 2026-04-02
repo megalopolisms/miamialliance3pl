@@ -349,6 +349,12 @@
             align-items: flex-end;
             margin-top: var(--spacing-lg);
         }
+        .admin-billing-toolbar .form-group.admin-billing-customer-search-group {
+            flex: 1 1 280px;
+        }
+        .admin-billing-toolbar .form-group.admin-billing-customer-select-group {
+            flex: 1.4 1 340px;
+        }
         .admin-billing-toolbar .form-group,
         .admin-billing-notes .form-group {
             flex: 1 1 220px;
@@ -379,6 +385,11 @@
             border-color: var(--color-primary);
             outline: none;
             box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+        }
+        .admin-billing-picker-meta {
+            margin-top: 6px;
+            color: var(--color-gray-500);
+            font-size: 0.78rem;
         }
         .admin-billing-links {
             display: flex;
@@ -664,11 +675,24 @@
                     </p>
 
                     <div class="admin-billing-toolbar">
-                        <div class="form-group">
-                            <label for="admin-billing-customer">Customer</label>
+                        <div class="form-group admin-billing-customer-search-group">
+                            <label for="admin-billing-customer-search">Find Customer</label>
+                            <input
+                                type="search"
+                                id="admin-billing-customer-search"
+                                placeholder="Search company, contact, or email"
+                                autocomplete="off"
+                                oninput="filterAdminBillingCustomers()"
+                            >
+                        </div>
+                        <div class="form-group admin-billing-customer-select-group">
+                            <label for="admin-billing-customer">Customer To Bill</label>
                             <select id="admin-billing-customer" onchange="onAdminBillingCustomerChange()">
                                 <option value="">Choose a customer...</option>
                             </select>
+                            <div id="admin-billing-customer-meta" class="admin-billing-picker-meta" aria-live="polite">
+                                Loading customers...
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="admin-billing-warehouse">Warehouse</label>
@@ -888,6 +912,7 @@
             ...ADMIN_BILLING_SECTIONS.additional,
             ...ADMIN_BILLING_SECTIONS.fba
         ]);
+        const ADMIN_BILLING_LAST_CUSTOMER_KEY = 'ma3pl-admin-billing-last-customer';
 
         let currentUserId = null;
         let currentUserRole = 'customer';
@@ -970,6 +995,131 @@
 
         function getCustomerDisplayName(customer) {
             return customer?.company_name || customer?.name || customer?.email || 'Unknown';
+        }
+
+        function getAdminBillingCustomerLabel(customer) {
+            if (!customer) {
+                return 'Unknown';
+            }
+
+            const company = String(customer.company_name || '').trim();
+            const contact = String(customer.name || '').trim();
+            const email = String(customer.email || '').trim();
+
+            if (company && contact && email && contact.toLowerCase() !== email.toLowerCase()) {
+                return `${company} - ${contact} (${email})`;
+            }
+            if (company && email) {
+                return `${company} (${email})`;
+            }
+            if (company && contact) {
+                return `${company} - ${contact}`;
+            }
+
+            return company || contact || email || customer.id || 'Unknown';
+        }
+
+        function normalizeAdminBillingCustomerSearch(value) {
+            return String(value || '').trim().toLowerCase();
+        }
+
+        function getAdminBillingCustomerSearchBlob(customer) {
+            return [
+                customer?.company_name,
+                customer?.name,
+                customer?.email,
+                customer?.id
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
+        }
+
+        function getPreferredAdminBillingCustomerId() {
+            const params = new URLSearchParams(window.location.search);
+            const queryCustomerId = params.get('customer');
+            if (queryCustomerId) {
+                return queryCustomerId;
+            }
+
+            try {
+                return window.localStorage.getItem(ADMIN_BILLING_LAST_CUSTOMER_KEY) || '';
+            } catch (error) {
+                return '';
+            }
+        }
+
+        function persistPreferredAdminBillingCustomerId(customerId) {
+            try {
+                if (customerId) {
+                    window.localStorage.setItem(ADMIN_BILLING_LAST_CUSTOMER_KEY, customerId);
+                } else {
+                    window.localStorage.removeItem(ADMIN_BILLING_LAST_CUSTOMER_KEY);
+                }
+            } catch (error) {
+                console.warn('Unable to persist preferred billing customer:', error);
+            }
+        }
+
+        function syncAdminBillingCustomerQuery(customerId) {
+            const url = new URL(window.location.href);
+            if (customerId) {
+                url.searchParams.set('customer', customerId);
+            } else {
+                url.searchParams.delete('customer');
+            }
+            window.history.replaceState({}, '', `${url.pathname}${url.search}`);
+        }
+
+        function renderAdminBillingCustomerOptions(preferredCustomerId = '') {
+            const select = document.getElementById('admin-billing-customer');
+            const searchInput = document.getElementById('admin-billing-customer-search');
+            const meta = document.getElementById('admin-billing-customer-meta');
+            const selectedCustomerId = preferredCustomerId || select.value || '';
+            const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) || null;
+            const searchTerm = normalizeAdminBillingCustomerSearch(searchInput?.value);
+            const matchedCustomers = customers.filter((customer) => {
+                if (!searchTerm) {
+                    return true;
+                }
+                return getAdminBillingCustomerSearchBlob(customer).includes(searchTerm);
+            });
+            let filteredCustomers = matchedCustomers.slice();
+
+            if (selectedCustomer && !filteredCustomers.some((customer) => customer.id === selectedCustomer.id)) {
+                filteredCustomers = [selectedCustomer, ...filteredCustomers];
+            }
+
+            select.innerHTML = '';
+
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = filteredCustomers.length
+                ? 'Choose a customer...'
+                : 'No customers match the current search';
+            select.appendChild(placeholder);
+
+            filteredCustomers.forEach((customer) => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = getAdminBillingCustomerLabel(customer);
+                select.appendChild(option);
+            });
+
+            const hasPreferredCustomer = filteredCustomers.some((customer) => customer.id === selectedCustomerId);
+            select.value = hasPreferredCustomer ? selectedCustomerId : '';
+
+            if (!customers.length) {
+                meta.textContent = 'No customers available to bill yet.';
+            } else if (!matchedCustomers.length) {
+                meta.textContent = `0 of ${customers.length} customers match the current search.`;
+            } else if (searchTerm) {
+                meta.textContent = `${matchedCustomers.length} of ${customers.length} customers match the current search.`;
+            } else {
+                meta.textContent = `${customers.length} customers ready to bill.`;
+            }
+
+            return hasPreferredCustomer ? selectedCustomerId : '';
         }
 
         function getAdminBillingServiceRate(service, customerId) {
@@ -1056,10 +1206,9 @@
 
             await Promise.all([loadBillingCustomers(), loadBillingPricing()]);
 
-            const params = new URLSearchParams(window.location.search);
-            const presetCustomerId = params.get('customer');
-            if (presetCustomerId && customers.some((customer) => customer.id === presetCustomerId)) {
-                document.getElementById('admin-billing-customer').value = presetCustomerId;
+            const preferredCustomerId = getPreferredAdminBillingCustomerId();
+            if (preferredCustomerId && customers.some((customer) => customer.id === preferredCustomerId)) {
+                document.getElementById('admin-billing-customer').value = preferredCustomerId;
                 window.onAdminBillingCustomerChange();
             }
         }
@@ -1076,20 +1225,10 @@
                 });
 
                 customers.sort((a, b) => getCustomerDisplayName(a).localeCompare(getCustomerDisplayName(b)));
-
-                const select = document.getElementById('admin-billing-customer');
-                const first = select.options[0];
-                select.innerHTML = '';
-                select.appendChild(first);
-
-                customers.forEach((customer) => {
-                    const option = document.createElement('option');
-                    option.value = customer.id;
-                    option.textContent = getCustomerDisplayName(customer);
-                    select.appendChild(option);
-                });
+                renderAdminBillingCustomerOptions(getPreferredAdminBillingCustomerId());
             } catch (error) {
                 console.error('Failed to load customers for admin billing:', error);
+                document.getElementById('admin-billing-customer-meta').textContent = 'Unable to load customers.';
                 showToast('Unable to load customers: ' + error.message, 'error');
             }
         }
@@ -1182,6 +1321,9 @@
             const emptyState = document.getElementById('admin-billing-empty');
             const workspace = document.getElementById('admin-billing-workspace');
 
+            persistPreferredAdminBillingCustomerId(customerId);
+            syncAdminBillingCustomerQuery(customerId);
+
             if (!customerId) {
                 renderAdminBillingCustomerInfo(null);
                 workspace.style.display = 'none';
@@ -1198,6 +1340,18 @@
             emptyState.style.display = 'none';
             workspace.style.display = 'block';
             updateAdminBillingTotals();
+        };
+
+        window.filterAdminBillingCustomers = function() {
+            const currentCustomerId = document.getElementById('admin-billing-customer').value;
+            const selectedCustomerId = renderAdminBillingCustomerOptions(currentCustomerId);
+
+            if (selectedCustomerId) {
+                document.getElementById('admin-billing-customer').value = selectedCustomerId;
+                return;
+            }
+
+            window.onAdminBillingCustomerChange();
         };
 
         window.updateAdminBillingLine = function(serviceKey) {
