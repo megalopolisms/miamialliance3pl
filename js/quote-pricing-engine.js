@@ -13,7 +13,7 @@
       address: "8780 NW 100th ST",
       city: "Medley, FL 33178",
       phone: "(786) 873-8819",
-      email: "info@miamialliance3pl.com",
+      email: "contact@miamialliance3pl.com",
       highlights: [
         "Minutes from Port Miami & MIA",
         "Gateway to Latin America",
@@ -29,7 +29,7 @@
       address: "1606 Beach Blvd",
       city: "Biloxi, MS 39531",
       phone: "(786) 873-8819",
-      email: "info@miamialliance3pl.com",
+      email: "contact@miamialliance3pl.com",
       highlights: [
         "Gulf Coast strategic location",
         "Near Port of Gulfport",
