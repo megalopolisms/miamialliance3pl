@@ -526,7 +526,359 @@
             .sb-card-header { flex-direction: column; align-items: flex-start; }
             .sb-summary-row { flex-direction: column; gap: var(--spacing-sm); text-align: center; }
             .sb-bulk-bar { flex-direction: column; text-align: center; }
+            .tabs { flex-wrap: wrap; }
+            .svc-grid { grid-template-columns: 1fr !important; }
+            .acct-grid { grid-template-columns: 1fr !important; }
+            .acct-summary-bar { flex-direction: column; gap: var(--spacing-md); text-align: center; }
+            .batch-customer-list { grid-template-columns: 1fr !important; }
+            .auto-storage-preview-table { font-size: 0.75rem; }
         }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .svc-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .acct-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* SERVICE CATALOG TAB                                 */
+        /* ═══════════════════════════════════════════════════ */
+        .svc-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+        }
+        .svc-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            transition: box-shadow 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+        .svc-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--color-primary);
+        }
+        .svc-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .svc-card-header .svc-title {
+            font-weight: 600;
+            font-size: var(--font-size-base);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .svc-card .svc-rate-row {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: var(--font-size-sm);
+        }
+        .svc-card .svc-rate-default {
+            color: var(--color-gray-600);
+        }
+        .svc-card .svc-rate-customer {
+            color: #059669;
+            font-weight: 600;
+        }
+        .svc-card .svc-rate-differs {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+        .svc-card .svc-desc {
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-500);
+            line-height: 1.4;
+        }
+        .badge-core {
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .badge-additional {
+            background: #f3e8ff;
+            color: #7c3aed;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .svc-card .btn-quick-log {
+            margin-top: auto;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            font-weight: 500;
+            align-self: flex-start;
+        }
+        .svc-card .btn-quick-log:hover { opacity: 0.9; }
+        .svc-group-label {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            color: var(--color-gray-700);
+        }
+        .svc-group-label:first-child { margin-top: 0; }
+        .svc-count-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-500);
+        }
+        .svc-count-bar strong { color: var(--color-primary); }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* CUSTOMER ACCOUNTS TAB                               */
+        /* ═══════════════════════════════════════════════════ */
+        .acct-summary-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        .acct-summary-bar .acct-stat {
+            text-align: center;
+        }
+        .acct-summary-bar .acct-stat .value {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+        }
+        .acct-summary-bar .acct-stat .label {
+            font-size: var(--font-size-sm);
+            opacity: 0.8;
+        }
+        .acct-sort-bar {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            align-items: center;
+            font-size: var(--font-size-sm);
+        }
+        .acct-sort-bar select {
+            padding: 6px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+        }
+        .acct-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+        }
+        .acct-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            transition: box-shadow 0.2s;
+        }
+        .acct-card:hover { box-shadow: var(--shadow-md); }
+        .acct-card-name {
+            font-weight: 700;
+            font-size: var(--font-size-base);
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-primary);
+        }
+        .acct-card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+        .acct-card-stats .acct-mini-stat {
+            text-align: center;
+            padding: var(--spacing-sm);
+            background: var(--color-gray-50);
+            border-radius: var(--radius-md);
+        }
+        .acct-mini-stat .value {
+            font-weight: 700;
+            font-size: var(--font-size-base);
+        }
+        .acct-mini-stat .label {
+            font-size: 0.7rem;
+            color: var(--color-gray-500);
+        }
+        .acct-mini-stat.warning .value { color: #f59e0b; }
+        .acct-mini-stat.info .value { color: #3b82f6; }
+        .acct-mini-stat.success .value { color: #10b981; }
+        .acct-card-top-services {
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-500);
+            margin-bottom: var(--spacing-md);
+        }
+        .acct-card-top-services strong { color: var(--color-gray-700); }
+        .acct-card-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+        .acct-card-actions button {
+            padding: 6px 12px;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--color-gray-300);
+            background: white;
+            transition: all 0.2s;
+        }
+        .acct-card-actions button:hover {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* AUTO-STORAGE CHARGES SECTION                        */
+        /* ═══════════════════════════════════════════════════ */
+        .auto-storage-section {
+            border: 2px solid #f59e0b;
+        }
+        .auto-storage-controls {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .auto-storage-controls .form-group {
+            min-width: 180px;
+        }
+        .auto-storage-preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: var(--spacing-md);
+        }
+        .auto-storage-preview-table th,
+        .auto-storage-preview-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--color-gray-200);
+            font-size: var(--font-size-sm);
+            text-align: left;
+        }
+        .auto-storage-preview-table th {
+            background: var(--color-gray-50);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .auto-storage-preview-table .total-row {
+            font-weight: 700;
+            background: #fffbeb;
+        }
+        .btn-generate-storage {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+        }
+        .btn-generate-storage:hover { box-shadow: var(--shadow-sm); }
+        .btn-generate-storage:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* BATCH MODE                                          */
+        /* ═══════════════════════════════════════════════════ */
+        .batch-toggle-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+        }
+        .batch-toggle-bar label {
+            font-weight: 500;
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .batch-toggle-bar input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .batch-panel {
+            background: #f8fafc;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+        .batch-customer-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-sm);
+            max-height: 240px;
+            overflow-y: auto;
+            margin-bottom: var(--spacing-md);
+            padding: var(--spacing-sm);
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-md);
+            background: white;
+        }
+        .batch-customer-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: var(--font-size-sm);
+            padding: 6px 8px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .batch-customer-item:hover { background: var(--color-gray-50); }
+        .batch-customer-item input[type="checkbox"] { cursor: pointer; }
+        .batch-form-row {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .batch-form-row .form-group { min-width: 160px; }
+        .btn-batch-apply {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+        }
+        .btn-batch-apply:hover { box-shadow: var(--shadow-sm); }
+        .btn-batch-apply:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -616,12 +968,110 @@
                 <button class="tab" onclick="showTab('history', this)">Activity History</button>
                 <button class="tab" onclick="showTab('reconcile', this)">Quote vs Actual</button>
                 <button class="tab" onclick="showTab('generate', this)">Generate Invoice</button>
+                <button class="tab" onclick="showTab('services', this)">&#x1F4CB; Service Catalog</button>
+                <button class="tab" onclick="showTab('accounts', this)">&#x1F465; Customer Accounts</button>
             </div>
 
             <!-- ═══════════════════════════════════════════════ -->
             <!-- TAB 1: LOG ACTIVITY                            -->
             <!-- ═══════════════════════════════════════════════ -->
             <div id="tab-entry" class="tab-content">
+                <!-- ═══ Auto-Generate Storage Charges ═══ -->
+                <div class="section-card auto-storage-section">
+                    <h3>&#x26A1; Auto-Generate Storage Charges</h3>
+                    <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+                        Automatically create daily storage billing entries for all active customers based on their current inventory.
+                    </p>
+                    <div class="auto-storage-controls">
+                        <div class="form-group">
+                            <label for="auto-storage-date">Charge Date</label>
+                            <input type="date" id="auto-storage-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="auto-storage-warehouse">Warehouse</label>
+                            <select id="auto-storage-warehouse">
+                                <option value="">All Warehouses</option>
+                                <option value="miami">Miami, FL</option>
+                                <option value="biloxi">Biloxi, MS</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button class="btn-generate-storage" onclick="previewAutoStorageCharges()">Preview Charges</button>
+                        </div>
+                    </div>
+                    <div id="auto-storage-preview">
+                        <p style="text-align: center; color: var(--color-gray-400); padding: 20px; font-size: var(--font-size-sm);">
+                            Select a date and click Preview to see which customers would receive storage charges.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- ═══ Batch Mode Toggle ═══ -->
+                <div class="batch-toggle-bar">
+                    <label>
+                        <input type="checkbox" id="batch-mode-toggle" onchange="toggleBatchMode(this.checked)">
+                        Batch Mode &mdash; apply a service to multiple customers at once
+                    </label>
+                </div>
+                <div id="batch-panel" class="batch-panel" style="display: none;">
+                    <h3 style="margin-bottom: var(--spacing-md);">&#x1F4E6; Batch Service Entry</h3>
+                    <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+                        Select customers, choose a service, and apply it to all selected at once.
+                    </p>
+                    <div style="margin-bottom: var(--spacing-sm); display: flex; gap: var(--spacing-sm);">
+                        <button style="font-size: 0.75rem; padding: 4px 10px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-sm); background: white; cursor: pointer;" onclick="batchSelectAll(true)">Select All</button>
+                        <button style="font-size: 0.75rem; padding: 4px 10px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-sm); background: white; cursor: pointer;" onclick="batchSelectAll(false)">Deselect All</button>
+                        <span id="batch-selected-count" style="font-size: var(--font-size-sm); color: var(--color-gray-500); align-self: center;">0 selected</span>
+                    </div>
+                    <div class="batch-customer-list" id="batch-customer-list"></div>
+                    <div class="batch-form-row">
+                        <div class="form-group">
+                            <label for="batch-type">Service Type *</label>
+                            <select id="batch-type" onchange="onBatchTypeChange()">
+                                <option value="">Select service...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="batch-quantity">Quantity *</label>
+                            <input type="number" id="batch-quantity" min="0.01" step="0.01" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="batch-rate">Rate ($) *</label>
+                            <input type="number" id="batch-rate" min="0" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="batch-unit">Unit</label>
+                            <select id="batch-unit">
+                                <option value="pallets">Pallets</option>
+                                <option value="boxes">Boxes</option>
+                                <option value="items">Items</option>
+                                <option value="orders">Orders</option>
+                                <option value="hours">Hours</option>
+                                <option value="kits">Kits</option>
+                                <option value="trips">Trips</option>
+                                <option value="shipments">Shipments</option>
+                                <option value="pallet-days">Pallet-Days</option>
+                                <option value="containers">Containers</option>
+                                <option value="units">Units</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="batch-warehouse">Warehouse</label>
+                            <select id="batch-warehouse">
+                                <option value="miami">Miami, FL</option>
+                                <option value="biloxi">Biloxi, MS</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button class="btn-batch-apply" onclick="applyBatchEntry()">Apply to Selected</button>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: var(--spacing-sm);">
+                        <label for="batch-notes">Notes (optional)</label>
+                        <input type="text" id="batch-notes" placeholder="Batch entry notes...">
+                    </div>
+                </div>
+
                 <div class="section-card">
                     <h3>Quick Select Billing Item</h3>
                     <div class="quick-types" id="quick-types">
@@ -974,6 +1424,43 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- TAB: SERVICE CATALOG                            -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <div id="tab-services" class="tab-content" style="display: none;">
+                <div class="section-card">
+                    <h3>&#x1F4CB; Service Catalog</h3>
+                    <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+                        All billable services available in the warehouse. Select a customer to view their negotiated rates vs. default rates.
+                    </p>
+                    <div class="filters-bar" style="margin-bottom: var(--spacing-md);">
+                        <select id="svc-customer" onchange="renderServiceCatalog()">
+                            <option value="">Default Rates (No Customer)</option>
+                        </select>
+                    </div>
+                    <div class="svc-count-bar" id="svc-count-bar"></div>
+                    <div id="svc-catalog-content"></div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- TAB: CUSTOMER ACCOUNTS                          -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <div id="tab-accounts" class="tab-content" style="display: none;">
+                <div id="acct-summary-bar" class="acct-summary-bar"></div>
+                <div class="acct-sort-bar">
+                    <span style="color: var(--color-gray-500);">Sort by:</span>
+                    <select id="acct-sort" onchange="renderCustomerAccounts()">
+                        <option value="name">Company Name</option>
+                        <option value="unbilled">Unbilled Amount (High to Low)</option>
+                        <option value="activity">Last Activity (Recent First)</option>
+                    </select>
+                </div>
+                <div class="acct-grid" id="acct-grid">
+                    <p style="text-align: center; color: var(--color-gray-400); padding: 40px; grid-column: 1 / -1;">Loading customer accounts...</p>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -1105,6 +1592,8 @@
             if (tab === 'shipments') loadShipmentBilling();
             if (tab === 'reconcile') {}
             if (tab === 'generate') {}
+            if (tab === 'services') renderServiceCatalog();
+            if (tab === 'accounts') loadCustomerAccounts();
         };
 
         // ──────────────────────────────────────────────
@@ -1141,11 +1630,15 @@
             document.getElementById('gen-period-start').value = firstOfMonth();
             document.getElementById('gen-period-end').value = lastOfMonth();
 
+            // Auto-storage date default
+            document.getElementById('auto-storage-date').value = todayStr();
+
             await loadCustomers();
             await loadPricing();
             await loadTodayActivities();
             await loadStats();
             setupQuickTypes();
+            initBatchPanel();
 
             // Initialize Shipment Billing tab
             document.getElementById('sb-from').value = firstOfMonth();
@@ -1170,7 +1663,7 @@
                 }
             });
 
-            const selects = ['entry-customer', 'hist-customer', 'recon-customer', 'gen-customer', 'sb-customer'];
+            const selects = ['entry-customer', 'hist-customer', 'recon-customer', 'gen-customer', 'sb-customer', 'svc-customer'];
             selects.forEach(id => {
                 const select = document.getElementById(id);
                 const first = select.options[0];
@@ -2589,6 +3082,631 @@
                 bulkBar.style.display = 'none';
             }
         }
+
+        // ══════════════════════════════════════════════
+        // UTILITY: escapeHTML
+        // ══════════════════════════════════════════════
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ══════════════════════════════════════════════
+        // SERVICE CATALOG TAB
+        // ══════════════════════════════════════════════
+
+        const SERVICE_DESCRIPTIONS = {
+            storage: 'Daily pallet storage in climate-controlled warehouse space.',
+            handling: 'Receiving and processing inbound orders and shipments.',
+            pick_pack: 'Picking items from inventory and packing for outbound shipment.',
+            shipping: 'Outbound shipping and carrier coordination for deliveries.',
+            wrapping: 'Black stretch wrapping for pallet protection and branding.',
+            dropship: 'Individual unit drop-shipping directly to end customers.',
+            receiving: 'Unloading, checking, and logging inbound inventory receipts.',
+            labeling: 'FNSKU, barcode, or custom labeling per item.',
+            palletizing: 'Organizing and securing goods onto pallets for storage or transport.',
+            unloading: 'Unloading containers, trucks, and trailers at the dock.',
+            loading: 'Loading pallets and goods onto outbound trucks or containers.',
+            kitting: 'Assembling multi-component kits or bundled product sets.',
+            returns: 'Processing, inspecting, and restocking returned merchandise.',
+            rush: 'Priority handling with expedited turnaround for urgent orders.',
+            pickup_delivery: 'Local pickup or delivery service within the metro area.',
+            container_drayage: 'Port container drayage and intermodal transport.',
+            custom: 'Custom or ad-hoc service not covered by standard items.'
+        };
+
+        window.renderServiceCatalog = function() {
+            const customerId = document.getElementById('svc-customer').value || null;
+            const container = document.getElementById('svc-catalog-content');
+
+            const coreItems = [];
+            const additionalItems = [];
+
+            Object.entries(BILLING_ITEMS).forEach(([key, item]) => {
+                const entry = { key, ...item };
+                if (item.calculatorItem) {
+                    coreItems.push(entry);
+                } else {
+                    additionalItems.push(entry);
+                }
+            });
+
+            const totalCount = coreItems.length + additionalItems.length;
+            document.getElementById('svc-count-bar').innerHTML =
+                `<strong>${totalCount}</strong> total services &bull; <span class="badge-core">${coreItems.length} Core 3PL</span> <span class="badge-additional">${additionalItems.length} Additional</span>`;
+
+            function renderCard(entry) {
+                const defaultRate = entry.fallbackRate;
+                const rateMeta = getRateMeta(entry.key, customerId);
+                const customerRate = customerId ? rateMeta.rate : null;
+                const isDifferent = customerId && customerRate !== null && Math.abs(customerRate - defaultRate) > 0.001;
+                const badgeClass = entry.calculatorItem ? 'badge-core' : 'badge-additional';
+                const badgeLabel = entry.calculatorItem ? 'Core 3PL' : 'Additional';
+                const desc = SERVICE_DESCRIPTIONS[entry.key] || '';
+
+                let rateHtml = `<span class="svc-rate-default">$${defaultRate.toFixed(2)} / ${escapeHTML(entry.defaultUnit)}</span>`;
+                if (customerId && customerRate !== null) {
+                    if (isDifferent) {
+                        rateHtml = `
+                            <span class="svc-rate-differs">$${customerRate.toFixed(2)} / ${escapeHTML(entry.defaultUnit)}</span>
+                            <span style="text-decoration: line-through; color: var(--color-gray-400); font-size: 0.75rem;">$${defaultRate.toFixed(2)}</span>
+                        `;
+                    } else {
+                        rateHtml = `<span class="svc-rate-customer">$${customerRate.toFixed(2)} / ${escapeHTML(entry.defaultUnit)}</span>`;
+                    }
+                }
+
+                return `
+                    <div class="svc-card">
+                        <div class="svc-card-header">
+                            <span class="svc-title">${entry.icon} ${escapeHTML(entry.label)}</span>
+                            <span class="${badgeClass}">${badgeLabel}</span>
+                        </div>
+                        <div class="svc-rate-row">${rateHtml}</div>
+                        <div class="svc-desc">${escapeHTML(desc)}</div>
+                        <button class="btn-quick-log" onclick="quickLogFromCatalog('${entry.key}')">Quick Log</button>
+                    </div>
+                `;
+            }
+
+            let html = '';
+            html += '<div class="svc-group-label">Core 3PL Services</div>';
+            html += '<div class="svc-grid">';
+            coreItems.forEach(entry => { html += renderCard(entry); });
+            html += '</div>';
+
+            html += '<div class="svc-group-label">Additional Services</div>';
+            html += '<div class="svc-grid">';
+            additionalItems.forEach(entry => { html += renderCard(entry); });
+            html += '</div>';
+
+            container.innerHTML = html;
+        };
+
+        window.quickLogFromCatalog = function(serviceKey) {
+            // Switch to Log Activity tab and pre-fill the type
+            const tabBtn = document.querySelector('.tab[onclick*="showTab(\'entry\'"]');
+            showTab('entry', tabBtn);
+            document.getElementById('entry-type').value = serviceKey;
+            onActivityTypeChange();
+            document.getElementById('entry-quantity').focus();
+        };
+
+        // ══════════════════════════════════════════════
+        // CUSTOMER ACCOUNTS TAB
+        // ══════════════════════════════════════════════
+
+        let customerAccountsData = [];
+
+        window.loadCustomerAccounts = async function() {
+            const grid = document.getElementById('acct-grid');
+            grid.innerHTML = '<p style="text-align: center; color: var(--color-gray-400); padding: 40px; grid-column: 1 / -1;">Loading customer accounts...</p>';
+
+            try {
+                // Get all unbilled activities
+                const unbilledSnap = await getDocs(query(
+                    collection(db, 'activity_log'),
+                    where('billed', '==', false)
+                ));
+
+                // Get this month activities
+                const monthSnap = await getDocs(query(
+                    collection(db, 'activity_log'),
+                    where('date', '>=', firstOfMonth()),
+                    where('date', '<=', lastOfMonth())
+                ));
+
+                // Build per-customer data
+                const customerMap = {};
+                customers.forEach(c => {
+                    customerMap[c.id] = {
+                        id: c.id,
+                        name: c.company_name || c.name || c.email || 'Unknown',
+                        unbilledTotal: 0,
+                        unbilledCount: 0,
+                        monthTotal: 0,
+                        lastActivity: null,
+                        topServices: {}
+                    };
+                });
+
+                unbilledSnap.forEach(d => {
+                    const a = d.data();
+                    const cid = a.customer_id;
+                    if (!customerMap[cid]) return;
+                    customerMap[cid].unbilledTotal += a.amount || 0;
+                    customerMap[cid].unbilledCount++;
+                    const svcKey = a.billing_item_id || a.activity_type || 'custom';
+                    customerMap[cid].topServices[svcKey] = (customerMap[cid].topServices[svcKey] || 0) + (a.amount || 0);
+                    const d2 = a.date || (a.created_at || '').split('T')[0];
+                    if (d2 && (!customerMap[cid].lastActivity || d2 > customerMap[cid].lastActivity)) {
+                        customerMap[cid].lastActivity = d2;
+                    }
+                });
+
+                monthSnap.forEach(d => {
+                    const a = d.data();
+                    const cid = a.customer_id;
+                    if (!customerMap[cid]) return;
+                    customerMap[cid].monthTotal += a.amount || 0;
+                    const d2 = a.date || (a.created_at || '').split('T')[0];
+                    if (d2 && (!customerMap[cid].lastActivity || d2 > customerMap[cid].lastActivity)) {
+                        customerMap[cid].lastActivity = d2;
+                    }
+                });
+
+                customerAccountsData = Object.values(customerMap);
+
+                // Summary bar
+                let totalUnbilled = 0;
+                let totalMonth = 0;
+                let activeCount = 0;
+                customerAccountsData.forEach(c => {
+                    totalUnbilled += c.unbilledTotal;
+                    totalMonth += c.monthTotal;
+                    if (c.unbilledCount > 0 || c.monthTotal > 0) activeCount++;
+                });
+
+                document.getElementById('acct-summary-bar').innerHTML = `
+                    <div class="acct-stat">
+                        <div class="value">${formatCurrency(totalUnbilled)}</div>
+                        <div class="label">Total Unbilled</div>
+                    </div>
+                    <div class="acct-stat">
+                        <div class="value">${formatCurrency(totalMonth)}</div>
+                        <div class="label">This Month Total</div>
+                    </div>
+                    <div class="acct-stat">
+                        <div class="value">${activeCount}</div>
+                        <div class="label">Active Customers</div>
+                    </div>
+                `;
+
+                renderCustomerAccounts();
+
+            } catch (err) {
+                console.error('Customer accounts error:', err);
+                grid.innerHTML = `<p style="color: #ef4444; text-align: center; padding: 20px; grid-column: 1 / -1;">Error: ${escapeHTML(err.message)}</p>`;
+            }
+        };
+
+        window.renderCustomerAccounts = function() {
+            const sortBy = document.getElementById('acct-sort').value;
+            const grid = document.getElementById('acct-grid');
+
+            let sorted = [...customerAccountsData];
+            if (sortBy === 'unbilled') {
+                sorted.sort((a, b) => b.unbilledTotal - a.unbilledTotal);
+            } else if (sortBy === 'activity') {
+                sorted.sort((a, b) => (b.lastActivity || '').localeCompare(a.lastActivity || ''));
+            } else {
+                sorted.sort((a, b) => a.name.localeCompare(b.name));
+            }
+
+            if (sorted.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: var(--color-gray-400); padding: 40px; grid-column: 1 / -1;">No customers found.</p>';
+                return;
+            }
+
+            grid.innerHTML = sorted.map(c => {
+                const topSvc = Object.entries(c.topServices)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3);
+                const topSvcHtml = topSvc.length > 0
+                    ? topSvc.map(([svc, amt]) => `${getActivityIcon(svc)} <strong>${getActivityLabel(svc)}</strong>: ${formatCurrency(amt)}`).join('<br>')
+                    : '<em>No activity</em>';
+
+                return `
+                    <div class="acct-card">
+                        <div class="acct-card-name">${escapeHTML(c.name)}</div>
+                        <div class="acct-card-stats">
+                            <div class="acct-mini-stat warning">
+                                <div class="value">${formatCurrency(c.unbilledTotal)}</div>
+                                <div class="label">Unbilled</div>
+                            </div>
+                            <div class="acct-mini-stat info">
+                                <div class="value">${formatCurrency(c.monthTotal)}</div>
+                                <div class="label">This Month</div>
+                            </div>
+                            <div class="acct-mini-stat">
+                                <div class="value">${c.unbilledCount}</div>
+                                <div class="label">Unbilled Items</div>
+                            </div>
+                            <div class="acct-mini-stat">
+                                <div class="value">${c.lastActivity || 'N/A'}</div>
+                                <div class="label">Last Activity</div>
+                            </div>
+                        </div>
+                        <div class="acct-card-top-services">
+                            <div style="font-weight: 600; margin-bottom: 4px; color: var(--color-gray-700);">Top Services:</div>
+                            ${topSvcHtml}
+                        </div>
+                        <div class="acct-card-actions">
+                            <button onclick="acctViewHistory('${c.id}')">View History</button>
+                            <button onclick="acctGenerateInvoice('${c.id}')">Generate Invoice</button>
+                            <button onclick="acctLogService('${c.id}')">Log Service</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.acctViewHistory = function(customerId) {
+            const tabBtn = document.querySelector('.tab[onclick*="showTab(\'history\'"]');
+            showTab('history', tabBtn);
+            document.getElementById('hist-customer').value = customerId;
+            loadHistory();
+        };
+
+        window.acctGenerateInvoice = function(customerId) {
+            const tabBtn = document.querySelector('.tab[onclick*="showTab(\'generate\'"]');
+            showTab('generate', tabBtn);
+            document.getElementById('gen-customer').value = customerId;
+            previewInvoiceActivities();
+        };
+
+        window.acctLogService = function(customerId) {
+            const tabBtn = document.querySelector('.tab[onclick*="showTab(\'entry\'"]');
+            showTab('entry', tabBtn);
+            document.getElementById('entry-customer').value = customerId;
+            document.getElementById('entry-type').focus();
+        };
+
+        // ══════════════════════════════════════════════
+        // AUTO-GENERATE STORAGE CHARGES
+        // ══════════════════════════════════════════════
+
+        let autoStoragePreviewData = [];
+
+        window.previewAutoStorageCharges = async function() {
+            const chargeDate = document.getElementById('auto-storage-date').value;
+            const warehouseFilter = document.getElementById('auto-storage-warehouse').value;
+            const preview = document.getElementById('auto-storage-preview');
+
+            if (!chargeDate) {
+                showToast('Please select a date', 'error');
+                return;
+            }
+
+            preview.innerHTML = '<p style="text-align: center; color: var(--color-gray-400); padding: 20px;">Loading inventory data...</p>';
+
+            try {
+                // Query inventory for items with quantity > 0
+                const inventorySnap = await getDocs(query(
+                    collection(db, 'inventory'),
+                    where('quantity', '>', 0)
+                ));
+
+                // Group by customer
+                const customerPallets = {};
+                inventorySnap.forEach(d => {
+                    const inv = d.data();
+                    const cid = inv.customer_id || inv.user_id;
+                    if (!cid) return;
+                    if (warehouseFilter && inv.warehouse && inv.warehouse !== warehouseFilter) return;
+
+                    if (!customerPallets[cid]) {
+                        customerPallets[cid] = { pallets: 0, items: 0 };
+                    }
+                    // Count pallets: use pallet_count if available, otherwise estimate from quantity
+                    const pallets = Number(inv.pallet_count || inv.pallets || 0) || Math.ceil((Number(inv.quantity) || 0) / 48);
+                    customerPallets[cid].pallets += pallets;
+                    customerPallets[cid].items += Number(inv.quantity) || 0;
+                });
+
+                // Check for existing entries on this date to avoid duplicates
+                const existingSnap = await getDocs(query(
+                    collection(db, 'activity_log'),
+                    where('date', '==', chargeDate),
+                    where('activity_type', '==', 'storage')
+                ));
+                const existingCustomers = new Set();
+                existingSnap.forEach(d => {
+                    const a = d.data();
+                    if (a.notes && a.notes.includes('Auto-generated storage')) {
+                        existingCustomers.add(a.customer_id);
+                    }
+                });
+
+                // Build preview data
+                autoStoragePreviewData = [];
+                let grandTotal = 0;
+                let duplicateCount = 0;
+
+                Object.entries(customerPallets).forEach(([cid, data]) => {
+                    if (data.pallets <= 0) return;
+                    const customer = customers.find(c => c.id === cid);
+                    if (!customer) return;
+
+                    const rateMeta = getRateMeta('storage', cid);
+                    const rate = rateMeta.rate;
+                    const dailyCharge = BillingEngine.roundCurrency(data.pallets * rate);
+                    const isDuplicate = existingCustomers.has(cid);
+
+                    if (isDuplicate) duplicateCount++;
+
+                    autoStoragePreviewData.push({
+                        customerId: cid,
+                        customerName: customer.company_name || customer.name || customer.email || 'Unknown',
+                        pallets: data.pallets,
+                        items: data.items,
+                        rate: rate,
+                        dailyCharge: dailyCharge,
+                        isDuplicate: isDuplicate
+                    });
+
+                    if (!isDuplicate) grandTotal += dailyCharge;
+                });
+
+                autoStoragePreviewData.sort((a, b) => b.dailyCharge - a.dailyCharge);
+
+                if (autoStoragePreviewData.length === 0) {
+                    preview.innerHTML = '<p style="text-align: center; color: var(--color-gray-400); padding: 20px;">No customers have inventory with pallets to charge for storage.</p>';
+                    return;
+                }
+
+                const newEntries = autoStoragePreviewData.filter(d => !d.isDuplicate);
+
+                let tableRows = autoStoragePreviewData.map(d => `
+                    <tr style="${d.isDuplicate ? 'opacity: 0.5; text-decoration: line-through;' : ''}">
+                        <td>${escapeHTML(d.customerName)} ${d.isDuplicate ? '<span style="color: #ef4444; font-size: 0.7rem;">(already charged)</span>' : ''}</td>
+                        <td>${d.pallets}</td>
+                        <td>${formatCurrency(d.rate)}/pallet-day</td>
+                        <td><strong>${formatCurrency(d.dailyCharge)}</strong></td>
+                    </tr>
+                `).join('');
+
+                preview.innerHTML = `
+                    <table class="auto-storage-preview-table">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Pallets</th>
+                                <th>Rate</th>
+                                <th>Daily Charge</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                            <tr class="total-row">
+                                <td colspan="3" style="text-align: right;">Total New Charges:</td>
+                                <td><strong>${formatCurrency(grandTotal)}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    ${duplicateCount > 0 ? `<p style="color: #d97706; font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">&#x26A0;&#xFE0F; ${duplicateCount} customer(s) already have auto-generated storage entries on ${chargeDate} and will be skipped.</p>` : ''}
+                    <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                        <button class="btn-generate-storage" onclick="generateAutoStorageCharges()" ${newEntries.length === 0 ? 'disabled' : ''}>
+                            Generate ${newEntries.length} Storage Charge${newEntries.length !== 1 ? 's' : ''} for ${chargeDate}
+                        </button>
+                        <span style="color: var(--color-gray-500); font-size: var(--font-size-sm);">${formatCurrency(grandTotal)} total</span>
+                    </div>
+                `;
+
+            } catch (err) {
+                console.error('Auto storage preview error:', err);
+                preview.innerHTML = `<p style="color: #ef4444; text-align: center; padding: 20px;">Error: ${escapeHTML(err.message)}</p>`;
+            }
+        };
+
+        window.generateAutoStorageCharges = async function() {
+            const chargeDate = document.getElementById('auto-storage-date').value;
+            const warehouseVal = document.getElementById('auto-storage-warehouse').value || 'miami';
+            const newEntries = autoStoragePreviewData.filter(d => !d.isDuplicate);
+
+            if (newEntries.length === 0) {
+                showToast('No new charges to generate', 'error');
+                return;
+            }
+
+            if (!confirm(`Generate ${newEntries.length} storage charge(s) for ${chargeDate}?\n\nTotal: ${formatCurrency(newEntries.reduce((s, d) => s + d.dailyCharge, 0))}`)) {
+                return;
+            }
+
+            let created = 0;
+            let totalAmount = 0;
+
+            for (const entry of newEntries) {
+                try {
+                    const activity = {
+                        customer_id: entry.customerId,
+                        customer_name: entry.customerName,
+                        warehouse: warehouseVal,
+                        date: chargeDate,
+                        activity_type: 'storage',
+                        billing_item_id: 'storage',
+                        billing_item_label: 'Storage',
+                        quote_category: 'storage',
+                        calculator_item: true,
+                        description: 'Storage (Pallet-Days)',
+                        quantity: entry.pallets,
+                        unit: 'pallet-days',
+                        rate: entry.rate,
+                        amount: entry.dailyCharge,
+                        rate_source: 'auto_storage',
+                        notes: `Auto-generated storage charge: ${entry.pallets} pallets @ ${formatCurrency(entry.rate)}/day`,
+                        logged_by: currentUser.uid,
+                        logged_by_name: currentUserData.name || currentUser.email,
+                        logged_by_email: currentUser.email,
+                        billed: false,
+                        invoice_id: null,
+                        created_at: new Date().toISOString()
+                    };
+                    await addDoc(collection(db, 'activity_log'), activity);
+                    created++;
+                    totalAmount += entry.dailyCharge;
+                } catch (err) {
+                    console.error('Error creating storage charge for', entry.customerName, err);
+                }
+            }
+
+            showToast(`Created ${created} storage charge(s) totaling ${formatCurrency(totalAmount)}`);
+
+            // Refresh
+            document.getElementById('auto-storage-preview').innerHTML = `
+                <div style="text-align: center; padding: 20px; background: #f0fdf4; border-radius: var(--radius-md);">
+                    <div style="font-size: 2rem;">&#x2705;</div>
+                    <strong>${created} storage charges generated for ${chargeDate}</strong><br>
+                    <span style="color: var(--color-gray-500);">Total: ${formatCurrency(totalAmount)}</span>
+                </div>
+            `;
+            autoStoragePreviewData = [];
+            await loadTodayActivities();
+            await loadStats();
+        };
+
+        // ══════════════════════════════════════════════
+        // BATCH MODE
+        // ══════════════════════════════════════════════
+
+        function initBatchPanel() {
+            // Populate batch type dropdown
+            const batchType = document.getElementById('batch-type');
+            batchType.innerHTML = '<option value="">Select service...</option>';
+            Object.entries(BILLING_ITEMS).forEach(([key, item]) => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = `${item.icon} ${item.label}`;
+                batchType.appendChild(opt);
+            });
+
+            // Populate customer checkboxes
+            rebuildBatchCustomerList();
+        }
+
+        function rebuildBatchCustomerList() {
+            const listEl = document.getElementById('batch-customer-list');
+            if (!listEl) return;
+            listEl.innerHTML = customers.map(c => {
+                const name = c.company_name || c.name || c.email || 'Unknown';
+                return `
+                    <label class="batch-customer-item">
+                        <input type="checkbox" value="${c.id}" onchange="updateBatchSelectedCount()">
+                        ${escapeHTML(name)}
+                    </label>
+                `;
+            }).join('');
+        }
+
+        window.toggleBatchMode = function(enabled) {
+            document.getElementById('batch-panel').style.display = enabled ? 'block' : 'none';
+            if (enabled) rebuildBatchCustomerList();
+        };
+
+        window.batchSelectAll = function(selectAll) {
+            const checkboxes = document.querySelectorAll('#batch-customer-list input[type="checkbox"]');
+            checkboxes.forEach(cb => { cb.checked = selectAll; });
+            updateBatchSelectedCount();
+        };
+
+        window.updateBatchSelectedCount = function() {
+            const count = document.querySelectorAll('#batch-customer-list input[type="checkbox"]:checked').length;
+            document.getElementById('batch-selected-count').textContent = `${count} selected`;
+        };
+
+        window.onBatchTypeChange = function() {
+            const type = document.getElementById('batch-type').value;
+            if (!type) return;
+            const item = BILLING_ITEMS[type];
+            if (!item) return;
+            document.getElementById('batch-unit').value = item.defaultUnit;
+            document.getElementById('batch-rate').value = item.fallbackRate;
+        };
+
+        window.applyBatchEntry = async function() {
+            const selectedCbs = document.querySelectorAll('#batch-customer-list input[type="checkbox"]:checked');
+            const selectedCustomerIds = Array.from(selectedCbs).map(cb => cb.value);
+            const type = document.getElementById('batch-type').value;
+            const quantity = parseFloat(document.getElementById('batch-quantity').value) || 0;
+            const rate = parseFloat(document.getElementById('batch-rate').value) || 0;
+            const unit = document.getElementById('batch-unit').value;
+            const warehouse = document.getElementById('batch-warehouse').value;
+            const notes = document.getElementById('batch-notes').value.trim();
+
+            if (selectedCustomerIds.length === 0) {
+                showToast('Select at least one customer', 'error');
+                return;
+            }
+            if (!type) {
+                showToast('Select a service type', 'error');
+                return;
+            }
+            if (quantity <= 0) {
+                showToast('Enter a valid quantity', 'error');
+                return;
+            }
+
+            const amount = BillingEngine.roundCurrency(quantity * rate);
+            const item = BILLING_ITEMS[type] || {};
+
+            if (!confirm(`Apply ${getActivityLabel(type)} to ${selectedCustomerIds.length} customer(s)?\n\n${quantity} ${unit} x ${formatCurrency(rate)} = ${formatCurrency(amount)} each\nTotal: ${formatCurrency(amount * selectedCustomerIds.length)}`)) {
+                return;
+            }
+
+            let created = 0;
+            for (const cid of selectedCustomerIds) {
+                const customer = customers.find(c => c.id === cid);
+                try {
+                    const activity = {
+                        customer_id: cid,
+                        customer_name: customer?.company_name || customer?.name || customer?.email || 'Unknown',
+                        warehouse: warehouse,
+                        date: document.getElementById('entry-date').value || todayStr(),
+                        activity_type: type,
+                        billing_item_id: type,
+                        billing_item_label: getActivityLabel(type),
+                        quote_category: getQuoteCategory(type),
+                        calculator_item: Boolean(item.calculatorItem),
+                        description: getActivityLabel(type),
+                        quantity: quantity,
+                        unit: unit,
+                        rate: rate,
+                        amount: amount,
+                        rate_source: 'batch_entry',
+                        notes: notes ? `[Batch] ${notes}` : '[Batch entry]',
+                        logged_by: currentUser.uid,
+                        logged_by_name: currentUserData.name || currentUser.email,
+                        logged_by_email: currentUser.email,
+                        billed: false,
+                        invoice_id: null,
+                        created_at: new Date().toISOString()
+                    };
+                    await addDoc(collection(db, 'activity_log'), activity);
+                    created++;
+                } catch (err) {
+                    console.error('Batch entry error for customer', cid, err);
+                }
+            }
+
+            showToast(`Batch created: ${created} entries for ${getActivityLabel(type)} (${formatCurrency(amount * created)} total)`);
+            await loadTodayActivities();
+            await loadStats();
+        };
 
         // ──────────────────────────────────────────────
         // LOGOUT
