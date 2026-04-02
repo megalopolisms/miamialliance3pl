@@ -13,6 +13,7 @@ window.MA3PL_TRANSLATIONS.zh = {
   "nav.quote": "报价",
   "nav.blog": "博客",
   "nav.about": "关于我们",
+  "nav.faq": "常见问题",
   "nav.contact": "联系我们",
   "nav.portal": "客户门户",
 
@@ -34,6 +35,7 @@ window.MA3PL_TRANSLATIONS.zh = {
   "footer.quote.link": "即时报价",
   "footer.blog.link": "博客",
   "footer.about.link": "关于我们",
+  "footer.faq.link": "常见问题",
   "footer.contact.link": "联系我们",
   "footer.portal.link": "客户门户",
   "footer.receiving": "收货与质检",
@@ -1741,4 +1743,88 @@ window.MA3PL_TRANSLATIONS.zh = {
   "amazon3pl.footer.privacy": "隐私政策",
   "amazon3pl.sticky.quote": "Amazon报价",
   "amazon3pl.sticky.blog": "阅读博客",
+
+  // Mercado Libre page
+  "meli.hero.badge": "Mercado Libre 履行专家",
+  "meli.hero.title": "来自 <span>Miami</span> 的 Mercado Libre 履行",
+  "meli.hero.subtitle":
+    "面向从美国发货至所有拉丁美洲市场的 MeLi 卖家的首选 3PL。一个 Miami 仓库，覆盖 18 个国家，零履行混乱。在佛州 Medley 完成备货、发货并扩展您的 Mercado Libre 业务。",
+  "meli.hero.stat.gmv": "2025 年 MeLi GMV",
+  "meli.hero.stat.presence": "MeLi 覆盖市场",
+  "meli.hero.stat.center": "您的履行中心",
+  "meli.hero.cta.quote": "获取免费报价",
+  "meli.hero.cta.latam": "查看 LATAM 配送",
+  "meli.hero.card.title": "您的 MeLi 履行包含",
+  "meli.hero.card.subtitle":
+    "一个 Miami 仓库。覆盖所有 Mercado Libre 市场。全面跨境就绪。",
+  "meli.hero.card.item1":
+    '<span class="check">&#10003;</span> 为 MeLi 墨西哥、巴西、阿根廷、哥伦比亚和智利提供跨境备货',
+  "meli.hero.card.item2":
+    '<span class="check">&#10003;</span> Mercado Envios Completo 集成就绪',
+  "meli.hero.card.item3":
+    '<span class="check">&#10003;</span> 出口文件与海关协同',
+  "meli.hero.card.item4":
+    '<span class="check">&#10003;</span> 多国 MeLi 刊登的库存同步',
+  "meli.hero.card.item5":
+    '<span class="check">&#10003;</span> 为 MeLi 促销活动组装套装（Hot Sale、CyberMonday）',
+  "meli.hero.card.item6":
+    '<span class="check">&#10003;</span> 处理来自 LATAM 买家的退货回流',
+  "meli.hero.card.address": "您的 MeLi 履行地址",
+  "meli.hero.card.cta": "开始在 MeLi 销售",
+  "meli.trust.specialist": "MeLi 卖家专家",
+  "meli.trust.reach": "覆盖 18 个国家",
+  "meli.trust.bilingual": "多语团队（英语/西语/葡语）",
+  "meli.trust.sameday": "当日处理",
+  "meli.trust.secure": "全天候安保设施",
+  "meli.cta.title": "从 Miami 开始在 Mercado Libre 销售",
+  "meli.cta.subtitle":
+    "立即向 Miami Alliance 3PL 获取免费报价。无最低要求，无长期合同。我们的多语团队会在 24 小时内回复。",
+  "meli.cta.quote": "获取免费报价",
+  "meli.cta.contact": "联系我们",
+  "meli.cta.call": "致电 (786) 873-8819",
+  "meli.footer.brand.desc":
+    "您在 Miami 的 Mercado Libre 履行合作伙伴。为向整个 LATAM 市场发货的 MeLi 卖家提供跨境备货、多国库存管理和出口物流。",
+  "meli.footer.services.title": "MeLi 履行服务",
+  "meli.footer.services.prep": "MeLi 备货与包装",
+  "meli.footer.services.inventory": "多国库存",
+  "meli.footer.services.shipping": "跨境运输",
+  "meli.footer.services.kitting": "促销组合套装",
+  "meli.footer.services.docs": "出口文件",
+  "meli.footer.services.returns": "退货与逆向物流",
+  "meli.footer.services.latam": "LATAM 配送",
+  "meli.footer.services.amazon": "Amazon 3PL",
+  "meli.footer.terms": "服务条款",
+  "meli.footer.privacy": "隐私政策",
+  "meli.sticky.quote": "获取 MeLi 报价",
+  "meli.sticky.blog": "阅读博客",
+
+  // Case study page
+  "case.nav.tiktok": "TikTok Shop 履行",
+  "case.nav.latam": "LATAM 配送",
+  "case.hero.kicker": "案例模型",
+  "case.hero.title":
+    "从一个 Miami 节点构建 <span>LATAM 品牌</span> 的 TikTok Shop 启动运营。",
+  "case.hero.desc":
+    "这是一份案例模型，不是具名客户披露。它展示了 Miami Alliance 3PL 最擅长执行的过渡：将 LATAM 品牌从分散的跨境履行，迁移到能够支持 TikTok Shop、DTC 订单、退货和批发扩张的 Miami 仓库模型，而无需每个月重建物流。",
+  "case.hero.cta.model": "为我建立启动模型 &rarr;",
+  "case.hero.cta.latam": "查看 LATAM 配送",
+  "case.snapshot.title": "快照",
+  "case.snapshot.desc":
+    "一个美国仓库地址。一个实时库存池。一个能够承接 TikTok 需求并进一步扩展到更广泛美国渠道执行的运营序列。",
+  "case.snapshot.stat1.desc": "从首批入库到稳定仓库流程。",
+  "case.snapshot.stat2.desc": "稳定后从下单到打标的目标时间。",
+  "case.snapshot.stat3.desc": "对已开封且可补货商品的退货分拣目标。",
+  "case.snapshot.stat4.desc":
+    "支持 TikTok Shop、DTC，以及买家套装或批发支持。",
+  "case.cta.title": "您的品牌也需要同样的 Miami 运营模型吗？",
+  "case.cta.desc":
+    "Miami Alliance 3PL 可以先为您建立美国仓库节点，再让渠道扩张从这个基础上继续推进。无论当下需要的是 TikTok Shop 执行、LATAM 市场进入，还是两者兼有，下一步都一样：先锁定仓库真相，再把需求导入这个节点。",
+  "case.cta.quote": "获取免费报价",
+  "case.cta.tiktok": "打开 TikTok Shop 页面",
+  "case.cta.latam": "打开 LATAM 配送页面",
+  "case.footer.brand.desc":
+    "为需要可信美国运营节点的品牌提供 Miami 仓储、履行、退货处理和跨渠道执行。",
+  "case.footer.explore": "探索",
+  "case.footer.tiktok": "TikTok Shop 履行",
+  "case.footer.latam": "LATAM 配送",
 };

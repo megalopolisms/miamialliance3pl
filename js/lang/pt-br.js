@@ -13,6 +13,7 @@ window.MA3PL_TRANSLATIONS["pt-br"] = {
   "nav.quote": "Cotação",
   "nav.blog": "Blog",
   "nav.about": "Sobre Nós",
+  "nav.faq": "FAQ",
   "nav.contact": "Contato",
   "nav.portal": "Portal do Cliente",
 
@@ -34,6 +35,7 @@ window.MA3PL_TRANSLATIONS["pt-br"] = {
   "footer.quote.link": "Cotação Instantânea",
   "footer.blog.link": "Blog",
   "footer.about.link": "Sobre Nós",
+  "footer.faq.link": "FAQ",
   "footer.contact.link": "Contato",
   "footer.portal.link": "Portal do Cliente",
   "footer.receiving": "Recebimento e QC",
