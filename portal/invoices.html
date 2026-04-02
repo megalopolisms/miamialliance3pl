@@ -472,6 +472,7 @@
             await loadPricing();
             await loadInvoices();
             generateInvoiceNumber();
+            await handleLaunchIntent();
 
             // Initialize column preferences
             if (window.ColumnPrefs) {
@@ -485,6 +486,30 @@
                 });
             }
         });
+
+        async function handleLaunchIntent() {
+            const params = new URLSearchParams(window.location.search);
+            const presetCustomerId = params.get('customer');
+            const shouldOpenCreate = params.get('openCreate') === '1';
+            const hasPresetCustomer = presetCustomerId && customers.some((customer) => customer.id === presetCustomerId);
+
+            if (hasPresetCustomer) {
+                document.getElementById('filter-customer').value = presetCustomerId;
+                await loadInvoices();
+            }
+
+            if (shouldOpenCreate) {
+                window.openCreateModal();
+                if (hasPresetCustomer) {
+                    document.getElementById('inv-customer').value = presetCustomerId;
+                    await window.loadCustomerData();
+                }
+            }
+
+            if (params.has('customer') || params.has('openCreate')) {
+                window.history.replaceState({}, '', 'invoices.html');
+            }
+        }
 
         async function loadCustomers() {
             try {

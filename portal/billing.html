@@ -209,6 +209,294 @@
             font-size: 2rem;
             margin-bottom: var(--spacing-sm);
         }
+
+        .admin-billing-console {
+            display: none;
+            margin-bottom: var(--spacing-xl);
+        }
+        .admin-billing-console.active {
+            display: block;
+        }
+        .admin-billing-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        .admin-billing-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: var(--spacing-md);
+        }
+        .admin-billing-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+            align-items: flex-end;
+            margin-top: var(--spacing-lg);
+        }
+        .admin-billing-toolbar .form-group,
+        .admin-billing-notes .form-group {
+            flex: 1 1 220px;
+        }
+        .admin-billing-toolbar label,
+        .admin-billing-notes label {
+            display: block;
+            font-weight: 600;
+            color: var(--color-gray-700);
+            margin-bottom: 6px;
+            font-size: var(--font-size-sm);
+        }
+        .admin-billing-toolbar select,
+        .admin-billing-toolbar input,
+        .admin-billing-notes textarea,
+        .admin-billing-service-card input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            background: white;
+        }
+        .admin-billing-toolbar select:focus,
+        .admin-billing-toolbar input:focus,
+        .admin-billing-notes textarea:focus,
+        .admin-billing-service-card input:focus {
+            border-color: var(--color-primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+        }
+        .admin-billing-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+        .admin-billing-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            background: var(--color-gray-50);
+            color: var(--color-primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .admin-billing-links a:hover {
+            background: #eff6ff;
+        }
+        .admin-billing-empty {
+            display: grid;
+            place-items: center;
+            text-align: center;
+            min-height: 220px;
+            padding: var(--spacing-xl);
+            border: 1px dashed var(--color-gray-300);
+            border-radius: var(--radius-lg);
+            background:
+                radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 42%),
+                linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            color: var(--color-gray-500);
+        }
+        .admin-billing-empty strong {
+            display: block;
+            color: var(--color-gray-800);
+            font-size: var(--font-size-lg);
+            margin-bottom: 8px;
+        }
+        .admin-billing-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, rgba(30, 58, 95, 0.96) 0%, rgba(37, 99, 235, 0.88) 100%);
+            color: white;
+        }
+        .admin-billing-info .name {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+        }
+        .admin-billing-info .meta {
+            opacity: 0.86;
+            font-size: var(--font-size-sm);
+        }
+        .admin-billing-rate-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.16);
+        }
+        .admin-billing-rate-badge.custom {
+            background: rgba(254, 240, 138, 0.18);
+            color: #fef08a;
+        }
+        .admin-billing-rate-badge.default {
+            background: rgba(191, 219, 254, 0.18);
+            color: #dbeafe;
+        }
+        .admin-billing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: var(--spacing-md);
+        }
+        .admin-billing-service-card {
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .admin-billing-service-card:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        .admin-billing-service-card.has-qty {
+            border-color: #0f766e;
+            box-shadow: 0 14px 26px rgba(15, 118, 110, 0.12);
+        }
+        .admin-billing-service-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+        .admin-billing-service-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            color: var(--color-gray-800);
+        }
+        .admin-billing-service-title .icon {
+            font-size: 1.2rem;
+        }
+        .admin-billing-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .admin-billing-badge.core {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .admin-billing-badge.additional {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+        .admin-billing-badge.fba {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .admin-billing-rate {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: baseline;
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-gray-700);
+        }
+        .admin-billing-rate .value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .admin-billing-rate .value.customer {
+            color: #0f766e;
+        }
+        .admin-billing-rate .source {
+            font-size: 0.78rem;
+            color: var(--color-gray-500);
+        }
+        .admin-billing-description {
+            min-height: 38px;
+            font-size: 0.82rem;
+            color: var(--color-gray-500);
+            margin-bottom: var(--spacing-md);
+        }
+        .admin-billing-input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+        .admin-billing-input-row label {
+            display: block;
+            font-size: 0.72rem;
+            color: var(--color-gray-500);
+            margin-bottom: 6px;
+        }
+        .admin-billing-line-total {
+            min-height: 24px;
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: #0f766e;
+        }
+        .admin-billing-totalbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, rgba(15, 118, 110, 0.08) 0%, rgba(14, 116, 144, 0.1) 100%);
+            border: 1px solid rgba(15, 118, 110, 0.18);
+            margin-bottom: var(--spacing-lg);
+        }
+        .admin-billing-total-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #0f766e;
+            margin-bottom: 6px;
+        }
+        .admin-billing-total-meta {
+            color: var(--color-gray-600);
+            font-size: var(--font-size-sm);
+        }
+        .admin-billing-total-value {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            color: var(--color-primary);
+        }
+        .admin-billing-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+        @media (max-width: 720px) {
+            .admin-billing-input-row {
+                grid-template-columns: 1fr;
+            }
+            .admin-billing-totalbar {
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
@@ -260,45 +548,173 @@
 
         <main class="portal-main">
             <div class="page-header-bar">
-                <h1 data-i18n-html="portal.billing.title">💵 Billing & Invoices</h1>
-                <p data-i18n="portal.billing.subtitle">View your invoices and make payments</p>
+                <h1 id="page-header-title" data-i18n-html="portal.billing.title">💵 Billing & Invoices</h1>
+                <p id="page-header-subtitle" data-i18n="portal.billing.subtitle">View your invoices and make payments</p>
             </div>
 
-            <!-- Balance Card -->
-            <div class="balance-card">
-                <div>
-                    <div class="balance-label" data-i18n="portal.billing.currentBalance">Current Balance</div>
-                    <div class="balance-amount" id="current-balance">$0.00</div>
-                </div>
-                <div id="pay-now-section" style="display: none;">
-                    <button class="btn-pay" onclick="openPaymentModal()" data-i18n="portal.billing.payNow">Pay Now</button>
-                </div>
-            </div>
+            <section id="admin-billing-console" class="admin-billing-console" aria-live="polite">
+                <div class="admin-billing-card">
+                    <div class="admin-billing-kicker">Internal Billing Mode</div>
+                    <h2 style="margin-bottom: var(--spacing-sm);">Bill Any Customer From This Page</h2>
+                    <p style="color: var(--color-gray-500); margin: 0;">
+                        Select a customer, enter service quantities, and save charges using calculator-aligned pricing with customer overrides applied automatically.
+                    </p>
 
-            <!-- Outstanding Invoices -->
-            <div id="outstanding-section">
-                <h2 class="section-title" data-i18n="portal.billing.outstandingInvoices">Outstanding Invoices</h2>
-                <div id="outstanding-invoices">
-                    <div class="empty-state" data-i18n="portal.billing.loading">Loading...</div>
-                </div>
-            </div>
+                    <div class="admin-billing-toolbar">
+                        <div class="form-group">
+                            <label for="admin-billing-customer">Customer</label>
+                            <select id="admin-billing-customer" onchange="onAdminBillingCustomerChange()">
+                                <option value="">Choose a customer...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-billing-warehouse">Warehouse</label>
+                            <select id="admin-billing-warehouse">
+                                <option value="miami">Miami, FL</option>
+                                <option value="biloxi">Biloxi, MS</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-billing-date">Billing Date</label>
+                            <input type="date" id="admin-billing-date">
+                        </div>
+                    </div>
 
-            <!-- Recent Activity (Transparency for Customer) -->
-            <div style="margin-top: var(--spacing-xl);">
-                <h2 class="section-title">📝 Recent Activity</h2>
-                <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
-                    Detailed breakdown of warehouse services performed for your account this month.
-                </p>
-                <div id="activity-detail">
-                    <div class="empty-state">Loading activity...</div>
+                    <div class="admin-billing-links">
+                        <a href="admin-billing.html">Open Full Activity Billing</a>
+                        <a href="invoices.html">Open All Invoices</a>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Payment History -->
-            <div style="margin-top: var(--spacing-xl);">
-                <h2 class="section-title" data-i18n="portal.billing.paymentHistory">Payment History</h2>
-                <div id="paid-invoices">
-                    <div class="empty-state" data-i18n="portal.billing.loading">Loading...</div>
+                <div id="admin-billing-customer-info" style="display: none;"></div>
+
+                <div id="admin-billing-empty" class="admin-billing-empty">
+                    <div>
+                        <strong>Select a customer to start billing.</strong>
+                        <span>All core warehouse services, additional services, and FBA prep options will load with calculator-based pricing.</span>
+                    </div>
+                </div>
+
+                <div id="admin-billing-workspace" style="display: none;">
+                    <div class="admin-billing-card">
+                        <h3 style="margin-bottom: 6px;">Core Calculator Services</h3>
+                        <p style="color: var(--color-gray-500); margin-bottom: var(--spacing-md);">Core warehouse services from the quote calculator.</p>
+                        <div id="admin-billing-core" class="admin-billing-grid"></div>
+                    </div>
+
+                    <div class="admin-billing-card">
+                        <h3 style="margin-bottom: 6px;">Additional Services</h3>
+                        <p style="color: var(--color-gray-500); margin-bottom: var(--spacing-md);">Handling, specialty, and ad-hoc services with pricing pulled from the billing calculator map.</p>
+                        <div id="admin-billing-additional" class="admin-billing-grid"></div>
+                    </div>
+
+                    <div class="admin-billing-card">
+                        <h3 style="margin-bottom: 6px;">FBA Prep Services</h3>
+                        <p style="color: var(--color-gray-500); margin-bottom: var(--spacing-md);">Quote-calculator FBA prep services for Amazon-compliant prep work.</p>
+                        <div id="admin-billing-fba" class="admin-billing-grid"></div>
+                    </div>
+
+                    <div class="admin-billing-card admin-billing-notes">
+                        <div class="form-group">
+                            <label for="admin-billing-notes">Notes / Reference</label>
+                            <textarea id="admin-billing-notes" rows="3" placeholder="PO, BOL, shipment note, or any billing context."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="admin-billing-totalbar">
+                        <div>
+                            <div class="admin-billing-total-label">Charge Summary</div>
+                            <div class="admin-billing-total-meta" id="admin-billing-total-meta">0 services • 0 line items • $0.00 total</div>
+                        </div>
+                        <div class="admin-billing-total-value" id="admin-billing-total">$0.00</div>
+                    </div>
+
+                    <div class="admin-billing-actions">
+                        <button class="btn btn-primary" onclick="saveAdminBillingCharges()">Save Charges</button>
+                        <button class="btn btn-outline" id="admin-billing-invoice-btn" onclick="saveAdminBillingChargesAndOpenInvoice()">Save Charges &amp; Open Invoice</button>
+                        <button class="btn btn-outline" onclick="clearAdminBillingForm()">Clear Quantities</button>
+                    </div>
+                </div>
+            </section>
+
+            <div id="billing-customer-view">
+                <!-- Billing Summary Row -->
+                <div class="billing-summary-row" id="billing-summary-row">
+                    <div class="billing-summary-card info">
+                        <div class="bsc-value" id="bsc-mtd-total">$0.00</div>
+                        <div class="bsc-label">Month-to-Date</div>
+                    </div>
+                    <div class="billing-summary-card warning">
+                        <div class="bsc-value" id="bsc-pending-charges">$0.00</div>
+                        <div class="bsc-label">Pending Charges</div>
+                    </div>
+                    <div class="billing-summary-card danger">
+                        <div class="bsc-value" id="bsc-outstanding">$0.00</div>
+                        <div class="bsc-label">Outstanding Balance</div>
+                    </div>
+                    <div class="billing-summary-card success">
+                        <div class="bsc-value" id="bsc-paid-total">$0.00</div>
+                        <div class="bsc-label">Total Paid</div>
+                    </div>
+                </div>
+
+                <!-- Pending Charges Alert -->
+                <div id="pending-charges-section" style="display: none;">
+                    <div class="pending-charges-alert">
+                        <h3>&#x1F4CB; Pending Charges</h3>
+                        <p id="pending-charges-desc">Services performed but not yet invoiced. These will appear on your next invoice.</p>
+                        <div class="pending-charges-list" id="pending-charges-list"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-md); padding-top: var(--spacing-sm); border-top: 1px solid rgba(0,0,0,0.1);">
+                            <span style="font-weight: 700; color: #92400e;" id="pending-total-label">Total Pending: $0.00</span>
+                            <span style="font-size: var(--font-size-sm); color: #78350f; opacity: 0.7;">These charges are being tracked automatically</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Breakdown (Month-to-Date) -->
+                <div style="margin-bottom: var(--spacing-xl);">
+                    <h2 class="section-title">📊 Service Breakdown (This Month)</h2>
+                    <div class="service-breakdown" id="service-breakdown">
+                        <div style="text-align: center; padding: var(--spacing-lg); color: var(--color-gray-400); grid-column: 1 / -1;">Loading services...</div>
+                    </div>
+                </div>
+
+                <!-- Balance Card -->
+                <div class="balance-card">
+                    <div>
+                        <div class="balance-label" data-i18n="portal.billing.currentBalance">Current Balance</div>
+                        <div class="balance-amount" id="current-balance">$0.00</div>
+                    </div>
+                    <div id="pay-now-section" style="display: none;">
+                        <button class="btn-pay" onclick="openPaymentModal()" data-i18n="portal.billing.payNow">Pay Now</button>
+                    </div>
+                </div>
+
+                <!-- Outstanding Invoices -->
+                <div id="outstanding-section">
+                    <h2 class="section-title" data-i18n="portal.billing.outstandingInvoices">Outstanding Invoices</h2>
+                    <div id="outstanding-invoices">
+                        <div class="empty-state" data-i18n="portal.billing.loading">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity (Transparency for Customer) -->
+                <div style="margin-top: var(--spacing-xl);">
+                    <h2 class="section-title">📝 Recent Activity</h2>
+                    <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+                        Detailed breakdown of warehouse services performed for your account this month.
+                    </p>
+                    <div id="activity-detail">
+                        <div class="empty-state">Loading activity...</div>
+                    </div>
+                </div>
+
+                <!-- Payment History -->
+                <div style="margin-top: var(--spacing-xl);">
+                    <h2 class="section-title" data-i18n="portal.billing.paymentHistory">Payment History</h2>
+                    <div id="paid-invoices">
+                        <div class="empty-state" data-i18n="portal.billing.loading">Loading...</div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -336,6 +752,7 @@
 
     <!-- Form Validation Module -->
     <script src="../js/form-validation.js"></script>
+    <script src="../js/billing-engine.js?v=20260402-1"></script>
     <script src="../js/lang/es.js"></script>
     <script src="../js/lang/pt-br.js"></script>
     <script src="../js/i18n.js"></script>
@@ -343,7 +760,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, doc, getDoc, getDocs, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, doc, getDoc, getDocs, query, where, orderBy, writeBatch } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
 
         const firebaseConfig = {
@@ -368,12 +785,147 @@
         }
 
         const FALLBACK_ADMIN_EMAILS = ['ceo@usglatam.com', 'yuri@megalopolisms.com'];
+        const BillingEngine = window.MA3PLBillingEngine;
+        const ADMIN_BILLING_SERVICE_DESCRIPTIONS = {
+            storage: 'Daily pallet storage in climate-controlled warehouse space.',
+            handling: 'Receiving and processing inbound orders and shipments.',
+            pick_pack: 'Picking items from inventory and packing for outbound shipment.',
+            shipping: 'Outbound shipping and carrier coordination for deliveries.',
+            wrapping: 'Black stretch wrapping for pallet protection and branding.',
+            dropship: 'Direct-to-consumer drop shipping charged by unit.',
+            receiving: 'Unloading, checking, and logging inbound inventory receipts.',
+            labeling: 'FNSKU, barcode, or custom labeling per item.',
+            palletizing: 'Organizing goods onto pallets for storage or transport.',
+            unloading: 'Unload containers, trucks, and trailers at the dock.',
+            loading: 'Load pallets and goods onto outbound trucks or containers.',
+            kitting: 'Assemble multi-component kits or bundled product sets.',
+            returns: 'Process, inspect, and restock returned merchandise.',
+            rush: 'Priority handling with expedited turnaround for urgent orders.',
+            pickup_delivery: 'Local pickup or delivery service within the metro area.',
+            container_drayage: 'Port container drayage and intermodal transport.',
+            custom: 'Custom or ad-hoc service outside standard billing items.',
+            fba_fnskuLabeling: 'Label each unit for Amazon FBA compliance.',
+            fba_polyBagging: 'Protect units with compliant poly bagging.',
+            fba_bubbleWrapping: 'Add bubble wrap protection for fragile units.',
+            fba_bundling: 'Bundle or kit products before FBA intake.',
+            fba_boxLabels: 'Apply carton content labels for FBA shipments.',
+            fba_inspectionQC: 'Inspect and quality-check each unit before routing.'
+        };
+        const ADMIN_BILLING_FBA_ICON_MAP = {
+            fnskuLabeling: '🏷️',
+            polyBagging: '🛍️',
+            bubbleWrapping: '🫧',
+            bundling: '📦',
+            boxLabels: '📋',
+            inspectionQC: '🔍'
+        };
+        const ADMIN_BILLING_FBA_SERVICES = buildAdminBillingFbaServices();
+        const ADMIN_BILLING_SECTIONS = buildAdminBillingSections();
+        const ADMIN_BILLING_ALL_SERVICES = Object.freeze([
+            ...ADMIN_BILLING_SECTIONS.core,
+            ...ADMIN_BILLING_SECTIONS.additional,
+            ...ADMIN_BILLING_SECTIONS.fba
+        ]);
 
         let currentUserId = null;
+        let currentUserRole = 'customer';
+        let currentUserEmail = '';
+        let currentUserName = '';
         let currentInvoice = null;
         let selectedPaymentMethod = null;
         let stripeSettings = null;
         let stripe = null;
+        let customers = [];
+        let pricingData = {};
+        let customerRateIndex = new Map();
+
+        function buildAdminBillingFbaServices() {
+            const baseServices = BillingEngine?.BASE_PRICING?.fbaPrep || {};
+            const result = {};
+            Object.entries(baseServices).forEach(([key, svc]) => {
+                result[key] = {
+                    label: svc.label || key,
+                    rate: Number(svc.rate) || 0,
+                    unit: svc.unit || 'units',
+                    icon: ADMIN_BILLING_FBA_ICON_MAP[key] || '📦'
+                };
+            });
+            return Object.freeze(result);
+        }
+
+        function buildAdminBillingSections() {
+            const billingItems = BillingEngine?.BILLING_ITEMS || {};
+            const core = [];
+            const additional = [];
+
+            Object.entries(billingItems).forEach(([key, item]) => {
+                const descriptor = {
+                    key,
+                    billingKey: key,
+                    label: item.label,
+                    icon: item.icon || '📦',
+                    defaultUnit: item.defaultUnit || 'units',
+                    calculatorItem: Boolean(item.calculatorItem),
+                    quoteCategory: BillingEngine.getQuoteCategory(key),
+                    description: ADMIN_BILLING_SERVICE_DESCRIPTIONS[key] || item.label,
+                    badge: item.calculatorItem ? 'core' : 'additional'
+                };
+
+                if (item.calculatorItem) {
+                    core.push(descriptor);
+                } else {
+                    additional.push(descriptor);
+                }
+            });
+
+            const fba = Object.entries(ADMIN_BILLING_FBA_SERVICES).map(([key, svc]) => ({
+                key: `fba_${key}`,
+                billingKey: `fba_${key}`,
+                label: svc.label,
+                icon: svc.icon,
+                defaultUnit: svc.unit,
+                calculatorItem: false,
+                quoteCategory: 'extra',
+                description: ADMIN_BILLING_SERVICE_DESCRIPTIONS[`fba_${key}`] || svc.label,
+                badge: 'fba',
+                activityType: 'fba_prep'
+            }));
+
+            return Object.freeze({
+                core: Object.freeze(core),
+                additional: Object.freeze(additional),
+                fba: Object.freeze(fba)
+            });
+        }
+
+        function todayStr() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function isInternalBillingUser() {
+            return currentUserRole === 'admin' || currentUserRole === 'employee';
+        }
+
+        function getCustomerDisplayName(customer) {
+            return customer?.company_name || customer?.name || customer?.email || 'Unknown';
+        }
+
+        function getAdminBillingServiceRate(service, customerId) {
+            if (!service) {
+                return { rate: 0, source: 'fallback', path: null };
+            }
+
+            if (service.badge === 'fba') {
+                const base = ADMIN_BILLING_FBA_SERVICES[String(service.key).replace(/^fba_/, '')];
+                return {
+                    rate: Number(base?.rate) || 0,
+                    source: 'calculator',
+                    path: 'quote-pricing-engine.fbaPrep'
+                };
+            }
+
+            return BillingEngine.getRateMeta(pricingData, customerRateIndex, service.billingKey, customerId);
+        }
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
@@ -382,12 +934,15 @@
             }
 
             currentUserId = user.uid;
+            currentUserEmail = user.email || '';
 
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             const userData = userDoc.exists() ? userDoc.data() : {};
             const userRole = userData.role || (FALLBACK_ADMIN_EMAILS.includes(user.email.toLowerCase()) ? 'admin' : 'customer');
+            currentUserRole = userRole;
+            currentUserName = userData.name || user.email;
 
-            document.getElementById('user-name').textContent = userData.name || user.email;
+            document.getElementById('user-name').textContent = currentUserName;
 
             if (userRole === 'admin' || userRole === 'employee') {
                 document.getElementById('employee-nav').style.display = 'block';
@@ -409,6 +964,11 @@
                 console.error('Error loading Stripe settings:', e);
             }
 
+            if (isInternalBillingUser()) {
+                await initializeAdminBillingConsole();
+                return;
+            }
+
             await loadInvoices();
             await loadCustomerActivity();
 
@@ -422,6 +982,361 @@
                 window.history.replaceState({}, '', 'billing.html');
             }
         });
+
+        async function initializeAdminBillingConsole() {
+            document.getElementById('billing-customer-view').style.display = 'none';
+            document.getElementById('admin-billing-console').classList.add('active');
+            document.getElementById('page-header-title').textContent = '💵 Billing Workbench';
+            document.getElementById('page-header-subtitle').textContent = 'Select any customer, add services, and save calculator-priced charges from the main Billing page.';
+            document.getElementById('admin-billing-date').value = todayStr();
+            document.getElementById('admin-billing-invoice-btn').style.display =
+                currentUserRole === 'admin' ? 'inline-flex' : 'none';
+
+            await Promise.all([loadBillingCustomers(), loadBillingPricing()]);
+
+            const params = new URLSearchParams(window.location.search);
+            const presetCustomerId = params.get('customer');
+            if (presetCustomerId && customers.some((customer) => customer.id === presetCustomerId)) {
+                document.getElementById('admin-billing-customer').value = presetCustomerId;
+                window.onAdminBillingCustomerChange();
+            }
+        }
+
+        async function loadBillingCustomers() {
+            try {
+                const snap = await getDocs(collection(db, 'users'));
+                customers = [];
+                snap.forEach((userDoc) => {
+                    const data = userDoc.data();
+                    if (!data.role || data.role === 'customer') {
+                        customers.push({ id: userDoc.id, ...data });
+                    }
+                });
+
+                customers.sort((a, b) => getCustomerDisplayName(a).localeCompare(getCustomerDisplayName(b)));
+
+                const select = document.getElementById('admin-billing-customer');
+                const first = select.options[0];
+                select.innerHTML = '';
+                select.appendChild(first);
+
+                customers.forEach((customer) => {
+                    const option = document.createElement('option');
+                    option.value = customer.id;
+                    option.textContent = getCustomerDisplayName(customer);
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load customers for admin billing:', error);
+                showToast('Unable to load customers: ' + error.message, 'error');
+            }
+        }
+
+        async function loadBillingPricing() {
+            try {
+                const pricingDoc = await getDoc(doc(db, 'settings', 'pricing'));
+                pricingData = pricingDoc.exists() ? pricingDoc.data() : {};
+                customerRateIndex = BillingEngine.buildCustomerRateIndex(pricingData);
+            } catch (error) {
+                console.error('Failed to load pricing for admin billing:', error);
+                pricingData = {};
+                customerRateIndex = new Map();
+                showToast('Unable to load pricing data: ' + error.message, 'error');
+            }
+        }
+
+        function renderAdminBillingSection(containerId, services, customerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = services.map((service) => renderAdminBillingCard(service, customerId)).join('');
+        }
+
+        function renderAdminBillingCard(service, customerId) {
+            const rateMeta = getAdminBillingServiceRate(service, customerId);
+            const rateClass = rateMeta.source === 'customer' ? 'value customer' : 'value';
+            const sourceLabel = rateMeta.source === 'customer'
+                ? 'Customer override'
+                : rateMeta.source === 'pricing'
+                    ? 'Pricing settings'
+                    : rateMeta.source === 'calculator'
+                        ? 'Quote calculator'
+                        : 'Default rate';
+
+            return `
+                <div class="admin-billing-service-card" id="admin-billing-card-${service.key}">
+                    <div class="admin-billing-service-head">
+                        <div class="admin-billing-service-title">
+                            <span class="icon">${service.icon}</span>
+                            <span>${escapeHTML(service.label)}</span>
+                        </div>
+                        <span class="admin-billing-badge ${service.badge}">${service.badge === 'core' ? 'Core' : service.badge === 'fba' ? 'FBA' : 'Additional'}</span>
+                    </div>
+                    <div class="admin-billing-rate">
+                        <span class="${rateClass}">$${rateMeta.rate.toFixed(2)}</span>
+                        <span>/ ${escapeHTML(service.defaultUnit)}</span>
+                        <span class="source">${sourceLabel}</span>
+                    </div>
+                    <div class="admin-billing-description">${escapeHTML(service.description)}</div>
+                    <div class="admin-billing-input-row">
+                        <div>
+                            <label for="admin-billing-qty-${service.key}">Quantity</label>
+                            <input type="number" id="admin-billing-qty-${service.key}" min="0" step="0.01" placeholder="0" oninput="updateAdminBillingLine('${service.key}')">
+                        </div>
+                        <div>
+                            <label for="admin-billing-rate-${service.key}">Rate</label>
+                            <input type="number" id="admin-billing-rate-${service.key}" min="0" step="0.01" value="${rateMeta.rate.toFixed(2)}" oninput="updateAdminBillingLine('${service.key}')">
+                        </div>
+                    </div>
+                    <div class="admin-billing-line-total" id="admin-billing-total-${service.key}"></div>
+                </div>
+            `;
+        }
+
+        function renderAdminBillingCustomerInfo(customerId) {
+            const customer = customers.find((row) => row.id === customerId);
+            const info = document.getElementById('admin-billing-customer-info');
+            if (!customer) {
+                info.style.display = 'none';
+                info.innerHTML = '';
+                return;
+            }
+
+            const hasCustomRates = customerRateIndex.has(customerId);
+            info.style.display = 'block';
+            info.innerHTML = `
+                <div class="admin-billing-info">
+                    <div>
+                        <div class="name">${escapeHTML(getCustomerDisplayName(customer))}</div>
+                        <div class="meta">${escapeHTML(customer.email || '')}</div>
+                    </div>
+                    <div class="admin-billing-rate-badge ${hasCustomRates ? 'custom' : 'default'}">
+                        ${hasCustomRates ? 'Customer-specific rates active' : 'Default calculator rates active'}
+                    </div>
+                </div>
+            `;
+        }
+
+        window.onAdminBillingCustomerChange = function() {
+            const customerId = document.getElementById('admin-billing-customer').value;
+            const emptyState = document.getElementById('admin-billing-empty');
+            const workspace = document.getElementById('admin-billing-workspace');
+
+            if (!customerId) {
+                renderAdminBillingCustomerInfo(null);
+                workspace.style.display = 'none';
+                emptyState.style.display = 'grid';
+                clearAdminBillingQuantities({ resetCustomer: false, resetNotes: false, rerender: false });
+                updateAdminBillingTotals();
+                return;
+            }
+
+            renderAdminBillingCustomerInfo(customerId);
+            renderAdminBillingSection('admin-billing-core', ADMIN_BILLING_SECTIONS.core, customerId);
+            renderAdminBillingSection('admin-billing-additional', ADMIN_BILLING_SECTIONS.additional, customerId);
+            renderAdminBillingSection('admin-billing-fba', ADMIN_BILLING_SECTIONS.fba, customerId);
+            emptyState.style.display = 'none';
+            workspace.style.display = 'block';
+            updateAdminBillingTotals();
+        };
+
+        window.updateAdminBillingLine = function(serviceKey) {
+            const qtyInput = document.getElementById(`admin-billing-qty-${serviceKey}`);
+            const rateInput = document.getElementById(`admin-billing-rate-${serviceKey}`);
+            const totalEl = document.getElementById(`admin-billing-total-${serviceKey}`);
+            const card = document.getElementById(`admin-billing-card-${serviceKey}`);
+
+            if (!qtyInput || !rateInput || !totalEl || !card) {
+                return;
+            }
+
+            const qty = Number.parseFloat(qtyInput.value) || 0;
+            const rate = Number.parseFloat(rateInput.value) || 0;
+            const amount = BillingEngine.roundCurrency(qty * rate);
+
+            if (qty > 0) {
+                totalEl.textContent = formatCurrency(amount);
+                card.classList.add('has-qty');
+            } else {
+                totalEl.textContent = '';
+                card.classList.remove('has-qty');
+            }
+
+            updateAdminBillingTotals();
+        };
+
+        function updateAdminBillingTotals() {
+            let lineCount = 0;
+            let serviceCount = 0;
+            let total = 0;
+
+            ADMIN_BILLING_ALL_SERVICES.forEach((service) => {
+                const qty = Number.parseFloat(document.getElementById(`admin-billing-qty-${service.key}`)?.value) || 0;
+                const rate = Number.parseFloat(document.getElementById(`admin-billing-rate-${service.key}`)?.value) || 0;
+                if (qty > 0) {
+                    lineCount += 1;
+                    serviceCount += 1;
+                    total += qty * rate;
+                }
+            });
+
+            total = BillingEngine.roundCurrency(total);
+            document.getElementById('admin-billing-total').textContent = formatCurrency(total);
+            document.getElementById('admin-billing-total-meta').textContent =
+                `${serviceCount} service${serviceCount === 1 ? '' : 's'} • ${lineCount} line item${lineCount === 1 ? '' : 's'} • ${formatCurrency(total)} total`;
+        }
+
+        function clearAdminBillingQuantities(options = {}) {
+            const { resetCustomer = false, resetNotes = true, rerender = true } = options;
+
+            ADMIN_BILLING_ALL_SERVICES.forEach((service) => {
+                const qtyInput = document.getElementById(`admin-billing-qty-${service.key}`);
+                if (qtyInput) {
+                    qtyInput.value = '';
+                }
+                const totalEl = document.getElementById(`admin-billing-total-${service.key}`);
+                if (totalEl) {
+                    totalEl.textContent = '';
+                }
+                const card = document.getElementById(`admin-billing-card-${service.key}`);
+                if (card) {
+                    card.classList.remove('has-qty');
+                }
+            });
+
+            if (resetNotes) {
+                document.getElementById('admin-billing-notes').value = '';
+            }
+
+            if (resetCustomer) {
+                document.getElementById('admin-billing-customer').value = '';
+                document.getElementById('admin-billing-customer-info').style.display = 'none';
+                document.getElementById('admin-billing-customer-info').innerHTML = '';
+                document.getElementById('admin-billing-workspace').style.display = 'none';
+                document.getElementById('admin-billing-empty').style.display = 'grid';
+            }
+
+            if (rerender && !resetCustomer) {
+                const customerId = document.getElementById('admin-billing-customer').value;
+                if (customerId) {
+                    window.onAdminBillingCustomerChange();
+                    return;
+                }
+            }
+
+            updateAdminBillingTotals();
+        }
+
+        window.clearAdminBillingForm = function() {
+            clearAdminBillingQuantities({ resetCustomer: false, resetNotes: true, rerender: true });
+        };
+
+        function collectAdminBillingEntries() {
+            const customerId = document.getElementById('admin-billing-customer').value;
+            const customer = customers.find((row) => row.id === customerId);
+            const warehouse = document.getElementById('admin-billing-warehouse').value || 'miami';
+            const date = document.getElementById('admin-billing-date').value || todayStr();
+            const notes = document.getElementById('admin-billing-notes').value.trim();
+            const entries = [];
+
+            ADMIN_BILLING_ALL_SERVICES.forEach((service) => {
+                const qty = Number.parseFloat(document.getElementById(`admin-billing-qty-${service.key}`)?.value) || 0;
+                const rate = Number.parseFloat(document.getElementById(`admin-billing-rate-${service.key}`)?.value) || 0;
+                if (qty <= 0) {
+                    return;
+                }
+
+                const rateMeta = getAdminBillingServiceRate(service, customerId);
+                const amount = BillingEngine.roundCurrency(qty * rate);
+                const isFba = service.badge === 'fba';
+
+                entries.push({
+                    customer_id: customerId,
+                    customer_name: getCustomerDisplayName(customer),
+                    warehouse,
+                    date,
+                    activity_type: isFba ? service.activityType : service.billingKey,
+                    billing_item_id: service.billingKey,
+                    billing_item_label: service.label,
+                    description: service.label,
+                    quote_category: service.quoteCategory,
+                    calculator_item: Boolean(service.calculatorItem),
+                    quantity: qty,
+                    unit: service.defaultUnit,
+                    rate,
+                    amount,
+                    rate_source: rateMeta.source,
+                    pricing_rate_path: rateMeta.path || null,
+                    customer_rate_applied: rateMeta.source === 'customer',
+                    notes,
+                    billed: false,
+                    invoiced: false,
+                    created_at: new Date().toISOString(),
+                    created_by: currentUserId,
+                    created_by_email: currentUserEmail,
+                    created_by_name: currentUserName,
+                    source: 'billing-page-admin-console'
+                });
+            });
+
+            return { customerId, customer, entries };
+        }
+
+        async function persistAdminBillingCharges(options = {}) {
+            const { openInvoice = false } = options;
+            const { customerId, customer, entries } = collectAdminBillingEntries();
+
+            if (!customerId) {
+                showToast('Select a customer first.', 'warning');
+                return false;
+            }
+            if (entries.length === 0) {
+                showToast('Add at least one service quantity before saving.', 'warning');
+                return false;
+            }
+
+            const batch = writeBatch(db);
+            let totalAmount = 0;
+
+            entries.forEach((entry) => {
+                totalAmount += entry.amount;
+                const ref = doc(collection(db, 'billable_events'));
+                batch.set(ref, entry);
+            });
+
+            try {
+                await batch.commit();
+                const customerName = getCustomerDisplayName(customer);
+                showToast(`Saved ${entries.length} charge${entries.length === 1 ? '' : 's'} for ${customerName} (${formatCurrency(totalAmount)}).`, 'success');
+
+                if (openInvoice && currentUserRole === 'admin') {
+                    window.location.href = `invoices.html?openCreate=1&customer=${encodeURIComponent(customerId)}`;
+                    return true;
+                }
+
+                clearAdminBillingQuantities({ resetCustomer: false, resetNotes: true, rerender: true });
+                return true;
+            } catch (error) {
+                console.error('Error saving admin billing charges:', error);
+                showToast('Unable to save charges: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        window.saveAdminBillingCharges = async function() {
+            await persistAdminBillingCharges({ openInvoice: false });
+        };
+
+        window.saveAdminBillingChargesAndOpenInvoice = async function() {
+            if (currentUserRole !== 'admin') {
+                showToast('Only admins can open the invoice builder from this page.', 'warning');
+                return;
+            }
+            await persistAdminBillingCharges({ openInvoice: true });
+        };
+
+        function formatCurrency(value) {
+            const numeric = Number(value) || 0;
+            return '$' + numeric.toFixed(2);
+        }
 
         async function loadInvoices() {
             const q = query(
