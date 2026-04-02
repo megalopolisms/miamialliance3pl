@@ -28,6 +28,109 @@
             border-radius: var(--radius-lg);
             margin-bottom: var(--spacing-xl);
         }
+        /* Summary Cards Row */
+        .billing-summary-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        .billing-summary-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            text-align: center;
+            transition: box-shadow 0.2s;
+        }
+        .billing-summary-card:hover { box-shadow: var(--shadow-md); }
+        .billing-summary-card .bsc-value {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .billing-summary-card .bsc-label {
+            color: var(--color-gray-500);
+            font-size: var(--font-size-sm);
+            margin-top: 4px;
+        }
+        .billing-summary-card.warning .bsc-value { color: #f59e0b; }
+        .billing-summary-card.danger .bsc-value { color: #ef4444; }
+        .billing-summary-card.success .bsc-value { color: #10b981; }
+        .billing-summary-card.info .bsc-value { color: #3b82f6; }
+
+        /* Pending charges alert */
+        .pending-charges-alert {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+        .pending-charges-alert h3 {
+            color: #92400e;
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pending-charges-alert p { color: #78350f; font-size: var(--font-size-sm); }
+        .pending-charges-list {
+            margin-top: var(--spacing-md);
+            background: white;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+        .pending-charge-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--color-gray-100);
+            font-size: var(--font-size-sm);
+        }
+        .pending-charge-item:last-child { border-bottom: none; }
+        .pending-charge-item .pci-service {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pending-charge-item .pci-amount {
+            font-weight: 700;
+            color: var(--color-gray-800);
+        }
+
+        /* Service breakdown cards */
+        .service-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xl);
+        }
+        .svc-breakdown-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            text-align: center;
+        }
+        .svc-breakdown-card .sbc-icon { font-size: 1.5rem; }
+        .svc-breakdown-card .sbc-amount {
+            font-weight: 700;
+            font-size: var(--font-size-base);
+            color: var(--color-primary);
+            margin-top: 4px;
+        }
+        .svc-breakdown-card .sbc-label {
+            font-size: 0.75rem;
+            color: var(--color-gray-500);
+            margin-top: 2px;
+        }
+        .svc-breakdown-card .sbc-qty {
+            font-size: 0.7rem;
+            color: var(--color-gray-400);
+        }
+
         .balance-card {
             background: white;
             border: 2px solid var(--color-primary);
@@ -261,7 +364,48 @@
         <main class="portal-main">
             <div class="page-header-bar">
                 <h1 data-i18n-html="portal.billing.title">💵 Billing & Invoices</h1>
-                <p data-i18n="portal.billing.subtitle">View your invoices and make payments</p>
+                <p data-i18n="portal.billing.subtitle">View your invoices, track services, and make payments</p>
+            </div>
+
+            <!-- Billing Summary Row -->
+            <div class="billing-summary-row" id="billing-summary-row">
+                <div class="billing-summary-card info">
+                    <div class="bsc-value" id="bsc-mtd-total">$0.00</div>
+                    <div class="bsc-label">Month-to-Date</div>
+                </div>
+                <div class="billing-summary-card warning">
+                    <div class="bsc-value" id="bsc-pending-charges">$0.00</div>
+                    <div class="bsc-label">Pending Charges</div>
+                </div>
+                <div class="billing-summary-card danger">
+                    <div class="bsc-value" id="bsc-outstanding">$0.00</div>
+                    <div class="bsc-label">Outstanding Balance</div>
+                </div>
+                <div class="billing-summary-card success">
+                    <div class="bsc-value" id="bsc-paid-total">$0.00</div>
+                    <div class="bsc-label">Total Paid</div>
+                </div>
+            </div>
+
+            <!-- Pending Charges Alert -->
+            <div id="pending-charges-section" style="display: none;">
+                <div class="pending-charges-alert">
+                    <h3>&#x1F4CB; Pending Charges</h3>
+                    <p id="pending-charges-desc">Services performed but not yet invoiced. These will appear on your next invoice.</p>
+                    <div class="pending-charges-list" id="pending-charges-list"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-md); padding-top: var(--spacing-sm); border-top: 1px solid rgba(0,0,0,0.1);">
+                        <span style="font-weight: 700; color: #92400e;" id="pending-total-label">Total Pending: $0.00</span>
+                        <span style="font-size: var(--font-size-sm); color: #78350f; opacity: 0.7;">These charges are being tracked automatically</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Breakdown (Month-to-Date) -->
+            <div style="margin-bottom: var(--spacing-xl);">
+                <h2 class="section-title">📊 Service Breakdown (This Month)</h2>
+                <div class="service-breakdown" id="service-breakdown">
+                    <div style="text-align: center; padding: var(--spacing-lg); color: var(--color-gray-400); grid-column: 1 / -1;">Loading services...</div>
+                </div>
             </div>
 
             <!-- Balance Card -->
@@ -411,6 +555,8 @@
 
             await loadInvoices();
             await loadCustomerActivity();
+            await loadPendingCharges();
+            await loadServiceBreakdown();
 
             // Check for payment success/cancel in URL
             const urlParams = new URLSearchParams(window.location.search);
@@ -448,6 +594,13 @@
 
             // Update balance
             document.getElementById('current-balance').textContent = '$' + totalBalance.toFixed(2);
+            document.getElementById('bsc-outstanding').textContent = '$' + totalBalance.toFixed(2);
+
+            // Calculate total paid
+            let totalPaid = 0;
+            paid.forEach(inv => { totalPaid += inv.total || 0; });
+            document.getElementById('bsc-paid-total').textContent = '$' + totalPaid.toFixed(2);
+
             if (totalBalance > 0) {
                 document.getElementById('pay-now-section').style.display = 'block';
             }
@@ -706,6 +859,144 @@
             } catch (err) {
                 console.error('Activity load error:', err);
                 container.innerHTML = '<div class="empty-state">Unable to load activity data.</div>';
+            }
+        }
+
+        // ── Pending Charges (Unbilled Activities) ──
+        async function loadPendingCharges() {
+            try {
+                const q = query(
+                    collection(db, 'activity_log'),
+                    where('customer_id', '==', currentUserId),
+                    where('billed', '==', false),
+                    orderBy('date', 'desc')
+                );
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    document.getElementById('pending-charges-section').style.display = 'none';
+                    document.getElementById('bsc-pending-charges').textContent = '$0.00';
+                    return;
+                }
+
+                let totalPending = 0;
+                const byType = {};
+                const items = [];
+
+                snap.forEach(d => {
+                    const a = d.data();
+                    totalPending += a.amount || 0;
+                    const type = a.activity_type || 'custom';
+                    if (!byType[type]) byType[type] = { amount: 0, count: 0 };
+                    byType[type].amount += a.amount || 0;
+                    byType[type].count++;
+                    items.push(a);
+                });
+
+                document.getElementById('bsc-pending-charges').textContent = '$' + totalPending.toFixed(2);
+
+                // Show pending charges section
+                document.getElementById('pending-charges-section').style.display = 'block';
+                document.getElementById('pending-charges-desc').textContent =
+                    `${items.length} service${items.length > 1 ? 's' : ''} performed but not yet invoiced. These will appear on your next invoice.`;
+
+                // Build grouped list
+                const sorted = Object.entries(byType).sort((a, b) => b[1].amount - a[1].amount);
+                let listHtml = '';
+                for (const [type, data] of sorted) {
+                    const label = ACTIVITY_LABELS[type] || type;
+                    listHtml += `
+                        <div class="pending-charge-item">
+                            <div class="pci-service">
+                                <span>${label}</span>
+                                <span style="color: var(--color-gray-400); font-size: 0.75rem;">(${data.count} entries)</span>
+                            </div>
+                            <div class="pci-amount">$${data.amount.toFixed(2)}</div>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('pending-charges-list').innerHTML = listHtml;
+                document.getElementById('pending-total-label').textContent = `Total Pending: $${totalPending.toFixed(2)}`;
+
+            } catch (err) {
+                console.error('Pending charges error:', err);
+            }
+        }
+
+        // ── Service Breakdown (Month-to-Date) ──
+        async function loadServiceBreakdown() {
+            try {
+                const now = new Date();
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+
+                const q = query(
+                    collection(db, 'activity_log'),
+                    where('customer_id', '==', currentUserId),
+                    where('date', '>=', monthStart),
+                    where('date', '<=', monthEnd)
+                );
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    document.getElementById('service-breakdown').innerHTML =
+                        '<div style="text-align: center; padding: var(--spacing-lg); color: var(--color-gray-400); grid-column: 1 / -1;">No services recorded this month.</div>';
+                    document.getElementById('bsc-mtd-total').textContent = '$0.00';
+                    return;
+                }
+
+                const SERVICE_ICONS = {
+                    receiving: '📥', storage: '🏭', pick_pack: '📋', shipping: '🚚',
+                    wrapping: '⬛', handling: '📥', labeling: '🏷️', palletizing: '📦',
+                    unloading: '⬇️', loading: '⬆️', kitting: '🔧', returns: '🔄',
+                    rush: '⚡', pickup_delivery: '🚛', container_drayage: '🚢',
+                    dropship: '📬', custom: '✏️'
+                };
+                const SERVICE_NAMES = {
+                    receiving: 'Receiving', storage: 'Storage', pick_pack: 'Pick & Pack',
+                    shipping: 'Shipping', wrapping: 'Black Wrapping', handling: 'Handling',
+                    labeling: 'Labeling', palletizing: 'Palletizing', unloading: 'Unloading',
+                    loading: 'Loading', kitting: 'Kitting', returns: 'Returns',
+                    rush: 'Rush', pickup_delivery: 'Pickup/Delivery',
+                    container_drayage: 'Drayage', dropship: 'Drop Ship', custom: 'Custom'
+                };
+
+                let mtdTotal = 0;
+                const byType = {};
+
+                snap.forEach(d => {
+                    const a = d.data();
+                    mtdTotal += a.amount || 0;
+                    const type = a.activity_type || 'custom';
+                    if (!byType[type]) byType[type] = { amount: 0, qty: 0, unit: a.unit || 'units' };
+                    byType[type].amount += a.amount || 0;
+                    byType[type].qty += a.quantity || 0;
+                });
+
+                document.getElementById('bsc-mtd-total').textContent = '$' + mtdTotal.toFixed(2);
+
+                const sorted = Object.entries(byType).sort((a, b) => b[1].amount - a[1].amount);
+                let cardsHtml = '';
+                for (const [type, data] of sorted) {
+                    const icon = SERVICE_ICONS[type] || '📋';
+                    const name = SERVICE_NAMES[type] || type;
+                    cardsHtml += `
+                        <div class="svc-breakdown-card">
+                            <div class="sbc-icon">${icon}</div>
+                            <div class="sbc-amount">$${data.amount.toFixed(2)}</div>
+                            <div class="sbc-label">${escapeHTML(name)}</div>
+                            <div class="sbc-qty">${data.qty.toFixed(1)} ${escapeHTML(data.unit)}</div>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('service-breakdown').innerHTML = cardsHtml;
+
+            } catch (err) {
+                console.error('Service breakdown error:', err);
+                document.getElementById('service-breakdown').innerHTML =
+                    '<div style="text-align: center; padding: var(--spacing-lg); color: var(--color-gray-400); grid-column: 1 / -1;">Unable to load service data.</div>';
             }
         }
 
