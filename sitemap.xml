@@ -769,4 +769,44 @@
         <priority>0.85</priority>
     </url>
 
+    <!-- Blog: Fuel Surcharge Diesel Costs Fulfillment Strategy 2026 (NEW Apr 02) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/fuel-surcharge-diesel-costs-fulfillment-strategy-2026.html</loc>
+        <lastmod>2026-04-02</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Cold Storage Demand Miami 2026 Capacity Guide (NEW Apr 02) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/cold-storage-demand-miami-2026-secure-capacity-guide.html</loc>
+        <lastmod>2026-04-02</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Mercado Libre Fulfillment Miami - Dedicated Landing Page (NEW Apr 02) -->
+    <url>
+        <loc>https://miamialliance3pl.com/mercadolibre-fulfillment-miami.html</loc>
+        <lastmod>2026-04-02</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.95</priority>
+    </url>
+
+    <!-- Blog: Mercado Libre Seller Fulfillment 3PL Guide (NEW Apr 02) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/mercadolibre-seller-fulfillment-3pl-guide.html</loc>
+        <lastmod>2026-04-02</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: How to Sell on Mercado Libre from USA Miami 3PL (NEW Apr 02) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/how-to-sell-on-mercadolibre-from-usa-miami-3pl.html</loc>
+        <lastmod>2026-04-02</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
 </urlset>
