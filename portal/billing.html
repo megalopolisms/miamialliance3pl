@@ -652,7 +652,7 @@
         <main class="portal-main">
             <div class="page-header-bar">
                 <h1 id="page-header-title" data-i18n-html="portal.billing.title">💵 Billing & Invoices</h1>
-                <p id="page-header-subtitle" data-i18n="portal.billing.subtitle">View your invoices, track services, and make payments</p>
+                <p id="page-header-subtitle" data-i18n="portal.billing.subtitle">View your invoices and make payments</p>
             </div>
 
             <section id="admin-billing-console" class="admin-billing-console" aria-live="polite">
@@ -741,47 +741,6 @@
             </section>
 
             <div id="billing-customer-view">
-                <!-- Billing Summary Row -->
-                <div class="billing-summary-row" id="billing-summary-row">
-                    <div class="billing-summary-card info">
-                        <div class="bsc-value" id="bsc-mtd-total">$0.00</div>
-                        <div class="bsc-label">Month-to-Date</div>
-                    </div>
-                    <div class="billing-summary-card warning">
-                        <div class="bsc-value" id="bsc-pending-charges">$0.00</div>
-                        <div class="bsc-label">Pending Charges</div>
-                    </div>
-                    <div class="billing-summary-card danger">
-                        <div class="bsc-value" id="bsc-outstanding">$0.00</div>
-                        <div class="bsc-label">Outstanding Balance</div>
-                    </div>
-                    <div class="billing-summary-card success">
-                        <div class="bsc-value" id="bsc-paid-total">$0.00</div>
-                        <div class="bsc-label">Total Paid</div>
-                    </div>
-                </div>
-
-                <!-- Pending Charges Alert -->
-                <div id="pending-charges-section" style="display: none;">
-                    <div class="pending-charges-alert">
-                        <h3>&#x1F4CB; Pending Charges</h3>
-                        <p id="pending-charges-desc">Services performed but not yet invoiced. These will appear on your next invoice.</p>
-                        <div class="pending-charges-list" id="pending-charges-list"></div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: var(--spacing-md); padding-top: var(--spacing-sm); border-top: 1px solid rgba(0,0,0,0.1);">
-                            <span style="font-weight: 700; color: #92400e;" id="pending-total-label">Total Pending: $0.00</span>
-                            <span style="font-size: var(--font-size-sm); color: #78350f; opacity: 0.7;">These charges are being tracked automatically</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Service Breakdown (Month-to-Date) -->
-                <div style="margin-bottom: var(--spacing-xl);">
-                    <h2 class="section-title">📊 Service Breakdown (This Month)</h2>
-                    <div class="service-breakdown" id="service-breakdown">
-                        <div style="text-align: center; padding: var(--spacing-lg); color: var(--color-gray-400); grid-column: 1 / -1;">Loading services...</div>
-                    </div>
-                </div>
-
                 <!-- Balance Card -->
                 <div class="balance-card">
                     <div>
@@ -1074,8 +1033,6 @@
 
             await loadInvoices();
             await loadCustomerActivity();
-            await loadPendingCharges();
-            await loadServiceBreakdown();
 
             // Check for payment success/cancel in URL
             const urlParams = new URLSearchParams(window.location.search);
