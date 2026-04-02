@@ -543,6 +543,205 @@
         .sb-kpi.amber .value { color: #f59e0b; }
         .sb-kpi.blue .value { color: #3b82f6; }
 
+        /* ═══════════════════════════════════════════════════ */
+        /* BILL CUSTOMER TAB                                  */
+        /* ═══════════════════════════════════════════════════ */
+        .bc-customer-bar {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-lg);
+        }
+        .bc-services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: var(--spacing-md);
+        }
+        .bc-service-card {
+            background: white;
+            border: 1px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .bc-service-card:hover {
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-sm);
+        }
+        .bc-service-card.has-qty {
+            border-color: #10b981;
+            background: #f0fdf4;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+        }
+        .bc-svc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .bc-svc-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            font-size: var(--font-size-base);
+        }
+        .bc-svc-title .icon { font-size: 1.2rem; }
+        .bc-svc-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .bc-svc-badge.core { background: #dbeafe; color: #1d4ed8; }
+        .bc-svc-badge.additional { background: #f3e8ff; color: #7c3aed; }
+        .bc-svc-badge.fba { background: #fef3c7; color: #d97706; }
+        .bc-svc-rate-info {
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-500);
+        }
+        .bc-svc-rate-info .rate-value {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .bc-svc-rate-info .rate-customer {
+            font-weight: 700;
+            color: #059669;
+        }
+        .bc-svc-rate-info .rate-source {
+            font-size: 0.7rem;
+            color: var(--color-gray-400);
+            display: block;
+            margin-top: 2px;
+        }
+        .bc-svc-inputs {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+        .bc-svc-inputs input {
+            width: 90px;
+            padding: 8px 10px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            text-align: right;
+        }
+        .bc-svc-inputs input:focus {
+            border-color: var(--color-primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+        }
+        .bc-svc-inputs .unit-label {
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-500);
+            min-width: 60px;
+        }
+        .bc-svc-inputs .rate-input {
+            width: 80px;
+        }
+        .bc-svc-line-total {
+            text-align: right;
+            font-weight: 700;
+            font-size: var(--font-size-base);
+            color: var(--color-primary);
+            min-height: 1.5em;
+        }
+        .bc-svc-line-total.has-value { color: #059669; }
+        .bc-total-bar {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            position: sticky;
+            bottom: 16px;
+            z-index: 10;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+        }
+        .bc-total-label {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+        }
+        .bc-total-breakdown {
+            font-size: var(--font-size-sm);
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+        .bc-total-amount {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+        .bc-action-bar {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-xl);
+        }
+        .bc-btn-save {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            color: white !important;
+            border: none !important;
+            padding: 14px 28px !important;
+            font-size: var(--font-size-base) !important;
+            font-weight: 700 !important;
+        }
+        .bc-btn-save:hover { box-shadow: var(--shadow-md); }
+        .bc-btn-invoice {
+            padding: 14px 28px !important;
+            font-size: var(--font-size-base) !important;
+        }
+        .bc-customer-info-bar {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border: 1px solid #93c5fd;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md) var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        .bc-customer-info-bar .name {
+            font-weight: 700;
+            font-size: var(--font-size-lg);
+            color: var(--color-primary);
+        }
+        .bc-customer-info-bar .email {
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-500);
+        }
+        .bc-customer-info-bar .rates-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .bc-customer-info-bar .rates-badge.custom {
+            background: #d1fae5;
+            color: #059669;
+        }
+        .bc-customer-info-bar .rates-badge.default {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            .bc-services-grid { grid-template-columns: 1fr; }
+            .bc-customer-bar { flex-direction: column; align-items: stretch; }
+            .bc-total-bar { flex-direction: column; gap: var(--spacing-md); text-align: center; position: static; }
+            .bc-action-bar { flex-direction: column; }
+            .bc-svc-inputs { flex-wrap: wrap; }
+        }
+
         @media (max-width: 768px) {
             .entry-form { grid-template-columns: 1fr; }
             .recon-row { grid-template-columns: 1fr 1fr; }
@@ -1018,7 +1217,8 @@
 
             <!-- Tabs -->
             <div class="tabs">
-                <button class="tab active" data-tab="entry" onclick="showTab('entry', this)">Log Activity</button>
+                <button class="tab active" data-tab="billcustomer" onclick="showTab('billcustomer', this)">💰 Bill Customer</button>
+                <button class="tab" data-tab="entry" onclick="showTab('entry', this)">Log Activity</button>
                 <button class="tab" data-tab="shipments" onclick="showTab('shipments', this)">Shipment Billing <span id="tab-badge-shipments" class="tab-badge" style="display:none;"></span></button>
                 <button class="tab" data-tab="history" onclick="showTab('history', this)">Activity History</button>
                 <button class="tab" data-tab="reconcile" onclick="showTab('reconcile', this)">Quote vs Actual</button>
@@ -1028,9 +1228,112 @@
             </div>
 
             <!-- ═══════════════════════════════════════════════ -->
+            <!-- TAB 0: BILL CUSTOMER                           -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <div id="tab-billcustomer" class="tab-content">
+                <div class="section-card">
+                    <h3>💰 Bill Customer — Select & Add Services</h3>
+                    <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-lg);">
+                        Select a customer, add quantities for each service, and save all charges at once. Rates auto-fill from calculator pricing (customer-specific rates override defaults).
+                    </p>
+
+                    <!-- Customer Selector -->
+                    <div class="bc-customer-bar">
+                        <div class="form-group" style="flex: 1; min-width: 250px;">
+                            <label for="bc-customer" style="font-size: var(--font-size-base); font-weight: 700; color: var(--color-primary);">📋 Select Customer to Bill</label>
+                            <select id="bc-customer" onchange="bcOnCustomerChange()" style="font-size: var(--font-size-base); padding: 12px 14px;">
+                                <option value="">— Choose a customer —</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="min-width: 160px;">
+                            <label for="bc-warehouse">Warehouse</label>
+                            <select id="bc-warehouse" style="padding: 12px 14px;">
+                                <option value="miami">📍 Miami, FL</option>
+                                <option value="biloxi">📍 Biloxi, MS</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="min-width: 160px;">
+                            <label for="bc-date">Billing Date</label>
+                            <input type="date" id="bc-date" style="padding: 12px 14px;">
+                        </div>
+                    </div>
+
+                    <!-- Customer Info Badge (shows after selection) -->
+                    <div id="bc-customer-info" style="display: none;"></div>
+                </div>
+
+                <!-- Services Grid (hidden until customer selected) -->
+                <div id="bc-services-wrapper" style="display: none;">
+                    <!-- Core Services (from Calculator) -->
+                    <div class="section-card">
+                        <h3>📦 Core Warehouse Services</h3>
+                        <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+                            Primary services from the quote calculator. Enter quantities for services rendered.
+                        </p>
+                        <div class="bc-services-grid" id="bc-core-services"></div>
+                    </div>
+
+                    <!-- Additional Services -->
+                    <div class="section-card">
+                        <h3>🔧 Additional Services</h3>
+                        <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+                            Handling, prep, and specialty services. Enter quantities as needed.
+                        </p>
+                        <div class="bc-services-grid" id="bc-additional-services"></div>
+                    </div>
+
+                    <!-- FBA Prep Services -->
+                    <div class="section-card">
+                        <h3>📋 FBA Prep Services</h3>
+                        <p style="color: var(--color-gray-500); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">
+                            Amazon FBA preparation and labeling services.
+                        </p>
+                        <div class="bc-services-grid" id="bc-fba-services"></div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="section-card">
+                        <div class="form-group">
+                            <label for="bc-notes">📝 Notes / Reference</label>
+                            <textarea id="bc-notes" rows="2" placeholder="Optional: PO number, BOL, special instructions..." style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: var(--font-size-sm);"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Grand Total Bar -->
+                    <div class="bc-total-bar" id="bc-total-bar">
+                        <div class="bc-total-info">
+                            <div class="bc-total-label">Total Charges</div>
+                            <div class="bc-total-breakdown" id="bc-total-breakdown">0 services • 0 line items</div>
+                        </div>
+                        <div class="bc-total-amount" id="bc-total-amount">$0.00</div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="bc-action-bar">
+                        <button class="btn btn-primary bc-btn-save" onclick="bcSaveAllCharges()">
+                            💾 Save All Charges
+                        </button>
+                        <button class="btn btn-outline bc-btn-invoice" onclick="bcSaveAndInvoice()">
+                            📄 Save & Generate Invoice
+                        </button>
+                        <button class="btn btn-outline" onclick="bcClearAll()">
+                            🗑️ Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empty state when no customer -->
+                <div id="bc-empty-state" class="section-card" style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">👆</div>
+                    <h3 style="color: var(--color-gray-500);">Select a customer above to start billing</h3>
+                    <p style="color: var(--color-gray-400); font-size: var(--font-size-sm);">All services and pricing will load automatically based on the customer's rate agreement.</p>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════ -->
             <!-- TAB 1: LOG ACTIVITY                            -->
             <!-- ═══════════════════════════════════════════════ -->
-            <div id="tab-entry" class="tab-content">
+            <div id="tab-entry" class="tab-content" style="display: none;">
                 <!-- ═══ Auto-Generate Storage Charges ═══ -->
                 <div class="section-card auto-storage-section">
                     <h3>&#x26A1; Auto-Generate Storage Charges</h3>
@@ -1643,6 +1946,7 @@
                 if (fallbackBtn) fallbackBtn.classList.add('active');
             }
 
+            if (tab === 'billcustomer') bcInit();
             if (tab === 'history') loadHistory();
             if (tab === 'shipments') loadShipmentBilling();
             if (tab === 'reconcile') {}
@@ -1696,6 +2000,9 @@
             setupQuickTypes();
             initBatchPanel();
 
+            // Initialize Bill Customer tab (default active tab)
+            bcInit();
+
             // Initialize Shipment Billing tab
             document.getElementById('sb-from').value = firstOfMonth();
             document.getElementById('sb-to').value = lastOfMonth();
@@ -1719,7 +2026,7 @@
                 }
             });
 
-            const selects = ['entry-customer', 'hist-customer', 'recon-customer', 'gen-customer', 'sb-customer', 'svc-customer'];
+            const selects = ['bc-customer', 'entry-customer', 'hist-customer', 'recon-customer', 'gen-customer', 'sb-customer', 'svc-customer'];
             selects.forEach(id => {
                 const select = document.getElementById(id);
                 const first = select.options[0];
@@ -3892,6 +4199,359 @@
             await loadTodayActivities();
             await loadStats();
         };
+
+        // ══════════════════════════════════════════════════════════════
+        // BILL CUSTOMER TAB
+        // ══════════════════════════════════════════════════════════════
+
+        // FBA Prep services (from quote-pricing-engine)
+        const BC_FBA_SERVICES = {
+            fnskuLabeling: { label: 'FNSKU Labeling', rate: 0.30, unit: 'units', icon: '🏷️' },
+            polyBagging:   { label: 'Poly Bagging',   rate: 0.50, unit: 'units', icon: '🛍️' },
+            bubbleWrapping:{ label: 'Bubble Wrapping', rate: 1.00, unit: 'units', icon: '🫧' },
+            bundling:      { label: 'Bundling / Kitting', rate: 2.00, unit: 'bundles', icon: '📦' },
+            boxLabels:     { label: 'Box Content Labels', rate: 3.00, unit: 'boxes', icon: '📋' },
+            inspectionQC:  { label: 'Inspection & QC', rate: 0.15, unit: 'units', icon: '🔍' }
+        };
+
+        let bcInitialized = false;
+
+        window.bcInit = function() {
+            if (!bcInitialized) {
+                document.getElementById('bc-date').value = todayStr();
+                bcInitialized = true;
+            }
+        };
+
+        window.bcOnCustomerChange = function() {
+            const customerId = document.getElementById('bc-customer').value;
+            const wrapper = document.getElementById('bc-services-wrapper');
+            const empty = document.getElementById('bc-empty-state');
+            const infoBar = document.getElementById('bc-customer-info');
+
+            if (!customerId) {
+                wrapper.style.display = 'none';
+                empty.style.display = 'block';
+                infoBar.style.display = 'none';
+                return;
+            }
+
+            empty.style.display = 'none';
+            wrapper.style.display = 'block';
+
+            // Show customer info bar
+            const customer = customers.find(c => c.id === customerId);
+            const hasCustomRates = customerRateIndex.has(customerId);
+            infoBar.style.display = 'block';
+            infoBar.innerHTML = `
+                <div class="bc-customer-info-bar">
+                    <div>
+                        <div class="name">${customer?.company_name || customer?.name || 'Unknown'}</div>
+                        <div class="email">${customer?.email || ''}</div>
+                    </div>
+                    <div>
+                        <span class="rates-badge ${hasCustomRates ? 'custom' : 'default'}">
+                            ${hasCustomRates ? '⭐ Custom Rates Applied' : '📊 Default Rates'}
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            // Render all service cards
+            bcRenderCoreServices(customerId);
+            bcRenderAdditionalServices(customerId);
+            bcRenderFbaServices(customerId);
+            bcUpdateTotals();
+        };
+
+        function bcRenderServiceCard(key, item, customerId, badge) {
+            const rateMeta = getRateMeta(key, customerId);
+            const isCustom = rateMeta.source === 'customer';
+            const rateClass = isCustom ? 'rate-customer' : 'rate-value';
+            const sourceLabel = isCustom
+                ? 'Customer rate'
+                : (rateMeta.source === 'pricing' ? 'Pricing settings' : 'Default rate');
+
+            return `
+                <div class="bc-service-card" id="bc-card-${key}" data-service="${key}">
+                    <div class="bc-svc-header">
+                        <div class="bc-svc-title">
+                            <span class="icon">${item.icon || '📦'}</span>
+                            <span>${item.label}</span>
+                        </div>
+                        <span class="bc-svc-badge ${badge}">${badge === 'core' ? 'Core' : badge === 'fba' ? 'FBA' : 'Additional'}</span>
+                    </div>
+                    <div class="bc-svc-rate-info">
+                        <span class="${rateClass}">$${rateMeta.rate.toFixed(2)}</span>
+                        <span> / ${item.defaultUnit}</span>
+                        <span class="rate-source">${sourceLabel}</span>
+                    </div>
+                    <div class="bc-svc-inputs">
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--color-gray-500);">Qty</label>
+                            <input type="number" id="bc-qty-${key}" min="0" step="0.01" value="" placeholder="0"
+                                   oninput="bcUpdateLine('${key}')" data-service="${key}">
+                        </div>
+                        <div class="unit-label">${item.defaultUnit}</div>
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--color-gray-500);">Rate $</label>
+                            <input type="number" class="rate-input" id="bc-rate-${key}" min="0" step="0.01" value="${rateMeta.rate.toFixed(2)}"
+                                   oninput="bcUpdateLine('${key}')" data-service="${key}">
+                        </div>
+                    </div>
+                    <div class="bc-svc-line-total" id="bc-total-${key}"></div>
+                </div>
+            `;
+        }
+
+        function bcRenderCoreServices(customerId) {
+            const container = document.getElementById('bc-core-services');
+            let html = '';
+            for (const [key, item] of Object.entries(BILLING_ITEMS)) {
+                if (item.calculatorItem) {
+                    html += bcRenderServiceCard(key, item, customerId, 'core');
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        function bcRenderAdditionalServices(customerId) {
+            const container = document.getElementById('bc-additional-services');
+            let html = '';
+            for (const [key, item] of Object.entries(BILLING_ITEMS)) {
+                if (!item.calculatorItem) {
+                    html += bcRenderServiceCard(key, item, customerId, 'additional');
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        function bcRenderFbaServices(customerId) {
+            const container = document.getElementById('bc-fba-services');
+            let html = '';
+            for (const [key, svc] of Object.entries(BC_FBA_SERVICES)) {
+                html += `
+                    <div class="bc-service-card" id="bc-card-fba_${key}" data-service="fba_${key}">
+                        <div class="bc-svc-header">
+                            <div class="bc-svc-title">
+                                <span class="icon">${svc.icon}</span>
+                                <span>${svc.label}</span>
+                            </div>
+                            <span class="bc-svc-badge fba">FBA</span>
+                        </div>
+                        <div class="bc-svc-rate-info">
+                            <span class="rate-value">$${svc.rate.toFixed(2)}</span>
+                            <span> / ${svc.unit}</span>
+                            <span class="rate-source">FBA Prep rate</span>
+                        </div>
+                        <div class="bc-svc-inputs">
+                            <div>
+                                <label style="font-size: 0.7rem; color: var(--color-gray-500);">Qty</label>
+                                <input type="number" id="bc-qty-fba_${key}" min="0" step="1" value="" placeholder="0"
+                                       oninput="bcUpdateLine('fba_${key}')" data-service="fba_${key}">
+                            </div>
+                            <div class="unit-label">${svc.unit}</div>
+                            <div>
+                                <label style="font-size: 0.7rem; color: var(--color-gray-500);">Rate $</label>
+                                <input type="number" class="rate-input" id="bc-rate-fba_${key}" min="0" step="0.01" value="${svc.rate.toFixed(2)}"
+                                       oninput="bcUpdateLine('fba_${key}')" data-service="fba_${key}">
+                            </div>
+                        </div>
+                        <div class="bc-svc-line-total" id="bc-total-fba_${key}"></div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        window.bcUpdateLine = function(key) {
+            const qtyInput = document.getElementById(`bc-qty-${key}`);
+            const rateInput = document.getElementById(`bc-rate-${key}`);
+            const totalEl = document.getElementById(`bc-total-${key}`);
+            const card = document.getElementById(`bc-card-${key}`);
+
+            const qty = parseFloat(qtyInput?.value) || 0;
+            const rate = parseFloat(rateInput?.value) || 0;
+            const total = qty * rate;
+
+            if (qty > 0) {
+                totalEl.textContent = formatCurrency(total);
+                totalEl.classList.add('has-value');
+                card.classList.add('has-qty');
+            } else {
+                totalEl.textContent = '';
+                totalEl.classList.remove('has-value');
+                card.classList.remove('has-qty');
+            }
+
+            bcUpdateTotals();
+        };
+
+        function bcUpdateTotals() {
+            let grandTotal = 0;
+            let serviceCount = 0;
+            let lineCount = 0;
+
+            // Billing items
+            for (const key of Object.keys(BILLING_ITEMS)) {
+                const qty = parseFloat(document.getElementById(`bc-qty-${key}`)?.value) || 0;
+                const rate = parseFloat(document.getElementById(`bc-rate-${key}`)?.value) || 0;
+                if (qty > 0) {
+                    grandTotal += qty * rate;
+                    serviceCount++;
+                    lineCount++;
+                }
+            }
+
+            // FBA items
+            for (const key of Object.keys(BC_FBA_SERVICES)) {
+                const qty = parseFloat(document.getElementById(`bc-qty-fba_${key}`)?.value) || 0;
+                const rate = parseFloat(document.getElementById(`bc-rate-fba_${key}`)?.value) || 0;
+                if (qty > 0) {
+                    grandTotal += qty * rate;
+                    serviceCount++;
+                    lineCount++;
+                }
+            }
+
+            document.getElementById('bc-total-amount').textContent = formatCurrency(grandTotal);
+            document.getElementById('bc-total-breakdown').textContent =
+                `${serviceCount} service${serviceCount !== 1 ? 's' : ''} • ${lineCount} line item${lineCount !== 1 ? 's' : ''} • ${formatCurrency(grandTotal)} total`;
+        }
+
+        window.bcSaveAllCharges = async function() {
+            const customerId = document.getElementById('bc-customer').value;
+            if (!customerId) {
+                showToast('Please select a customer first', 'error');
+                return;
+            }
+
+            const customer = customers.find(c => c.id === customerId);
+            const warehouse = document.getElementById('bc-warehouse').value || 'miami';
+            const date = document.getElementById('bc-date').value || todayStr();
+            const notes = document.getElementById('bc-notes').value || '';
+            const batch = writeBatch(db);
+            let count = 0;
+            let totalAmount = 0;
+
+            // Collect billing items
+            for (const [key, item] of Object.entries(BILLING_ITEMS)) {
+                const qty = parseFloat(document.getElementById(`bc-qty-${key}`)?.value) || 0;
+                const rate = parseFloat(document.getElementById(`bc-rate-${key}`)?.value) || 0;
+                if (qty > 0) {
+                    const amount = qty * rate;
+                    const rateMeta = getRateMeta(key, customerId);
+                    const docRef = doc(collection(db, 'billable_events'));
+                    batch.set(docRef, {
+                        customer_id: customerId,
+                        customer_name: customer?.company_name || customer?.name || customer?.email || 'Unknown',
+                        warehouse: warehouse,
+                        date: date,
+                        activity_type: key,
+                        billing_item_id: key,
+                        billing_item_label: item.label,
+                        quote_category: BillingEngine.getQuoteCategory(key),
+                        calculator_item: Boolean(item.calculatorItem),
+                        quantity: qty,
+                        unit: item.defaultUnit,
+                        rate: rate,
+                        amount: amount,
+                        rate_source: rateMeta.source,
+                        notes: notes,
+                        billed: false,
+                        invoiced: false,
+                        created_at: new Date().toISOString(),
+                        created_by: currentUser.uid,
+                        source: 'bill-customer-tab'
+                    });
+                    count++;
+                    totalAmount += amount;
+                }
+            }
+
+            // Collect FBA items
+            for (const [key, svc] of Object.entries(BC_FBA_SERVICES)) {
+                const qty = parseFloat(document.getElementById(`bc-qty-fba_${key}`)?.value) || 0;
+                const rate = parseFloat(document.getElementById(`bc-rate-fba_${key}`)?.value) || 0;
+                if (qty > 0) {
+                    const amount = qty * rate;
+                    const docRef = doc(collection(db, 'billable_events'));
+                    batch.set(docRef, {
+                        customer_id: customerId,
+                        customer_name: customer?.company_name || customer?.name || customer?.email || 'Unknown',
+                        warehouse: warehouse,
+                        date: date,
+                        activity_type: 'fba_prep',
+                        billing_item_id: `fba_${key}`,
+                        billing_item_label: svc.label,
+                        quote_category: 'extra',
+                        calculator_item: false,
+                        quantity: qty,
+                        unit: svc.unit,
+                        rate: rate,
+                        amount: amount,
+                        rate_source: 'fba_default',
+                        notes: notes,
+                        billed: false,
+                        invoiced: false,
+                        created_at: new Date().toISOString(),
+                        created_by: currentUser.uid,
+                        source: 'bill-customer-tab'
+                    });
+                    count++;
+                    totalAmount += amount;
+                }
+            }
+
+            if (count === 0) {
+                showToast('No services have quantities — add at least one', 'error');
+                return;
+            }
+
+            try {
+                await batch.commit();
+                showToast(`✅ Saved ${count} charges for ${customer?.company_name || customer?.name} — ${formatCurrency(totalAmount)}`);
+                bcClearQuantities();
+                await loadTodayActivities();
+                await loadStats();
+            } catch (err) {
+                console.error('Batch save error:', err);
+                showToast('Error saving charges: ' + err.message, 'error');
+            }
+        };
+
+        window.bcSaveAndInvoice = async function() {
+            await bcSaveAllCharges();
+            // Switch to Generate Invoice tab with customer pre-selected
+            const customerId = document.getElementById('bc-customer').value;
+            if (customerId) {
+                document.getElementById('gen-customer').value = customerId;
+                showTab('generate');
+                if (typeof previewInvoiceActivities === 'function') previewInvoiceActivities();
+            }
+        };
+
+        window.bcClearAll = function() {
+            document.getElementById('bc-customer').value = '';
+            document.getElementById('bc-notes').value = '';
+            document.getElementById('bc-services-wrapper').style.display = 'none';
+            document.getElementById('bc-empty-state').style.display = 'block';
+            document.getElementById('bc-customer-info').style.display = 'none';
+            bcClearQuantities();
+        };
+
+        function bcClearQuantities() {
+            for (const key of Object.keys(BILLING_ITEMS)) {
+                const qtyInput = document.getElementById(`bc-qty-${key}`);
+                if (qtyInput) qtyInput.value = '';
+                bcUpdateLine(key);
+            }
+            for (const key of Object.keys(BC_FBA_SERVICES)) {
+                const qtyInput = document.getElementById(`bc-qty-fba_${key}`);
+                if (qtyInput) qtyInput.value = '';
+                bcUpdateLine(`fba_${key}`);
+            }
+        }
 
         // ──────────────────────────────────────────────
         // LOGOUT
