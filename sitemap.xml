@@ -881,4 +881,28 @@
         <priority>0.85</priority>
     </url>
 
+    <!-- Blog: MercadoLibre Advertising & Mercado Ads Guide (NEW Apr 04) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/mercadolibre-advertising-mercado-ads-guide-us-sellers.html</loc>
+        <lastmod>2026-04-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: MercadoLibre Fees Payments Currency Guide (NEW Apr 04) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/mercadolibre-fees-payments-currency-guide-cross-border-sellers.html</loc>
+        <lastmod>2026-04-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: MercadoLibre Product Photography Packaging Guide (NEW Apr 04) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/mercadolibre-product-photography-packaging-export-guide.html</loc>
+        <lastmod>2026-04-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
 </urlset>
