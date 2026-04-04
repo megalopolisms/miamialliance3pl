@@ -833,4 +833,28 @@
         <priority>0.85</priority>
     </url>
 
+    <!-- Blog: Mercado Libre Returns Reverse Logistics (NEW Apr 04) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/mercadolibre-returns-reverse-logistics-cross-border-sellers.html</loc>
+        <lastmod>2026-04-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Mercado Envios Full vs 3PL Comparison (NEW Apr 04) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/mercado-envios-full-vs-3pl-fulfillment-comparison.html</loc>
+        <lastmod>2026-04-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Blog: Mercado Libre Multi-Country Expansion Playbook (NEW Apr 04) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/mercadolibre-multi-country-expansion-latam-playbook.html</loc>
+        <lastmod>2026-04-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
 </urlset>
