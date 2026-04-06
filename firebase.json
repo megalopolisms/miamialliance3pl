@@ -8,7 +8,24 @@
   },
   "hosting": {
     "public": ".",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "functions/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "**/__pycache__/**",
+      "admin/**",
+      "docs/**",
+      "functions/**",
+      "games/**",
+      "scripts/**",
+      "skills/**",
+      "tests/**",
+      "**/*.md",
+      "**/*.py",
+      "**/*.csv",
+      "todo-*.txt",
+      "todo-*.docx"
+    ],
     "rewrites": []
   },
   "extensions": {}
