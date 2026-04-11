@@ -61,9 +61,17 @@
     <!-- Blog Hub -->
     <url>
         <loc>https://miamialliance3pl.com/blog.html</loc>
-        <lastmod>2026-03-15</lastmod>
+        <lastmod>2026-04-07</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
+    </url>
+
+    <!-- Blog: Apparel & Fashion Fulfillment Miami 3PL Guide (NEW Apr 07) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/apparel-fashion-fulfillment-miami-3pl-guide.html</loc>
+        <lastmod>2026-04-07</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
     </url>
 
     <!-- Blog: Navigating the Storm: Tariffs and Trade Disruptions (NEW Mar 10) -->
