@@ -586,7 +586,7 @@ window.MA3PL_TRANSLATIONS["pt-br"] = {
   "blog.title": "Blog de Insights 3PL e Logística",
   "blog.subtitle":
     "Guias de especialistas, análises do setor e dicas práticas para marcas de e-commerce que navegam pela armazenagem, fulfillment e logística de terceiros.",
-  "blog.count": "96 Artigos",
+  "blog.count": "98 Artigos",
   "blog.readarticle": "Ler Artigo →",
   "blog.minread": "min de leitura",
 
