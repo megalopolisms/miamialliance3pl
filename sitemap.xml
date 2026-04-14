@@ -801,4 +801,20 @@
         <priority>0.85</priority>
     </url>
 
+    <!-- Blog: 3PL Minimum Spend Requirements Warehouse Pricing Explained (NEW Apr 14) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/3pl-minimum-spend-requirements-warehouse-pricing-explained.html</loc>
+        <lastmod>2026-04-14</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
+    <!-- Blog: Total Landed Cost Guide for Miami Importers (NEW Apr 14) -->
+    <url>
+        <loc>https://miamialliance3pl.com/blog/total-landed-cost-miami-importers-guide.html</loc>
+        <lastmod>2026-04-14</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
 </urlset>
