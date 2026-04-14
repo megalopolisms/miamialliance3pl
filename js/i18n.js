@@ -1,7 +1,7 @@
 /**
  * Miami Alliance 3PL — Internationalization Engine
  * Lightweight, zero-dependency i18n with language switcher
- * Supports: English (en) + Spanish (es) + Portuguese (pt-br)
+ * Supports: English (en) + Spanish (es) + Portuguese (pt-br) + Mandarin Chinese (zh)
  * Built by Symbio for Master Jorge
  */
 (function () {
@@ -9,7 +9,7 @@
 
   var STORAGE_KEY = "ma3pl_lang";
   var DEFAULT_LANG = "en";
-  var SUPPORTED = ["en", "es", "pt-br"];
+  var SUPPORTED = ["en", "es", "pt-br", "zh"];
 
   // ── Flag SVGs (inline, no external deps) ────────────────────────────
   var FLAGS = {
@@ -43,6 +43,16 @@
       '<circle cx="30" cy="15" r="7" fill="#002776"/>' +
       '<path d="M23,15 Q30,10 37,15" stroke="#fff" stroke-width="0.8" fill="none"/>' +
       "</svg>",
+    zh:
+      '<svg viewBox="0 0 60 30" width="24" height="12" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="60" height="30" fill="#de2910"/>' +
+      '<g fill="#ffde00" transform="translate(7,5)">' +
+      '<polygon points="5,0 6.5,4.5 11,4.5 7.3,7.2 8.5,11.7 5,9 1.5,11.7 2.7,7.2 -1,4.5 3.5,4.5"/>' +
+      '<polygon points="15,1 14.2,2.5 15.5,2.5 14.5,3.3 14.9,4.5 14,3.7 13.1,4.5 13.5,3.3 12.5,2.5 13.8,2.5" transform="rotate(23,15,1)"/>' +
+      '<polygon points="17,4 16.2,5.5 17.5,5.5 16.5,6.3 16.9,7.5 16,6.7 15.1,7.5 15.5,6.3 14.5,5.5 15.8,5.5" transform="rotate(46,17,4)"/>' +
+      '<polygon points="17,8 16.2,9.5 17.5,9.5 16.5,10.3 16.9,11.5 16,10.7 15.1,11.5 15.5,10.3 14.5,9.5 15.8,9.5" transform="rotate(70,17,8)"/>' +
+      '<polygon points="15,11 14.2,12.5 15.5,12.5 14.5,13.3 14.9,14.5 14,13.7 13.1,14.5 13.5,13.3 12.5,12.5 13.8,12.5" transform="rotate(93,15,11)"/>' +
+      "</g></svg>",
   };
 
   // ── Detect initial language ─────────────────────────────────────────
@@ -57,6 +67,7 @@
     }
 
     preferred = String(preferred).toLowerCase();
+    if (preferred.indexOf("zh") === 0) return "zh";
     if (preferred.indexOf("es") === 0) return "es";
     if (preferred.indexOf("pt") === 0) return "pt-br";
     return DEFAULT_LANG;
@@ -71,11 +82,12 @@
     return getBrowserPreferredLang();
   }
 
-  // ── Toggle dual-content blocks (.lang-en / .lang-es / .lang-pt-br) ──
+  // ── Toggle dual-content blocks (.lang-en / .lang-es / .lang-pt-br / .lang-zh) ──
   function toggleLangContent(lang) {
     var enBlocks = document.querySelectorAll(".lang-en");
     var esBlocks = document.querySelectorAll(".lang-es");
     var ptBlocks = document.querySelectorAll(".lang-pt-br");
+    var zhBlocks = document.querySelectorAll(".lang-zh");
     for (var i = 0; i < enBlocks.length; i++) {
       enBlocks[i].style.display = lang === "en" ? "" : "none";
     }
@@ -84,6 +96,9 @@
     }
     for (var k = 0; k < ptBlocks.length; k++) {
       ptBlocks[k].style.display = lang === "pt-br" ? "" : "none";
+    }
+    for (var m = 0; m < zhBlocks.length; m++) {
+      zhBlocks[m].style.display = lang === "zh" ? "" : "none";
     }
   }
 
@@ -235,6 +250,13 @@
       '" data-lang="pt-br" title="Português" aria-label="Mudar para Português">' +
       FLAGS["pt-br"] +
       '<span class="lang-label">PT</span>' +
+      "</button>" +
+      '<span class="lang-divider">|</span>' +
+      '<button class="lang-btn' +
+      (currentLang === "zh" ? " active" : "") +
+      '" data-lang="zh" title="中文" aria-label="切换到中文">' +
+      FLAGS.zh +
+      '<span class="lang-label">中文</span>' +
       "</button>" +
       "</div>";
 
