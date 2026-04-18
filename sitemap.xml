@@ -115,6 +115,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://miamialliance3pl.com/games/master-jorge-tetris/index.html</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://miamialliance3pl.com/privacy.html</loc>
     <lastmod>2026-04-05</lastmod>
     <changefreq>weekly</changefreq>
@@ -273,6 +279,12 @@
   <url>
     <loc>https://miamialliance3pl.com/blog/cold-storage-demand-miami-2026-secure-capacity-guide.html</loc>
     <lastmod>2026-04-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://miamialliance3pl.com/blog/cold-storage-warehouse-miami-3pl-temperature-controlled-guide.html</loc>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -633,6 +645,12 @@
   <url>
     <loc>https://miamialliance3pl.com/blog/omnichannel-fulfillment-multi-channel-selling-miami-3pl.html</loc>
     <lastmod>2026-04-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://miamialliance3pl.com/blog/peak-season-fulfillment-q4-2026-ecommerce-preparation-guide.html</loc>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
