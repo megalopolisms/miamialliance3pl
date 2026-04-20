@@ -1032,9 +1032,9 @@
                                     <th>Company</th>
                                     <th>Name</th>
                                     <th>Email</th>
+                                    <th>Status</th>
                                     <th>Role</th>
                                     <th>Shipments</th>
-                                    <th>Inventory</th>
                                     <th>Joined</th>
                                     <th>Actions</th>
                                 </tr>
@@ -2084,15 +2084,18 @@
                 const joined = joinedDate ? joinedDate.toLocaleDateString() : 'N/A';
                 const role = c.role || 'customer';
                 const shipCount = shipmentCounts[c.id] || 0;
+                const status = c.status || 'active';
+                const statusColor = status === 'active' ? '#10b981' : status === 'inactive' ? '#f59e0b' : '#ef4444';
+                const statusBg = status === 'active' ? '#dcfce7' : status === 'inactive' ? '#fef3c7' : '#fee2e2';
 
                 return `
                     <tr>
                         <td class="company-name">${c.company_name || '-'}</td>
                         <td>${c.name || c.email || '-'}</td>
                         <td>${c.email || '-'}</td>
+                        <td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:0.7rem;font-weight:700;background:${statusBg};color:${statusColor};text-transform:uppercase;"><span style="width:6px;height:6px;border-radius:50%;background:${statusColor};"></span>${status}</span></td>
                         <td><span class="badge badge-${role === 'admin' ? 'approved' : role === 'employee' ? 'in_progress' : 'pending'}">${role}</span></td>
                         <td>${shipCount}</td>
-                        <td>--</td>
                         <td>${joined}</td>
                         <td>
                             <button class="btn-action btn-view" onclick="viewCustomerDetail('${c.id}')" style="padding: 4px 12px; font-size: 0.75rem;">View</button>
@@ -2140,6 +2143,7 @@
                     <div><strong>Name:</strong> ${c.name || c.email || 'N/A'}</div>
                     <div><strong>Email:</strong> ${c.email || 'N/A'}</div>
                     <div><strong>Phone:</strong> ${c.phone || 'N/A'}</div>
+                    <div><strong>Status:</strong> <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;background:${(c.status||'active')==='active'?'#dcfce7':(c.status||'active')==='inactive'?'#fef3c7':'#fee2e2'};color:${(c.status||'active')==='active'?'#166534':(c.status||'active')==='inactive'?'#92400e':'#991b1b'};text-transform:uppercase;">${c.status||'active'}</span></div>
                     <div><strong>Role:</strong> <span class="badge badge-${(c.role || 'customer') === 'admin' ? 'approved' : 'pending'}">${c.role || 'customer'}</span></div>
                     <div><strong>Joined:</strong> ${joinedAt ? joinedAt.toLocaleString() : 'N/A'}</div>
                     <hr style="border: none; border-top: 1px solid var(--color-gray-200);">

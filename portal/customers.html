@@ -258,6 +258,141 @@
             background: var(--color-gray-400);
             cursor: not-allowed;
         }
+
+        /* ===== Client Status System ===== */
+        .bulk-action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+            border: 2px solid #86efac;
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+        .bulk-action-bar .bulk-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-weight: 600;
+            color: #166534;
+        }
+        .bulk-action-bar .bulk-info .count {
+            background: #166534;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        .bulk-action-bar .bulk-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+        .btn-activate-all {
+            padding: 10px 24px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-activate-all:hover { background: #059669; transform: translateY(-1px); }
+        .btn-activate-all:disabled { background: var(--color-gray-400); cursor: not-allowed; transform: none; }
+        .btn-deactivate-all {
+            padding: 10px 24px;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-deactivate-all:hover { background: #d97706; }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-badge.active {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+        .status-badge.inactive {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+        .status-badge.suspended {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-dot.active { background: #10b981; }
+        .status-dot.inactive { background: #f59e0b; }
+        .status-dot.suspended { background: #ef4444; }
+        .btn-toggle-status {
+            padding: 4px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            background: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-toggle-status:hover {
+            background: var(--color-gray-100);
+            border-color: var(--color-primary);
+        }
+        .btn-toggle-status.activate {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        .btn-toggle-status.activate:hover {
+            background: #dcfce7;
+        }
+        .btn-toggle-status.deactivate {
+            border-color: #f59e0b;
+            color: #92400e;
+        }
+        .btn-toggle-status.deactivate:hover {
+            background: #fef3c7;
+        }
+        /* Status filter dropdown */
+        .status-filter {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+            background: white;
+        }
         /* Toast styles */
         .toast-container {
             position: fixed;
@@ -398,7 +533,30 @@
             <!-- Search Bar -->
             <div class="search-bar">
                 <input type="text" id="search-input" placeholder="Search by name, email, or company..." data-i18n-placeholder="portal.customers.searchPlaceholder">
+                <select class="status-filter" id="status-filter" onchange="filterByStatus()">
+                    <option value="">All Statuses</option>
+                    <option value="active">✅ Active</option>
+                    <option value="inactive">⏸️ Inactive</option>
+                    <option value="suspended">🚫 Suspended</option>
+                </select>
                 <button class="btn btn-primary" onclick="searchCustomers()" data-i18n="portal.customers.searchBtn">Search</button>
+            </div>
+
+            <!-- Bulk Action Bar -->
+            <div class="bulk-action-bar" id="bulk-action-bar">
+                <div class="bulk-info">
+                    ⚡ Client Status Control
+                    <span class="count" id="active-count-badge">0 active</span>
+                    <span class="count" style="background: #f59e0b;" id="inactive-count-badge">0 inactive</span>
+                </div>
+                <div class="bulk-actions">
+                    <button class="btn-activate-all" id="btn-activate-all" onclick="activateAllClients()">
+                        ✅ Activate All Clients
+                    </button>
+                    <button class="btn-deactivate-all" id="btn-deactivate-all" onclick="deactivateAllClients()">
+                        ⏸️ Deactivate All
+                    </button>
+                </div>
             </div>
 
             <!-- Stats Summary -->
@@ -412,8 +570,12 @@
                     <div class="value" id="new-customers">0</div>
                 </div>
                 <div class="dashboard-card">
-                    <h3 data-i18n="portal.customers.activeShippers">Active Shippers</h3>
-                    <div class="value" id="active-customers">0</div>
+                    <h3 style="color: #10b981;">Active Clients</h3>
+                    <div class="value" id="active-customers" style="color: #10b981;">0</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3 style="color: #f59e0b;">Inactive Clients</h3>
+                    <div class="value" id="inactive-customers" style="color: #f59e0b;">0</div>
                 </div>
             </div>
 
@@ -451,6 +613,14 @@
                 <div class="form-group">
                     <label for="edit-phone" data-i18n="portal.customers.form.phone">Phone</label>
                     <input type="tel" id="edit-phone">
+                </div>
+                <div class="form-group">
+                    <label for="edit-status">Account Status</label>
+                    <select id="edit-status" style="width: 100%; padding: var(--spacing-sm) var(--spacing-md); border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); font-size: var(--font-size-base);">
+                        <option value="active">✅ Active</option>
+                        <option value="inactive">⏸️ Inactive</option>
+                        <option value="suspended">🚫 Suspended</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label data-i18n="portal.customers.form.totalShipments">Total Shipments</label>
@@ -590,18 +760,19 @@
                     }
                 });
 
+                // Count active/inactive clients
+                const activeClients = allCustomers.filter(c => (c.status || 'active') === 'active');
+                const inactiveClients = allCustomers.filter(c => c.status === 'inactive' || c.status === 'suspended');
+
                 // Update stats
                 document.getElementById('total-customers').textContent = allCustomers.length;
                 document.getElementById('new-customers').textContent = newThisMonth;
+                document.getElementById('active-customers').textContent = activeClients.length;
+                document.getElementById('inactive-customers').textContent = inactiveClients.length;
 
-                // Count active shippers (have at least 1 shipment)
-                const shipmentsSnap = await getDocs(collection(db, 'shipments'));
-                const activeUserIds = new Set();
-                shipmentsSnap.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.user_id) activeUserIds.add(data.user_id);
-                });
-                document.getElementById('active-customers').textContent = activeUserIds.size;
+                // Update bulk action bar badges
+                document.getElementById('active-count-badge').textContent = `${activeClients.length} active`;
+                document.getElementById('inactive-count-badge').textContent = `${inactiveClients.length} inactive`;
 
                 // Display customers
                 displayCustomers(allCustomers);
@@ -650,14 +821,21 @@
             // Store shipment counts globally for modal access
             window.customerShipmentCounts = shipmentCounts;
 
-            container.innerHTML = customers.map(customer => `
-                <div class="customer-card">
+            container.innerHTML = customers.map(customer => {
+                const status = customer.status || 'active';
+                const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+                const toggleClass = status === 'active' ? 'deactivate' : 'activate';
+                const toggleLabel = status === 'active' ? '⏸️ Deactivate' : '✅ Activate';
+                return `
+                <div class="customer-card" data-status="${status}">
                     <div class="customer-header">
                         <div>
                             <div class="customer-name">${customer.name || customer.email || 'Unknown'}</div>
                             <div class="customer-company">${customer.company_name || 'No company'}</div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span class="status-badge ${status}"><span class="status-dot ${status}"></span> ${statusLabel}</span>
+                            <button class="btn-toggle-status ${toggleClass}" onclick="toggleClientStatus('${customer.id}', '${status}')">${toggleLabel}</button>
                             <button class="btn-edit" onclick="openEditModal('${customer.id}')">Edit</button>
                             <span class="badge ${customer.role === 'admin' ? 'badge-pending' : customer.role === 'employee' ? 'badge-in_transit' : 'badge-delivered'}">${customer.role === 'admin' ? 'Admin' : customer.role === 'employee' ? 'Employee' : 'Customer'}</span>
                         </div>
@@ -678,18 +856,13 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        // Search functionality
+        // Search functionality (combined with status filter)
         window.searchCustomers = function() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const filtered = allCustomers.filter(c =>
-                (c.name && c.name.toLowerCase().includes(searchTerm)) ||
-                (c.email && c.email.toLowerCase().includes(searchTerm)) ||
-                (c.company_name && c.company_name.toLowerCase().includes(searchTerm))
-            );
-            displayCustomers(filtered);
+            filterByStatus();
         };
 
         // Search on Enter key
@@ -726,6 +899,7 @@
             document.getElementById('edit-company').value = customer.company_name || '';
             document.getElementById('edit-email').value = customer.email || '';
             document.getElementById('edit-phone').value = customer.phone || '';
+            document.getElementById('edit-status').value = customer.status || 'active';
             document.getElementById('edit-shipments-count').textContent = window.customerShipmentCounts[customer.id] || 0;
 
             // Show modal
@@ -775,6 +949,7 @@
                     company_name: document.getElementById('edit-company').value.trim(),
                     email: document.getElementById('edit-email').value.trim(),
                     phone: document.getElementById('edit-phone').value.trim(),
+                    status: document.getElementById('edit-status').value,
                     updated_at: new Date().toISOString()
                 });
 
@@ -792,6 +967,131 @@
                 saveBtn.textContent = 'Save Changes';
             }
         });
+        // ======================== CLIENT STATUS SYSTEM ========================
+
+        // Toggle individual client status
+        window.toggleClientStatus = async function(customerId, currentStatus) {
+            const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            try {
+                const customerRef = doc(db, 'users', customerId);
+                await updateDoc(customerRef, {
+                    status: newStatus,
+                    status_updated_at: new Date().toISOString()
+                });
+
+                const customer = allCustomers.find(c => c.id === customerId);
+                const name = customer ? (customer.company_name || customer.name || customer.email) : customerId;
+                showToast(`${name} → ${newStatus.toUpperCase()}`, 'success');
+                loadCustomers();
+            } catch (error) {
+                console.error('Error toggling status:', error);
+                showToast('Failed to update status: ' + error.message, 'error');
+            }
+        };
+
+        // Activate ALL clients
+        window.activateAllClients = async function() {
+            const btn = document.getElementById('btn-activate-all');
+            btn.disabled = true;
+            btn.textContent = '⏳ Activating...';
+
+            try {
+                const customersOnly = allCustomers.filter(c => (c.role || 'customer') === 'customer');
+                let updated = 0;
+
+                for (const customer of customersOnly) {
+                    if ((customer.status || 'active') !== 'active') {
+                        const customerRef = doc(db, 'users', customer.id);
+                        await updateDoc(customerRef, {
+                            status: 'active',
+                            status_updated_at: new Date().toISOString()
+                        });
+                        updated++;
+                    }
+                }
+
+                // Also set any customers without a status field
+                for (const customer of customersOnly) {
+                    if (!customer.status) {
+                        const customerRef = doc(db, 'users', customer.id);
+                        await updateDoc(customerRef, {
+                            status: 'active',
+                            status_updated_at: new Date().toISOString()
+                        });
+                        updated++;
+                    }
+                }
+
+                showToast(`✅ All ${customersOnly.length} clients activated! (${updated} updated)`, 'success');
+                loadCustomers();
+            } catch (error) {
+                console.error('Error activating all:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '✅ Activate All Clients';
+            }
+        };
+
+        // Deactivate ALL clients
+        window.deactivateAllClients = async function() {
+            if (!confirm('⚠️ This will set ALL customer accounts to INACTIVE. They will not be able to access the portal. Continue?')) return;
+
+            const btn = document.getElementById('btn-deactivate-all');
+            btn.disabled = true;
+            btn.textContent = '⏳ Deactivating...';
+
+            try {
+                const customersOnly = allCustomers.filter(c => (c.role || 'customer') === 'customer');
+                let updated = 0;
+
+                for (const customer of customersOnly) {
+                    if ((customer.status || 'active') !== 'inactive') {
+                        const customerRef = doc(db, 'users', customer.id);
+                        await updateDoc(customerRef, {
+                            status: 'inactive',
+                            status_updated_at: new Date().toISOString()
+                        });
+                        updated++;
+                    }
+                }
+
+                showToast(`⏸️ All ${customersOnly.length} clients deactivated. (${updated} updated)`, 'success');
+                loadCustomers();
+            } catch (error) {
+                console.error('Error deactivating all:', error);
+                showToast('Error: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '⏸️ Deactivate All';
+            }
+        };
+
+        // Filter by status
+        window.filterByStatus = function() {
+            const statusFilter = document.getElementById('status-filter').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+            let filtered = allCustomers;
+
+            if (statusFilter) {
+                filtered = filtered.filter(c => {
+                    const status = c.status || 'active';
+                    return status === statusFilter;
+                });
+            }
+
+            if (searchTerm) {
+                filtered = filtered.filter(c =>
+                    (c.name && c.name.toLowerCase().includes(searchTerm)) ||
+                    (c.email && c.email.toLowerCase().includes(searchTerm)) ||
+                    (c.company_name && c.company_name.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            displayCustomers(filtered);
+        };
+
     </script>
     <script src="../js/main.js"></script>
     <script src="../js/lang/es.js"></script>
