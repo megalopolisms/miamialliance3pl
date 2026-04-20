@@ -3232,7 +3232,8 @@ const FAQ_KNOWLEDGE_BASE = {
   },
   minimum: {
     keywords: ["minimum", "small", "startup", "minimo"],
-    answer: "No minimums to start! Perfect for startups. We grow with you.",
+    answer:
+      "$1,000/month minimum spend — no minimum order count, no long-term contracts. Perfect for growing businesses. We scale with you.",
   },
   tracking: {
     keywords: ["track", "status", "where", "package", "rastrear"],
