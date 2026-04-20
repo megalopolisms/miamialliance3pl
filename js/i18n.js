@@ -47,11 +47,11 @@
       '<svg viewBox="0 0 60 30" width="24" height="12" xmlns="http://www.w3.org/2000/svg">' +
       '<rect width="60" height="30" fill="#de2910"/>' +
       '<g fill="#ffde00" transform="translate(7,5)">' +
-      '<polygon points="5,0 6.5,3.5 10,3.5 7,5.5 8,9 5,7 2,9 3,5.5 0,3.5 3.5,3.5"/>' +
-      '<polygon points="14,1 14.5,2.5 16,2.5 15,3.3 15.3,4.5 14,3.8 12.7,4.5 13,3.3 12,2.5 13.5,2.5" transform="rotate(23,14,3)"/>' +
-      '<polygon points="17,4 17.5,5.5 19,5.5 18,6.3 18.3,7.5 17,6.8 15.7,7.5 16,6.3 15,5.5 16.5,5.5" transform="rotate(46,17,6)"/>' +
-      '<polygon points="17,8 17.5,9.5 19,9.5 18,10.3 18.3,11.5 17,10.8 15.7,11.5 16,10.3 15,9.5 16.5,9.5" transform="rotate(24,17,10)"/>' +
-      '<polygon points="14,11 14.5,12.5 16,12.5 15,13.3 15.3,14.5 14,13.8 12.7,14.5 13,13.3 12,12.5 13.5,12.5" transform="rotate(5,14,13)"/>' +
+      '<polygon points="5,0 6.5,4.5 11,4.5 7.3,7.2 8.5,11.7 5,9 1.5,11.7 2.7,7.2 -1,4.5 3.5,4.5"/>' +
+      '<polygon points="15,1 14.2,2.5 15.5,2.5 14.5,3.3 14.9,4.5 14,3.7 13.1,4.5 13.5,3.3 12.5,2.5 13.8,2.5" transform="rotate(23,15,1)"/>' +
+      '<polygon points="17,4 16.2,5.5 17.5,5.5 16.5,6.3 16.9,7.5 16,6.7 15.1,7.5 15.5,6.3 14.5,5.5 15.8,5.5" transform="rotate(46,17,4)"/>' +
+      '<polygon points="17,8 16.2,9.5 17.5,9.5 16.5,10.3 16.9,11.5 16,10.7 15.1,11.5 15.5,10.3 14.5,9.5 15.8,9.5" transform="rotate(70,17,8)"/>' +
+      '<polygon points="15,11 14.2,12.5 15.5,12.5 14.5,13.3 14.9,14.5 14,13.7 13.1,14.5 13.5,13.3 12.5,12.5 13.8,12.5" transform="rotate(93,15,11)"/>' +
       "</g></svg>",
   };
 
@@ -97,8 +97,8 @@
     for (var k = 0; k < ptBlocks.length; k++) {
       ptBlocks[k].style.display = lang === "pt-br" ? "" : "none";
     }
-    for (var l = 0; l < zhBlocks.length; l++) {
-      zhBlocks[l].style.display = lang === "zh" ? "" : "none";
+    for (var m = 0; m < zhBlocks.length; m++) {
+      zhBlocks[m].style.display = lang === "zh" ? "" : "none";
     }
   }
 

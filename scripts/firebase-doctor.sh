@@ -47,13 +47,14 @@ for f in firebase.json firestore.rules functions/index.js functions/package.json
   fi
 done
 
-# Optional MCP workspace checks
+HAS_MCP="false"
 if [[ -f mcp/server.js && -f mcp/package.json ]]; then
-  ok "optional MCP workspace present"
-  MCP_PRESENT="true"
+  HAS_MCP="true"
+  ok "optional MCP app present"
+elif [[ -e mcp/server.js || -e mcp/package.json || -d mcp ]]; then
+  fail "mcp/ exists but is incomplete (expected mcp/server.js and mcp/package.json)"
 else
-  warn "optional MCP workspace missing; skipping MCP validation"
-  MCP_PRESENT="false"
+  warn "optional mcp/ app not present; skipping MCP checks"
 fi
 
 # Firebase CLI installation
@@ -103,7 +104,7 @@ if [[ -f functions/package-lock.json ]]; then
   fi
 fi
 
-if [[ "$MCP_PRESENT" == "true" && -f mcp/package-lock.json ]]; then
+if [[ "$HAS_MCP" == "true" && -f mcp/package-lock.json ]]; then
   if [[ "$SELFHEAL" == "true" ]]; then
     (cd mcp && npm ci >/dev/null)
     ok "mcp dependencies installed"
@@ -119,7 +120,7 @@ else
   fail "functions/index.js syntax invalid"
 fi
 
-if [[ "$MCP_PRESENT" == "true" ]]; then
+if [[ "$HAS_MCP" == "true" ]]; then
   if node --check mcp/server.js >/dev/null 2>&1; then
     ok "mcp/server.js syntax valid"
   else

@@ -12,6 +12,7 @@ Usage:
 
 import argparse
 import html
+import json
 import re
 from datetime import datetime
 from pathlib import Path
@@ -24,6 +25,9 @@ BLOG_POSTS_DIR = PROJECT_ROOT / "blog"
 # Regex to find the target div for blog posts
 # This looks for the start of the blog grid and the start of the sidebar.
 BLOG_GRID_PATTERN = r'(<!-- Main Content: Blog Article Grid -->\s*<div>\s*<div class="blog-grid">)(.*?)(</div>\s*</div>\s*<!-- Sidebar -->)'
+COLLECTION_PAGE_PATTERN = r'(<!-- Structured Data - CollectionPage -->\s*<script type="application/ld\+json">\s*)(\{.*?\})(\s*</script>)'
+ARTICLE_COUNT_PATTERN = r'(<span class="article-count" data-i18n="blog.count">)(.*?)(</span>)'
+ALL_CATEGORY_COUNT_PATTERN = r'(<span data-i18n="blog.cat.all">All</span>\s*<span class="cat-count">)(\d+)(</span>)'
 
 def extract_metadata(file_path: Path):
     """Extracts metadata (title, description, date, etc.) from a blog post HTML file."""
@@ -83,6 +87,37 @@ def generate_blog_card(meta):
                             </div>
                         </a>"""
 
+def generate_collection_page_json(posts):
+    """Generates CollectionPage structured data for all valid blog posts."""
+
+    item_list = []
+    for idx, post in enumerate(posts, start=1):
+        item_list.append({
+            "@type": "ListItem",
+            "position": idx,
+            "url": f"https://miamialliance3pl.com/blog/{post['path']}",
+            "name": post.get("title", "Untitled Post"),
+        })
+
+    collection_page = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "3PL & Logistics Blog",
+        "description": "Expert 3PL blog covering warehouse logistics, fulfillment tips, Miami warehousing news, and supply chain guides.",
+        "url": "https://miamialliance3pl.com/blog.html",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Miami Alliance 3PL",
+            "url": "https://miamialliance3pl.com",
+        },
+        "mainEntity": {
+            "@type": "ItemList",
+            "itemListElement": item_list,
+        },
+    }
+
+    return json.dumps(collection_page, indent=4, ensure_ascii=False)
+
 def main():
     parser = argparse.ArgumentParser(description="Update blog.html from local blog files.")
     parser.add_argument("--apply", action="store_true", help="Apply changes to blog.html")
@@ -122,6 +157,34 @@ def main():
         if match:
             # Reconstruct the html with the new grid content
             updated_html = main_blog_html[:match.start(2)] + new_grid_content + main_blog_html[match.end(2):]
+
+            collection_match = re.search(COLLECTION_PAGE_PATTERN, updated_html, re.DOTALL)
+            if collection_match:
+                collection_json = generate_collection_page_json(posts)
+                updated_html = (
+                    updated_html[:collection_match.start(2)]
+                    + collection_json
+                    + updated_html[collection_match.end(2):]
+                )
+            else:
+                print("Warning: Could not find CollectionPage structured data block in blog.html.")
+
+            updated_html = re.sub(
+                ARTICLE_COUNT_PATTERN,
+                rf"\g<1>{len(posts)} Articles\g<3>",
+                updated_html,
+                count=1,
+                flags=re.DOTALL,
+            )
+
+            updated_html = re.sub(
+                ALL_CATEGORY_COUNT_PATTERN,
+                rf"\g<1>{len(posts)}\g<3>",
+                updated_html,
+                count=1,
+                flags=re.DOTALL,
+            )
+
             BLOG_HTML_PATH.write_text(updated_html, encoding="utf-8")
             print("Successfully updated blog.html.")
         else:
