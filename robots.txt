@@ -4,6 +4,7 @@
 # === DEFAULT CRAWLERS (Google, Bing, etc.) ===
 User-agent: *
 Allow: /
+Allow: /llms.txt
 Disallow: /portal/
 Disallow: /login.html
 Disallow: /admin/
@@ -128,6 +129,48 @@ Disallow: /admin/
 
 # You.com AI Search
 User-agent: YouBot
+Allow: /
+Disallow: /portal/
+Disallow: /login.html
+Disallow: /admin/
+
+# Mistral AI
+User-agent: MistralBot
+Allow: /
+Disallow: /portal/
+Disallow: /login.html
+Disallow: /admin/
+
+# DuckDuckGo AI Assist
+User-agent: DuckAssistBot
+Allow: /
+Disallow: /portal/
+Disallow: /login.html
+Disallow: /admin/
+
+# Meta / Facebook AI
+User-agent: FacebookBot
+Allow: /
+Disallow: /portal/
+Disallow: /login.html
+Disallow: /admin/
+
+# Google NotebookLM
+User-agent: Google-NotebookLM
+Allow: /
+Disallow: /portal/
+Disallow: /login.html
+Disallow: /admin/
+
+# Google Vertex AI
+User-agent: Google-CloudVertexBot
+Allow: /
+Disallow: /portal/
+Disallow: /login.html
+Disallow: /admin/
+
+# DeepSeek AI
+User-agent: DeepSeekBot
 Allow: /
 Disallow: /portal/
 Disallow: /login.html
